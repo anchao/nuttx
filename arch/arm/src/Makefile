@@ -79,8 +79,9 @@ endif
 
 # The "head" object
 
-HEAD_OBJ = $(HEAD_ASRC:.S=$(OBJEXT))
-STARTUP_OBJS ?= $(HEAD_OBJ)
+HEAD_AOBJ = $(HEAD_ASRC:.S=$(OBJEXT))
+HEAD_COBJ = $(HEAD_CSRC:.c=$(OBJEXT))
+STARTUP_OBJS ?= $(HEAD_AOBJ)
 
 # Flat build or kernel-mode objects
 
@@ -161,14 +162,14 @@ else # ifeq ($(CONFIG_ARCH_TOOLCHAIN_GNU),y)
   VPATH += $(ARCH_SUBDIR)$(DELIM)gnu
 endif
 
-all: $(HEAD_OBJ) $(BIN)
+all: $(HEAD_COBJ) $(HEAD_AOBJ) $(BIN)
 
 .PHONY: board$(DELIM)libboard$(LIBEXT)
 
-$(AOBJS) $(UAOBJS) $(HEAD_OBJ): %$(OBJEXT): %.S
+$(AOBJS) $(UAOBJS) $(HEAD_AOBJ): %$(OBJEXT): %.S
 	$(call ASSEMBLE, $<, $@)
 
-$(COBJS) $(UCOBJS): %$(OBJEXT): %.c
+$(COBJS) $(HEAD_COBJ) $(UCOBJS): %$(OBJEXT): %.c
 	$(call COMPILE, $<, $@)
 
 $(BIN) $(KBIN): $(OBJS)
@@ -180,10 +181,10 @@ $(UBIN): $(UOBJS)
 board$(DELIM)libboard$(LIBEXT):
 	$(Q) $(MAKE) -C board TOPDIR="$(TOPDIR)" libboard$(LIBEXT) EXTRADEFINES=$(EXTRADEFINES)
 
-nuttx$(EXEEXT): $(HEAD_OBJ) board$(DELIM)libboard$(LIBEXT)
+nuttx$(EXEEXT): $(HEAD_COBJ) $(HEAD_AOBJ) board$(DELIM)libboard$(LIBEXT)
 	$(Q) echo "LD: nuttx"
 	$(Q) $(LD) --entry=__start $(LDFLAGS) $(LIBPATHS) $(EXTRA_LIBPATHS) \
-		-o $(NUTTX) $(HEAD_OBJ) $(EXTRA_OBJS) \
+		-o $(NUTTX) $(HEAD_COBJ) $(HEAD_AOBJ) $(EXTRA_OBJS) \
 		$(LDSTARTGROUP) $(LDLIBS) $(EXTRA_LIBS) $(LIBGCC) $(LDENDGROUP)
 ifneq ($(CONFIG_WINDOWS_NATIVE),y)
 	$(Q) $(NM) $(NUTTX) | \
