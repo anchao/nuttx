@@ -73,10 +73,36 @@
  *
  ****************************************************************************/
 
+/* GIC DIST INIT */
 void arm_gic0_initialize(void)
 {
   unsigned int nlines = arm_gic_nlines();
   unsigned int irq;
+
+#if 0
+  for(irq = GIC_IRQ_SPI; irq < nlines; irq+=32) {
+        putreg32(0xffffff, GIC_ICDISR(irq));
+  }
+
+  for (irq = GIC_IRQ_SPI; irq < nlines; irq += 16){
+        putreg32(0x0, GIC_ICDICFR(irq));  /* SPIs level sensitive */
+  }
+  for (irq = GIC_IRQ_SPI; irq < nlines; irq += 4)
+    {
+      putreg32(0xa0a0a0a0, GIC_ICDIPR(irq));   /* SPI priority */
+      putreg32(0x01010101, GIC_ICDIPTR(irq));  /* SPI on CPU0 */
+    }
+
+#ifdef CONFIG_SMP
+  /* Attach SGI interrupt handlers.  This attaches the handler for all CPUs. */
+
+  DEBUGVERIFY(irq_attach(GIC_IRQ_SGI1, arm_start_handler, NULL));
+  DEBUGVERIFY(irq_attach(GIC_IRQ_SGI2, arm_pause_handler, NULL));
+#endif
+
+putreg32(0x3, GIC_ICDDCR);
+
+#endif 
 
   arm_gic_dump("Entry arm_gic0_initialize", true, 0);
 
@@ -101,7 +127,7 @@ void arm_gic0_initialize(void)
 
   for (irq = GIC_IRQ_SPI; irq < nlines; irq += 32)
     {
-      putreg32(0x00000000, GIC_ICDISR(irq));   /* SPIs group 0 */
+      putreg32(0xffffffff, GIC_ICDISR(irq));   /* SPIs group 1 */
       putreg32(0xffffffff, GIC_ICDICER(irq));  /* SPIs disabled */
     }
 
@@ -110,16 +136,18 @@ void arm_gic0_initialize(void)
   for (irq = GIC_IRQ_SPI; irq < nlines; irq += 16)
     {
     //putreg32(0xffffffff, GIC_ICDICFR(irq));  /* SPIs edge sensitive */
-      putreg32(0x55555555, GIC_ICDICFR(irq));  /* SPIs level sensitive */
+      putreg32(0x00000000, GIC_ICDICFR(irq));  /* SPIs level sensitive */
     }
 
   /* Registers with 8-bits per interrupt */
 
   for (irq = GIC_IRQ_SPI; irq < nlines; irq += 4)
     {
-      putreg32(0x80808080, GIC_ICDIPR(irq));   /* SPI priority */
+      putreg32(0xa0a0a0a0, GIC_ICDIPR(irq));   /* SPI priority */
       putreg32(0x01010101, GIC_ICDIPTR(irq));  /* SPI on CPU0 */
     }
+
+  putreg32(0x3, GIC_ICDDCR);
 
 #ifdef CONFIG_SMP
   /* Attach SGI interrupt handlers.  This attaches the handler for all CPUs. */
@@ -129,6 +157,8 @@ void arm_gic0_initialize(void)
 #endif
 
   arm_gic_dump("Exit arm_gic0_initialize", true, 0);
+
+
 }
 
 /****************************************************************************
@@ -145,12 +175,39 @@ void arm_gic0_initialize(void)
  *
  ****************************************************************************/
 
+/* GIC CPU INIT */
 void arm_gic_initialize(void)
 {
   uint32_t iccicr;
   uint32_t icddcr;
 
+#if 0
+
+  putreg32(0x0, GIC_ICCICR);
+
+  putreg32(0xffffffff, GIC_ICDISR(0));      /* SGIs and PPIs secure */
+
+  putreg32(0x0000ffff, GIC_ICDISER(0));     /* PPIs disabled */
+  putreg32(0xffff0000, GIC_ICDICER(0));     /* PPIs disabled */
+
+
+  putreg32(0xa0a0a0a0, GIC_ICDIPR(0));      /* SGI[3:0] priority */
+  putreg32(0xa0a0a0a0, GIC_ICDIPR(4));      /* SGI[4:7] priority */
+  putreg32(0xa0a0a0a0, GIC_ICDIPR(8));      /* SGI[8:11] priority */
+  putreg32(0xa0a0a0a0, GIC_ICDIPR(12));     /* SGI[12:15] priority */
+  putreg32(0xa0a0a0a0, GIC_ICDIPR(16));     /* PPI[0] priority */
+  putreg32(0xa0a0a0a0, GIC_ICDIPR(20));     /* PPI[0] priority */
+  putreg32(0xa0a0a0a0, GIC_ICDIPR(24));     /* PPI[0] priority */
+  putreg32(0xa0a0a0a0, GIC_ICDIPR(28));     /* PPI[1:4] priority */
+
+  putreg32(GIC_ICCPMR_MASK, GIC_ICCPMR);
+
+  putreg32(0xf, GIC_ICCICR);
+#endif
+
   arm_gic_dump("Entry arm_gic_initialize", true, 0);
+
+  putreg32(0x0, GIC_ICCICR);
 
   /* Initialize PPIs.  The following steps need to be done by all CPUs */
 
@@ -161,17 +218,19 @@ void arm_gic_initialize(void)
 
   /* Registers with 1-bit per interrupt */
 
-  putreg32(0x00000000, GIC_ICDISR(0));      /* SGIs and PPIs secure */
-  putreg32(0xf8000000, GIC_ICDICER(0));     /* PPIs disabled */
-
+  putreg32(0xffffffff, GIC_ICDISR(0));      /* SGIs and PPIs secure */
+  putreg32(0x00000000, GIC_ICDISER(0));     /* PPIs disabled */
+  putreg32(0xffff0000, GIC_ICDICER(0));     /* PPIs disabled */
   /* Registers with 8-bits per interrupt */
 
-  putreg32(0x80808080, GIC_ICDIPR(0));      /* SGI[3:0] priority */
-  putreg32(0x80808080, GIC_ICDIPR(4));      /* SGI[4:7] priority */
-  putreg32(0x80808080, GIC_ICDIPR(8));      /* SGI[8:11] priority */
-  putreg32(0x80808080, GIC_ICDIPR(12));     /* SGI[12:15] priority */
-  putreg32(0x80000000, GIC_ICDIPR(24));     /* PPI[0] priority */
-  putreg32(0x80808080, GIC_ICDIPR(28));     /* PPI[1:4] priority */
+  putreg32(0xa0a0a0a0, GIC_ICDIPR(0));      /* SGI[3:0] priority */
+  putreg32(0xa0a0a0a0, GIC_ICDIPR(4));      /* SGI[4:7] priority */
+  putreg32(0xa0a0a0a0, GIC_ICDIPR(8));      /* SGI[8:11] priority */
+  putreg32(0xa0a0a0a0, GIC_ICDIPR(12));     /* SGI[12:15] priority */
+  putreg32(0xa0a0a0a0, GIC_ICDIPR(16));     /* PPI[0:3] priority */
+  putreg32(0xa0a0a0a0, GIC_ICDIPR(20));     /* PPI[4:7] priority */
+  putreg32(0xa0a0a0a0, GIC_ICDIPR(24));     /* PPI[8:11] priority */
+  putreg32(0xa0a0a0a0, GIC_ICDIPR(28));     /* PPI[12:15] priority */
 
   /* Set the binary point register.
    *
@@ -315,11 +374,11 @@ void arm_gic_initialize(void)
              GIC_ICCICRS_IRQBYPDISGRP0 | GIC_ICCICRS_FIQBYPDISGRP1 |
              GIC_ICCICRS_IRQBYPDISGRP1);
 #else
-  iccicr |= (GIC_ICCICRS_ENABLEGRP0 | GIC_ICCICRS_ENABLEGRP1 |
+  iccicr |= (GIC_ICCICRS_ENABLEGRP1 | GIC_ICCICRS_ENABLEGRP1 |
              GIC_ICCICRS_FIQBYPDISGRP0 | GIC_ICCICRS_IRQBYPDISGRP0 |
              GIC_ICCICRS_FIQBYPDISGRP1 | GIC_ICCICRS_IRQBYPDISGRP1);
 #endif
-  icddcr  = GIC_ICDDCR_ENABLEGRP0;
+  icddcr  = GIC_ICDDCR_ENABLEGRP1;
 
 #elif defined(CONFIG_ARCH_TRUSTZONE_BOTH)
   /* Enable the Group 0/1 interrupts, FIQEn and disable Group 0/1
@@ -342,7 +401,7 @@ void arm_gic_initialize(void)
 
   /* Write the final ICCICR value to enable the GIC. */
 
-  putreg32(iccicr, GIC_ICCICR);
+  putreg32(0xf, GIC_ICCICR);
 
 #ifdef CONFIG_ARCH_TRUSTZONE_BOTH
   /* A processor in the secure state must then switch to the non-secure
@@ -358,7 +417,7 @@ void arm_gic_initialize(void)
    * distributor.
    */
 
-  putreg32(icddcr, GIC_ICDDCR);
+  //putreg32(0x3, GIC_ICDDCR);
   arm_gic_dump("Exit arm_gic_initialize", true, 0);
 }
 

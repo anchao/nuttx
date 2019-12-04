@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/arm/src/arm7-a/arm_vectortab.S
+ * arch/arm/src/r328/r328_lowputc.h
  *
  *   Copyright (C) 2013 Gregory Nutt. All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
@@ -33,78 +33,58 @@
  *
  ****************************************************************************/
 
+#ifndef __ARCH_ARM_SRC_R328_R328_LOWPUTC_H
+#define __ARCH_ARM_SRC_R328_R328_LOWPUTC_H
+
 /****************************************************************************
  * Included Files
  ****************************************************************************/
 
 #include <nuttx/config.h>
 
-	.file	"arm_vectortab.S"
-
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
 
 /****************************************************************************
- * Public Symbols
- ****************************************************************************/
-
-	.globl		_vector_start
-	.globl		_vector_end
-
-/****************************************************************************
- * Assembly Macros
+ * Public Types
  ****************************************************************************/
 
 /****************************************************************************
- * Name: _vector_start
+ * Public Data
+ ****************************************************************************/
+
+#ifndef __ASSEMBLY__
+
+#if defined(__cplusplus)
+#define EXTERN extern "C"
+extern "C"
+{
+#else
+#define EXTERN extern
+#endif
+
+/****************************************************************************
+ * Public Function Prototypes
+ ****************************************************************************/
+
+/****************************************************************************
+ * Name: r328_lowsetup
  *
  * Description:
- *   Vector initialization block
+ *   Called at the very beginning of _start.  Performs low level
+ *   initialization including setup of the console UART.  This UART done
+ *   early so that the serial console is available for debugging very early
+ *   in the boot sequence.
+ *
  ****************************************************************************/
 
-	.section	.vectors, "ax"
-	.globl		_vector_start
+int uart_putc(char ch);
 
-/* These will be relocated to VECTOR_BASE. */
-.align 8
-_vector_start:
-	ldr		pc, .Lresethandler			/* 0x00: Reset */
-	ldr		pc, .Lundefinedhandler		/* 0x04: Undefined instruction */
-	ldr		pc, .Lsvchandler			/* 0x08: Software interrupt */
-	ldr		pc, .Lprefetchaborthandler	/* 0x0c: Prefetch abort */
-	ldr		pc, .Ldataaborthandler		/* 0x10: Data abort */
-	ldr		pc, .Laddrexcptnhandler		/* 0x14: Address exception (reserved) */
-	ldr		pc, .Lirqhandler			/* 0x18: IRQ */
-	ldr		pc, .Lfiqhandler			/* 0x1c: FIQ */
+#undef EXTERN
+#if defined(__cplusplus)
+}
+#endif
 
-	.globl   __start
-	.globl	arm_vectorundefinsn
-	.globl	arm_vectorsvc
-	.globl	arm_vectorprefetch
-	.globl	arm_vectordata
-	.globl	arm_vectoraddrexcptn
-	.globl	arm_vectorirq
-	.globl	arm_vectorfiq
-
-.Lresethandler:
-	.long	__start
-.Lundefinedhandler:
-	.long	arm_vectorundefinsn
-.Lsvchandler:
-	.long	arm_vectorsvc
-.Lprefetchaborthandler:
-	.long	arm_vectorprefetch
-.Ldataaborthandler:
-	.long	arm_vectordata
-.Laddrexcptnhandler:
-	.long	arm_vectoraddrexcptn
-.Lirqhandler:
-	.long	arm_vectorirq
-.Lfiqhandler:
-	.long	arm_vectorfiq
-
-	.globl	_vector_end
-_vector_end:
-	.size	_vector_start, . - _vector_start
-	.end
+#endif /* __ASSEMBLY__ */
+#endif /* __ARCH_ARM_SRC_R328_R328_LOWPUTC_H */

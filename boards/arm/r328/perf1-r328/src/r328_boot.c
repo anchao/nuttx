@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/arm/src/arm7-a/arm_vectortab.S
+ * boards/arm/r328/perf1-r328/src/r328_boot.c
  *
  *   Copyright (C) 2013 Gregory Nutt. All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
@@ -39,72 +39,49 @@
 
 #include <nuttx/config.h>
 
-	.file	"arm_vectortab.S"
+#include <debug.h>
+
+#include <nuttx/board.h>
+
+#include "perf1_r328.h"
 
 /****************************************************************************
- * Pre-processor Definitions
+ * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Public Symbols
- ****************************************************************************/
-
-	.globl		_vector_start
-	.globl		_vector_end
-
-/****************************************************************************
- * Assembly Macros
- ****************************************************************************/
-
-/****************************************************************************
- * Name: _vector_start
+ * Name: r328_boardinitialize
  *
  * Description:
- *   Vector initialization block
+ *   All r328 architectures must provide the following entry point.  This entry
+ *   point is called early in the initialization -- after all memory has been
+ *   configured and mapped but before any devices have been initialized.
+ *
  ****************************************************************************/
 
-	.section	.vectors, "ax"
-	.globl		_vector_start
+void r328_boardinitialize(void)
+{
+  /* Configure on-board LEDs. */
 
-/* These will be relocated to VECTOR_BASE. */
-.align 8
-_vector_start:
-	ldr		pc, .Lresethandler			/* 0x00: Reset */
-	ldr		pc, .Lundefinedhandler		/* 0x04: Undefined instruction */
-	ldr		pc, .Lsvchandler			/* 0x08: Software interrupt */
-	ldr		pc, .Lprefetchaborthandler	/* 0x0c: Prefetch abort */
-	ldr		pc, .Ldataaborthandler		/* 0x10: Data abort */
-	ldr		pc, .Laddrexcptnhandler		/* 0x14: Address exception (reserved) */
-	ldr		pc, .Lirqhandler			/* 0x18: IRQ */
-	ldr		pc, .Lfiqhandler			/* 0x1c: FIQ */
+  r328_led_initialize();
+}
 
-	.globl   __start
-	.globl	arm_vectorundefinsn
-	.globl	arm_vectorsvc
-	.globl	arm_vectorprefetch
-	.globl	arm_vectordata
-	.globl	arm_vectoraddrexcptn
-	.globl	arm_vectorirq
-	.globl	arm_vectorfiq
+/****************************************************************************
+ * Name: board_late_initialize
+ *
+ * Description:
+ *   If CONFIG_BOARD_LATE_INITIALIZE is selected, then an additional
+ *   initialization call will be performed in the boot-up sequence to a
+ *   function called board_late_initialize().  board_late_initialize() will be
+ *   called immediately after up_initialize() is called and just before the
+ *   initial application is started.  This additional initialization phase
+ *   may be used, for example, to initialize board-specific device drivers.
+ *
+ ****************************************************************************/
 
-.Lresethandler:
-	.long	__start
-.Lundefinedhandler:
-	.long	arm_vectorundefinsn
-.Lsvchandler:
-	.long	arm_vectorsvc
-.Lprefetchaborthandler:
-	.long	arm_vectorprefetch
-.Ldataaborthandler:
-	.long	arm_vectordata
-.Laddrexcptnhandler:
-	.long	arm_vectoraddrexcptn
-.Lirqhandler:
-	.long	arm_vectorirq
-.Lfiqhandler:
-	.long	arm_vectorfiq
-
-	.globl	_vector_end
-_vector_end:
-	.size	_vector_start, . - _vector_start
-	.end
+#ifdef CONFIG_BOARD_LATE_INITIALIZE
+void board_late_initialize(void)
+{
+  r328_bringup();
+}
+#endif /* CONFIG_BOARD_LATE_INITIALIZE */

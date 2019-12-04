@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/arm/src/arm7-a/arm_vectortab.S
+ * boards/arm/r328/perf1-r328/include/board_memorymap.h
  *
  *   Copyright (C) 2013 Gregory Nutt. All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
@@ -33,78 +33,42 @@
  *
  ****************************************************************************/
 
+#ifndef __BOARDS_ARM_R328_PERF1_R328_INCLUDE_BOARD_MEMORYMAP_H
+#define __BOARDS_ARM_R328_PERF1_R328_INCLUDE_BOARD_MEMORYMAP_H
+
 /****************************************************************************
  * Included Files
  ****************************************************************************/
 
 #include <nuttx/config.h>
 
-	.file	"arm_vectortab.S"
-
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
 
 /****************************************************************************
- * Public Symbols
+ * Public Data
  ****************************************************************************/
 
-	.globl		_vector_start
-	.globl		_vector_end
+#ifndef __ASSEMBLY__
+
+#undef EXTERN
+#if defined(__cplusplus)
+#define EXTERN extern "C"
+extern "C"
+{
+#else
+#define EXTERN extern
+#endif
 
 /****************************************************************************
- * Assembly Macros
+ * Public Function Prototypes
  ****************************************************************************/
 
-/****************************************************************************
- * Name: _vector_start
- *
- * Description:
- *   Vector initialization block
- ****************************************************************************/
+#undef EXTERN
+#if defined(__cplusplus)
+}
+#endif
 
-	.section	.vectors, "ax"
-	.globl		_vector_start
-
-/* These will be relocated to VECTOR_BASE. */
-.align 8
-_vector_start:
-	ldr		pc, .Lresethandler			/* 0x00: Reset */
-	ldr		pc, .Lundefinedhandler		/* 0x04: Undefined instruction */
-	ldr		pc, .Lsvchandler			/* 0x08: Software interrupt */
-	ldr		pc, .Lprefetchaborthandler	/* 0x0c: Prefetch abort */
-	ldr		pc, .Ldataaborthandler		/* 0x10: Data abort */
-	ldr		pc, .Laddrexcptnhandler		/* 0x14: Address exception (reserved) */
-	ldr		pc, .Lirqhandler			/* 0x18: IRQ */
-	ldr		pc, .Lfiqhandler			/* 0x1c: FIQ */
-
-	.globl   __start
-	.globl	arm_vectorundefinsn
-	.globl	arm_vectorsvc
-	.globl	arm_vectorprefetch
-	.globl	arm_vectordata
-	.globl	arm_vectoraddrexcptn
-	.globl	arm_vectorirq
-	.globl	arm_vectorfiq
-
-.Lresethandler:
-	.long	__start
-.Lundefinedhandler:
-	.long	arm_vectorundefinsn
-.Lsvchandler:
-	.long	arm_vectorsvc
-.Lprefetchaborthandler:
-	.long	arm_vectorprefetch
-.Ldataaborthandler:
-	.long	arm_vectordata
-.Laddrexcptnhandler:
-	.long	arm_vectoraddrexcptn
-.Lirqhandler:
-	.long	arm_vectorirq
-.Lfiqhandler:
-	.long	arm_vectorfiq
-
-	.globl	_vector_end
-_vector_end:
-	.size	_vector_start, . - _vector_start
-	.end
+#endif /* __ASSEMBLY__ */
+#endif  /* __BOARDS_ARM_r328_PCDUINO_A10_INCLUDE_BOARD_MEMORYMAP_H */

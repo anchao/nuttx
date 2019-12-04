@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/arm/src/arm7-a/arm_vectortab.S
+ * arch/arm/src/a1x/a1x_irq.h
  *
  *   Copyright (C) 2013 Gregory Nutt. All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
@@ -33,78 +33,71 @@
  *
  ****************************************************************************/
 
+#ifndef __ARCH_ARM_SRC_R328_R328_IRQ_H
+#define __ARCH_ARM_SRC_R328_R328_IRQ_H
+
 /****************************************************************************
  * Included Files
  ****************************************************************************/
 
 #include <nuttx/config.h>
-
-	.file	"arm_vectortab.S"
+#include "hardware/r328_intc.h"
 
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
 
-/****************************************************************************
- * Public Symbols
- ****************************************************************************/
+#define SCRTYPE_NTYPES    6
+#define R328_DEFAULT_PRIOR ((INTC_PRIO_MAX-INTC_PRIO_MIN+1) >> 1)
 
-	.globl		_vector_start
-	.globl		_vector_end
+#define INTSTACK_SIZE  (CONFIG_ARCH_INTERRUPTSTACK & ~7)
 
 /****************************************************************************
- * Assembly Macros
+ * Public Types
  ****************************************************************************/
 
 /****************************************************************************
- * Name: _vector_start
- *
- * Description:
- *   Vector initialization block
+ * Inline Functions
  ****************************************************************************/
 
-	.section	.vectors, "ax"
-	.globl		_vector_start
+#ifndef __ASSEMBLY__
 
-/* These will be relocated to VECTOR_BASE. */
-.align 8
-_vector_start:
-	ldr		pc, .Lresethandler			/* 0x00: Reset */
-	ldr		pc, .Lundefinedhandler		/* 0x04: Undefined instruction */
-	ldr		pc, .Lsvchandler			/* 0x08: Software interrupt */
-	ldr		pc, .Lprefetchaborthandler	/* 0x0c: Prefetch abort */
-	ldr		pc, .Ldataaborthandler		/* 0x10: Data abort */
-	ldr		pc, .Laddrexcptnhandler		/* 0x14: Address exception (reserved) */
-	ldr		pc, .Lirqhandler			/* 0x18: IRQ */
-	ldr		pc, .Lfiqhandler			/* 0x1c: FIQ */
+/****************************************************************************
+ * Public Data
+ ****************************************************************************/
 
-	.globl   __start
-	.globl	arm_vectorundefinsn
-	.globl	arm_vectorsvc
-	.globl	arm_vectorprefetch
-	.globl	arm_vectordata
-	.globl	arm_vectoraddrexcptn
-	.globl	arm_vectorirq
-	.globl	arm_vectorfiq
+#undef EXTERN
+#if defined(__cplusplus)
+#define EXTERN extern "C"
+extern "C"
+{
+#else
+#define EXTERN extern
+#endif
 
-.Lresethandler:
-	.long	__start
-.Lundefinedhandler:
-	.long	arm_vectorundefinsn
-.Lsvchandler:
-	.long	arm_vectorsvc
-.Lprefetchaborthandler:
-	.long	arm_vectorprefetch
-.Ldataaborthandler:
-	.long	arm_vectordata
-.Laddrexcptnhandler:
-	.long	arm_vectoraddrexcptn
-.Lirqhandler:
-	.long	arm_vectorirq
-.Lfiqhandler:
-	.long	arm_vectorfiq
+#if defined(CONFIG_SMP) && CONFIG_ARCH_INTERRUPTSTACK > 7
+/* In the SMP configuration, we will need custom IRQ and FIQ stacks.
+ * These definitions provide the aligned stack allocations.
+ */
 
-	.globl	_vector_end
-_vector_end:
-	.size	_vector_start, . - _vector_start
-	.end
+EXTERN uint64_t g_irqstack_alloc[];
+EXTERN uint64_t g_fiqstack_alloc[];
+
+/* These are arrays that point to the top of each interrupt stack */
+
+EXTERN uintptr_t g_irqstack_top[CONFIG_SMP_NCPUS];
+EXTERN uintptr_t g_irqstack_top[CONFIG_SMP_NCPUS];
+
+#endif /* CONFIG_SMP && CONFIG_ARCH_INTERRUPTSTACK > 7 */
+
+/****************************************************************************
+ * Public Function Prototypes
+ ****************************************************************************/
+
+#undef EXTERN
+#if defined(__cplusplus)
+}
+#endif
+
+#endif /* __ASSEMBLY__ */
+#endif /* __ARCH_ARM_SRC_R328_R328_IRQ_H */

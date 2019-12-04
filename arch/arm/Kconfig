@@ -24,6 +24,22 @@ config ARCH_CHIP_A1X
 	---help---
 		Allwinner A1X family: A10, A10S (A12), A13 (ARM Cortex-A8)
 
+config ARCH_CHIP_R328
+	bool "Allwinner R328"
+	select ARCH_CORTEXA7
+	select ARCH_HAVE_FPU
+        select ARMV7A_HAVE_GICv2
+        select ARCH_HAVE_MULTICPU
+        select ARCH_HAVE_TRUSTZONE
+	select ARCH_HAVE_IRQPRIO
+	select ARCH_HAVE_LOWVECTORS
+	select ARCH_HAVE_SDRAM
+	select BOOT_RUNFROMSDRAM
+	select ARCH_HAVE_ADDRENV
+	select ARCH_NEED_ADDRENV_MAPPING
+	---help---
+		Allwinner R328 architectures (Cortex-A7*2)
+
 config ARCH_CHIP_AM335X
 	bool "TI AM335X"
 	select ARCH_CORTEXA8
@@ -658,6 +674,7 @@ config ARCH_FAMILY
 config ARCH_CHIP
 	string
 	default "a1x"		if ARCH_CHIP_A1X
+	default "r328"		if ARCH_CHIP_R328
 	default "am335x"	if ARCH_CHIP_AM335X
 	default "c5471"		if ARCH_CHIP_C5471
 	default "dm320"		if ARCH_CHIP_DM320
@@ -846,6 +863,9 @@ source arch/arm/src/arm/Kconfig
 endif
 if ARCH_CHIP_A1X
 source arch/arm/src/a1x/Kconfig
+endif
+if ARCH_CHIP_R328
+source arch/arm/src/r328/Kconfig
 endif
 if ARCH_CHIP_AM335X
 source arch/arm/src/am335x/Kconfig

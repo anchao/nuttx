@@ -1,7 +1,7 @@
 /****************************************************************************
- * arch/arm/src/arm7-a/arm_vectortab.S
+ * boards/arm/r328/perf1-r328/src/r328_buttons.c
  *
- *   Copyright (C) 2013 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2013-2015, 2017 Gregory Nutt. All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,72 +39,98 @@
 
 #include <nuttx/config.h>
 
-	.file	"arm_vectortab.S"
+#include <stdint.h>
+#include <errno.h>
+
+#include <nuttx/arch.h>
+#include <nuttx/board.h>
+#include <nuttx/irq.h>
+
+#include <nuttx/irq.h>
+#include <arch/board/board.h>
+
+#include "perf1_r328.h"
+
+#ifdef CONFIG_ARCH_BUTTONS
 
 /****************************************************************************
- * Pre-processor Definitions
+ * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Public Symbols
- ****************************************************************************/
-
-	.globl		_vector_start
-	.globl		_vector_end
-
-/****************************************************************************
- * Assembly Macros
- ****************************************************************************/
-
-/****************************************************************************
- * Name: _vector_start
+ * Name: board_button_initialize
  *
  * Description:
- *   Vector initialization block
+ *   board_button_initialize() must be called to initialize button resources.
+ *   After that, board_buttons() may be called to collect the current state
+ *   of all buttons or board_button_irq() may be called to register button
+ *   interrupt handlers.
+ *
  ****************************************************************************/
 
-	.section	.vectors, "ax"
-	.globl		_vector_start
+void board_button_initialize(void)
+{
+# warning Missing logic
+}
 
-/* These will be relocated to VECTOR_BASE. */
-.align 8
-_vector_start:
-	ldr		pc, .Lresethandler			/* 0x00: Reset */
-	ldr		pc, .Lundefinedhandler		/* 0x04: Undefined instruction */
-	ldr		pc, .Lsvchandler			/* 0x08: Software interrupt */
-	ldr		pc, .Lprefetchaborthandler	/* 0x0c: Prefetch abort */
-	ldr		pc, .Ldataaborthandler		/* 0x10: Data abort */
-	ldr		pc, .Laddrexcptnhandler		/* 0x14: Address exception (reserved) */
-	ldr		pc, .Lirqhandler			/* 0x18: IRQ */
-	ldr		pc, .Lfiqhandler			/* 0x1c: FIQ */
+/****************************************************************************
+ * Name: board_buttons
+ *
+ * Description:
+ *   After board_button_initialize() has been called, board_buttons() may be
+ *   called to collect the state of all buttons.  board_buttons() returns an
+ *   32-bit bit set with each bit associated with a button.
+ *   See the BUTTON* definitions above for the meaning of each bit in the
+ *   returned value.
+ *
+ ****************************************************************************/
 
-	.globl   __start
-	.globl	arm_vectorundefinsn
-	.globl	arm_vectorsvc
-	.globl	arm_vectorprefetch
-	.globl	arm_vectordata
-	.globl	arm_vectoraddrexcptn
-	.globl	arm_vectorirq
-	.globl	arm_vectorfiq
+uint32_t board_buttons(void)
+{
+# warning Missing logic
+}
 
-.Lresethandler:
-	.long	__start
-.Lundefinedhandler:
-	.long	arm_vectorundefinsn
-.Lsvchandler:
-	.long	arm_vectorsvc
-.Lprefetchaborthandler:
-	.long	arm_vectorprefetch
-.Ldataaborthandler:
-	.long	arm_vectordata
-.Laddrexcptnhandler:
-	.long	arm_vectoraddrexcptn
-.Lirqhandler:
-	.long	arm_vectorirq
-.Lfiqhandler:
-	.long	arm_vectorfiq
+/****************************************************************************
+ * Name: board_button_irq
+ *
+ * Description:
+ *   This function may be called to register an interrupt handler that will
+ *   be called when a button is depressed or released.  The ID value is one
+ *   of the BUTTON* definitions provided above.
+ *
+ * Configuration Notes:
+ *   Configuration CONFIG_ARCH_IRQBUTTONS must be selected to enable the
+ *   overall GPIO IRQ feature.
+ *
+ ****************************************************************************/
 
-	.globl	_vector_end
-_vector_end:
-	.size	_vector_start, . - _vector_start
-	.end
+#ifdef CONFIG_ARCH_IRQBUTTONS
+int board_button_irq(int id, xcpt_t irqhandler, FAR void *arg)
+{
+  int ret = -EINVAL;
+
+  if (id < BOARD_NBUTTONS)
+    {
+      irqstate_t flags;
+
+      /* Disable interrupts until we are done.  This guarantees that the
+       * following operations are atomic.
+       */
+
+      flags = enter_critical_section();
+
+      /* Configure the interrupt */
+
+      r328_pioirq(xxx);
+      (void)irq_attach(xxx, irqhandler, arg);
+      r328_pioirqenable(xxx);
+      leave_critical_section(flags);
+
+      ret = OK;
+    }
+
+  return ret;
+}
+#endif
+
+#endif /* CONFIG_ARCH_BUTTONS */
