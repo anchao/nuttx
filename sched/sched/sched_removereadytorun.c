@@ -43,6 +43,7 @@
 #include <queue.h>
 #include <assert.h>
 #include <nuttx/sched_note.h>
+#include <nuttx/spinlock.h>
 
 #include "irq/irq.h"
 #include "sched/sched.h"
