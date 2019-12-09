@@ -52,7 +52,7 @@ SECTIONS
     .text :
     {
         _stext = ABSOLUTE(.);
-        KEEP(*(.head))
+/*        KEEP(*(.head)) */
         *(.vectors)
         *(.text .text.*)
         *(.fixup)
