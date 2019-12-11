@@ -133,6 +133,16 @@ config R328_TIMER5
 	bool "Timer 5"
 	default n
 
+config R328_WATCHDOG
+	bool "r328 Watchdog"
+	default n
+	select WATCHDOG
+
+config R328_WDOG_BOOTON
+	depends on R328_WATCHDOG
+	bool "Start watchdog when watchdog is initialized (timeout 16 second)"
+	default n
+
 config R328_IRQ_Alarm
 	bool "Alarm"
 	default n
