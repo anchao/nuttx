@@ -57,6 +57,7 @@
 #define R328_INTMEM_PSECTION  0x00000000  /* Internal memory 0x0002:0000-0x0003:ffff */
 #define R328_CE_PSECTION      0x01900000  /* CE              0x0190:4000-0x0190:4fff */
 #define R328_SYS_PSECTION     0x03000000  /* system          0x0300:0000-0x0302:ffff */
+#define R328_SDHC_PSECTION    0x04000000  /* system          0x0300:0000-0x0302:ffff */
 #define R328_RTC_PSECTION     0x07000000  /* Rtc             0x0700:0000-0x0700:03ff */
 #define R328_STORAGE_PSECTION 0x04000000  /* Storage         0x0401:1000-0x0400:5fff */
 #define R328_PERIPH_PSECTION  0x05000000  /* Peripherals     0x0500:0000-0x0549:ffff */
@@ -197,6 +198,7 @@
  */
 #define R328_INTMEM_SIZE      0X00020000  /* Internal memory 0x0002:0000-0x0003:ffff */
 #define R328_CE_SIZE          0x00001000  /* CE              0x0190:4000-0x0190:4fff */
+#define R328_SDHC_SIZE        0x00100000  /* SDHC            0x0190:4000-0x0190:4fff */
 #define R328_SYS_SIZE         0x00030000  /* system          0x0300:0000-0x0302:ffff */
 #define R328_RTC_SIZE         0x00000400  /* Rtc             0x0700:0000-0x0700:03ff */
 #define R328_STORAGE_SIZE     0x00005000  /* Storage         0x0401:1000-0x0400:5fff */
@@ -231,6 +233,7 @@
 #define R328_INTMEM_NSECTIONS    _NSECTIONS(R328_INTMEM_SIZE)
 #define R328_CE_NSECTIONS        _NSECTIONS(R328_CE_SIZE)
 #define R328_SYS_NSECTIONS       _NSECTIONS(R328_SYS_SIZE)
+#define R328_SDHC_NSECTIONS      _NSECTIONS(R328_SDHC_SIZE)
 #define R328_RTC_NSECTIONS       _NSECTIONS(R328_RTC_SIZE)
 #define R328_STORAGE_NSECTIONS   _NSECTIONS(R328_STORAGE_SIZE)
 #define R328_PERIPH_NSECTIONS    _NSECTIONS(R328_PERIPH_SIZE)
@@ -276,6 +279,7 @@
 #define R328_INTMEM_VSECTION  0x00000000  /* Internal memory 0x0002:0000-0x0003:ffff */
 #define R328_CE_VSECTION      0x01900000  /* CE              0x0190:4000-0x0190:4fff */
 #define R328_SYS_VSECTION     0x03000000  /* system          0x0300:0000-0x0302:ffff */
+#define R328_SDHC_VSECTION    0x04000000  /* system          0x0300:0000-0x0302:ffff */
 #define R328_RTC_VSECTION     0x07000000  /* Rtc             0x0700:0000-0x0700:03ff */
 #define R328_STORAGE_VSECTION 0x04000000  /* Storage         0x0401:1000-0x0400:5fff */
 #define R328_PERIPH_VSECTION  0x05000000  /* Peripherals     0x0500:0000-0x0549:ffff */
