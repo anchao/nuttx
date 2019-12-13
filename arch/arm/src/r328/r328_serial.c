@@ -1016,6 +1016,10 @@ static bool up_rxavailable(struct uart_dev_s *dev)
 static void up_send(struct uart_dev_s *dev, int ch)
 {
   struct up_dev_s *priv = (struct up_dev_s *)dev->priv;
+  if(ch == '\n')
+  {
+      up_serialout(priv, R328_UART_THR_OFFSET, '\r');
+  }
   up_serialout(priv, R328_UART_THR_OFFSET, (uint32_t)ch);
 }
 

@@ -241,41 +241,7 @@ static void r328_vectormapping(void)
 
 static void r328_copyvectorblock(void)
 {
-  uint32_t *src;
-  uint32_t *end;
-  uint32_t *dest;
-
-  /* If we are using re-mapped vectors in an area that has been marked
-   * read only, then temparily mark the mapping write-able (non-buffered).
-   */
-
-#ifdef CONFIG_PAGING
-  r328_vectorpermissions(MMU_L2_VECTRWFLAGS);
-#endif
-
-  /* Copy the vectors into ISRAM at the address that will be mapped to the vector
-   * address:
-   *
-   *   r328_VECTOR_PADDR - Unmapped, physical address of vector table in SRAM
-   *   r328_VECTOR_VSRAM - Virtual address of vector table in SRAM
-   *   r328_VECTOR_VADDR - Virtual address of vector table (0x00000000 or
-   *                      0xffff0000)
-   */
-
-  src  = (uint32_t *)&_vector_start;
-  end  = (uint32_t *)&_vector_end;
-  dest = (uint32_t *)(R328_VECTOR_VSRAM + VECTOR_TABLE_OFFSET);
-
-  while (src < end)
-    {
-      *dest++ = *src++;
-    }
-
-  /* Make the vectors read-only, cacheable again */
-
-#if !defined(CONFIG_ARCH_LOWVECTORS) && defined(CONFIG_PAGING)
-  r328_vectorpermissions(MMU_L2_VECTORFLAGS);
-#endif
+    return;
 }
 
 /****************************************************************************
