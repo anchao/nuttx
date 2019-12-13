@@ -1,0 +1,16 @@
+menu "Efuse Devices"
+
+config DRIVERS_EFUSE
+    bool "enable  efuse device driver"
+        default y
+
+menu "efuse option featuers"
+
+config DRIVERS_EFUSE_FEATURE_1
+    bool "efuse feature 1"
+        select DRIVERS_EFUSE
+        default n
+
+endmenu
+
+endmenu
