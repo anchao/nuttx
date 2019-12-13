@@ -1,0 +1,7 @@
+menu "THERMAL Devices"
+
+config DRIVERS_THERMAL
+    bool "enable thermal device drivers"
+        default n
+
+endmenu
