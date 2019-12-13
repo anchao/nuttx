@@ -268,6 +268,17 @@ static void r328_copyvectorblock(void)
 extern void r328_cpu_enable(void);
 #endif
 
+#ifdef  CONFIG_DRIVERS_CCMU
+//#include <hal_clk.h>
+extern int  hal_clock_init(void);
+
+int r328_clock_init(void)
+{
+	return hal_clock_init();
+}
+#endif
+
+
 #define PROGRESS 
 void arm_boot(void)
 {
@@ -336,6 +347,10 @@ void arm_boot(void)
 
   up_lowputc('E');
 
+#endif
+
+#ifdef CONFIG_DRIVERS_CCMU
+  r328_clock_init();
 #endif
 
   //r328_boardinitialize();
