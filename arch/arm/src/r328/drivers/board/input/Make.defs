@@ -1,0 +1,3 @@
+ifeq ($(CONFIG_DRIVERS_R328_KEYBOARD),y)
+include r328$(DELIM)drivers$(DELIM)board$(DELIM)input$(DELIM)keyboard$(DELIM)Make.defs
+endif

@@ -1,0 +1,8 @@
+menuconfig DRIVERS_INPUT
+	default y
+	bool "input driver"
+
+if DRIVERS_INPUT
+	source arch/arm/src/r328/drivers/board/input/keyboard/Kconfig
+
+endif

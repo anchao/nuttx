@@ -86,7 +86,7 @@
 #define R328_IRQ_PIO        28 /* PIO interrupt */
 #define R328_IRQ_TOUCH      29 /* Touch Panel interrupt */
 #define R328_IRQ_AUDIO      30 /* Analog Audio Codec interrupt */
-#define R328_IRQ_LRADC      31 /* LRADC interrupt */
+#define R328_IRQ_LRADC      82 /* LRADC interrupt */
 #define R328_IRQ_SDMMC0     32 /* SD/MMC Host Controller 0 interrupt */
 #define R328_IRQ_SDMMC1     33 /* SD/MMC Host Controller 1 interrupt */
 #define R328_IRQ_SDMMC2     34 /* SD/MMC Host Controller 2 interrupt */
