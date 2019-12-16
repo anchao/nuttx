@@ -67,7 +67,7 @@
 	.globl		_vector_start
 
 /* These will be relocated to VECTOR_BASE. */
-.align 8
+
 _vector_start:
 	ldr		pc, .Lresethandler			/* 0x00: Reset */
 	ldr		pc, .Lundefinedhandler		/* 0x04: Undefined instruction */

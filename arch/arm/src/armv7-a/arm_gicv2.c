@@ -175,35 +175,10 @@ putreg32(0x3, GIC_ICDDCR);
  *
  ****************************************************************************/
 
-/* GIC CPU INIT */
 void arm_gic_initialize(void)
 {
   uint32_t iccicr;
   uint32_t icddcr;
-
-#if 0
-
-  putreg32(0x0, GIC_ICCICR);
-
-  putreg32(0xffffffff, GIC_ICDISR(0));      /* SGIs and PPIs secure */
-
-  putreg32(0x0000ffff, GIC_ICDISER(0));     /* PPIs disabled */
-  putreg32(0xffff0000, GIC_ICDICER(0));     /* PPIs disabled */
-
-
-  putreg32(0xa0a0a0a0, GIC_ICDIPR(0));      /* SGI[3:0] priority */
-  putreg32(0xa0a0a0a0, GIC_ICDIPR(4));      /* SGI[4:7] priority */
-  putreg32(0xa0a0a0a0, GIC_ICDIPR(8));      /* SGI[8:11] priority */
-  putreg32(0xa0a0a0a0, GIC_ICDIPR(12));     /* SGI[12:15] priority */
-  putreg32(0xa0a0a0a0, GIC_ICDIPR(16));     /* PPI[0] priority */
-  putreg32(0xa0a0a0a0, GIC_ICDIPR(20));     /* PPI[0] priority */
-  putreg32(0xa0a0a0a0, GIC_ICDIPR(24));     /* PPI[0] priority */
-  putreg32(0xa0a0a0a0, GIC_ICDIPR(28));     /* PPI[1:4] priority */
-
-  putreg32(GIC_ICCPMR_MASK, GIC_ICCPMR);
-
-  putreg32(0xf, GIC_ICCICR);
-#endif
 
   arm_gic_dump("Entry arm_gic_initialize", true, 0);
 

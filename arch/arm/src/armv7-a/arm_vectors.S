@@ -157,6 +157,7 @@ arm_vectorirq:
 	/* On entry, we are in IRQ mode.  We are free to use the IRQ mode r13
 	 * and r14.
 	 */
+
 	ldr		r13, .Lirqtmp
 	sub		lr, lr, #4
 	str		lr, [r13]				/* Save lr_IRQ */
@@ -925,6 +926,7 @@ arm_vectorundefinsn:
 arm_vectorfiq:
 #ifdef CONFIG_ARMV7A_DECODEFIQ
 	/* On entry we are free to use the FIQ mode registers r8 through r14 */
+
 	ldr		r13, .Lfiqtmp			/* Points to temp storage */
 	sub		lr, lr, #4				/* Fixup return */
 	str		lr, [r13]				/* Save in temp storage */
@@ -1068,7 +1070,7 @@ arm_vectorfiq:
  *  Name: g_intstackalloc/g_intstackbase
  ************************************************************************************/
 
-#if CONFIG_ARCH_INTERRUPTSTACK > 7
+#if !defined(CONFIG_SMP) && CONFIG_ARCH_INTERRUPTSTACK > 7
 	.bss
 	.align	4
 
