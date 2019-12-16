@@ -48,9 +48,6 @@
 
 #include <nuttx/sched.h>
 
-#ifdef CONFIG_SMP
-#include <nuttx/spinlock.h>
-#endif
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
