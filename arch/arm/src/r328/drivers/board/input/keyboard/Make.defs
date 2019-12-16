@@ -7,3 +7,14 @@ DEPPATH += --dep-path drivers$(DELIM)board$(DELIM)input$(DELIM)keyboard
 VPATH += :chip$(DELIM)drivers$(DELIM)board$(DELIM)input$(DELIM)keyboard
 
 endif
+
+ifeq ($(CONFIG_DRIVERS_R328_GPADC_KEY),y)
+
+CHIP_CSRCS += drivers/board/input/keyboard/r328_gpadc_key.c
+# Include build support
+
+DEPPATH += --dep-path drivers$(DELIM)board$(DELIM)input$(DELIM)keyboard
+VPATH += :chip$(DELIM)drivers$(DELIM)board$(DELIM)input$(DELIM)keyboard
+
+endif
+

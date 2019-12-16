@@ -37,7 +37,7 @@
 #include <nuttx/arch.h>
 #include <debug.h>
 #include <interrupt.h>
-#include "./r328_lradc.h"
+#include "r328_lradc.h"
 
 lradc_func_data lradc_priv;
 

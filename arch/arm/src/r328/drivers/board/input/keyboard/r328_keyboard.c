@@ -7,7 +7,7 @@
 #include <string.h>
 //#include "hal_lradc.h"
 //#include "sunxi-input.h"
-#include "../../../../include/drivers/hal_lradc.h"
+#include <hal_lradc.h>
 #include "r328_keyboard.h"
 
 //#ifdef	SUNXIKBD_DEBUG

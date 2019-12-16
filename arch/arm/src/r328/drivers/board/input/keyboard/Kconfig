@@ -8,4 +8,7 @@ config DRIVERS_R328_KEYBOARD
 	bool "enable lradc keyboard driver"
 	default n
 
+config DRIVERS_R328_GPADC_KEY
+	bool "enable gpadc keyboard driver"
+	default n
 endif

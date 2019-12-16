@@ -32,16 +32,16 @@
 #
 ############################################################################
 
-# Include EFUSE support
+# Include GPADC support
 
-ifeq ($(CONFIG_DRIVERS_LRADC),y)
+ifeq ($(CONFIG_DRIVERS_GPADC),y)
 
-CHIP_CSRCS += drivers/chip-src/lradc/r328_lradc.c
+CHIP_CSRCS += drivers/chip-src/gpadc/r328_gpadc.c
 
 # Include build support
 
-DEPPATH += --dep-path drivers$(DELIM)chip-src$(DELIM)lradc
-VPATH += :chip$(DELIM)drivers$(DELIM)chip-src$(DELIM)lradc
+DEPPATH += --dep-path drivers$(DELIM)chip-src$(DELIM)gpadc
+VPATH += :chip$(DELIM)drivers$(DELIM)chip-src$(DELIM)gpadc
 
 endif
 
