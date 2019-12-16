@@ -37,6 +37,7 @@ config ARCH_CHIP_R328
 	select BOOT_RUNFROMSDRAM
 	select ARCH_HAVE_ADDRENV
 	select ARCH_NEED_ADDRENV_MAPPING
+	select GIC_NOT_SUPPORT_DEACTIVATION
 	---help---
 		Allwinner R328 architectures (Cortex-A7*2)
 

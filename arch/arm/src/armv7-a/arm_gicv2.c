@@ -261,7 +261,9 @@ void arm_gic_initialize(void)
    iccicr |= GIC_ICCICRS_CBPR;
 #endif
 
+#if !defined(CONFIG_GIC_NOT_SUPPORT_DEACTIVATION)
 #if defined(CONFIG_ARCH_TRUSTZONE_SECURE) || defined(CONFIG_ARCH_TRUSTZONE_BOTH)
+
   /* Set EnableS=1 to enable CPU interface to signal secure interrupts.
    *
    * NOTE:  Only for processors that operate in secure state.
@@ -286,6 +288,7 @@ void arm_gic_initialize(void)
 
   iccicr |= GIC_ICCICRU_EOIMODENS;
 #endif
+#endif /* !defined(CONFIG_GIC_NOT_SUPPORT_DEACTIVATION) */
 
  #ifdef CONFIG_ARCH_TRUSTZONE_BOTH
   /* If the processor operates in both security states and SBPR=0, then it
@@ -404,6 +407,10 @@ uint32_t *arm_decodeirq(uint32_t *regs)
   /* Write to the end-of-interrupt register */
 
   putreg32(regval, GIC_ICCEOIR);
+#if !defined(CONFIG_GIC_NOT_SUPPORT_DEACTIVATION)
+  putreg32(regval, GIC_ICCDIR);
+#endif
+
   return regs;
 }
 
