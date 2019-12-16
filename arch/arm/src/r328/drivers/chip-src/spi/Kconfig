@@ -1,0 +1,30 @@
+menu "SPI Devices"
+
+config DRIVERS_SPI
+    bool "SPI support"
+    select SCHED_WORKQUEUE
+    select SCHED_HPWORK
+    select SCHED_LPWORK
+    default y
+
+if DRIVERS_SPI
+
+config SUNXI_SPI0
+    bool "enable spi0"
+    default y
+
+config SUNXI_SPI1
+    bool "enable spi1"
+    default n
+
+config SUNXI_SPI2
+    bool "enable spi2"
+    default n
+
+config DRIVERS_SPI_TEST
+    bool "spi test"
+    default n
+
+endif
+
+endmenu
