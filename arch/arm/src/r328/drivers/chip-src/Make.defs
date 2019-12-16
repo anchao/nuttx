@@ -83,6 +83,10 @@ ifeq ($(CONFIG_DRIVERS_SPINOR),y)
 include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)spinor$(DELIM)Make.defs
 endif
 
+ifeq ($(CONFIG_DRIVERS_CE),y)
+include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)ce$(DELIM)Make.defs
+endif
+
 ifeq ($(CONFIG_DRIVERS_USB_UDC),y)
 include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)usb$(DELIM)Make.defs
 endif

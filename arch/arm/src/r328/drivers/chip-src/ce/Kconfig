@@ -1,0 +1,13 @@
+menuconfig DRIVERS_CE
+	bool "sunxi crypto engine driver"
+	default n
+	---help---
+		Support sunxi crypto engine.
+
+if DRIVERS_CE
+
+config DRIVERS_CE_TEST
+	bool "CryptoEngine test"
+	default n
+
+endif

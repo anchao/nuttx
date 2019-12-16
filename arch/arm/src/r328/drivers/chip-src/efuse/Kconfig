@@ -6,8 +6,8 @@ config DRIVERS_EFUSE
 
 menu "efuse option featuers"
 
-config DRIVERS_EFUSE_FEATURE_1
-    bool "efuse feature 1"
+config DRIVERS_EFUSE_TEST
+    bool "efuse test"
         select DRIVERS_EFUSE
         default n
 

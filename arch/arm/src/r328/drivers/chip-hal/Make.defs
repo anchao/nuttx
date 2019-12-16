@@ -54,6 +54,17 @@ ifeq ($(CONFIG_DRIVERS_EFUSE),y)
 CHIP_CSRCS+=drivers$(DELIM)chip-hal$(DELIM)hal_efuse.c
 CFLAGS+=${shell $(INCDIR) $(INCDIROPT) "$(CC)" \
 	$(ARCH_SRC)$(DELIM)$(CONFIG_ARCH_CHIP)$(DELIM)drivers$(DELIM)chip-src$(DELIM)efuse }
+
+ifeq ($(CONFIG_DRIVERS_EFUSE_TEST),y)
+CHIP_CSRCS += drivers/chip-hal/efuse_test.c
+endif
+endif
+
+ifeq ($(CONFIG_DRIVERS_CE),y)
+CHIP_CSRCS += drivers/chip-hal/hal_aes.c
+ifeq ($(CONFIG_DRIVERS_CE_TEST),y)
+CHIP_CSRCS += drivers/chip-hal/ce_test.c
+endif
 endif
 
 ifeq ($(CONFIG_DRIVERS_THERMAL),y)

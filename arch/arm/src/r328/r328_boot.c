@@ -112,6 +112,9 @@ static const struct section_mapping_s section_mapping[] =
   { R328_RTC_PSECTION,     R328_RTC_VSECTION,  /* Includes vectors and page table */
     R328_RTC_MMUFLAGS,     R328_RTC_NSECTIONS
   },
+  { R328_CE_PSECTION,    R328_CE_VSECTION,  /* Includes vectors and page table */
+    R328_CE_MMUFLAGS,     R328_CE_NSECTIONS
+  },
   { R328_PERIPH_PSECTION,  R328_PERIPH_VSECTION,
     R328_PERIPH_MMUFLAGS,  R328_PERIPH_NSECTIONS
   },

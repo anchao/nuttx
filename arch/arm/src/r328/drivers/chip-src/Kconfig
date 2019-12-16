@@ -4,6 +4,7 @@ source arch/arm/src/r328/drivers/chip-src/efuse/Kconfig
 source arch/arm/src/r328/drivers/chip-src/thermal/Kconfig
 source arch/arm/src/r328/drivers/chip-src/pwm/Kconfig
 source arch/arm/src/r328/drivers/chip-src/spi/Kconfig
+source arch/arm/src/r328/drivers/chip-src/ce/Kconfig
 source arch/arm/src/r328/drivers/chip-src/dma/Kconfig
 source arch/arm/src/r328/drivers/chip-src/gpio/Kconfig
 source arch/arm/src/r328/drivers/chip-src/lradc/Kconfig
