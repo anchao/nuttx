@@ -1,0 +1,12 @@
+menu "DMA Devices"
+
+config DRIVERS_DMA
+    bool "enable dma device drivers"
+        default y
+
+
+config DRIVERS_DMA_TEST
+    bool "dma test"
+    default n
+
+endmenu
