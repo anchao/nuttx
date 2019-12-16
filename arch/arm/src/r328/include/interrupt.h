@@ -92,15 +92,15 @@
 
 #define GIC_SPI_PRIO(_n)	(GIC_DIST_BASE + 0x420 + 4 * (_n))
 #define GIC_SPI_PRIO0		GIC_SPI_PRIO(0 )	// 0x420
-#define GIC_SPI_PRIO1 		GIC_SPI_PRIO(1 )    // 0x424
-#define GIC_SPI_PRIO2 		GIC_SPI_PRIO(2 )    // 0x428
-#define GIC_SPI_PRIO3 		GIC_SPI_PRIO(3 )    // 0x42C
-#define GIC_SPI_PRIO4 		GIC_SPI_PRIO(4 )    // 0x430
-#define GIC_SPI_PRIO5 		GIC_SPI_PRIO(5 )    // 0x434
-#define GIC_SPI_PRIO6 		GIC_SPI_PRIO(6 )    // 0x438
-#define GIC_SPI_PRIO7 		GIC_SPI_PRIO(7 )    // 0x43C
-#define GIC_SPI_PRIO8 		GIC_SPI_PRIO(8 )    // 0x440
-#define GIC_SPI_PRIO9 		GIC_SPI_PRIO(9 )    // 0x444
+#define GIC_SPI_PRIO1		GIC_SPI_PRIO(1 )    // 0x424
+#define GIC_SPI_PRIO2		GIC_SPI_PRIO(2 )    // 0x428
+#define GIC_SPI_PRIO3		GIC_SPI_PRIO(3 )    // 0x42C
+#define GIC_SPI_PRIO4		GIC_SPI_PRIO(4 )    // 0x430
+#define GIC_SPI_PRIO5		GIC_SPI_PRIO(5 )    // 0x434
+#define GIC_SPI_PRIO6		GIC_SPI_PRIO(6 )    // 0x438
+#define GIC_SPI_PRIO7		GIC_SPI_PRIO(7 )    // 0x43C
+#define GIC_SPI_PRIO8		GIC_SPI_PRIO(8 )    // 0x440
+#define GIC_SPI_PRIO9		GIC_SPI_PRIO(9 )    // 0x444
 #define GIC_SPI_PRIO10		GIC_SPI_PRIO(10)    // 0x448
 #define GIC_SPI_PRIO11		GIC_SPI_PRIO(11)    // 0x44C
 #define GIC_SPI_PRIO12		GIC_SPI_PRIO(12)    // 0x450
@@ -137,16 +137,16 @@
 #define GIC_PPI_PROC_TARG3		GIC_PPI_PROC_TARG(3)    // 0x81C
 
 #define GIC_SPI_PROC_TARG(_n)	(GIC_DIST_BASE + 0x820 + 4 * (_n))
-#define GIC_SPI_PROC_TARG0 		GIC_SPI_PROC_TARG(0 )	// 0x820
-#define GIC_SPI_PROC_TARG1 		GIC_SPI_PROC_TARG(1 )   // 0x824
-#define GIC_SPI_PROC_TARG2 		GIC_SPI_PROC_TARG(2 )   // 0x828
-#define GIC_SPI_PROC_TARG3 		GIC_SPI_PROC_TARG(3 )   // 0x82C
-#define GIC_SPI_PROC_TARG4 		GIC_SPI_PROC_TARG(4 )   // 0x830
-#define GIC_SPI_PROC_TARG5 		GIC_SPI_PROC_TARG(5 )   // 0x834
-#define GIC_SPI_PROC_TARG6 		GIC_SPI_PROC_TARG(6 )   // 0x838
-#define GIC_SPI_PROC_TARG7 		GIC_SPI_PROC_TARG(7 )   // 0x83C
-#define GIC_SPI_PROC_TARG8 		GIC_SPI_PROC_TARG(8 )   // 0x840
-#define GIC_SPI_PROC_TARG9 		GIC_SPI_PROC_TARG(9 )   // 0x844
+#define GIC_SPI_PROC_TARG0		GIC_SPI_PROC_TARG(0 )	// 0x820
+#define GIC_SPI_PROC_TARG1		GIC_SPI_PROC_TARG(1 )   // 0x824
+#define GIC_SPI_PROC_TARG2		GIC_SPI_PROC_TARG(2 )   // 0x828
+#define GIC_SPI_PROC_TARG3		GIC_SPI_PROC_TARG(3 )   // 0x82C
+#define GIC_SPI_PROC_TARG4		GIC_SPI_PROC_TARG(4 )   // 0x830
+#define GIC_SPI_PROC_TARG5		GIC_SPI_PROC_TARG(5 )   // 0x834
+#define GIC_SPI_PROC_TARG6		GIC_SPI_PROC_TARG(6 )   // 0x838
+#define GIC_SPI_PROC_TARG7		GIC_SPI_PROC_TARG(7 )   // 0x83C
+#define GIC_SPI_PROC_TARG8		GIC_SPI_PROC_TARG(8 )   // 0x840
+#define GIC_SPI_PROC_TARG9		GIC_SPI_PROC_TARG(9 )   // 0x844
 #define GIC_SPI_PROC_TARG10		GIC_SPI_PROC_TARG(10)   // 0x848
 #define GIC_SPI_PROC_TARG11		GIC_SPI_PROC_TARG(11)   // 0x84C
 #define GIC_SPI_PROC_TARG12		GIC_SPI_PROC_TARG(12)   // 0x850
@@ -172,23 +172,23 @@
 
 #define GIC_IRQ_MOD_CFG(_n)		(GIC_DIST_BASE + 0xc00 + 4 * (_n))
 #define GIC_IRQ_MOD_CFG0		GIC_IRQ_MOD_CFG(0)		// 0xc00 - SGI
-#define GIC_IRQ_MOD_CFG1		GIC_IRQ_MOD_CFG(1)  	// 0xc04 - PPI
-#define GIC_IRQ_MOD_CFG2		GIC_IRQ_MOD_CFG(2)  	// 0xc08 - SPI0 ~ 15
-#define GIC_IRQ_MOD_CFG3		GIC_IRQ_MOD_CFG(3)  	// 0xc0C - SPI16 ~ 31 
-#define GIC_IRQ_MOD_CFG4		GIC_IRQ_MOD_CFG(4)  	// 0xc10 - SPI32 ~ 47 
-#define GIC_IRQ_MOD_CFG5		GIC_IRQ_MOD_CFG(5)  	// 0xc14 - SPI48 ~ 63 
-#define GIC_IRQ_MOD_CFG6		GIC_IRQ_MOD_CFG(6)  	// 0xc18 - SPI64 ~ 79 
-#define GIC_IRQ_MOD_CFG7		GIC_IRQ_MOD_CFG(7)  	// 0xc1C - SPI80 ~ 95 
-#define GIC_IRQ_MOD_CFG8		GIC_IRQ_MOD_CFG(8)  	// 0xc20 - SPI96 ~ 111
-#define GIC_IRQ_MOD_CFG9		GIC_IRQ_MOD_CFG(9)  	// 0xc24 - SPI112 ~ 127
+#define GIC_IRQ_MOD_CFG1		GIC_IRQ_MOD_CFG(1)	// 0xc04 - PPI
+#define GIC_IRQ_MOD_CFG2		GIC_IRQ_MOD_CFG(2)	// 0xc08 - SPI0 ~ 15
+#define GIC_IRQ_MOD_CFG3		GIC_IRQ_MOD_CFG(3)	// 0xc0C - SPI16 ~ 31
+#define GIC_IRQ_MOD_CFG4		GIC_IRQ_MOD_CFG(4)	// 0xc10 - SPI32 ~ 47
+#define GIC_IRQ_MOD_CFG5		GIC_IRQ_MOD_CFG(5)	// 0xc14 - SPI48 ~ 63
+#define GIC_IRQ_MOD_CFG6		GIC_IRQ_MOD_CFG(6)	// 0xc18 - SPI64 ~ 79
+#define GIC_IRQ_MOD_CFG7		GIC_IRQ_MOD_CFG(7)	// 0xc1C - SPI80 ~ 95
+#define GIC_IRQ_MOD_CFG8		GIC_IRQ_MOD_CFG(8)	// 0xc20 - SPI96 ~ 111
+#define GIC_IRQ_MOD_CFG9		GIC_IRQ_MOD_CFG(9)	// 0xc24 - SPI112 ~ 127
 
 #define GIC_SOFT_IRQ_GEN		(GIC_DIST_BASE + 0xf00)	// 0xf00
-#define GIC_SGI_PEND_CLR(_n)	(GIC_DIST_BASE + 0xf10 + 4 * (_n))
+#define GIC_SGI_PEND_CLR(_n)		(GIC_DIST_BASE + 0xf10 + 4 * (_n))
 #define GIC_SGI_PEND_CLR0		GIC_SGI_PEND_CLR(0)		// 0xf10
 #define GIC_SGI_PEND_CLR1		GIC_SGI_PEND_CLR(1)		// 0xf14
 #define GIC_SGI_PEND_CLR2		GIC_SGI_PEND_CLR(2)		// 0xf18
 #define GIC_SGI_PEND_CLR3		GIC_SGI_PEND_CLR(3)		// 0xf1C
-#define GIC_SGI_PEND_SET(_n)	(GIC_DIST_BASE + 0xf20 + 4 * (_n))
+#define GIC_SGI_PEND_SET(_n)		(GIC_DIST_BASE + 0xf20 + 4 * (_n))
 #define GIC_SGI_PEND_SET0		GIC_SGI_PEND_SET(0)		// 0xf20
 #define GIC_SGI_PEND_SET1		GIC_SGI_PEND_SET(1)		// 0xf24
 #define GIC_SGI_PEND_SET2		GIC_SGI_PEND_SET(2)		// 0xf28
@@ -209,7 +209,7 @@
 /* software generated interrupt */
 #define GIC_SRC_SGI(_n)		(_n)
 #define GIC_SRC_SGI0		GIC_SRC_SGI(0 )  // (0 )
-#define GIC_SRC_SGI1        GIC_SRC_SGI(1 )  // (1 )
+#define GIC_SRC_SGI1		GIC_SRC_SGI(1 )  // (1 )
 #define GIC_SRC_SGI2        GIC_SRC_SGI(2 )  // (2 )
 #define GIC_SRC_SGI3        GIC_SRC_SGI(3 )  // (3 )
 #define GIC_SRC_SGI4        GIC_SRC_SGI(4 )  // (4 )
@@ -250,105 +250,105 @@
 #define GIC_SRC_UART0		GIC_SRC_SPI(0  ) // (32)
 #define GIC_SRC_UART1		GIC_SRC_SPI(1  ) // (33)
 #define GIC_SRC_UART2       GIC_SRC_SPI(2  ) // (34)
-//#define        			GIC_SRC_SPI(3  ) // (35)
-//#define        			GIC_SRC_SPI(4  ) // (36)
-//#define        			GIC_SRC_SPI(5  ) // (37)
+//#define			GIC_SRC_SPI(3  ) // (35)
+//#define			GIC_SRC_SPI(4  ) // (36)
+//#define			GIC_SRC_SPI(5  ) // (37)
 #define GIC_SRC_TWI0        GIC_SRC_SPI(6  ) // (38)
 #define GIC_SRC_TWI1        GIC_SRC_SPI(7  ) // (39)
-//#define         			GIC_SRC_SPI(8  ) // (40)
-//#define         			GIC_SRC_SPI(9  ) // (41)
-//#define 					GIC_SRC_SPI(10 ) // (42)
-//#define       			GIC_SRC_SPI(11 ) // (43)
-//#define 					GIC_SRC_SPI(12 ) // (44)
-#define GIC_SRC_IIS	    	GIC_SRC_SPI(13 ) // (45)
-//#define 					GIC_SRC_SPI(14 ) // (46)
-#define GIC_SRC_PBEINT    	GIC_SRC_SPI(15 ) // (47)
-//#define 					GIC_SRC_SPI(16 ) // (48)
+//#define			GIC_SRC_SPI(8  ) // (40)
+//#define			GIC_SRC_SPI(9  ) // (41)
+//#define					GIC_SRC_SPI(10 ) // (42)
+//#define			GIC_SRC_SPI(11 ) // (43)
+//#define					GIC_SRC_SPI(12 ) // (44)
+#define GIC_SRC_IIS		GIC_SRC_SPI(13 ) // (45)
+//#define					GIC_SRC_SPI(14 ) // (46)
+#define GIC_SRC_PBEINT	GIC_SRC_SPI(15 ) // (47)
+//#define					GIC_SRC_SPI(16 ) // (48)
 #define GIC_SRC_PGEINT      GIC_SRC_SPI(17 ) // (49)
 #define GIC_SRC_TIMER0      GIC_SRC_SPI(18 ) // (50)
 #define GIC_SRC_TIMER1      GIC_SRC_SPI(19 ) // (51)
 #define GIC_SRC_TIMER2		GIC_SRC_SPI(20 ) // (52)
-//#define 					GIC_SRC_SPI(21 ) // (53)
-//#define 					GIC_SRC_SPI(22 ) // (54)
-//#define 					GIC_SRC_SPI(23 ) // (55)
-//#define 					GIC_SRC_SPI(24 ) // (56)
+//#define					GIC_SRC_SPI(21 ) // (53)
+//#define					GIC_SRC_SPI(22 ) // (54)
+//#define					GIC_SRC_SPI(23 ) // (55)
+//#define					GIC_SRC_SPI(24 ) // (56)
 #define GIC_SRC_WATCHDOG	GIC_SRC_SPI(25 ) // (57)
 //#define				    GIC_SRC_SPI(26 ) // (58)
-//#define     				GIC_SRC_SPI(27 ) // (59)
-//#define           		GIC_SRC_SPI(28 ) // (60)
+//#define				GIC_SRC_SPI(27 ) // (59)
+//#define		GIC_SRC_SPI(28 ) // (60)
 #define GIC_SRC_CODEC		GIC_SRC_SPI(29 ) // (61)
 #define GIC_SRC_KEYADC      GIC_SRC_SPI(30 ) // (62)
-//#define       			GIC_SRC_SPI(31 ) // (63)
+//#define			GIC_SRC_SPI(31 ) // (63)
 #define GIC_SRC_NMI         GIC_SRC_SPI(32 ) // (64)
-//#define      				GIC_SRC_SPI(33 ) // (65)
-//#define      				GIC_SRC_SPI(34 ) // (66)
-//#define 				    GIC_SRC_SPI(35 ) // (67)
-//#define    				GIC_SRC_SPI(36 ) // (68)
-//#define      				GIC_SRC_SPI(37 ) // (69)
-//#define        			GIC_SRC_SPI(38 ) // (70)
-//#define         			GIC_SRC_SPI(39 ) // (71)
-#define GIC_SRC_ALM0    	GIC_SRC_SPI(40 ) // (72)
-#define GIC_SRC_ALM1     	GIC_SRC_SPI(41 ) // (73)
-//#define      				GIC_SRC_SPI(42 ) // (74)
-//#define       			GIC_SRC_SPI(43 ) // (75)
-//#define         			GIC_SRC_SPI(44 ) // (76)
-//#define      				GIC_SRC_SPI(45 ) // (77)
-//#define         			GIC_SRC_SPI(46 ) // (78)
-//#define 	   				GIC_SRC_SPI(47 ) // (79)
-//#define 					GIC_SRC_SPI(48 ) // (80)
-//#define         			GIC_SRC_SPI(49 ) // (81)
+//#define				GIC_SRC_SPI(33 ) // (65)
+//#define				GIC_SRC_SPI(34 ) // (66)
+//#define				    GIC_SRC_SPI(35 ) // (67)
+//#define				GIC_SRC_SPI(36 ) // (68)
+//#define				GIC_SRC_SPI(37 ) // (69)
+//#define			GIC_SRC_SPI(38 ) // (70)
+//#define			GIC_SRC_SPI(39 ) // (71)
+#define GIC_SRC_ALM0	GIC_SRC_SPI(40 ) // (72)
+#define GIC_SRC_ALM1	GIC_SRC_SPI(41 ) // (73)
+//#define				GIC_SRC_SPI(42 ) // (74)
+//#define			GIC_SRC_SPI(43 ) // (75)
+//#define			GIC_SRC_SPI(44 ) // (76)
+//#define				GIC_SRC_SPI(45 ) // (77)
+//#define			GIC_SRC_SPI(46 ) // (78)
+//#define				GIC_SRC_SPI(47 ) // (79)
+//#define					GIC_SRC_SPI(48 ) // (80)
+//#define			GIC_SRC_SPI(49 ) // (81)
 #define GIC_SRC_DMA         GIC_SRC_SPI(50 ) // (82)
 #define GIC_SRC_HSTMR0      GIC_SRC_SPI(51 ) // (83)
 #define GIC_SRC_HSTMR1      GIC_SRC_SPI(52 ) // (84)
-//#define       			GIC_SRC_SPI(53 ) // (85)
-//#define       			GIC_SRC_SPI(54 ) // (86)
-//#define       			GIC_SRC_SPI(55 ) // (87)
-//#define        			GIC_SRC_SPI(56 ) // (88)
-//#define        			GIC_SRC_SPI(57 ) // (89)
+//#define			GIC_SRC_SPI(53 ) // (85)
+//#define			GIC_SRC_SPI(54 ) // (86)
+//#define			GIC_SRC_SPI(55 ) // (87)
+//#define			GIC_SRC_SPI(56 ) // (88)
+//#define			GIC_SRC_SPI(57 ) // (89)
 #define GIC_SRC_VE          GIC_SRC_SPI(58 ) // (90)
-//#define       			GIC_SRC_SPI(59 ) // (91)
+//#define			GIC_SRC_SPI(59 ) // (91)
 #define GIC_SRC_MMC0        GIC_SRC_SPI(60 ) // (92)
 #define GIC_SRC_MMC1        GIC_SRC_SPI(74 ) // (93)
 #define GIC_SRC_MMC2        GIC_SRC_SPI(62 ) // (94)
-//#define         			GIC_SRC_SPI(63 ) // (95)
-//#define         			GIC_SRC_SPI(63 ) // (96)
+//#define			GIC_SRC_SPI(63 ) // (95)
+//#define			GIC_SRC_SPI(63 ) // (96)
 #define GIC_SRC_SPI0        GIC_SRC_SPI(65 ) // (97 )
-//#define         			GIC_SRC_SPI(66 ) // (98 )
-//#define         			GIC_SRC_SPI(67 ) // (99 )
-//#define         			GIC_SRC_SPI(68 ) // (100)
-//#define        			GIC_SRC_SPI(69 ) // (101)
-//#define         			GIC_SRC_SPI(70 ) // (102)
+//#define			GIC_SRC_SPI(66 ) // (98 )
+//#define			GIC_SRC_SPI(67 ) // (99 )
+//#define			GIC_SRC_SPI(68 ) // (100)
+//#define			GIC_SRC_SPI(69 ) // (101)
+//#define			GIC_SRC_SPI(70 ) // (102)
 #define GIC_SRC_USBOTG      GIC_SRC_SPI(71 ) // (103)
-#define GIC_SRC_USBEHCI  	GIC_SRC_SPI(72 ) // (104)
-#define GIC_SRC_USBOHCI  	GIC_SRC_SPI(73 ) // (105)
-//#define     				GIC_SRC_SPI(74 ) // (106)
-//#define     				GIC_SRC_SPI(75 ) // (107)
-//#define    				GIC_SRC_SPI(76 ) // (108)
-//#define     				GIC_SRC_SPI(77 ) // (109)
-//#define     				GIC_SRC_SPI(78 ) // (110)
-//#define     				GIC_SRC_SPI(79 ) // (111)
-#define GIC_SRC_SS         	GIC_SRC_SPI(80 ) // (112)
-//#define           		GIC_SRC_SPI(81 ) // (113)
-//#define        			GIC_SRC_SPI(82 ) // (114)
+#define GIC_SRC_USBEHCI	GIC_SRC_SPI(72 ) // (104)
+#define GIC_SRC_USBOHCI	GIC_SRC_SPI(73 ) // (105)
+//#define				GIC_SRC_SPI(74 ) // (106)
+//#define				GIC_SRC_SPI(75 ) // (107)
+//#define				GIC_SRC_SPI(76 ) // (108)
+//#define				GIC_SRC_SPI(77 ) // (109)
+//#define				GIC_SRC_SPI(78 ) // (110)
+//#define				GIC_SRC_SPI(79 ) // (111)
+#define GIC_SRC_SS	GIC_SRC_SPI(80 ) // (112)
+//#define		GIC_SRC_SPI(81 ) // (113)
+//#define			GIC_SRC_SPI(82 ) // (114)
 #define GIC_SRC_CSI0		GIC_SRC_SPI(83 ) // (115)
 #define GIC_SRC_CSI1        GIC_SRC_SPI(84 ) // (116)
 #define GIC_SRC_CSICCI		GIC_SRC_SPI(85 ) // (117)
 #define GIC_SRC_LCD         GIC_SRC_SPI(86 ) // (118)
-//#define         			GIC_SRC_SPI(87 ) // (119)
-//#define       			GIC_SRC_SPI(88 ) // (120)
-//#define      				GIC_SRC_SPI(89 ) // (121)
-#define GIC_SRC_MIPICSI    	GIC_SRC_SPI(90 ) // (122)
-//#define        			GIC_SRC_SPI(91 ) // (123)
-//#define        			GIC_SRC_SPI(92 ) // (124)
-//#define          			GIC_SRC_SPI(93 ) // (125)
-//#define        			GIC_SRC_SPI(94 ) // (126)
+//#define			GIC_SRC_SPI(87 ) // (119)
+//#define			GIC_SRC_SPI(88 ) // (120)
+//#define				GIC_SRC_SPI(89 ) // (121)
+#define GIC_SRC_MIPICSI	GIC_SRC_SPI(90 ) // (122)
+//#define			GIC_SRC_SPI(91 ) // (123)
+//#define			GIC_SRC_SPI(92 ) // (124)
+//#define			GIC_SRC_SPI(93 ) // (125)
+//#define			GIC_SRC_SPI(94 ) // (126)
 #define GIC_SRC_DE          GIC_SRC_SPI(95 ) // (127)
 //#define                   GIC_SRC_SPI(96 ) // (128)
 
 #define GIC_IRQ_NUM			140
 
 #else	//fpga irq mapping
-#define GIC_SRC_NMI         GIC_SRC_SPI(0) 	// (32)
+#define GIC_SRC_NMI         GIC_SRC_SPI(0)	// (32)
 #define GIC_SRC_UART0		GIC_SRC_SPI(1)	// (33)
 #define GIC_SRC_TWI0        GIC_SRC_SPI(2)	// (34)
 #define GIC_SRC_TWI1        GIC_SRC_SPI(2)	// (34)
@@ -358,14 +358,14 @@
 #define GIC_SRC_PGEINT      GIC_SRC_SPI(3)	// (35)
 #define GIC_SRC_IIS0        GIC_SRC_SPI(4)  // (36)
 #define GIC_SRC_IIS1        GIC_SRC_SPI(4)  // (36)
-#define GIC_SRC_CSI        	GIC_SRC_SPI(5)  // (37)
+#define GIC_SRC_CSI	GIC_SRC_SPI(5)  // (37)
 #define GIC_SRC_TIMER0      GIC_SRC_SPI(6)  // (38)
 #define GIC_SRC_TIMER1      GIC_SRC_SPI(6)  // (38)
-#define GIC_SRC_WATCHDOG   	GIC_SRC_SPI(6)  // (38)
+#define GIC_SRC_WATCHDOG	GIC_SRC_SPI(6)  // (38)
 #define GIC_SRC_DMA         GIC_SRC_SPI(7)  // (39)
-#define GIC_SRC_LCD   		GIC_SRC_SPI(8)  // (40)
-#define GIC_SRC_RTIMER0     GIC_SRC_SPI(9)  // (41)	
-#define GIC_SRC_RTIMER1     GIC_SRC_SPI(9)  // (41)	
+#define GIC_SRC_LCD		GIC_SRC_SPI(8)  // (40)
+#define GIC_SRC_RTIMER0     GIC_SRC_SPI(9)  // (41)
+#define GIC_SRC_RTIMER1     GIC_SRC_SPI(9)  // (41)
 #define GIC_SRC_RWATCHDOG   GIC_SRC_SPI(9)  // (41)
 #define GIC_SRC_MBOX        GIC_SRC_SPI(9)  // (41)
 #define GIC_SRC_HSTMR0      GIC_SRC_SPI(10) // (42)
@@ -377,8 +377,8 @@
 #define GIC_SRC_SPI1        GIC_SRC_SPI(12) // (44)
 #define GIC_SRC_NAND        GIC_SRC_SPI(13) // (45)
 #define GIC_SRC_RUART       GIC_SRC_SPI(14) // (46)
-#define GIC_SRC_RSB    		GIC_SRC_SPI(14) // (46)
-#define GIC_SRC_RTWI    	GIC_SRC_SPI(14) // (46)
+#define GIC_SRC_RSB		GIC_SRC_SPI(14) // (46)
+#define GIC_SRC_RTWI	GIC_SRC_SPI(14) // (46)
 #define GIC_SRC_RALARM0     GIC_SRC_SPI(15) // (47)
 #define GIC_SRC_RALARM1     GIC_SRC_SPI(15) // (47)
 #define GIC_SRC_VE          GIC_SRC_SPI(16) // (48)

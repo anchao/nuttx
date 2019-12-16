@@ -48,7 +48,7 @@
 #include <arch/irq.h>
 #include <nuttx/irq.h>
 
-#include "r328_pio.h"
+//#include "r328_pio.h"
 
 /****************************************************************************
  * Pre-processor Definitions

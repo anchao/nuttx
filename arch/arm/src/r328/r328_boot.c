@@ -55,6 +55,7 @@
 
 #include "r328_lowputc.h"
 #include "r328_boot.h"
+#include "hal_gpio.h"
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -278,8 +279,14 @@ int r328_clock_init(void)
 }
 #endif
 
+extern hal_gpio_status_t hal_gpio_init(void);
+int r328_gpio_init(void)
+{
+	up_lowputc('H');
+	return hal_gpio_init();
+}
 
-#define PROGRESS 
+#define PROGRESS
 void arm_boot(void)
 {
 #ifndef CONFIG_ARCH_ROMPGTABLE
@@ -367,4 +374,7 @@ void board_late_initialize(void)
 extern int sunxi_soundcard_init(void);
 	sunxi_soundcard_init();
 #endif
+
+  r328_gpio_init();
+  up_lowputc('#');
 }

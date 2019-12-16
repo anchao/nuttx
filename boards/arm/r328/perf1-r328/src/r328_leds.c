@@ -101,9 +101,9 @@
 
 void r328_led_initialize(void)
 {
-  r328_pio_config(PIO_LED1);
-  r328_pio_config(PIO_LED3);
-  r328_pio_config(PIO_LED4);
+//  r328_pio_config(PIO_LED1);
+//  r328_pio_config(PIO_LED3);
+//  r328_pio_config(PIO_LED4);
 }
 
 /****************************************************************************
