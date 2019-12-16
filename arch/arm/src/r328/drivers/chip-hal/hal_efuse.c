@@ -7,8 +7,9 @@
 
 #include <hal_efuse.h>
 #include <efuse_i.h>
+#if 0
 #include <private_rtos.h>
-
+#endif
 
 #define readl(addr)         (*((volatile unsigned long  *)(addr)))
 #define writel(v, addr)     (*((volatile unsigned long  *)(addr)) = (unsigned long)(v))
@@ -83,11 +84,12 @@ int hal_efuse_write(char *key_name, unsigned char *key_data, size_t key_bit_len)
 			EFUSE_DBG("rotpk size MUST be 32 Bytes(256 bits)\n");
 			return EFUSE_ERR_INVALID_ROTPK;
 		}
-
+#if 0
 		if (memcmp(rtos_spare_head.rotpk_hash, key_data, 32)) {
 			EFUSE_DBG("rotpk don't match current firmware\n");
 			return EFUSE_ERR_INVALID_ROTPK;
 		}
+#endif
 	}
 
 	niddle = key_map->offset;
