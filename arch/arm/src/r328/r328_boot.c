@@ -355,3 +355,16 @@ void arm_boot(void)
 
   //r328_boardinitialize();
 }
+
+void board_early_initialize(void)
+{
+
+}
+
+void board_late_initialize(void)
+{
+#ifdef CONFIG_DRIVERS_SOUND
+extern int sunxi_soundcard_init(void);
+	sunxi_soundcard_init();
+#endif
+}
