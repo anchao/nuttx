@@ -523,10 +523,6 @@
 #define GIC_ICDSGIR_INTID_MASK        (0x3ff << GIC_ICDSGIR_INTID_SHIFT)
 #  define GIC_ICDSGIR_INTID(n)        ((uint32_t)(n) << GIC_ICDSGIR_INTID_SHIFT)
                                              /* Bits 10-15: Reserved */
-
-#define GIC_ICDSGIR_NSATT_SHIFT       (15)   /* Bits 15:    NSATT config */
-#define GIC_ICDSGIR_NSATT_MASK        (0x1 << GIC_ICDSGIR_NSATT_SHIFT)
-
 #define GIC_ICDSGIR_CPUTARGET_SHIFT   (16)   /* Bits 16-23: CPU target */
 #define GIC_ICDSGIR_CPUTARGET_MASK    (0xff << GIC_ICDSGIR_CPUTARGET_SHIFT)
 #  define GIC_ICDSGIR_CPUTARGET(n)    ((uint32_t)(n) << GIC_ICDSGIR_CPUTARGET_SHIFT)
@@ -648,13 +644,14 @@ static inline unsigned int arm_gic_nlines(void)
  *   OK is always returned at present.
  *
  ****************************************************************************/
+
 static inline int arm_cpu_sgi(int sgi, unsigned int cpuset)
 {
   uint32_t regval;
 
 #ifdef CONFIG_SMP
   regval = GIC_ICDSGIR_INTID(sgi) |  GIC_ICDSGIR_CPUTARGET(cpuset) |
-           GIC_ICDSGIR_TGTFILTER_LIST | GIC_ICDSGIR_NSATT_MASK;
+           GIC_ICDSGIR_TGTFILTER_LIST;
 #else
   regval = GIC_ICDSGIR_INTID(sgi) |  GIC_ICDSGIR_CPUTARGET(0) |
            GIC_ICDSGIR_TGTFILTER_THIS;
