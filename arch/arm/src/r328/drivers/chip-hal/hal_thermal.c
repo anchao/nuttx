@@ -3,6 +3,7 @@
  * frank@allwinnertech.com
  */
 
+#include "./r328/drivers/chip-src/thermal/thermal.h"
 #include <hal_thermal.h>
 
 hal_thermal_status_t hal_thermal_init(void)

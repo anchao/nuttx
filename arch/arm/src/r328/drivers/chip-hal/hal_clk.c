@@ -29,7 +29,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <./r328/drivers/chip-src/ccmu/clk.h>
+#include <clk.h>
 #include <hal_clk.h>
 
 

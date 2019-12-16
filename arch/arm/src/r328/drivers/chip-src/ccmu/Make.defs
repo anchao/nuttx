@@ -1,5 +1,4 @@
 ############################################################################
-# drivers/eeprom/Make.defs
 #
 #   Copyright (C) 2014 Gregory Nutt. All rights reserved.
 #   Author: Gregory Nutt <gnutt@nuttx.org>
@@ -12,7 +11,7 @@
 #    notice, this list of conditions and the following disclaimer.
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in
-#    the documentation and/or other materials provided with the
+#    the documentation and$(DELIM)or other materials provided with the
 #    distribution.
 # 3. Neither the name NuttX nor the names of its contributors may be
 #    used to endorse or promote products derived from this software
@@ -33,25 +32,34 @@
 #
 ############################################################################
 
-# Include CCMU support
+# Include module support
 
 ifeq ($(CONFIG_DRIVERS_CCMU),y)
-
-# Include the clk module.
-CHIP_CSRCS += drivers/chip-src/ccmu/clk.c
-CHIP_CSRCS += drivers/chip-src/ccmu/clk_periph.c
-CHIP_CSRCS += drivers/chip-src/ccmu/clk_factors.c
-CHIP_CSRCS += drivers/chip-src/ccmu/clk_sun8iw18p1.c
-
-# Include platform's ccmu table.
+# Include platform's table.
 
 
 
 # Include build support
 
-DEPPATH += --dep-path drivers$(DELIM)chip-src$(DELIM)/ccmu
-VPATH += :chip$(DELIM)drivers$(DELIM)chip-src$(DELIM)ccmu
-#FLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(TOPDIR)$(DELIM)drivers$(DELIM)ccmu}
+DEPPATH+=--dep-path drivers$(DELIM)chip-src$(DELIM)ccmu
+VPATH+=:chip$(DELIM)drivers$(DELIM)chip-src$(DELIM)ccmu
+
+ARCH_SRC:=$(TOPDIR)$(DELIM)arch$(DELIM)$(CONFIG_ARCH)$(DELIM)src
+ARCH_INC:=$(TOPDIR)$(DELIM)arch$(DELIM)$(CONFIG_ARCH)$(DELIM)include
+ARCH_CUR_SRC_PATH:=$(ARCH_SRC)$(DELIM)$(CONFIG_ARCH_CHIP)$(DELIM)drivers$(DELIM)chip-src$(DELIM)ccmu
+
+
+CFLAGS+=${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(ARCH_CUR_SRC_PATH)}
+
+#$(info ccmu "CFLAGS:" $(CFLAGS))
+
+# Include the  module.
+CHIP_CSRCS+=drivers$(DELIM)chip-src$(DELIM)ccmu$(DELIM)clk.c
+CHIP_CSRCS+=drivers$(DELIM)chip-src$(DELIM)ccmu$(DELIM)clk_periph.c
+CHIP_CSRCS+=drivers$(DELIM)chip-src$(DELIM)ccmu$(DELIM)clk_factors.c
+CHIP_CSRCS+=drivers$(DELIM)chip-src$(DELIM)ccmu$(DELIM)clk_sun8iw18p1.c
+
+#$(info ccmu "CSRCS:" $(CHIP_CSRCS))
 
 endif
 

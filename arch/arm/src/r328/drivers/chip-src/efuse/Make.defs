@@ -11,7 +11,7 @@
 #    notice, this list of conditions and the following disclaimer.
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in
-#    the documentation and/or other materials provided with the
+#    the documentation and$(DELIM)or other materials provided with the
 #    distribution.
 # 3. Neither the name NuttX nor the names of its contributors may be
 #    used to endorse or promote products derived from this software
@@ -36,15 +36,24 @@
 
 ifeq ($(CONFIG_DRIVERS_EFUSE),y)
 
-CHIP_CSRCS += drivers/chip-src/efuse/efuse.c
-
-
 
 # Include build support
 
-DEPPATH += --dep-path drivers$(DELIM)chip-src$(DELIM)efuse
-VPATH += :chip$(DELIM)drivers$(DELIM)chip-src$(DELIM)efuse
-#FLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(TOPDIR)$(DELIM)drivers$(DELIM)ccmu}
+DEPPATH+=--dep-path drivers$(DELIM)chip-src$(DELIM)efuse
+VPATH+=:chip$(DELIM)drivers$(DELIM)chip-src$(DELIM)efuse
+
+ARCH_SRC:=$(TOPDIR)$(DELIM)arch$(DELIM)$(CONFIG_ARCH)$(DELIM)src
+ARCH_INC:=$(TOPDIR)$(DELIM)arch$(DELIM)$(CONFIG_ARCH)$(DELIM)include
+ARCH_CUR_SRC_PATH:=$(ARCH_SRC)$(DELIM)$(CONFIG_ARCH_CHIP)$(DELIM)drivers$(DELIM)chip-src$(DELIM)efuse
+
+
+CFLAGS+=${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(ARCH_CUR_SRC_PATH)}
+#$(info efuse "CFLAGS:" $(CFLAGS))
+
+# Include the  module.
+CHIP_CSRCS+=drivers$(DELIM)chip-src$(DELIM)efuse$(DELIM)efuse.c
+#$(info efuse "CSRCS:" $(CHIP_CSRCS))
+
 
 endif
 

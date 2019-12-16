@@ -34,7 +34,7 @@
 #include "hal_gpio.h"
 #include "hal_clk.h"
 //#include "../../../include/drivers/hal_pwm.h"
-#include "../../chip-src/pwm/pwm.h"
+#include "pwm.h"
 
 hal_pwm_status_t hal_pwm_init(void)
 {
