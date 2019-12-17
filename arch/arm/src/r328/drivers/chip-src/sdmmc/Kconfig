@@ -1,0 +1,34 @@
+menu "SDMMC Devices"
+
+config DRIVERS_SDMMC
+    bool "enable SDMMC drivers"
+        default n
+
+if DRIVERS_SDMMC
+
+config USE_SD
+	bool "enable SD"
+	default y
+
+config USE_SDIO
+	bool "enable SDIO"
+	default y
+
+config USE_MMC
+	bool "enable mmc"
+	default n
+
+config DETECT_CARD
+    bool "enable detect card"
+    default y
+
+config SDC_DMA_USED
+	bool "enable dma transmission"
+	default n
+
+config SDIO_IRQ
+	bool "enable sdio irq"
+	default n
+
+endif
+endmenu

@@ -1,0 +1,12 @@
+ifeq ($(CONFIG_DRIVERS_SDMMC),y)
+
+CHIP_CSRCS += drivers/chip-src/sdmmc/core.c
+CHIP_CSRCS += drivers/chip-src/sdmmc/hal_sdhost.c
+CHIP_CSRCS += drivers/chip-src/sdmmc/mmc.c
+CHIP_CSRCS += drivers/chip-src/sdmmc/osal_sdmmc.c
+CHIP_CSRCS += drivers/chip-src/sdmmc/quirks.c
+CHIP_CSRCS += drivers/chip-src/sdmmc/sd.c
+CHIP_CSRCS += drivers/chip-src/sdmmc/sdio.c
+CHIP_CSRCS += drivers/chip-src/sdmmc/sdio_irq.c
+
+endif
