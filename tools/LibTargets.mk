@@ -142,6 +142,20 @@ $(ARCH_SRC)$(DELIM)libarch$(LIBEXT): context
 staging$(DELIM)libarch$(LIBEXT): $(ARCH_SRC)$(DELIM)libarch$(LIBEXT)
 	$(Q) $(call INSTALL_LIB,$<,$@)
 
+LIB_AW_ALSA_LIB_DIR=$(ARCH_SRC)$(DELIM)r328$(DELIM)components$(DELIM)aw$(DELIM)sound$(DELIM)aw-alsa-lib
+$(LIB_AW_ALSA_LIB_DIR)$(DELIM)libaw-alsa-lib$(LIBEXT): context
+	$(Q) $(MAKE) -C $(LIB_AW_ALSA_LIB_DIR) TOPDIR="$(TOPDIR)" libaw-alsa-lib$(LIBEXT) KERNEL=y EXTRADEFINES=$(KDEFINE)
+
+staging$(DELIM)libaw-alsa-lib$(LIBEXT): $(LIB_AW_ALSA_LIB_DIR)$(DELIM)libaw-alsa-lib$(LIBEXT)
+	$(Q) $(call INSTALL_LIB,$<,$@)
+
+LIB_AW_SOUND_CORE_DIR=$(ARCH_SRC)$(DELIM)r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)sound$(DELIM)core
+$(LIB_AW_SOUND_CORE_DIR)$(DELIM)libaw-sound-core$(LIBEXT): context
+	$(Q) $(MAKE) -C $(LIB_AW_SOUND_CORE_DIR) TOPDIR="$(TOPDIR)" libaw-sound-core$(LIBEXT) KERNEL=y EXTRADEFINES=$(KDEFINE)
+
+staging$(DELIM)libaw-sound-core$(LIBEXT): $(LIB_AW_SOUND_CORE_DIR)$(DELIM)libaw-sound-core$(LIBEXT)
+	$(Q) $(call INSTALL_LIB,$<,$@)
+
 libs$(DELIM)libdsp$(DELIM)libdsp$(LIBEXT): context
 	$(Q) $(MAKE) -C libs$(DELIM)libdsp TOPDIR="$(TOPDIR)" libdsp$(LIBEXT) KERNEL=y EXTRADEFINES=$(KDEFINE)
 
