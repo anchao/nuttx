@@ -2,6 +2,6 @@ menu "I2C Devices"
 
 config DRIVERS_I2C
     bool "enable i2c device driver"
-        default y
+        default n
 
 endmenu

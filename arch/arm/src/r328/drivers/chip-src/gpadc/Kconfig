@@ -2,6 +2,6 @@ menu "Gpadc Devices"
 
 config DRIVERS_GPADC
     bool "enable  gpadc device driver"
-        default y
+        default n
 
 endmenu

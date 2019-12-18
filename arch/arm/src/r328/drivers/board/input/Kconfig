@@ -1,5 +1,5 @@
 menuconfig DRIVERS_INPUT
-	default y
+	default n
 	bool "input driver"
 
 if DRIVERS_INPUT
