@@ -140,7 +140,8 @@
 #define R328_IRQ_GPU_RSV4   78
 #define R328_IRQ_GPU_RSV5   79
 #define R328_IRQ_GPU_RSV6   80
-
+#define SUNXI_IRQ_TWI0     102 /* 102 twi0 interrupt */
+#define SUNXI_IRQ_TWI1     103 /* 103 twi1 interrupt */
 /* Total number of interrupts */
 
 #define R328_IRQ_NINT       320
