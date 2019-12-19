@@ -1,6 +1,6 @@
 ############################################################################
 #
-#   Copyright (C) 2019 Gregory Nutt. All rights reserved.
+#   Copyright (C) 2014 Gregory Nutt. All rights reserved.
 #   Author: Gregory Nutt <gnutt@nuttx.org>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,57 +32,8 @@
 #
 ############################################################################
 
-
-ifeq ($(CONFIG_DRIVERS_SOUND),y)
-include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)sound$(DELIM)Make.defs
-endif
-
-ifeq ($(CONFIG_DRIVERS_CCMU),y)
-include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)ccmu$(DELIM)Make.defs
-endif
-
-ifeq ($(CONFIG_DRIVERS_EFUSE),y)
-include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)efuse$(DELIM)Make.defs
-endif
-
-ifeq ($(CONFIG_DRIVERS_PWM),y)
-include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)pwm$(DELIM)Make.defs
-endif
-
-ifeq ($(CONFIG_DRIVERS_DMA),y)
-include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)dma$(DELIM)Make.defs
-endif
-
-ifeq ($(CONFIG_DRIVERS_SPI),y)
-include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)spi$(DELIM)Make.defs
-endif
-
-ifeq ($(CONFIG_DRIVERS_THERMAL),y)
-include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)thermal$(DELIM)Make.defs
-endif
-
-include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)gpio$(DELIM)Make.defs
-
-ifeq ($(CONFIG_DRIVERS_LRADC),y)
-include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)lradc$(DELIM)Make.defs
-endif
-
-ifeq ($(CONFIG_DRIVERS_GPADC),y)
-include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)gpadc$(DELIM)Make.defs
-endif
-
-ifeq ($(CONFIG_DRIVERS_I2C),y)
-include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)i2c$(DELIM)Make.defs
-endif
-
-ifeq ($(CONFIG_DRIVERS_SDMMC),y)
-include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)sdmmc$(DELIM)Make.defs
-endif
-
 ifeq ($(CONFIG_DRIVERS_SPINOR),y)
-include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)spinor$(DELIM)Make.defs
-endif
 
-ifeq ($(CONFIG_DRIVERS_USB_UDC),y)
-include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)usb$(DELIM)Make.defs
+CHIP_CSRCS += drivers/chip-src/spinor/spinor.c
+
 endif

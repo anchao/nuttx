@@ -390,6 +390,10 @@ CONFIG_DRIVERS_GPIO=y
 #
 # CONFIG_DRIVERS_SDMMC is not set
 
+# SPINOR Devices
+#
+CONFIG_DRIVERS_SPINOR=y
+
 #
 # board related device drivers
 #
@@ -752,7 +756,42 @@ CONFIG_DRVR_MKRD=y
 # CONFIG_ARCH_HAVE_SDIO_DELAYED_INVLDT is not set
 # CONFIG_MMCSD is not set
 # CONFIG_MODEM is not set
-# CONFIG_MTD is not set
+CONFIG_MTD=y
+
+#
+# MTD Configuration
+#
+CONFIG_MTD_PARTITION=y
+# CONFIG_MTD_SECT512 is not set
+CONFIG_MTD_BYTE_WRITE=y
+# CONFIG_MTD_PROGMEM is not set
+# CONFIG_MTD_CONFIG is not set
+
+#
+# MTD Device Drivers
+#
+# CONFIG_MTD_NAND is not set
+# CONFIG_RAMMTD is not set
+# CONFIG_FILEMTD is not set
+# CONFIG_MTD_AT24XX is not set
+# CONFIG_MTD_AT25 is not set
+# CONFIG_MTD_AT45DB is not set
+# CONFIG_MTD_IS25XP is not set
+# CONFIG_MTD_M25P is not set
+# CONFIG_MTD_MX25L is not set
+# CONFIG_MTD_MX35 is not set
+# CONFIG_MTD_S25FL1 is not set
+# CONFIG_MTD_N25QXXX is not set
+# CONFIG_MTD_MX25RXX is not set
+# CONFIG_MTD_SMART is not set
+# CONFIG_MTD_RAMTRON is not set
+# CONFIG_MTD_SST25 is not set
+# CONFIG_MTD_SST25XX is not set
+# CONFIG_MTD_SST26 is not set
+# CONFIG_MTD_SST39FV is not set
+# CONFIG_MTD_W25 is not set
+# CONFIG_MTD_GD25 is not set
+# CONFIG_MTD_GD5F is not set
 # CONFIG_EEPROM is not set
 # CONFIG_PIPES is not set
 # CONFIG_PM is not set
@@ -919,7 +958,7 @@ CONFIG_FAT_LFN_ALIAS_TRAILCHARS=0
 # CONFIG_FS_BINFS is not set
 # CONFIG_FS_PROCFS is not set
 # CONFIG_FS_SPIFFS is not set
-# CONFIG_FS_LITTLEFS is not set
+CONFIG_FS_LITTLEFS=y
 # CONFIG_FS_UNIONFS is not set
 # CONFIG_FS_HOSTFS is not set
 
@@ -1176,6 +1215,7 @@ CONFIG_EXAMPLES_HELLO_STACKSIZE=2048
 # CONFIG_EXAMPLES_MODBUS is not set
 # CONFIG_EXAMPLES_MODBUSMASTER is not set
 # CONFIG_EXAMPLES_MOUNT is not set
+# CONFIG_EXAMPLES_MTDPART is not set
 # CONFIG_EXAMPLES_NULL is not set
 # CONFIG_EXAMPLES_NXDEMO is not set
 # CONFIG_EXAMPLES_OBD2 is not set
@@ -1208,6 +1248,7 @@ CONFIG_EXAMPLES_HELLO_STACKSIZE=2048
 #
 # File System Utilities
 #
+# CONFIG_FSUTILS_FLASH_ERASEALL is not set
 # CONFIG_FSUTILS_INIFILE is not set
 # CONFIG_FSUTILS_INIH is not set
 CONFIG_FSUTILS_MKFATFS=y
@@ -1379,6 +1420,7 @@ CONFIG_HAVE_CXXINITIALIZE=y
 # CONFIG_SYSTEM_CLE is not set
 # CONFIG_SYSTEM_CUTERM is not set
 # CONFIG_SYSTEM_EMBEDLOG is not set
+# CONFIG_SYSTEM_FLASH_ERASEALL is not set
 # CONFIG_SYSTEM_HEX2BIN is not set
 # CONFIG_SYSTEM_HEXED is not set
 CONFIG_SYSTEM_NSH=y

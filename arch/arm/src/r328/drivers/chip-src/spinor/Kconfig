@@ -1,0 +1,7 @@
+menu "SPINOR Devices"
+
+config DRIVERS_SPINOR
+    bool "enable spinor device drivers"
+        default y
+
+endmenu

@@ -378,4 +378,9 @@ void board_late_initialize(void)
 extern int sunxi_soundcard_init(void);
 	sunxi_soundcard_init();
 #endif
+
+#ifdef CONFIG_DRIVERS_SPINOR
+    int sunxi_driver_spinor_init(void);
+    sunxi_driver_spinor_init();
+#endif
 }

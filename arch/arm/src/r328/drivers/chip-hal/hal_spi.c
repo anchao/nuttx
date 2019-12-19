@@ -1814,7 +1814,8 @@ static spi_master_status_t sunxi_spi_async(hal_spi_master_port_t port,
     memcpy(tr, transfer, sizeof(hal_spi_master_transfer_t));
 
     list_add_tail(&tr->node, &sspi->queue);
-    work_queue(LPWORK, sspi->work, sunxi_spi_workqueue, sspi, 0);
+    /* work_queue(LPWORK, sspi->work, sunxi_spi_workqueue, sspi, 0); */
+    sunxi_spi_workqueue(sspi);
 
     return SPI_MASTER_OK;
 }
@@ -1829,7 +1830,8 @@ static spi_master_status_t sunxi_spi_sync(hal_spi_master_port_t port,
     memcpy(tr, transfer, sizeof(hal_spi_master_transfer_t));
 
     list_add_tail(&tr->node, &sspi->queue);
-    work_queue(LPWORK, sspi->work, sunxi_spi_workqueue, sspi, 0);
+    /* work_queue(LPWORK, sspi->work, sunxi_spi_workqueue, sspi, 0);*/
+    sunxi_spi_workqueue(sspi);
     if (sem_wait(&sspi->complete) < 0)
 	    return SPI_MASTER_ERROR;
 

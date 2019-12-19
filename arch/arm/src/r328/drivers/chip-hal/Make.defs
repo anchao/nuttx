@@ -82,7 +82,11 @@ ifeq ($(CONFIG_DRIVERS_I2C),y)
 CHIP_CSRCS += drivers/chip-hal/hal_i2c.c
 endif
 
+ifeq ($(CONFIG_DRIVERS_SPINOR),y)
+CHIP_CSRCS += drivers/chip-hal/spinor/hal_spinor.c
+CHIP_CSRCS += drivers/chip-hal/spinor/gptpart/part_efi.c
+endif
+
 ifeq ($(CONFIG_DRIVERS_USB_UDC),y)
 CHIP_CSRCS += drivers/chip-hal/hal_udc.c
 endif
-
