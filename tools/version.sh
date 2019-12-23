@@ -86,7 +86,14 @@ done
 OUTFILE=$1
 
 if [ -z ${VERSION} ] ; then
-	VERSION=`git tag --sort=taggerdate | tail -1 | cut -d'-' -f2`
+        GIT_CUR_VERSION=`git --version | cut -d' ' -f3`
+        GIT_REQ_VERSION="2.17.1"
+        if [ "$(printf '%s\n' "$GIT_REQ_VERSION" "$GIT_CUR_VERSION" | sort -V | head -n1)" == "$GIT_REQ_VERSION" ]; then
+	        VERSION=`git tag --sort=taggerdate | tail -1 | cut -d'-' -f2`
+        else
+                VERSION=`git for-each-ref --format="%(refname)" --sort=-taggerdate --count=1 refs/tags | tail -1 | cut -d'-' -f2`
+        fi
+
 fi
 
 # Make sure we know what is going on
