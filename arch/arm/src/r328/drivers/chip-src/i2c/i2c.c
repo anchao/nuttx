@@ -30,17 +30,9 @@
 * OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-//#include <io.h>
 #include <stdio.h>
-//#include <awlog.h>
-//#include <semphr.h>
 #include <semaphore.h>
 #include <interrupt.h>
-//#include <unistd.h>
-//#include <stddef.h>
-//#include <aw_common.h>
-//#include <arch/mach/sun8i/irqs-sun8iw18p1.h>
-//#include <arch/mach/sun8i/platform-sun8iw18p1.h>
 #include <nuttx/nuttx.h>
 #include <nuttx/arch.h>
 #include <nuttx/irq.h>
@@ -52,7 +44,6 @@
 #include <hal_clk.h>
 #include <hal_gpio.h>
 #include "i2c.h"
-//#include "freertos_to_aos.h"
 
 //#define DEBUG
 #ifdef DEBUG
@@ -64,7 +55,7 @@
 #ifdef DEBUG
 #define I2C_ERR(fmt, arg...) printf("%s()%d "fmt, __func__, __LINE__, ##arg)
 #else
-#define I2C_ERR(fmt, arg...) sinfo(":%d "fmt, __LINE__, ##arg);
+#define I2C_ERR(fmt, arg...) sinfo(":%d "fmt, __LINE__, ##arg)
 #endif
 
 #define I2C_SEM_MAX_COUNT 0xFFFFFFFFUL
@@ -129,7 +120,7 @@ typedef struct sunxi_i2c {
 
 	uint8_t			twi_drv_used;
 	uint8_t			pkt_interval;
-	struct i2c_master_s	*dev;
+	struct i2c_master_s	*dev_s;
 //	struct sunxi_i2c_dma	*dma_tx;
 //	struct sunxi_i2c_dma	*dma_rx;
 //	struct sunxi_i2c_dma	*dma_using;
@@ -1740,35 +1731,65 @@ static int sunxi_i2c_hw_init(sunxi_i2c_t *i2c)
 
 	return 0;
 }
+
+sunxi_i2c_t i2c_xfer;
 static int sunxi_i2c_transfer(FAR struct i2c_master_s *dev,
-		FAR struct i2c_msg_s *msgs, int count)
+		FAR struct i2c_msg_s *msg_s, int count)
 {
 	int ret = -1;
+	i2c_msg_t msg_t[2];
 
-	i2c_msg_t msg;
-#if 1
-	msg.addr=msgs->addr;
-	msg.flags=msgs->flags;
-	msg.buf =msgs->buffer;
-	msg.len =msgs->length;
-#else
-	msg->addr=msgs->addr;
-	msg->flags=msgs->flags;
-	msg->buf =msgs->buffer;
-	msg->len =msgs->length;
-#endif
-	sunxi_i2c_t *i2c = container_of(dev, struct sunxi_i2c, dev);
+	msg_t[0].addr  = msg_s[0].addr;
+	msg_t[0].flags = msg_s[0].flags;
+	msg_t[0].buf   = msg_s[0].buffer;
+	msg_t[0].len   = msg_s[0].length;
 
-	ret = sunxi_i2c_xfer(i2c->port, &msg, count);
+	if (count == 2) {
+		msg_t[1].addr  = msg_s[1].addr;
+		msg_t[1].flags = msg_s[1].flags;
+		msg_t[1].buf   = msg_s[1].buffer;
+		msg_t[1].len   = msg_s[1].length;
+	}
+	I2C_ERR("count:%d\n",count);
+	I2C_ERR("msg_s---addr:%d    flags:%d    len:%d\n",\
+			msg_s[0].addr,msg_s[0].flags,msg_s[0].length);
+	I2C_ERR("msg_t---addr:%d    flags:%d    len:%d\n",\
+			msg_t[0].addr,msg_t[0].flags,msg_t[0].len);
+	/*
+	sunxi_i2c_t *i2c = container_of(dev, struct sunxi_i2c, dev_s);
+	if (i2c == NULL) {
+		I2C_ERR("container_of failed\n");
+		return SUNXI_I2C_FAIL;
+	}*/
+	ret = sunxi_i2c_xfer(i2c_xfer.port, msg_t, count);
+
 	if (ret != 0) {
 		I2C_ERR("transfer xfer failed\n");
-		return -1;
+		return SUNXI_I2C_FAIL;
 	}
-	return 0;
+	else
+		I2C_INFO("ioctl transfer xfer success\n");
+	return SUNXI_I2C_OK;
 }
+
+#ifdef CONFIG_I2C_RESET
+static int sunxi_i2c_reset(FAR struct i2c_master_s *dev)
+{
+	sunxi_i2c_t *i2c = &g_sunxi_i2c[i2c_xfer.port];
+	const uint32_t base_addr = i2c->base_addr;
+	//I2C_ERR("base_addr:%d i2c->base_addr:%d\n",base_addr,i2c->base_addr);
+	uint32_t reg_val = readl(i2c->base_addr + TWI_SRST_REG);
+	reg_val |= TWI_SRST_SRST;
+	writel(reg_val, i2c->base_addr + TWI_SRST_REG);
+	return SUNXI_I2C_OK;
+}
+#endif
 
 struct i2c_ops_s sunxi_i2c_ops = {
 	.transfer = sunxi_i2c_transfer,
+#ifdef CONFIG_I2C_RESET
+	.reset = sunxi_i2c_reset,
+#endif
 };
 
 struct i2c_master_s sunxi_i2c_master = {
@@ -1781,6 +1802,7 @@ hal_i2c_status_t sunxi_i2c_init(hal_i2c_config_t *i2c_config)
 	sunxi_i2c_t *i2c = &g_sunxi_i2c[i2c_config->port];
 
 	i2c->port = i2c_config->port;
+	i2c_xfer.port = i2c_config->port;
 	i2c->freq = g_i2c_frequency[i2c_config->freq];
 	i2c->twi_drv_used = i2c_config->trans_mode == HAL_TWI_DRV_XFER ? 1 : 0;
 	i2c->pinctrl.clk = (i2c_gpio_t *)&i2c_config->clk;
@@ -1827,9 +1849,9 @@ hal_i2c_status_t sunxi_i2c_init(hal_i2c_config_t *i2c_config)
 		return HAL_I2C_STATUS_ERROR;
 	}
 	//i2c->dev->ops->transfer = &sunxi_i2c_transfer;
-	i2c->dev = &sunxi_i2c_master;
+	i2c->dev_s = &sunxi_i2c_master;
 
-	ret = i2c_register(i2c->dev, i2c->port);
+	ret = i2c_register(i2c->dev_s, i2c->port);
 	if (ret != 0) {
 		sinfo("[i2c%d] register failed\n", i2c->port);
 		return HAL_I2C_STATUS_ERROR;
