@@ -1,5 +1,4 @@
 ############################################################################
-# arch/arm/r328/Make.defs
 #
 #   Copyright (C) 2013-2014, 2016, 2018 Gregory Nutt. All rights reserved.
 #   Author: Gregory Nutt <gnutt@nuttx.org>
@@ -131,13 +130,15 @@ ifeq ($(CONFIG_STACK_COLORATION),y)
 CMN_CSRCS += up_checkstack.c
 endif
 
+CMN_CSRCS += arm_gicv2.c arm_gicv2_dump.c
+
 # r328-specific assembly language files
 
 CHIP_ASRCS  =
 
 # r328-specific C source files
 
-CHIP_CSRCS  = r328_boot.c r328_pio.c r328_lowputc.c r328_serial.c r328_irq.c arm_gicv2.c arm_gicv2_dump.c secondary.c
+CHIP_CSRCS  = r328_boot.c  r328_lowputc.c r328_serial.c r328_irq.c secondary.c
 
 
 ifeq ($(CONFIG_SMP),y)
@@ -147,3 +148,19 @@ endif
 # ifneq ($(CONFIG_SCHED_TICKLESS),y)
 CHIP_CSRCS += r328_timerisr.c
 # endif
+
+AW_SRCDIR = $(TOPDIR)/arch/arm/src/r328
+
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)include}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)osal4hal}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)include$(DELIM)drivers}
+
+include r328$(DELIM)os_api$(DELIM)Make.defs
+include r328$(DELIM)drivers$(DELIM)Make.defs
+include r328$(DELIM)components$(DELIM)Make.defs
+include r328$(DELIM)osal4hal$(DELIM)Make.defs
+
+ifeq ($(CONFIG_R328_WATCHDOG),y)
+CHIP_CSRCS += r328_wdt.c
+CHIP_CSRCS += sunxi_hal_wdt.c
+endif

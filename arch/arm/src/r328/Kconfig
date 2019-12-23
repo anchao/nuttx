@@ -5,6 +5,10 @@
 
 if ARCH_CHIP_R328
 
+config ARCH_SUN8IW18P1
+	bool
+	default y
+
 comment "R328 Configuration Options"
 
 menu "Allwinner R328 Peripheral Support"
@@ -315,6 +319,14 @@ config R328_GPU
 	bool "GPU"
 	default n
 
+endmenu
+
+menu "Allwinner Dirvers Options"
+source arch/arm/src/r328/drivers/Kconfig
+endmenu
+
+menu "Allwinner Components Options"
+source arch/arm/src/r328/components/Kconfig
 endmenu
 
 config R328_PIO_IRQ

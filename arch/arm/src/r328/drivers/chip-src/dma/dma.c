@@ -37,18 +37,21 @@
 #include "dma-sun8iw18.h"
 #include "dma.h"
 #include "sunxi-dma.h"
+#include <hal_cache.h>
 
 /**************************fix*********************/
+#if 0
 #define krhino_spin_lock_irq_save(fmt, args...)
 #define k_dcache_clean(fmt, args...)
 #define krhino_spin_unlock_irq_restore(fmt, args...)
 #define krhino_spin_lock_init(fmt, args...)
 #define krhino_spin_lock_irq_save(fmt, args...)
+#endif
 /**************************fix*********************/
 
 #define readl(addr)             (*((volatile unsigned long  *)(addr)))
 #define writel(v, addr)		(*((volatile unsigned long  *)(addr)) = (unsigned long)(v))
-#define DMA_DEBUG
+/*#define DMA_DEBUG*/
 
 typedef uint32_t cpu_cpsr_t;
 typedef unsigned int u32;
@@ -217,11 +220,9 @@ int sunxi_dma_irq_handle(int irq, void *context, FAR void *arg)
 #if NR_MAX_CHAN > HIGH_CHAN
 	writel(status_h, DMA_IRQ_STAT(1));
 #endif
-	sinfo("=====status_l = %0x==========\n", status_l);
-	sinfo("=====status_h = %0x==========\n", status_h);
 
 	for (i = 0; i < NR_MAX_CHAN;i++) {
-		//cpu_cpsr_t flags_cpsr;
+		cpu_cpsr_t flags_cpsr;
 		struct sunxi_dma_chan *chan = &dma_chan_source[i];
 
 		krhino_spin_lock_irq_save(&chan->lock,flags_cpsr);
@@ -245,13 +246,8 @@ int sunxi_dma_irq_handle(int irq, void *context, FAR void *arg)
 			dma_callback cb = NULL;
 			void *cb_data = NULL;
 
-			sinfo("====cyclic====\n");
 			chan->periods_pos ++;
 			if ( chan->periods_pos * chan->desc->len >= chan->buf_len ) {
-				sinfo("====end===\n");
-				sinfo("====chan->periods_pos : %d===\n", chan->periods_pos);
-				sinfo("====chan->desc->len : %d===\n", chan->desc->len);
-				sinfo("====chan->buf_len : %d===\n", chan->buf_len);
 				chan->periods_pos = 0;
 			}
 			cb = chan->callback;
@@ -309,7 +305,7 @@ unsigned long sunxi_dma_chan_request(void)
 {
 	int i = 0;
 	struct sunxi_dma_chan *chan;
-	//cpu_cpsr_t flags_cpsr;
+	cpu_cpsr_t flags_cpsr;
 	for (i = 0; i < NR_MAX_CHAN;i++) {
 		chan = &dma_chan_source[i];
 		krhino_spin_lock_irq_save(&chan->lock,flags_cpsr);
@@ -340,6 +336,7 @@ void sunxi_dma_free_ill(struct sunxi_dma_chan *chan)
 		li_adr = next;
 	}
 
+	chan->desc = NULL;
 	chan->callback = NULL;
 	chan->callback_param = NULL;
 }
@@ -348,7 +345,7 @@ int sunxi_dma_chan_free(struct sunxi_dma_chan *chan)
 {
 	uint32_t high;
 	uint32_t irq_val = 0; // pending_val = 0;
-	//cpu_cpsr_t flags_cpsr;
+	cpu_cpsr_t flags_cpsr;
 
 	if (NULL == chan)
 		return -1;
@@ -364,7 +361,7 @@ int sunxi_dma_chan_free(struct sunxi_dma_chan *chan)
 	irq_val &= ~(SHIFT_IRQ_MASK(chan->irq_type, chan->chan_count));
 	writel(irq_val, DMA_IRQ_EN(high));
 
-	//sunxi_dma_free_ill(chan);
+	sunxi_dma_free_ill(chan);
 
 	chan->used = 0;
 	krhino_spin_unlock_irq_restore(&chan->lock,flags_cpsr);
@@ -376,7 +373,7 @@ void dma_slave_config(struct sunxi_dma_chan *chan, struct dma_slave_config *conf
 	if (NULL == config || NULL == chan)
 		return;
 
-	//cpu_cpsr_t flags_cpsr;
+	cpu_cpsr_t flags_cpsr;
 	krhino_spin_lock_irq_save(&chan->lock,flags_cpsr);
 	convert_burst(&config->src_maxburst);
 	convert_burst(&config->dst_maxburst);
@@ -389,7 +386,7 @@ int sunxi_prep_dma_memcpy(struct sunxi_dma_chan * chan, uint32_t dest, uint32_t 
 {
 	struct sunxi_dma_lli *l_item = NULL;
 	struct dma_slave_config *config = NULL;
-	//cpu_cpsr_t flags_cpsr;
+	cpu_cpsr_t flags_cpsr;
 	if (NULL == chan)
 		return -1;
 
@@ -421,7 +418,7 @@ int sunxi_prep_dma_device(struct sunxi_dma_chan * chan, uint32_t dest, uint32_t 
 {
 	struct sunxi_dma_lli *l_item = NULL;
 	struct dma_slave_config *config = NULL;
-	//cpu_cpsr_t flags_cpsr;
+	cpu_cpsr_t flags_cpsr;
 	if (NULL == chan)
 		return -1;
 
@@ -469,7 +466,7 @@ int sunxi_prep_dma_cyclic(struct sunxi_dma_chan *chan, uint32_t buf_addr, uint32
 	uint32_t periods = buf_len / period_len;
 	struct dma_slave_config *config = NULL;
 	uint32_t i = 0;
-	//cpu_cpsr_t flags_cpsr;
+	cpu_cpsr_t flags_cpsr;
 
 	if (NULL == chan && chan->cyclic)
 		return -1;
@@ -485,7 +482,6 @@ int sunxi_prep_dma_cyclic(struct sunxi_dma_chan *chan, uint32_t buf_addr, uint32
 		}
 		memset(l_item, 0, sizeof(struct sunxi_dma_lli));
 		if (dir == DMA_MEM_TO_DEV) {
-			sinfo("=======MEM TO DEV=======\n");
 			sunxi_cfg_lli(l_item, (buf_addr + period_len * i), config->dst_addr, period_len, config);
 			l_item->cfg |= GET_DST_DRQ(config->slave_id) \
 				       | SRC_LINEAR_MODE \
@@ -518,7 +514,7 @@ int sunxi_prep_dma_cyclic(struct sunxi_dma_chan *chan, uint32_t buf_addr, uint32
 		sinfo("[sunxi_prep_dma_cyclic]:%p %p %p\n",prev,l_item,chan);
 #endif
 	}
-	//prev->p_lln = (uint32_t)chan->desc;
+	prev->p_lln = (uint32_t)chan->desc;
 	//prev->p_lln = LINK_END;
 	chan->cyclic = true;
 #ifdef DMA_DEBUG
@@ -534,7 +530,7 @@ enum dma_status sunxi_tx_status(struct sunxi_dma_chan *chan, uint32_t *left_size
 	uint32_t i = 0;
 	struct sunxi_dma_lli *l_item = NULL;
 	enum dma_status status = DMA_INVALID_PARAMETER;
-	//cpu_cpsr_t flags_cpsr;
+	cpu_cpsr_t flags_cpsr;
 
 	if (NULL == chan || NULL == left_size)
 		return status;
@@ -590,7 +586,7 @@ int sunxi_dma_start_desc(struct sunxi_dma_chan *chan)
 	uint32_t high = 0;
 	uint32_t irq_val = 0;
 	struct sunxi_dma_lli *prev = NULL;
-	//cpu_cpsr_t flags_cpsr;
+	cpu_cpsr_t flags_cpsr;
 
 	if (NULL == chan)
 		return -1;
@@ -611,9 +607,7 @@ int sunxi_dma_start_desc(struct sunxi_dma_chan *chan)
 	SET_OP_MODE(chan->chan_count, SRC_HS_MASK | DST_HS_MASK);
 
 	for (prev = chan->desc; prev != NULL; prev = prev->vlln){
-		k_dcache_clean(prev, sizeof(*prev));
-		//k_dcache_clean(prev->src, prev->len);
-		//k_dcache_clean_invalidate(prev->dst, prev->len);
+		cpu_dcache_clean((unsigned long)prev, sizeof(*prev));
 	}
 
 	writel((uint32_t)chan->desc, DMA_LLI_ADDR(chan->chan_count));
@@ -630,7 +624,7 @@ int sunxi_dma_stop_desc(struct sunxi_dma_chan *chan)
 	if (NULL == chan)
 		return -1;
 
-	//cpu_cpsr_t flags_cpsr;
+	cpu_cpsr_t flags_cpsr;
 	krhino_spin_lock_irq_save(&chan->lock,flags_cpsr);
 
 	/*We should entry PAUSE state first to avoid missing data

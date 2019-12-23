@@ -1,0 +1,80 @@
+############################################################################
+#
+#   Copyright (C) 2019 Gregory Nutt. All rights reserved.
+#   Author: Gregory Nutt <gnutt@nuttx.org>
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
+# 3. Neither the name NuttX nor the names of its contributors may be
+#    used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+# OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+# AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+############################################################################
+
+
+ifeq ($(CONFIG_DRIVERS_SOUND),y)
+include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)sound$(DELIM)Make.defs
+endif
+
+ifeq ($(CONFIG_DRIVERS_CCMU),y)
+include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)ccmu$(DELIM)Make.defs
+endif
+
+ifeq ($(CONFIG_DRIVERS_EFUSE),y)
+include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)efuse$(DELIM)Make.defs
+endif
+
+ifeq ($(CONFIG_DRIVERS_PWM),y)
+include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)pwm$(DELIM)Make.defs
+endif
+
+ifeq ($(CONFIG_DRIVERS_DMA),y)
+include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)dma$(DELIM)Make.defs
+endif
+
+ifeq ($(CONFIG_DRIVERS_SPI),y)
+include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)spi$(DELIM)Make.defs
+endif
+
+ifeq ($(CONFIG_DRIVERS_THERMAL),y)
+include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)thermal$(DELIM)Make.defs
+endif
+
+include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)gpio$(DELIM)Make.defs
+
+ifeq ($(CONFIG_DRIVERS_LRADC),y)
+include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)lradc$(DELIM)Make.defs
+endif
+
+ifeq ($(CONFIG_DRIVERS_GPADC),y)
+include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)gpadc$(DELIM)Make.defs
+endif
+
+ifeq ($(CONFIG_DRIVERS_I2C),y)
+include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)i2c$(DELIM)Make.defs
+endif
+
+ifeq ($(CONFIG_DRIVERS_SDMMC),y)
+include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)sdmmc$(DELIM)Make.defs
+endif

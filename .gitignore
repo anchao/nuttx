@@ -7,7 +7,6 @@ Make.dep
 *~
 .swp
 .*.swp
-core
 /.gdbinit
 /cscope.*
 /.config
@@ -29,4 +28,5 @@ core
 /.project
 /pcode
 /tags
-*.built
+.err
+*.dis

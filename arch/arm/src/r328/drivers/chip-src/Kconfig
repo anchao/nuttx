@@ -1,0 +1,12 @@
+source arch/arm/src/r328/drivers/chip-src/sound/Kconfig
+source arch/arm/src/r328/drivers/chip-src/ccmu/Kconfig
+source arch/arm/src/r328/drivers/chip-src/efuse/Kconfig
+source arch/arm/src/r328/drivers/chip-src/thermal/Kconfig
+source arch/arm/src/r328/drivers/chip-src/pwm/Kconfig
+source arch/arm/src/r328/drivers/chip-src/spi/Kconfig
+source arch/arm/src/r328/drivers/chip-src/dma/Kconfig
+source arch/arm/src/r328/drivers/chip-src/gpio/Kconfig
+source arch/arm/src/r328/drivers/chip-src/lradc/Kconfig
+source arch/arm/src/r328/drivers/chip-src/gpadc/Kconfig
+source arch/arm/src/r328/drivers/chip-src/i2c/Kconfig
+source arch/arm/src/r328/drivers/chip-src/sdmmc/Kconfig

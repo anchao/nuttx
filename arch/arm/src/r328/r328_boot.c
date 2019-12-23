@@ -365,7 +365,10 @@ void arm_boot(void)
 
 void board_early_initialize(void)
 {
-
+#ifdef CONFIG_DRIVERS_DMA
+extern void sunxi_dma_init(void);
+	sunxi_dma_init();
+#endif
 }
 
 void board_late_initialize(void)

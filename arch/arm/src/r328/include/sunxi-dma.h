@@ -45,7 +45,7 @@
 #define SUNXI_DMAC_PBASE         0X03002000
 #define DMA_IRQ_NUM	66
 //typedef char bool;
-typedef int kspinlock_t;
+#include <aw_common.h>
 
 //#endif
 
@@ -267,7 +267,7 @@ struct sunxi_dma_chan {
 	uint32_t	irq_type;
 	dma_callback callback;
 	void *callback_param;
-	volatile kspinlock_t lock;
+	kspinlock_t lock;
 };
 
 #ifdef __cplusplus

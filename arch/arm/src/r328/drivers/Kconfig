@@ -1,0 +1,21 @@
+comment "Configure all required driver sub-systems"
+
+menu "soc related device drivers"
+
+config DRIVERS_CHIP
+	bool
+	default y
+
+source arch/arm/src/r328/drivers/chip-src/Kconfig
+
+endmenu
+
+menu "board related device drivers"
+
+config DRIVERS_BOARD
+	bool
+	default y
+
+source arch/arm/src/r328/drivers/board/Kconfig
+
+endmenu

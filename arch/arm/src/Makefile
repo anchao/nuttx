@@ -84,10 +84,12 @@ STARTUP_OBJS ?= $(HEAD_OBJ)
 
 # Flat build or kernel-mode objects
 
-ASRCS = $(CHIP_ASRCS) $(CMN_ASRCS)
+#ASRCS = $(CHIP_ASRCS) $(CMN_ASRCS)
+ASRCS = $(patsubst %,chip/%,$(CHIP_ASRCS)) $(CMN_ASRCS)
 AOBJS = $(ASRCS:.S=$(OBJEXT))
 
-CSRCS = $(CHIP_CSRCS) $(CMN_CSRCS)
+#CSRCS = $(CHIP_CSRCS) $(CMN_CSRCS)
+CSRCS = $(patsubst %,chip/%,$(CHIP_CSRCS)) $(CMN_CSRCS)
 COBJS = $(CSRCS:.c=$(OBJEXT))
 
 SRCS = $(ASRCS) $(CSRCS)
@@ -151,6 +153,7 @@ endif
 LIBGCC = "${shell "$(CC)" $(ARCHCPUFLAGS) -print-libgcc-file-name}"
 GCC_LIBDIR := ${shell dirname $(LIBGCC)}
 
+VPATH += $(ARCH_SRCDIR)
 VPATH += chip
 VPATH += common
 VPATH += $(ARCH_SUBDIR)
@@ -225,6 +228,7 @@ endif
 	$(call DELFILE, $(UBIN))
 	$(call DELFILE, $(BIN))
 	$(call CLEAN)
+	@find chip/ -name *.o | xargs rm -f
 
 distclean: clean
 ifeq ($(BOARDMAKE),y)
