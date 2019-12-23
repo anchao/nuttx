@@ -1,0 +1,18 @@
+menu "CODEC drivers"
+
+config SND_CODEC_COMMON
+	bool
+	default n
+
+config SND_CODEC_DUMMY
+	bool "dummy codec"
+	default n
+
+config SND_CODEC_AC107
+	bool "X-powers AC108 codec"
+	select SND_CODEC_COMMON
+	default n
+
+source arch/arm/src/r328/drivers/chip-src/sound/codecs/sunxi-codec/Kconfig
+
+endmenu

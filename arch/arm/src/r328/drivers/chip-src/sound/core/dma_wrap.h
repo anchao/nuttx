@@ -1,0 +1,190 @@
+/*
+* Copyright (c) 2019-2025 Allwinner Technology Co., Ltd. ALL rights reserved.
+*
+* Allwinner is a trademark of Allwinner Technology Co.,Ltd., registered in
+* the the people's Republic of China and other countries.
+* All Allwinner Technology Co.,Ltd. trademarks are used with permission.
+*
+* DISCLAIMER
+* THIRD PARTY LICENCES MAY BE REQUIRED TO IMPLEMENT THE SOLUTION/PRODUCT.
+* IF YOU NEED TO INTEGRATE THIRD PARTY’S TECHNOLOGY (SONY, DTS, DOLBY, AVS OR MPEGLA, ETC.)
+* IN ALLWINNERS’SDK OR PRODUCTS, YOU SHALL BE SOLELY RESPONSIBLE TO OBTAIN
+* ALL APPROPRIATELY REQUIRED THIRD PARTY LICENCES.
+* ALLWINNER SHALL HAVE NO WARRANTY, INDEMNITY OR OTHER OBLIGATIONS WITH RESPECT TO MATTERS
+* COVERED UNDER ANY REQUIRED THIRD PARTY LICENSE.
+* YOU ARE SOLELY RESPONSIBLE FOR YOUR USAGE OF THIRD PARTY’S TECHNOLOGY.
+*
+*
+* THIS SOFTWARE IS PROVIDED BY ALLWINNER"AS IS" AND TO THE MAXIMUM EXTENT
+* PERMITTED BY LAW, ALLWINNER EXPRESSLY DISCLAIMS ALL WARRANTIES OF ANY KIND,
+* WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING WITHOUT LIMITATION REGARDING
+* THE TITLE, NON-INFRINGEMENT, ACCURACY, CONDITION, COMPLETENESS, PERFORMANCE
+* OR MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+* IN NO EVENT SHALL ALLWINNER BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+* SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+* NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS, OR BUSINESS INTERRUPTION)
+* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+* STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+* OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+#ifndef __DMA_WRAP_H_
+#define __DMA_WRAP_H_
+#include <hal_dma.h>
+
+struct dma_chan {
+	unsigned long *dma_handle;
+};
+typedef void (*dma_callback)(void *dma_callback_param);
+
+static inline void *dma_alloc_coherent(size_t size)
+{
+	void *malloc_ptr;
+	uint32_t fake_ptr;
+
+	malloc_ptr = malloc(size + 64);
+	if (!malloc_ptr)
+		return NULL;
+	if ((uint32_t)malloc_ptr & 0x3)
+		printf("malloc not align to 4 bytes\n");
+	fake_ptr = (uint32_t)(malloc_ptr + 64);
+	fake_ptr &= (~63);
+	/* save actual pointer */
+	*((uint32_t *)(fake_ptr - 4)) = (uint32_t)malloc_ptr;
+	return (void *)fake_ptr;
+}
+
+static inline void dma_free_coherent(void *addr)
+{
+	void *malloc_ptr = NULL;
+	if (!addr)
+		return;
+	/* get actual pointer */
+	malloc_ptr = (void *)(*(uint32_t *)(addr - 4));
+	free(malloc_ptr);
+}
+
+static inline struct dma_chan *dma_request_channel(void)
+{
+	struct dma_chan *chan = NULL;
+	hal_dma_chan_status_t status = HAL_DMA_CHAN_STATUS_BUSY;
+
+	chan = calloc(1, sizeof(struct dma_chan));
+	if (!chan) {
+		printf("no memory\n");
+		return NULL;
+	}
+	status = hal_dma_chan_request(&chan->dma_handle);
+	if (status != HAL_DMA_CHAN_STATUS_FREE) {
+		printf("request dma chan failed\n");
+		free(chan);
+		return NULL;
+	}
+	return chan;
+}
+
+static inline void dma_release_channel(struct dma_chan *chan)
+{
+	hal_dma_status_t status = 0;
+	if (!chan)
+		return;
+	status = hal_dma_chan_free(chan->dma_handle);
+	if (status != HAL_DMA_STATUS_OK)
+		printf("free dma chan failed\n");
+	free(chan);
+}
+
+static inline enum dma_status dmaengine_tx_status(struct dma_chan *chan,
+			uint32_t *residue)
+{
+	return hal_dma_tx_status(chan->dma_handle, residue);
+}
+
+static inline int dmaengine_prep_dma_cyclic(
+		struct dma_chan *chan, dma_addr_t buf_addr, size_t buf_len,
+		size_t period_len, enum dma_transfer_direction dir)
+{
+	hal_dma_status_t status = 0;
+
+	snd_info("[%s] line:%d buf_addr:0x%x, buf_len:0x%x, period_len:0x%x\n",
+		__func__, __LINE__, buf_addr, buf_len, period_len);
+	status = hal_dma_prep_cyclic(chan->dma_handle,
+			(uint32_t)buf_addr, (uint32_t)buf_len,
+			(uint32_t)period_len, dir);
+	if (status != HAL_DMA_STATUS_OK) {
+		printf("hal_dma_prep_cyclic failed\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+static inline int dmaengine_submit(struct dma_chan *chan,
+			dma_callback callback, void *callback_param)
+{
+	hal_dma_status_t status = 0;
+	status = hal_dma_cyclic_callback_install(chan->dma_handle,
+				callback, callback_param);
+	if (status != HAL_DMA_STATUS_OK) {
+		printf("hal_dma_prep_cyclic failed\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+static inline int dmaengine_slave_config(struct dma_chan *chan,
+                                          struct dma_slave_config *config)
+{
+	hal_dma_status_t status = 0;
+
+	snd_print("\n");
+	status = hal_dma_slave_config(chan->dma_handle, config);
+	if (status != HAL_DMA_STATUS_OK) {
+		printf("hal_dma_slave_config failed\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+static inline void dma_async_issue_pending(struct dma_chan *chan)
+{
+	hal_dma_status_t status = 0;
+
+	status = hal_dma_start(chan->dma_handle);
+	if (status != HAL_DMA_STATUS_OK) {
+		printf("hal_dma_start failed\n");
+		return ;
+	}
+
+	return;
+}
+
+static inline int dmaengine_terminate_async(struct dma_chan *chan)
+{
+	hal_dma_status_t status = HAL_DMA_STATUS_OK;
+
+	status = hal_dma_stop(chan->dma_handle);
+	if (status != HAL_DMA_STATUS_OK) {
+		printf("hal_dma_stop failed\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+static inline int dmaengine_pause(struct dma_chan *chan)
+{
+	printf("dma pause not support.\n");
+	return -1;
+}
+
+static inline int dmaengine_resume(struct dma_chan *chan)
+{
+	printf("dma resume not support.\n");
+	return -1;
+}
+
+#endif /* __DMA_WRAP_H_ */

@@ -1,0 +1,28 @@
+menu "Platform(Audio Interface) drivers"
+
+config SND_PLATFORM_SUNXI_PCM
+	bool
+	default n
+
+config SND_PLATFORM_SUNXI_CPUDAI
+	bool "Allwinner internal cpudai"
+	select SND_PLATFORM_SUNXI_PCM
+	default n
+	help
+	  Only support for the Codec embedded in the Allwinner SoCs.
+
+config SND_PLATFORM_SUNXI_DAUDIO
+	bool "Allwinner Digital Audio Support"
+	select SND_PLATFORM_SUNXI_PCM
+	default n
+	help
+	  Select Y to add support for I2S/PCM/TDM module in Allwinner SoCs.
+
+config SND_PLATFORM_SUNXI_DMIC
+	bool "Allwinner DMIC Support"
+	select SND_PLATFORM_SUNXI_PCM
+	default n
+	help
+	  Select Y to add support for DMIC module in Allwinner SoCs.
+
+endmenu
