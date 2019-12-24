@@ -1,8 +1,12 @@
 menuconfig DRIVERS_INPUT
 	default n
-	bool "input driver"
+	bool "Input driver"
 
 if DRIVERS_INPUT
+config INPUT_TEST_DEMO
+	bool "Enable input test demo."
+	default n
+
 	source arch/arm/src/r328/drivers/board/input/keyboard/Kconfig
 
 endif

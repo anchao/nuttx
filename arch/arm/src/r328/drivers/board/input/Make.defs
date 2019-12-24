@@ -1,7 +1,11 @@
-ifeq ($(CONFIG_DRIVERS_R328_KEYBOARD),y)
+ifeq ($(CONFIG_DRIVERS_INPUT),y)
+CHIP_CSRCS += drivers/board/input/sunxi_input.c
+
+ifeq ($(CONFIG_INPUT_TEST_DEMO),y)
+CHIP_CSRCS += drivers/board/input/sunxi_input_test.c
+endif
+
 include r328$(DELIM)drivers$(DELIM)board$(DELIM)input$(DELIM)keyboard$(DELIM)Make.defs
 endif
 
-ifeq ($(CONFIG_DRIVERS_R328_GPADC_KEY),y)
-include r328$(DELIM)drivers$(DELIM)board$(DELIM)input$(DELIM)keyboard$(DELIM)Make.defs
-endif
+

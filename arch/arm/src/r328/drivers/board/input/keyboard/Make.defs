@@ -18,3 +18,6 @@ VPATH += :chip$(DELIM)drivers$(DELIM)board$(DELIM)input$(DELIM)keyboard
 
 endif
 
+ifeq ($(CONFIG_DRIVERS_R328_GPIO_KEY),y)
+CHIP_CSRCS += drivers/board/input/keyboard/gpio_key_polled.c
+endif
