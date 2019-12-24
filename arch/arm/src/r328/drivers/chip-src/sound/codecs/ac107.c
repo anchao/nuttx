@@ -613,7 +613,6 @@ static int ac107_hw_free(struct snd_pcm_substream *substream,
 {
 	struct snd_codec *codec = dai->component;
 	struct ac107_priv *ac107 = codec->private_data;
-	u8 i, j;
 	AC107_DEBUG("\n--->%s\n", __FUNCTION__);
 
 	//AC107 I2S Globle disable
@@ -741,9 +740,6 @@ static int ac107_set_fmt(struct snd_dai *dai, unsigned int fmt)
 static int ac107_codec_probe(struct snd_codec *codec)
 {
 	struct ac107_priv *ac107 = NULL;
-	unsigned int i = 0;
-	int ret = 0;
-	u8 gain_val;
 	struct ac107_param default_param = {
 		.chip_num = AC107_CHIP_NUMS,
 		.twi_dev = AC107_CHIP_CFG,

@@ -11,6 +11,7 @@ config SND_CODEC_DUMMY
 config SND_CODEC_AC107
 	bool "X-powers AC108 codec"
 	select SND_CODEC_COMMON
+	depends on DRIVERS_I2C
 	default n
 
 source arch/arm/src/r328/drivers/chip-src/sound/codecs/sunxi-codec/Kconfig

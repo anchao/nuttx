@@ -48,6 +48,11 @@ static const snd_pcm_hw_config_t snd_pcm_hw_tas5805_config = {
 	.device_num	= 0,
 };
 
+static const snd_pcm_hw_config_t snd_pcm_hw_snddaudio0_config = {
+	.card_name	= "snddaudio0",
+	.device_num	= 0,
+};
+
 static const snd_pcm_softvol_config_t snd_pcm_softvol_config = {
 	.type		= "softvol",
 	.slave = {
@@ -227,6 +232,7 @@ const snd_pcm_config_t snd_pcm_global_configs[] = {
 	SND_PCM_CONFIG("Capture3Mic1Ref", "multi", &snd_pcm_3mic_1ref_config),
 	SND_PCM_CONFIG("CaptureFile3Mic1Ref", "file", &snd_pcm_file_3mic_1ref_config),
 	SND_PCM_CONFIG("hw:tas5805", "hw", &snd_pcm_hw_tas5805_config),
+	SND_PCM_CONFIG("hw:snddaudio0", "hw", &snd_pcm_hw_snddaudio0_config),
 };
 
 REGISTER_SND_PCM_GLOBAL_CONFIGS(snd_pcm_global_configs);
