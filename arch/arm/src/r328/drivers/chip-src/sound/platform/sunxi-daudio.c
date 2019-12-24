@@ -50,7 +50,7 @@ extern struct snd_codec sun8iw18_codec;
 #define SUNXI_DAUDIO_DRQSRC(sunxi_daudio, x)			\
 	((sunxi_daudio)->capture_dma_param.dma_drq_type_num =	\
 				DRQSRC_DAUDIO_##x##_RX)
-#if 0
+
 typedef struct {
 	hal_gpio_pin_t gpio;
 	unsigned int mux;
@@ -86,7 +86,6 @@ daudio_gpio_t g_daudio_gpio[DAUDIO_NUM_MAX] = {
 		.mclk		= {GPIOG(10), 3},
 	},
 };
-#endif
 
 static const struct sunxi_daudio_param g_default_param[DAUDIO_NUM_MAX] = {
 	[0] = {
@@ -260,7 +259,6 @@ static int sunxi_daudio_hw_params(struct snd_pcm_substream *substream,
 static int sunxi_daudio_set_sysclk(struct snd_dai *dai,
 				int clk_id, unsigned int freq, int dir)
 {
-#if 0
 	struct snd_platform *platform = dai->component;
 	struct sunxi_daudio_info *sunxi_daudio = platform->private_data;
 
@@ -269,7 +267,6 @@ static int sunxi_daudio_set_sysclk(struct snd_dai *dai,
 		snd_err("set pllclk rate %u failed\n", freq);
 		return -EINVAL;
 	}
-#endif
 	return 0;
 }
 
@@ -724,7 +721,6 @@ static void sunxi_daudio_gpio_init(unsigned int daudio_num)
 		snd_err("invalid daudio num %d\n", daudio_num);
 		return;
 	}
-#if 0
 	/*LRCLK*/
 	hal_gpio_pinmux_set_function(g_daudio_gpio[daudio_num].lrclk.gpio,
 				g_daudio_gpio[daudio_num].lrclk.mux);
@@ -740,7 +736,6 @@ static void sunxi_daudio_gpio_init(unsigned int daudio_num)
 	/*MCLK*/
 	hal_gpio_pinmux_set_function(g_daudio_gpio[daudio_num].mclk.gpio,
 				g_daudio_gpio[daudio_num].mclk.mux);
-#endif
 }
 
 static struct snd_dai_ops sunxi_daudio_dai_ops = {
@@ -798,7 +793,6 @@ static int sunxi_daudio_platform_probe(struct snd_platform *platform)
 
 	/* parser para */
 	sunxi_daudio->param = g_default_param[platform->type - SND_PLATFORM_TYPE_DAUDIO0];
-#if 0
 	/* clk */
 	sunxi_daudio->pllclk = HAL_CLK_PLL_AUDIO;
 	sunxi_daudio->pllclkx4 = HAL_CLK_PLL_AUDIOX4;
@@ -808,7 +802,7 @@ static int sunxi_daudio_platform_probe(struct snd_platform *platform)
 	hal_clock_enable(sunxi_daudio->pllclk);
 	hal_clock_enable(sunxi_daudio->pllclkx4);
 	hal_clock_enable(sunxi_daudio->moduleclk);
-#endif
+
 	/* mem base */
 	platform->mem_base = (void *)SUNXI_DAUDIO_MEMBASE + (0x1000 * sunxi_daudio->param.tdm_num);
 	/* pinctrl */
@@ -858,18 +852,6 @@ static int sunxi_daudio_platform_remove(struct snd_platform *platform)
 	platform->private_data = NULL;
 	return 0;
 }
-
-
-#if 0
-struct snd_platform gDaudio0Platform = {
-	.name		= "daudio0-cpudai",
-	.ops		= &sunxi_pcm_ops,
-	.pcm_new	= sunxi_pcm_new,
-	.pcm_free	= sunxi_pcm_free,
-	.cpu_dai	= &sunxi_daudio_dai,
-	.private_data	= NULL,
-};
-#endif
 
 #define DAUDIO_NAME_LEN		(16)
 int snd_platform_daudio_register(struct snd_platform *platform,

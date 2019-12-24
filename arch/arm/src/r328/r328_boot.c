@@ -365,6 +365,7 @@ void arm_boot(void)
 
 void board_early_initialize(void)
 {
+	r328_gpio_init();
 #ifdef CONFIG_DRIVERS_DMA
 extern void sunxi_dma_init(void);
 	sunxi_dma_init();
@@ -377,7 +378,4 @@ void board_late_initialize(void)
 extern int sunxi_soundcard_init(void);
 	sunxi_soundcard_init();
 #endif
-
-  r328_gpio_init();
-  up_lowputc('#');
 }

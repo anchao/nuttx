@@ -36,8 +36,6 @@
 #include <snd_pcm.h>
 #include <pcm_common.h>
 #include <aw_common.h>
-/*#include <hal_gpio.h>*/
-/*#include "gpio.h"*/
 #include "sunxi-codec.h"
 #include "hal_clk.h"
 
@@ -118,15 +116,16 @@ static int sunxi_spk_gpio_get_data(struct snd_kcontrol *kcontrol,
 	struct sunxi_codec_info *sunxi_codec = codec->private_data;
 
 	if (sunxi_codec->param.gpio_spk > 0) {
-#if 0
-		gpio_get_data(sunxi_codec->param.gpio_spk,
-					&info->value);
+		hal_gpio_status_t ret;
+		ret = hal_gpio_get_output(sunxi_codec->param.gpio_spk,
+					(hal_gpio_data_t *)&info->value);
+		if (ret != HAL_GPIO_STATUS_OK)
+			return -1;
 		snd_print("get spk value:%u\n", info->value);
 		info->id = kcontrol->id;
 		info->name = kcontrol->name;
 		info->min = kcontrol->min;
 		info->max = kcontrol->max;
-#endif
 		return 0;
 	}
 
@@ -135,18 +134,16 @@ static int sunxi_spk_gpio_get_data(struct snd_kcontrol *kcontrol,
 
 static int sunxi_spk_gpio_set_data(struct snd_kcontrol *kcontrol, unsigned long val)
 {
-#if 0
 	struct snd_codec *codec = kcontrol->private_data;
 	struct sunxi_codec_info *sunxi_codec = codec->private_data;
 	if (val != HAL_GPIO_DATA_LOW && val != HAL_GPIO_DATA_HIGH)
 		return -1;
 	if (sunxi_codec->param.gpio_spk > 0) {
-		gpio_set_direction(sunxi_codec->param.gpio_spk, HAL_GPIO_DIRECTION_OUTPUT);
-		gpio_set_data(sunxi_codec->param.gpio_spk, val);
+		hal_gpio_set_direction(sunxi_codec->param.gpio_spk, HAL_GPIO_DIRECTION_OUTPUT);
+		hal_gpio_set_output(sunxi_codec->param.gpio_spk, (hal_gpio_data_t)val);
 		snd_print("set spk value:%u\n", val);
 		return 0;
 	}
-#endif
 
 	return -1;
 }
@@ -521,7 +518,7 @@ static int sun8iw18_codec_probe(struct snd_codec *codec)
 		.mic2gain	= 0x4,
 		.mic3gain	= 0x0,
 		.adcgain	= 0x3,
-		/*.gpio_spk	= GPIOH(9),*/
+		.gpio_spk	= GPIOH(9),
 		.gpio_spk_power = -1,//GPIOH(2),
 		.pa_msleep_time = 50,
 		.adcdrc_cfg     = 0,
@@ -556,33 +553,6 @@ static int sun8iw18_codec_probe(struct snd_codec *codec)
 	hal_clock_enable(sunxi_codec->pllclk);
 	hal_clock_enable(sunxi_codec->pllclkx4);
 	hal_clock_enable(sunxi_codec->moduleclk);
-#if 1
-	/* gpio init */
-	void *gpiobase = (void *)0x0300b000;
-	void *cfg_reg;
-	unsigned int tmp_val = 0;
-
-	/* PH9 output function */
-	cfg_reg = gpiobase + 0x100;
-	tmp_val = snd_readl(cfg_reg);
-	tmp_val &= ~(0x7<<4);
-	tmp_val |= (0x1<<4);
-	snd_writel(tmp_val, cfg_reg);
-
-	/* PH2 output function */
-	cfg_reg = gpiobase + 0xFC;
-	tmp_val = snd_readl(cfg_reg);
-	tmp_val &= ~(0x7<<8);
-	tmp_val |= (0x1<<8);
-	snd_writel(tmp_val, cfg_reg);
-
-	/* default enable PA */
-	/* PH9,PH2 output value 1 */
-	cfg_reg = gpiobase + 0x10C;
-	tmp_val = snd_readl(cfg_reg);
-	tmp_val |= (0x1<<9) | (0x1<<2);
-	snd_writel(tmp_val, cfg_reg);
-#endif
 
 	sunxi_codec_init(codec);
 
@@ -763,40 +733,32 @@ static int sunxi_codec_dapm_control(struct snd_pcm_substream *substream,
 			snd_codec_update_bits(codec, SUNXI_LINEOUT_CTL0,
 				(0x1<<LINEOUTR_EN), (0x1<<LINEOUTR_EN));
 			if (param->gpio_spk > 0) {
-#if 0
-				gpio_set_direction(param->gpio_spk,
+				hal_gpio_set_direction(param->gpio_spk,
 						HAL_GPIO_DIRECTION_OUTPUT);
-				gpio_set_data(param->gpio_spk,
+				hal_gpio_set_output(param->gpio_spk,
 						HAL_GPIO_DATA_HIGH);
-#endif
 			}
 			if (param->gpio_spk_power > 0) {
-#if 0
-				gpio_set_direction(param->gpio_spk_power,
+				hal_gpio_set_direction(param->gpio_spk_power,
 						HAL_GPIO_DIRECTION_OUTPUT);
-				gpio_set_data(param->gpio_spk_power,
+				hal_gpio_set_output(param->gpio_spk_power,
 						HAL_GPIO_DATA_HIGH);
-#endif
 			}
 			/* delay to wait PA stable */
 			usleep(param->pa_msleep_time*1000);
 		} else {
 			/* Playback off */
 			if (param->gpio_spk > 0) {
-#if 0
-				gpio_set_direction(param->gpio_spk,
+				hal_gpio_set_direction(param->gpio_spk,
 						HAL_GPIO_DIRECTION_OUTPUT);
-				gpio_set_data(param->gpio_spk,
+				hal_gpio_set_output(param->gpio_spk,
 						HAL_GPIO_DATA_LOW);
-#endif
 			}
 			if (param->gpio_spk_power > 0) {
-#if 0
-				gpio_set_direction(param->gpio_spk_power,
+				hal_gpio_set_direction(param->gpio_spk_power,
 						HAL_GPIO_DIRECTION_OUTPUT);
-				gpio_set_data(param->gpio_spk_power,
+				hal_gpio_set_output(param->gpio_spk_power,
 						HAL_GPIO_DATA_LOW);
-#endif
 			}
 			usleep(param->pa_msleep_time*1000);
 			/* LINEOUT */

@@ -32,6 +32,7 @@
 #ifndef __SUNXI_CODEC_H
 #define __SUNXI_CODEC_H
 #include <hal_clk.h>
+#include <hal_gpio.h>
 #include <snd_io.h>
 
 #ifdef CONFIG_ARCH_SUN8IW18P1
@@ -44,8 +45,8 @@ unsigned int sunxi_codec_read(struct snd_codec *codec, unsigned int reg);
 int sunxi_codec_write(struct snd_codec *codec, unsigned int reg, unsigned int val);
 
 struct sunxi_codec_param {
-	int16_t gpio_spk;
-	int16_t gpio_spk_power;
+	hal_gpio_pin_t gpio_spk;
+	hal_gpio_pin_t gpio_spk_power;
 	int16_t pa_msleep_time;
 	uint8_t digital_vol;
 	uint8_t lineout_vol;

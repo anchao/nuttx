@@ -33,7 +33,7 @@
 #define	__SUNXI_DAUDIO_H_
 #include "sunxi-pcm.h"
 #include <hal_clk.h>
-//#include "hal_gpio.h"
+#include "hal_gpio.h"
 
 struct sunxi_daudio_param {
        uint8_t tdm_num;
@@ -56,11 +56,9 @@ struct sunxi_daudio_info {
 	struct sunxi_dma_params playback_dma_param;
 	struct sunxi_dma_params capture_dma_param;
 	uint8_t global_enable;
-#if 0
 	hal_clk_id_t pllclk;
 	hal_clk_id_t pllclkx4;
 	hal_clk_id_t moduleclk;
-#endif
 };
 
 #define SUNXI_DAUDIO_MODE_B

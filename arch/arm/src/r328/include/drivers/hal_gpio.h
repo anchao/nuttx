@@ -313,7 +313,7 @@ hal_gpio_status_t hal_gpio_irq_enable(uint32_t irq);
  * @warning
  */
 hal_gpio_status_t hal_gpio_irq_disable(uint32_t irq);
-hal_gpio_status_t hal_gpio_init();
+hal_gpio_status_t hal_gpio_init(void);
 
 #ifdef __cplusplus
 }
