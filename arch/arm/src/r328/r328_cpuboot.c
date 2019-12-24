@@ -100,27 +100,8 @@ extern uint32_t _vector_start; /* Beginning of vector block */
 
 void r328_cpu_enable(void)
 {
-  uintptr_t regaddr;
-  uint32_t regval;
-  int cpu;
-
-  for (cpu = 1; cpu < CONFIG_SMP_NCPUS; cpu++)
-    {
-
     r328_set_cpu1_boot_entry((uint32_t)__cpu1_start);
     sencond_cpu_bootup();
-    /* Set the start up address */
-
-      //regaddr  = g_cpu_gpr[cpu];
-      //bootaddr = g_cpu_boot[cpu];
-      //putreg32((uint32_t)bootaddr, regaddr);
-
-      /* Then enable the CPU */
-
-      //regval   = getreg32(IMX_SRC_SCR);
-      //regval  |= g_cpu_ctrl[cpu];
-      //putreg32(regval, IMX_SRC_SCR);
-    }
 }
 
 /****************************************************************************
@@ -174,9 +155,9 @@ void arm_cpu_boot(int cpu)
   
   (void)up_irq_enable();
 
-  for (; ; )
-    {
-      asm("WFI");
-    }
+  for (; ;)
+  {
+    asm("WFI");
+  }
 }
 #endif /* CONFIG_SMP */

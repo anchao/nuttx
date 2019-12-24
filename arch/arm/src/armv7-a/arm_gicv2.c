@@ -384,6 +384,9 @@ uint32_t *arm_decodeirq(uint32_t *regs)
 {
   uint32_t regval;
   int irq;
+  int cpu;
+
+  cpu = up_cpu_index();
 
   /* Read the interrupt acknowledge register and get the interrupt ID */
 
@@ -391,6 +394,11 @@ uint32_t *arm_decodeirq(uint32_t *regs)
   irq    = (regval & GIC_ICCIAR_INTID_MASK) >> GIC_ICCIAR_INTID_SHIFT;
 
   irqinfo("irq=%d\n", irq);
+
+  if(cpu != 0)
+  {
+      _err("cpu = %d, irq %d.\n", cpu, irq);
+  }
 
   /* Ignore spurions IRQs.  ICCIAR will report 1023 if there is no pending
    * interrupt.

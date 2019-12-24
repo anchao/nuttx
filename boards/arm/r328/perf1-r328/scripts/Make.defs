@@ -69,7 +69,7 @@ ifneq ($(CONFIG_DEBUG_NOOPT),y)
   ARCHOPTIMIZATION += $(MAXOPTIMIZATION) -fno-strict-aliasing -fno-strength-reduce -fomit-frame-pointer
 endif
 
-ARCHCPUFLAGS = -mcpu=cortex-a7 -mfpu=vfpv4
+ARCHCPUFLAGS = -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mtune=cortex-a7 -mfloat-abi=hard
 ARCHCFLAGS = -fno-builtin
 ARCHCXXFLAGS = -fno-builtin -fno-exceptions -fcheck-new -fno-rtti
 ARCHWARNINGS = -Wall -Wstrict-prototypes -Wshadow -Wundef

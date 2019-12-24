@@ -248,6 +248,7 @@ CONFIG_R328_UART0=y
 # CONFIG_R328_TIMER3 is not set
 # CONFIG_R328_TIMER4 is not set
 # CONFIG_R328_TIMER5 is not set
+# CONFIG_R328_WATCHDOG is not set
 # CONFIG_R328_IRQ_Alarm is not set
 # CONFIG_R328_IRQ_WD is not set
 # CONFIG_R328_CAN is not set
@@ -344,6 +345,16 @@ CONFIG_DRIVERS_CCMU=y
 # CONFIG_DRIVERS_THERMAL is not set
 
 #
+# PWM Devices
+#
+# CONFIG_DRIVERS_PWM is not set
+
+#
+# pwm device option freatuers
+#
+# CONFIG_DRIVERS_PWM_FEATURE_1 is not set
+
+#
 # SPI Devices
 #
 CONFIG_DRIVERS_SPI=y
@@ -357,11 +368,33 @@ CONFIG_SUNXI_SPI0=y
 #
 CONFIG_DRIVERS_DMA=y
 # CONFIG_DRIVERS_DMA_TEST is not set
+CONFIG_DRIVERS_GPIO=y
+
+#
+# Lradc Devices
+#
+# CONFIG_DRIVERS_LRADC is not set
+
+#
+# Gpadc Devices
+#
+# CONFIG_DRIVERS_GPADC is not set
+
+#
+# I2C Devices
+#
+# CONFIG_DRIVERS_I2C is not set
+
+#
+# SDMMC Devices
+#
+# CONFIG_DRIVERS_SDMMC is not set
 
 #
 # board related device drivers
 #
 CONFIG_DRIVERS_BOARD=y
+# CONFIG_DRIVERS_INPUT is not set
 
 #
 # Allwinner Components Options
@@ -427,7 +460,7 @@ CONFIG_ARCH_HAVE_TESTSET=y
 # CONFIG_ARCH_HAVE_RTC_SUBSECONDS is not set
 # CONFIG_ARCH_HAVE_GARBAGE is not set
 # CONFIG_ARCH_GLOBAL_IRQDISABLE is not set
-# CONFIG_ARCH_FPU is not set
+CONFIG_ARCH_FPU=y
 CONFIG_ARCH_USE_MMU=y
 # CONFIG_ARCH_ADDRENV is not set
 # CONFIG_PAGING is not set
@@ -1130,6 +1163,7 @@ CONFIG_EXAMPLES_HELLO_PRIORITY=100
 CONFIG_EXAMPLES_HELLO_STACKSIZE=2048
 # CONFIG_EXAMPLES_HELLOXX is not set
 # CONFIG_EXAMPLES_HIDKBD is not set
+# CONFIG_EXAMPLES_I2C_TEST is not set
 # CONFIG_EXAMPLES_IGMP is not set
 # CONFIG_EXAMPLES_INA219 is not set
 # CONFIG_EXAMPLES_INA226 is not set
@@ -1161,6 +1195,7 @@ CONFIG_EXAMPLES_HELLO_STACKSIZE=2048
 # CONFIG_EXAMPLES_SMPS is not set
 # CONFIG_EXAMPLES_STAT is not set
 # CONFIG_EXAMPLES_TCPECHO is not set
+# CONFIG_EXAMPLES_TEST_CCMU is not set
 # CONFIG_EXAMPLES_TIFF is not set
 # CONFIG_EXAMPLES_TOUCHSCREEN is not set
 # CONFIG_EXAMPLES_UID is not set

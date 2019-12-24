@@ -184,42 +184,34 @@ static void write_cntp_ctl(unsigned int cntp_ctl)
 
 static void platformSetOneshotTimer(int interval)
 {
-	write_cntp_tval(interval);
-	write_cntp_ctl(1); /* enable timer */
+    write_cntp_tval(interval);
+    write_cntp_ctl(1); /* enable timer */
 }
 
-void platformTick()
+void platform_tick(void)
 {
-        //debug("arch timer handler.\n");
-	write_cntp_ctl(0); /* disable timer */
-
-	platformSetOneshotTimer(timer_reload_val);
-	
-	nxsched_process_timer();
+    write_cntp_ctl(0); /* disable timer */
+    platformSetOneshotTimer(timer_reload_val);
+    nxsched_process_timer();
 }
-
 
 void arm_timer_initialize(void)
 {
-	unsigned int cntfrq;
-	int ret;
+    unsigned int cntfrq;
+    int ret;
 
-  sinfo("arch timer ---->>.\n");
-	cntfrq = read_cntfrq(); /* default: 24MHz */
-	if (!cntfrq) {
-		return;
-	}
+    sinfo("arch timer ---->>.\n");
+    cntfrq = read_cntfrq(); /* default: 24MHz */
+    if (!cntfrq) 
+    {
+	return;
+    }
 
-	timer_reload_val = cntfrq /CONFIG_USEC_PER_TICK ; /* 10ms */
+    timer_reload_val = cntfrq /CONFIG_USEC_PER_TICK ; /* 10ms */
 
-	/* Attach the timer interrupt vector */
-
-   (void)irq_attach(29, (xcpt_t)platformTick, NULL);
-
-	platformSetOneshotTimer(timer_reload_val);
-
-	up_enable_irq(29);
-
-  sinfo("arch timer init........->>>\n");
+    /* Attach the timer interrupt vector */
+    (void)irq_attach(29, (xcpt_t)platform_tick, NULL);
+    platformSetOneshotTimer(timer_reload_val);
+    up_enable_irq(29);
+    sinfo("arch timer init........->>>\n");
 }
-
