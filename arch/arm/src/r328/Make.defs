@@ -155,7 +155,6 @@ CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)include}
 CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)osal4hal}
 CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)include$(DELIM)drivers}
 
-include r328$(DELIM)os_api$(DELIM)Make.defs
 include r328$(DELIM)drivers$(DELIM)Make.defs
 include r328$(DELIM)components$(DELIM)Make.defs
 include r328$(DELIM)osal4hal$(DELIM)Make.defs
