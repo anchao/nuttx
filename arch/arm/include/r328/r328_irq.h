@@ -56,8 +56,8 @@
 #  define R328_IRQ_BROWNOUT  0 /* Brownout */
 #define R328_IRQ_UART0       108 /* UART 0 interrupt */
 #define R328_IRQ_UART1       109 /* UART 1 interrupt */
-#define R328_IRQ_UART2       3 /* UART 2 interrupt */
-#define R328_IRQ_UART3       4 /* UART 3 interrupt */
+#define R328_IRQ_UART2       110 /* UART 2 interrupt */
+#define R328_IRQ_UART3       111 /* UART 3 interrupt */
 #define R328_IRQ_IR0         5 /* IR 0 interrupt */
 #define R328_IRQ_IR1         6 /* IR 1 interrupt */
 #define R328_IRQ_TWI0        7 /* TWI 0 interrupt */
