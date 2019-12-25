@@ -1,22 +1,22 @@
 #include <nuttx/config.h>
 #include <nuttx/kmalloc.h>
-//#include <semphr.h>
 #include <queue.h>
 #include <debug.h>
 #include <stdio.h>
 #include <string.h>
-//#include "hal_lradc.h"
-//#include "sunxi-input.h"
 #include <hal_lradc.h>
+#include "sunxi_input.h"
 #include "r328_keyboard.h"
 
-//#ifdef	SUNXIKBD_DEBUG
+#ifdef	SUNXIKBD_DEBUG
 //#define sunxikbd_info(fmt, args...)  printf("%s()%d - "fmt, __func__, __LINE__, ##args)
-//#else
-//#define sunxikbd_info(fmt, args...)
-//#endif
-
+#define sunxikbd_info(fmt, args...) sinfo(fmt, ##args)
+#else
+#define sunxikbd_info(fmt, args...)
+#endif
 //#define sunxikbd_err(fmt, args...)  printf("%s()%d - "fmt, __func__, __LINE__, ##args)
+#define sunxikbd_err(fmt, args...) sinfo(":%d "fmt, __LINE__, ##args)
+
 #define ADC_RESOL  64
 #define KEY_MAX_CNT 13
 #define INITIAL_VALUE 0xff
@@ -51,7 +51,7 @@ static unsigned char keypad_mapindex[64] = {
 
 
 struct sunxikbd_drv_data{
-	//struct sunxi_input_dev *input_dev;
+	struct sunxi_input_dev *input_dev;
 	unsigned int scankeycodes[KEY_MAX_CNT];
 	unsigned char compare_later;
 	unsigned char compare_before;
@@ -65,9 +65,9 @@ static void sunxi_report_key_down_event(struct sunxikbd_drv_data *data)
 {
 	if (data->last_key_code == INITIAL_VALUE) {
 		/* first time report key down event */
-		//input_report_key(data->input_dev,
-		//		data->scankeycodes[data->key_code], 1);
-		//input_sync(data->input_dev);
+		input_report_key(data->input_dev,
+				data->scankeycodes[data->key_code], 1);
+		input_sync(data->input_dev);
 		data->last_key_code = data->key_code;
 		return;
 	}
@@ -75,41 +75,37 @@ static void sunxi_report_key_down_event(struct sunxikbd_drv_data *data)
 			data->scankeycodes[data->last_key_code]) {
 #ifdef REPORT_REPEAT_KEY_BY_INPUT_CORE
 		/* report repeat key down event */
-		//input_report_key(data->input_dev,
-		//		data->scankeycodes[data->key_code], 1);
-		//input_sync(data->input_dev);
+		input_report_key(data->input_dev,
+				data->scankeycodes[data->key_code], 1);
+		input_sync(data->input_dev);
 #endif
 	} else {
 		/* report previous key up event
 		 ** and report current key down event
 		 **/
-		//input_report_key(data->input_dev,
-		//		data->scankeycodes[data->last_key_code], 0);
-		//input_sync(data->input_dev);
-		//input_report_key(data->input_dev,
-		//		data->scankeycodes[data->key_code], 1);
-		//input_sync(data->input_dev);
+		input_report_key(data->input_dev,
+				data->scankeycodes[data->last_key_code], 0);
+		input_sync(data->input_dev);
+		input_report_key(data->input_dev,
+				data->scankeycodes[data->key_code], 1);
+		input_sync(data->input_dev);
 		data->last_key_code = data->key_code;
 	}
 }
 
 void lradc_irq_callback(unsigned int irq_status, unsigned int key_vol)
 {
-	//sunxikbd_info("Key Interrupt\n");
 	if (irq_status & LRADC_ADC0_DOWNPEND)
-//		sunxikbd_info("key down\n");
-		sinfo("key down\n");
+		sunxikbd_info("key down\n");
 
 	if (irq_status & LRADC_ADC0_DATAPEND) {
-//		sunxikbd_info("key data pend\n");
-		sinfo("key data pend\n");
+		sunxikbd_info("key data pend\n");
 		key_data->key_cnt++;
 		key_data->compare_before = key_vol&0x3f;
 		if (key_data->compare_before == key_data->compare_later) {
 			key_data->compare_later = key_data->compare_before;
 			key_data->key_code = keypad_mapindex[key_vol&0x3f];
 			sunxi_report_key_down_event(key_data);
-	//		sinfo("!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 			key_data->key_cnt = 0;
 		}
 		if (key_data->key_cnt == 2) {
@@ -119,11 +115,10 @@ void lradc_irq_callback(unsigned int irq_status, unsigned int key_vol)
 	}
 
 	if (irq_status & LRADC_ADC0_UPPEND) {
-		//input_report_key(key_data->input_dev,
-		//		key_data->scankeycodes[key_data->key_code], 0);
-		//input_sync(key_data->input_dev);
-//		sunxikbd_info("key up\n");
-		sinfo("key up\n");
+		input_report_key(key_data->input_dev,
+				key_data->scankeycodes[key_data->key_code], 0);
+		input_sync(key_data->input_dev);
+		sunxikbd_info("key up\n");
 		key_data->compare_later = 0;
 		key_data->key_cnt = 0;
 		key_data->last_key_code = INITIAL_VALUE;
@@ -177,16 +172,16 @@ int sunxi_keyboard_init()
 {
 	int i, ret;
 	struct sunxikbd_config *sunxikbd_config = NULL;
-	//struct sunxi_input_dev *sunxikbd_dev = NULL;
+	struct sunxi_input_dev *sunxikbd_dev = NULL;
 
 	//key_data = pvPortMalloc(sizeof(struct sunxikbd_drv_data));
 	key_data = (struct sunxikbd_drv_data *)malloc(sizeof(struct sunxikbd_drv_data));
 	if (NULL == key_data) {
-		sinfo("kmm_zalloc failed.==============\n");
+		sunxikbd_err("kmm_zalloc failed.==============\n");
 		return -1;
 	}
 	else
-		sinfo("kmm_zalloc ok.============\n");
+		sunxikbd_info("kmm_zalloc ok.============\n");
 	memset(key_data, 0, sizeof(struct sunxikbd_drv_data));
 
 	//get keyboard info
@@ -194,30 +189,28 @@ int sunxi_keyboard_init()
 	//init key data
 	ret = sunxikbd_data_init(key_data, sunxikbd_config);
 	if(ret != 0) {
-		sinfo("key data init failed================\n");
+		sunxikbd_err("key data init failed================\n");
 		return -1;
 	}
-	else
-		sinfo("key data init success================\n");
 
 	//input dev init
-	//sunxikbd_dev = sunxi_input_allocate_device();
-	//if (NULL == sunxikbd_dev) {
-	//	sunxikbd_err("allocate sunxikbd_dev err\n");
-	//	return -1;
-	//}
-	//sunxikbd_dev->name = sunxikbd_config->name;
-	//for (i = 0; i < sunxikbd_config->key_num; i++)
-	//	input_set_capability(sunxikbd_dev, EV_KEY, key_data->scankeycodes[i]);
-	//key_data->input_dev = sunxikbd_dev;
-	//sunxi_input_register_device(key_data->input_dev);
+	sunxikbd_dev = sunxi_input_allocate_device();
+	if (NULL == sunxikbd_dev) {
+		sunxikbd_err("allocate sunxikbd_dev err\n");
+		return -1;
+	}
+	sunxikbd_dev->name = sunxikbd_config->name;
+	for (i = 0; i < sunxikbd_config->key_num; i++)
+		input_set_capability(sunxikbd_dev, EV_KEY, key_data->scankeycodes[i]);
+	key_data->input_dev = sunxikbd_dev;
+	sunxi_input_register_device(key_data->input_dev);
 
 	//init lradc
-	if (hal_lradc_init() == 0)
-		sinfo("key init success\n");
-	if (hal_lradc_register_callback(lradc_irq_callback) == 0)
-		sinfo("key register success.\n");
-	//sunxikbd_info("sunxi-keyboard init success\n");
+	if (hal_lradc_init() != 0)
+		sunxikbd_err("key init failed\n");
+	if (hal_lradc_register_callback(lradc_irq_callback) != 0)
+		sunxikbd_err("key register failed\n");
+	sunxikbd_info("sunxi-keyboard init success\n");
 
 	return 0;
 }

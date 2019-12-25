@@ -42,6 +42,13 @@
 #include "../../../include/drivers/hal_gpadc.h"
 #include "./r328_gpadc.h"
 
+#ifdef  SUNXIKBD_DEBUG
+#define sunxikbd_info(fmt, args...) sinfo(fmt, ##args)
+#else
+#define sunxikbd_info(fmt, args...)
+#endif
+#define sunxikbd_err(fmt, args...) sinfo(":%d "fmt, __LINE__, ##args)
+
 gpadc_func_data gpadc_priv;
 
 void gpadc_sample_rate_set(uint32_t sample_rate)
@@ -179,7 +186,7 @@ void gpadc_register_callback(gpadc_callback_t user_callback)
 
 static int gpadc_irq_handler(int dummy, void *context, void *priv_data)
 {
-//	sinfo("gpadc_irq_handler gpadc_irq_handler\n");
+	sunxikbd_info("gpadc_irq_handler gpadc_irq_handler\n");
 	gpadc_func_data *gpadc_priv = priv_data;
 	gpadc_callback_t callback = gpadc_priv->func;
 
@@ -188,7 +195,7 @@ static int gpadc_irq_handler(int dummy, void *context, void *priv_data)
 	uint32_t reg_val;
 	uint32_t data, i;
 
-//	printf("========high intreg : %0x=========\n", GPADC->GP_DATAH_INTS);
+	sunxikbd_info("========high intreg : %0x=========\n", GPADC->GP_DATAH_INTS);
 	reg_irq_low = gpadc_irq_low_status();
 	reg_irq_high = gpadc_irq_high_status();
 	GPADC->GP_DATAH_INTS = reg_irq_high;
@@ -198,11 +205,11 @@ static int gpadc_irq_handler(int dummy, void *context, void *priv_data)
 		if (reg_irq_low & (1 << i)) {
 			GPADC->GP_DATAL_INTS = reg_irq_low;
 			reg_val = gpadc_ch_data_get(i);
-//			printf("========low  : reg_val = %0x=========\n", reg_val);
-//			printf("========reg_irq_high : %0x=========\n", reg_irq_high);
-//			printf("========high intreg : %0x=========\n", GPADC->GP_DATAH_INTS);
+			sunxikbd_info("========low  : reg_val = %0x=========\n", reg_val);
+			sunxikbd_info("========reg_irq_high : %0x=========\n", reg_irq_high);
+			sunxikbd_info("========high intreg : %0x=========\n", GPADC->GP_DATAH_INTS);
 			data = (VCC/ 4096)*reg_val;
-//			sinfo("%d	%d	%d===\n",i, GPADC_IRQ_LOW, data);
+			sunxikbd_info("%d	%d	%d===\n",i, GPADC_IRQ_LOW, data);
 			callback(i, GPADC_IRQ_LOW, data);
 			GPADC->GP_DATAH_INTS = reg_irq_high;
 			gpadc_enable_highirq_ch(i);
@@ -212,12 +219,12 @@ static int gpadc_irq_handler(int dummy, void *context, void *priv_data)
 		if (reg_irq_high & (1 << i) & reg_enable_high) {
 			GPADC->GP_DATAH_INTS = reg_irq_high;
 			gpadc_disable_highirq_ch(i);
-//			printf("========high int=========\n");
-//			printf("========high intreg : %0x=========\n", &GPADC->GP_DATAH_INTS);
-//			printf("========reg_irq_high : %0x=========\n", reg_irq_high);
+			sunxikbd_info("========high int=========\n");
+			sunxikbd_info("========high intreg : %0x=========\n", &GPADC->GP_DATAH_INTS);
+			sunxikbd_info("========reg_irq_high : %0x=========\n", reg_irq_high);
 
 			reg_val = gpadc_ch_data_get(i);
-//			printf("========reg_val = %0x=========\n", reg_val);
+			sunxikbd_info("========reg_val = %0x=========\n", reg_val);
 			data = (VCC/ 4096)*reg_val;
 			callback(i, GPADC_IRQ_HIGH, data);
 		}
@@ -238,12 +245,12 @@ int32_t gpadc_init_irq(void)
 	}*/
 	int ret = irq_attach(irqn, gpadc_irq_handler, &gpadc_priv);
 	if (ret == OK) {
-//		sinfo("gpadc irq_attach ok!=====\n");
+		sunxikbd_info("gpadc irq_attach ok!=====\n");
 		up_enable_irq(irqn);
-//		sinfo("gpadc irq enable ok!=====\n");
+		sunxikbd_info("gpadc irq enable ok!=====\n");
 	}
 	else {
-//		sinfo("gpadc irq_attach failed=====\n");
+		sunxikbd_err("gpadc irq_attach failed=====\n");
 		return -1;
 	}
 

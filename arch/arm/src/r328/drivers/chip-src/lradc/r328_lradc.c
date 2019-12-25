@@ -39,6 +39,14 @@
 #include <interrupt.h>
 #include "r328_lradc.h"
 
+#ifdef  SUNXIKBD_DEBUG
+#define sunxikbd_info(fmt, args...) sinfo(fmt, ##args)
+#else
+#define sunxikbd_info(fmt, args...)
+#endif
+
+#define sunxikbd_err(fmt, args...) sinfo(":%d "fmt, __LINE__, ##args)
+
 lradc_func_data lradc_priv;
 
 static uint32_t ctrl_para = FIRST_CONCERT_DLY | ADC_CHAN_SELECT | KEY_MODE_SELECT
@@ -83,7 +91,7 @@ void lradc_irq_reset(void)
 
 void lradc_register_callback(lradc_callback_t user_callback)
 {
-	sinfo("irq callback ==============\n");
+	sunxikbd_info("irq callback ==============\n");
 	lradc_priv.func = user_callback;
 }
 
@@ -95,7 +103,7 @@ static int lradc_irq_handler(int dummy, void *context, void *priv_data)
 
 	uint32_t irq_status = LRADC->LRADC_INTS;
 	uint32_t reg_val = LRADC->LRADC_DATA0;
-	sinfo("irqhander========================\n");
+	sunxikbd_info("irqhander========================\n");
 	if (NULL != callback)
 		callback(irq_status, reg_val);
 
@@ -115,18 +123,16 @@ int32_t lradc_init_irq(void)
 	if (up_enable_irq(irqn) < 0) {
 		return -1;
 	}*/
-	sinfo(" irqtest1======================\n");
 	int ret = irq_attach(irqn, lradc_irq_handler, &lradc_priv);
-	sinfo(" irqtest1======================\n");
 	if (ret == OK)
 	{
-		sinfo("lradc attach irq.\n");
+		sunxikbd_info("lradc attach irq.\n");
 		up_enable_irq(irqn);
-		sinfo("lradc enable irq.\n");
+		sunxikbd_info("lradc enable irq.\n");
 	}
 	else
 	{
-		sinfo("lradc attach  failed.\n");
+		sunxikbd_err("lradc attach  failed.\n");
 		return -1;
 	}
 	return 0;

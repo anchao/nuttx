@@ -9,15 +9,15 @@
 #include "../../../chip-src/gpadc/r328_gpadc.h"
 #include <hal_gpadc.h>
 #include "r328_gpadc_key.h"
-//#include "../../../../include/sunxi-input.h"
+#include "sunxi_input.h"
 
 #ifdef	SUNXIKBD_DEBUG
-#define sunxikbd_info(fmt, args...)  printf("%s()%d - "fmt, __func__, __LINE__, ##args)
+#define sunxikbd_info(fmt, args...)  sinfo(fmt, ##args)
 #else
 #define sunxikbd_info(fmt, args...)
 #endif
 
-#define sunxikbd_err(fmt, args...)  printf("%s()%d - "fmt, __func__, __LINE__, ##args)
+#define sunxikbd_err(fmt, args...)  sinfo(":%d "fmt, __LINE__, ##args)
 
 #define ADC_RESOL  64
 #define KEY_MAX_CNT 13
@@ -36,7 +36,7 @@ struct sunxikbd_config{
 	unsigned int key_vol[KEY_MAX_CNT];
 };
 struct sunxikbd_config key_config = {
-	.name = "sunxi-keyboard",
+	.name = "sunxi-gpadc-key",
 	.key_num = 5,
 	.key_vol = {164,415,646,900,1157},
 	.scankeycodes = {115,114,139,28,102}
@@ -70,10 +70,9 @@ static void sunxi_report_key_down_event(struct sunxi_gpadc_key *key_data)
 {
 	if (key_data->last_key_code == INITIAL_VALUE) {
 		/* first time report key down event */
-		/*
 		input_report_key(key_data->input_dev,
 				key_data->scankeycodes[key_data->key_code], 1);
-		input_sync(key_data->input_dev);*/
+		input_sync(key_data->input_dev);
 		key_data->last_key_code = key_data->key_code;
 		return;
 	}
@@ -81,37 +80,33 @@ static void sunxi_report_key_down_event(struct sunxi_gpadc_key *key_data)
 			key_data->scankeycodes[key_data->last_key_code]) {
 #ifdef REPORT_REPEAT_KEY_BY_INPUT_CORE
 		/* report repeat key down event */
-		/*
 		input_report_key(key_data->input_dev,
 				key_data->scankeycodes[key_data->key_code], 1);
-		input_sync(key_data->input_dev);*/
+		input_sync(key_data->input_dev);
 #endif
 	} else {
 		/* report previous key up event
 		 ** and report current key down event
 		 **/
-		/*
 		input_report_key(key_data->input_dev,
 				key_data->scankeycodes[key_data->last_key_code], 0);
 		input_sync(key_data->input_dev);
 		input_report_key(key_data->input_dev,
 				key_data->scankeycodes[key_data->key_code], 1);
-		input_sync(key_data->input_dev);*/
+		input_sync(key_data->input_dev);
 		key_data->last_key_code = key_data->key_code;
 	}
 }
 
 void gpadc_irq_callback(unsigned int channel, int irq_status, unsigned int key_vol)
 {
-#if 1
 	sunxikbd_info("Key Interrupt\n");
-
-	//printf("=======key_vol %d=========\n", key_vol);
+	sunxikbd_info("=======key_vol %d=========\n", key_vol);
 	if (irq_status == 0) {
-		sinfo("key data down\n");
+		sunxikbd_info("key data down\n");
 		key_data->key_cnt++;
 		key_data->compare_before = (key_vol/SCALE_UNIT/1000)&0xff;
-		//printf("=======compare before  %d=========\n", key_data->compare_before);
+		sunxikbd_info("=======compare before  %d=========\n", key_data->compare_before);
 		if (key_data->compare_before == key_data->compare_later) {
 			key_data->compare_later = key_data->compare_before;
 			key_data->key_code = keypad_mapindex[key_data->compare_before];
@@ -125,22 +120,21 @@ void gpadc_irq_callback(unsigned int channel, int irq_status, unsigned int key_v
 	}
 
 	if (irq_status == 1) {
-/*		input_report_key(key_data->input_dev,
+		input_report_key(key_data->input_dev,
 				key_data->scankeycodes[key_data->key_code], 0);
-		input_sync(key_data->input_dev);*/
-		sinfo("key up\n");
+		input_sync(key_data->input_dev);
+		sunxikbd_info("key up\n");
 		key_data->compare_later = 0;
 		key_data->key_cnt = 0;
 		key_data->last_key_code = INITIAL_VALUE;
 	}
-#endif
 }
 
 static int sunxikbd_data_init(struct sunxi_gpadc_key *key_data, struct sunxikbd_config *sunxikbd_config)
 {
 	int i, j = 0;
 	int key_num = 0;
-	unsigned int resol;
+	//unsigned int resol;
 	unsigned int key_vol[KEY_MAX_CNT];
 
 	key_num = sunxikbd_config->key_num;
@@ -155,7 +149,7 @@ static int sunxikbd_data_init(struct sunxi_gpadc_key *key_data, struct sunxikbd_
 	for (i = 0; i < key_num; i++)
 	{
 		key_vol[i] = sunxikbd_config->key_vol[i];
-		//printf("key_vol[%d] : %d\n", i, key_vol[i]);
+		sunxikbd_info("key_vol[%d] : %d\n", i, key_vol[i]);
 	}
 	key_vol[key_num] = MAXIMUM_INPUT_VOLTAGE;
 
@@ -168,7 +162,7 @@ static int sunxikbd_data_init(struct sunxi_gpadc_key *key_data, struct sunxikbd_
 		if (i * SCALE_UNIT > key_vol[j])
 			j++;
 		keypad_mapindex[i] = j;
-		//printf("keypad_mapindex[%d] : %d\n", i, keypad_mapindex[i]);
+		sunxikbd_info("keypad_mapindex[%d] : %d\n", i, keypad_mapindex[i]);
 	}
 
 	key_data->last_key_code = INITIAL_VALUE;
@@ -192,9 +186,9 @@ int sunxi_gpadc_key_init(void)
 		sunxikbd_err("key data malloc err\n");
 		return -1;
 	}*/
-	key_data = (struct sunxikbd_drv_data *)malloc(sizeof(struct sunxi_gpadc_key));
+	key_data = (struct sunxi_gpadc_key *)malloc(sizeof(struct sunxi_gpadc_key));
 	if (NULL == key_data) {
-//		sinfo("gpadc malloc failed\n");
+		sunxikbd_err("gpadc malloc failed\n");
 		return -1;
 	}
 	memset(key_data, 0, sizeof(struct sunxi_gpadc_key));
@@ -209,7 +203,7 @@ int sunxi_gpadc_key_init(void)
 	}
 
 	//input dev init
-	/*
+
 	sunxikbd_dev = sunxi_input_allocate_device();
 	if (NULL == sunxikbd_dev) {
 		sunxikbd_err("allocate sunxikbd_dev err\n");
@@ -220,7 +214,7 @@ int sunxi_gpadc_key_init(void)
 		input_set_capability(sunxikbd_dev, EV_KEY, key_data->scankeycodes[i]);
 	key_data->input_dev = sunxikbd_dev;
 	sunxi_input_register_device(key_data->input_dev);
-	*/
+
 	//init lradc
 	hal_gpadc_init();
 	hal_gpadc_register_callback(gpadc_irq_callback);
