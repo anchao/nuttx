@@ -66,6 +66,14 @@ void r328_boardinitialize(void)
   r328_led_initialize();
 }
 
+#ifdef CONFIG_BOARD_EARLY_INITIALIZE
+extern void r328_early_initialize(void);
+void board_early_initialize(void)
+{
+  r328_early_initialize();
+}
+#endif
+
 /****************************************************************************
  * Name: board_late_initialize
  *
@@ -80,8 +88,10 @@ void r328_boardinitialize(void)
  ****************************************************************************/
 
 #ifdef CONFIG_BOARD_LATE_INITIALIZE
+extern void r328_late_initialize(void);
 void board_late_initialize(void)
 {
+  r328_late_initialize();
   r328_bringup();
 }
 #endif /* CONFIG_BOARD_LATE_INITIALIZE */
