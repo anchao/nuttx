@@ -57,6 +57,12 @@
 #include "r328_boot.h"
 #include "hal_gpio.h"
 
+#ifdef CONFIG_WATCHDOG
+#ifdef CONFIG_R328_WATCHDOG
+#include <arch/chip/r328_wdt.h>
+#endif
+#endif
+
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
@@ -382,5 +388,11 @@ extern int sunxi_soundcard_init(void);
 #ifdef CONFIG_DRIVERS_SPINOR
     int sunxi_driver_spinor_init(void);
     sunxi_driver_spinor_init();
+#endif
+
+#ifdef CONFIG_WATCHDOG
+#ifdef CONFIG_R328_WATCHDOG
+    r328_wdt_initialize(CONFIG_WATCHDOG_DEVPATH);
+#endif
 #endif
 }

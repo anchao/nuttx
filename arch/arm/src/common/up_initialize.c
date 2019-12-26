@@ -62,12 +62,6 @@
 #include "up_arch.h"
 #include "up_internal.h"
 
-#ifdef CONFIG_WATCHDOG
-#ifdef CONFIG_R328_WATCHDOG
-#include <arch/chip/r328_wdt.h>
-#endif
-#endif
-
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
@@ -236,12 +230,6 @@ void up_initialize(void)
    */
 
   syslog_initialize(SYSLOG_INIT_EARLY);
-
-#ifdef CONFIG_WATCHDOG
-#ifdef CONFIG_R328_WATCHDOG
-  r328_wdt_initialize(CONFIG_WATCHDOG_DEVPATH);
-#endif
-#endif
 
 #if defined(CONFIG_CRYPTO)
   /* Initialize the HW crypto and /dev/crypto */
