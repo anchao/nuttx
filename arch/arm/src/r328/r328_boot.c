@@ -398,4 +398,12 @@ extern int sunxi_soundcard_init(void);
     r328_wdt_initialize(CONFIG_WATCHDOG_DEVPATH);
 #endif
 #endif
+
+#ifdef CONFIG_FS_PROCFS
+    int ret = mount(NULL, "/proc", "procfs", 0, NULL);
+    if (ret < 0)
+    {
+        syslog(LOG_ERR, "ERROR: Failed to mount procfs at /proc: %d\n", ret);
+    }
+#endif
 }
