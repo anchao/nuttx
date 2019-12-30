@@ -136,14 +136,6 @@ ifeq ($(CONFIG_OPENAMP),y)
 NUTTXLIBS += staging$(DELIM)libopenamp$(LIBEXT)
 endif
 
-ifeq ($(CONFIG_COMPONENTS_AW_ALSA_LIB),y)
-NUTTXLIBS += staging$(DELIM)libaw-alsa-lib$(LIBEXT)
-endif
-
-ifeq ($(CONFIG_DRIVERS_SOUND),y)
-NUTTXLIBS += staging$(DELIM)libaw-sound-core$(LIBEXT)
-endif
-
 # Export all libraries
 
 EXPORTLIBS = $(NUTTXLIBS)

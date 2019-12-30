@@ -172,12 +172,4 @@ else
 CLEANDIRS += openamp
 endif
 
-ifeq ($(CONFIG_COMPONENTS_AW_ALSA_LIB),y)
-KERNDEPDIRS += $(ARCH_SRC)$(DELIM)r328$(DELIM)components$(DELIM)aw$(DELIM)sound$(DELIM)aw-alsa-lib
-endif
-
-ifeq ($(CONFIG_DRIVERS_SOUND),y)
-KERNDEPDIRS += $(ARCH_SRC)$(DELIM)r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)sound$(DELIM)core
-endif
-
 CLEANDIRS += $(KERNDEPDIRS) $(USERDEPDIRS)

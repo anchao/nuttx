@@ -120,3 +120,14 @@ else
   MKDEP = $(TOPDIR)$(DELIM)tools$(DELIM)mkdeps$(HOSTEXEEXT)
 endif
 
+R328_ARCH_DIR=${TOPDIR}$(DELIM)arch$(DELIM)arm$(DELIM)src$(DELIM)r328
+
+ifeq ($(CONFIG_DRIVERS_SOUND),y)
+EXTRA_LIBPATHS += -L "$(R328_ARCH_DIR)$(DELIM)drivers$(DELIM)chip-src$(DELIM)sound$(DELIM)core"
+EXTRA_LIBS += -law-sound-core
+endif
+
+ifeq ($(CONFIG_COMPONENTS_AW_ALSA_LIB),y)
+EXTRA_LIBPATHS += -L "$(R328_ARCH_DIR)$(DELIM)components$(DELIM)aw$(DELIM)sound$(DELIM)aw-alsa-lib"
+EXTRA_LIBS += -law-alsa-lib
+endif
