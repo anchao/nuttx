@@ -32,10 +32,5 @@
 #
 ############################################################################
 
-ifneq ($(CONFIG_COMPONENTS_AW_ALSA_UTILS),)
-include $(wildcard $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/sound/aplay/Make.defs)
-include $(wildcard $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/sound/arecord/Make.defs)
-include $(wildcard $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/sound/amixer/Make.defs)
-include $(wildcard $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/sound/soundcard/Make.defs)
-endif
+CONFIGURED_APPS += $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/sound/arecord
 
