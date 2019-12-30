@@ -61,14 +61,25 @@ typedef enum {
  * Functions
  *****************************************************************************/
 hal_pwm_status_t hal_pwm_init(void);
-
 hal_pwm_status_t hal_pwm_config(uint32_t channel, uint32_t duty_ns, uint32_t period_ns);
-
 hal_pwm_status_t hal_pwm_enable(uint32_t channel);
-
 hal_pwm_status_t hal_pwm_disable(uint32_t channel);
-
 hal_pwm_status_t hal_pwm_set_polarity(uint32_t channel, hal_pwm_polarity polarity);
+
+
+#ifdef CONFIG_USING_PWM_DRIVER_OPS
+typedef struct sunxi_hal_driver_pwm
+{
+	hal_pwm_status_t (* initialize)(void);
+	hal_pwm_status_t (* config)(uint32_t channel, uint32_t duty_ns, uint32_t period_ns);
+	hal_pwm_status_t (* enable)(uint32_t channel);
+	hal_pwm_status_t (* disable)(uint32_t channel);
+	hal_pwm_status_t (* set_polarity)(uint32_t channel, hal_pwm_polarity polarity);
+} const sunxi_hal_driver_pwm_t;
+
+
+extern const sunxi_hal_driver_pwm_t sunxi_hal_pwm_driver ;
+#endif
 
 #ifdef __cplusplus
 }

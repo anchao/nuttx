@@ -1,16 +1,37 @@
 menu "PWM Devices"
+	config DRIVERS_PWM
+	    bool "enable pwm device drivers"
+	    default n
+	
+	config USING_PWM_DRIVER_OPS
+	    bool "using pwm device drivers struct"
+		depends on DRIVERS_PWM
+	    default y
+		help
+		"This option provides a data structure that "
+		"contains all the driver operations"
 
-config DRIVERS_PWM
-    bool "enable pwm device drivers"
-        default n
+	menu "pwm driver debug option features"
+		config PWM_DBG
+		    bool "enable macro PWM_DBG"
+		    depends on DRIVERS_PWM
+		    default n
+			help
+			"Debugging info function configuration"
+		
+		config PWM_ERR
+		    bool "enable macro PWM_ERR"
+		    depends on DRIVERS_PWM
+		    default n
+			help
+			"Debugging error function configuration"
+		
+		config PWM_TRACE
+		    bool "enable macro PWM_TRACE"
+		    depends on DRIVERS_PWM
+		    default n
+			help
+			"Debugging trace function configuration"
 
-menu "pwm device option freatuers"
-
-config DRIVERS_PWM_FEATURE_1
-    bool "pwm device feature 1"
-        select DRIVERS_PWM
-        default n
-
-endmenu
-
+	endmenu
 endmenu

@@ -38,6 +38,29 @@
 extern "C" {
 #endif
 
+
+/*****************************************************************************
+ * Debug
+ *****************************************************************************/
+#if defined(CONFIG_PWM_DBG)
+#define PWM_DBG(fmt,args...)		sinfo("[PWM:dbg..] %-*s:%d "fmt ,30, __func__, __LINE__, ##args)
+#else
+#define PWM_DBG(fmt,args...)		do{} while(0)
+#endif
+
+#if defined(CONFIG_PWM_ERR)
+#define PWM_ERR(fmt,args...)		sinfo("[PWM:err**] %-*s:%d "fmt ,30, __func__, __LINE__, ##args)
+#else
+#define PWM_ERR(fmt,args...)		do{} while(0)
+#endif
+
+#if defined(CONFIG_PWM_TRACE)
+#define PWM_TRACE()					sinfo("[PWM:trace] %-*s:%d \n",30, __func__, __LINE__)
+#else
+#define PWM_TRACE()					do{} while(0)
+#endif
+
+
 /*****************************************************************************  
  * register
  *****************************************************************************/

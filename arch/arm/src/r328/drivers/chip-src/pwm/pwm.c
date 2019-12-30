@@ -33,7 +33,6 @@
 #include <stdint.h>
 
 #include "pwm.h"
-//#include "hal_pwm.h"
 
 #define SET_REG_VAL(reg_val, shift, width, set_val)     ((reg_val & ~((-1UL) >> (32 - width) << shift)) | (set_val << shift))
 

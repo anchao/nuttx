@@ -33,12 +33,11 @@
 
 #include "hal_gpio.h"
 #include "hal_clk.h"
-//#include "../../../include/drivers/hal_pwm.h"
+
 #include "pwm.h"
 
 hal_pwm_status_t hal_pwm_init(void)
 {
-	//clk_init();
 	if(hal_clock_enable(HAL_CLK_PERIPH_PWM))
 		return HAL_PWM_STATUS_ERROR;
 
@@ -139,3 +138,15 @@ hal_pwm_status_t hal_pwm_set_polarity(uint32_t channel, hal_pwm_polarity polarit
 
 	return HAL_PWM_STATUS_OK;
 }
+
+
+#ifdef CONFIG_USING_PWM_DRIVER_OPS
+const sunxi_hal_driver_pwm_t sunxi_hal_pwm_driver =
+{
+	.initialize = hal_pwm_init,
+	.config     = hal_pwm_config,
+	.enable     = hal_pwm_enable,
+	.disable    = hal_pwm_disable,
+	.set_polarity = hal_pwm_set_polarity,
+};
+#endif
