@@ -33,6 +33,7 @@
 //#include <awlog.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <string.h>
 #include <debug.h>
 #include <hal_i2c.h>
 #include "../chip-src/i2c/i2c.h"
@@ -40,7 +41,7 @@
 #ifdef DEBUG
 #define HAL_I2C_ERR(fmt, arg...) printf("%s()%d "fmt, __func__, __LINE__, ##arg)
 #else
-#define HAL_I2C_ERR(fmt, arg...) sinfo(fmt, ##arg)
+#define HAL_I2C_ERR(fmt, arg...)
 #endif
 
 volatile static uint8_t s_i2c_master_status[HAL_I2C_MASTER_MAX] = {0};
@@ -142,4 +143,22 @@ hal_i2c_status_t hal_i2c_master_receive(hal_i2c_port_t port, uint8_t slave_addre
 	return sunxi_i2c_xfer(port, msg, num);
 }
 
-
+/* Function: hal_i2c_msg_receive/send
+ *
+ * These two functions are only used for i2ctool(file:r328_i2c.c).
+ * If you want to use them for drivers,
+ * please use the above functions: "hal_i2c_master_receive/send".
+ */
+hal_i2c_status_t hal_i2c_msg_receive(hal_i2c_port_t port, i2c_msg_t *msg, uint8_t num)
+{
+	return sunxi_i2c_xfer(port, msg, num);
+}
+hal_i2c_status_t hal_i2c_msg_send(hal_i2c_port_t port, i2c_msg_t *msg, uint8_t num)
+{
+	if (num == 2) {
+		memcpy(msg[0].buf + msg[0].len, msg[1].buf, msg[1].len);
+		msg[0].len = msg[0].len + msg[1].len;
+		return sunxi_i2c_xfer(port, &msg[0], num);
+	}
+	return sunxi_i2c_xfer(port, msg, num);
+}

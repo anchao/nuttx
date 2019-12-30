@@ -138,8 +138,7 @@ CHIP_ASRCS  =
 
 # r328-specific C source files
 
-CHIP_CSRCS  = r328_boot.c  r328_lowputc.c r328_serial.c r328_irq.c secondary.c sunxi_hal_serial.c
-
+CHIP_CSRCS  = r328_boot.c  r328_lowputc.c r328_serial.c r328_irq.c secondary.c sunxi_hal_serial.c r328_i2c.c
 
 ifeq ($(CONFIG_SMP),y)
 CHIP_CSRCS += r328_cpuboot.c

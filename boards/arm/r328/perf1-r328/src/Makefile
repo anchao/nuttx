@@ -47,3 +47,6 @@ CSRCS += r328_buttons.c
 endif
 
 include $(TOPDIR)/boards/Board.mk
+
+AW_SRCDIR = $(TOPDIR)/arch/arm/src/r328
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)}

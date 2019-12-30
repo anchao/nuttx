@@ -38,6 +38,8 @@
  ****************************************************************************/
 
 #include <nuttx/config.h>
+#include <nuttx/i2c/i2c_master.h>
+#include <debug.h>
 
 #ifdef CONFIG_FS_PROCFS
 #  include <sys/mount.h>
@@ -53,6 +55,7 @@
 #  include <nuttx/leds/userled.h>
 #endif
 
+#include <r328_i2c.h>
 #include "perf1_r328.h"
 
 /****************************************************************************
@@ -72,10 +75,12 @@
  *     Called from the NSH library
  *
  ****************************************************************************/
-
 int r328_bringup(void)
 {
   int ret = OK;
+#if defined(CONFIG_I2C) && defined(CONFIG_DRIVERS_I2C)
+	r328_i2c_choose();
+#endif
 
 #ifdef CONFIG_BUTTONS
   /* Register the BUTTON driver */
@@ -86,7 +91,6 @@ int r328_bringup(void)
       syslog(LOG_ERR, "ERROR: btn_lower_initialize() failed: %d\n", ret);
     }
 #endif
-
 #ifdef CONFIG_USERLED
   /* Register the LED driver */
 
