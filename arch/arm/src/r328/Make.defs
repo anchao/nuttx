@@ -163,3 +163,7 @@ ifeq ($(CONFIG_R328_WATCHDOG),y)
 CHIP_CSRCS += r328_wdt.c
 CHIP_CSRCS += sunxi_hal_wdt.c
 endif
+
+VPATH += $(ARCH_SRCDIR)
+CHIP_CSRCS := $(patsubst %,chip/%,$(CHIP_CSRCS))
+CHIP_ASRCS := $(patsubst %,chip/%,$(CHIP_ASRCS))
