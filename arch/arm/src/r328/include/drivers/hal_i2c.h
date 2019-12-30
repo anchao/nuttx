@@ -123,10 +123,15 @@ typedef struct i2c_msg {
 #define I2C_M_RD		0x0001	/* read data, from slave to master
 					 * I2C_M_RD is guaranteed to be 0x0001!
 					 * */
+#define I2C_M_TEN		0x0002 /* Ten bit address */
+#define I2C_M_NOSTOP		0x0040 /* Message should not end with a STOP */
+#define I2C_M_NOSTART		0x0080 /* Message should not begin with a START */
 //#define I2C_M_TEN		0x0010	/* this is a ten bit chip address */
 	uint16_t len;			/* msg length */
 	uint8_t *buf;		/* pointer to msg data */
 } i2c_msg_t;
+
+
 
 
 
@@ -141,6 +146,9 @@ hal_i2c_status_t hal_i2c_master_receive(hal_i2c_port_t i2c_port, uint8_t slave_a
 		uint8_t *command, uint8_t command_len, uint8_t *buffer,
 		uint32_t size, uint16_t flag);
 
+hal_i2c_status_t hal_i2c_msg_receive(hal_i2c_port_t port, i2c_msg_t *msg, uint8_t num);
+
+hal_i2c_status_t hal_i2c_msg_send(hal_i2c_port_t port, i2c_msg_t *msg, uint8_t num);
 #ifdef __cplusplus
 }
 #endif

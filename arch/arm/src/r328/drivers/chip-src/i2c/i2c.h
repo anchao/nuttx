@@ -352,7 +352,6 @@ extern "C" {
 hal_i2c_status_t sunxi_i2c_init(hal_i2c_config_t *i2c_config);
 hal_i2c_status_t sunxi_i2c_deinit(hal_i2c_port_t i2c_port);
 hal_i2c_status_t sunxi_i2c_xfer(hal_i2c_port_t i2c_port, i2c_msg_t *msgs, int32_t num);
-
 #ifdef __cplusplus
 }
 #endif
