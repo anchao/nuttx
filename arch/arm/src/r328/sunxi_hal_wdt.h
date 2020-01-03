@@ -75,7 +75,7 @@ int sunxi_wdt_start(struct sunxi_wdt_dev_t *sunxi_wdt_dev);
 int sunxi_wdt_stop(struct sunxi_wdt_dev_t *sunxi_wdt_dev);
 int sunxi_wdt_ping(struct sunxi_wdt_dev_t *sunxi_wdt_dev);
 int sunxi_wdt_set_timeout(struct sunxi_wdt_dev_t *sunxi_wdt_dev, unsigned int timeout);
-int sunxi_wdt_restart(struct sunxi_wdt_dev_t *sunxi_wdt_dev, unsigned long action, void *data);
+int sunxi_wdt_restart(struct sunxi_wdt_dev_t *sunxi_wdt_dev);
 int sunxi_wdt_init(struct sunxi_wdt_dev_t **sunxi_wdt_dev, int init_mode);
 int sunxi_wdt_exit(struct sunxi_wdt_dev_t *sunxi_wdt_dev);
 

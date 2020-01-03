@@ -87,7 +87,7 @@ int sunxi_wdt_get_info(struct sunxi_wdt_dev_t *sunxi_wdt_dev, struct sunxi_wdt_i
 	return 0;
 }
 
-int sunxi_wdt_restart(struct sunxi_wdt_dev_t *sunxi_wdt_dev, unsigned long action, void *data)
+int sunxi_wdt_restart(struct sunxi_wdt_dev_t *sunxi_wdt_dev)
 {
 	void *wdt_base = sunxi_wdt_dev->wdt_base;
 	const struct sunxi_wdt_reg_t *regs = sunxi_wdt_dev->wdt_regs;
