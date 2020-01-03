@@ -13,8 +13,18 @@
 #include "up_internal.h"
 #include "up_arch.h"
 #include "chip.h"
+#include "queue.h"
+#include <fcntl.h>
+#include <nuttx/mqueue.h>
+
 static void uart_enable_irq(uart_port_t uart_port, uint32_t irq_type);
 static void uart_disable_irq(uart_port_t uart_port, uint32_t irq_type);
+
+#if 0
+static struct mq_attr attr;
+static mqd_t g_queuedesc[UART_MAX];
+static bool recv_II_use = false;
+#endif
 
 
 typedef struct {
@@ -63,7 +73,8 @@ static sunxi_hal_version_t hal_uart_driver =
 };
 static uart_priv_t g_uart_priv[UART_MAX];
 
-static uint8_t g_uart_buffer[UART_MAX][256];
+#define RING_BUF_SIZE (1024)
+static uint8_t g_uart_buffer[UART_MAX][RING_BUF_SIZE];
 
 static const uint32_t g_uart_baudrate_map[] =
 {
@@ -321,7 +332,7 @@ static int32_t uart_ring_buf_put(uart_port_t uart_port, uint8_t data)
 	return 0;
 }
 
-int32_t uart_ring_buf_get(uart_port_t uart_port, uint8_t *dst, uint32_t len)
+static int32_t uart_ring_buf_get(uart_port_t uart_port, uint8_t *dst, uint32_t len)
 {
 	uart_priv_t *uart_priv = &g_uart_priv[uart_port];
 	uart_ring_buf_t *rb = &uart_priv->ring_buf;
@@ -334,12 +345,13 @@ int32_t uart_ring_buf_get(uart_port_t uart_port, uint8_t *dst, uint32_t len)
 	}
 
 	/* disable rx irq to protect critical zone */
-	//uart_disable_irq(uart_port, UART_IER_RDI);
-	irqstate_t flags;
-	flags   = enter_critical_section();
+	uart_disable_irq(uart_port, UART_IER_RDI);
+	//irqstate_t flags;
+	//flags   = enter_critical_section();
 
-	if (len > rb->cnt)
+	if (len > rb->cnt) {
 		len = rb->cnt;
+	}
 
 	for (i = 0; i < len; i++) {
 		rb->cnt--;
@@ -349,32 +361,127 @@ int32_t uart_ring_buf_get(uart_port_t uart_port, uint8_t *dst, uint32_t len)
 	}
 
 	/* leave critical zone */
-	//uart_enable_irq(uart_port, UART_IER_RDI);
-	leave_critical_section(flags);
+	uart_enable_irq(uart_port, UART_IER_RDI);
+	//leave_critical_section(flags);
 
 	return len;
 }
 
+#if 0
+int32_t hal_uart_recv_II(uart_dev_t *uart, void *data, uint32_t expect_size,
+                         uint32_t *recv_size, uint32_t timeout)
+{
+    recv_II_use = true;
+    char *pdata = data;
+    int i = 0;
+    uint32_t rx_count = 0;
+    int32_t ret = 0;
+
+    if (data == NULL) {
+        return -1;
+    }
+
+    for (i = 0; i < expect_size; i++)
+    {
+	irqstate_t flags;
+	flags   = enter_critical_section();
+	ret = mq_receive(g_queuedesc[uart->port], &pdata[i], 257, NULL);
+	leave_critical_section(flags);
+        if(ret == 1)
+        {
+            rx_count++;
+        }else {
+            break;
+        }
+
+    }
+
+    if (recv_size)
+        *recv_size = rx_count;
+
+    if(rx_count != 0)
+    {
+        ret = 0;
+    }
+    else
+    {
+        ret = -1;
+    }
+
+    recv_II_use = false;
+    return ret;
+}
+#endif
+
 static uint32_t uart_handle_rx(uart_port_t uart_port, uint32_t lsr)
 {
 	const unsigned long uart_base = sunxi_uart_port[uart_port];
+	uart_priv_t *uart_priv = &g_uart_priv[uart_port];
+	uart_callback_t callback = uart_priv->func;
+	uart_ring_buf_t *rb = &uart_priv->ring_buf;
 	uint8_t ch = 0;
+	//char data;
 	uint16_t max_count = 256;
 	uint32_t ret;
 
+#if 0
+    if(recv_II_use == true) {
+	do {
+            if (lsr & UART_LSR_DR) {
+                data = hal_readb(uart_base + UART_RBR);
+		irqstate_t flags;
+		flags   = enter_critical_section();
+		ret = mq_send(g_queuedesc[uart_port],&data,1,0);
+		leave_critical_section(flags);
+            }
+            lsr = hal_readb(uart_base + UART_LSR);
+        } while ((lsr & (UART_LSR_DR | UART_LSR_BI)));
+
+        return lsr;
+    }
+
+    else {
+#endif
+	if (!rb->buf || rb->cnt >= rb->len)
+		goto overflow;
 	do {
 		if (lsr & UART_LSR_DR) {
-			irqstate_t flags;
-			flags   = enter_critical_section();
+			//irqstate_t flags;
+			//flags   = enter_critical_section();
 
 			ch = hal_readb(uart_base + UART_RBR);
 			ret = uart_ring_buf_put(uart_port, ch);
-			leave_critical_section(flags);
+			//leave_critical_section(flags);
 		}
 
 		lsr = hal_readb(uart_base + UART_LSR);
 	} while ((lsr & (UART_LSR_DR | UART_LSR_BI))
 			&& (max_count > 0) && !ret);
+
+	if(!(lsr & UART_LSR_DR)) {
+		/* rx finished, callback to user */
+		callback(UART_EVENT_RX_COMPLETE, uart_priv->arg);
+	} else if (ret < 0) {
+		/* buffer overflow, callback to user */
+		goto overflow;
+	}
+
+	return lsr;
+#if 0
+    }
+#endif
+
+overflow:
+	//printf("Receive ring buffer overflow\n");
+	/* read fifo data and throw it */
+	do {
+		if (lsr & UART_LSR_DR)
+		hal_readb(uart_base + UART_RBR);
+
+		lsr = hal_readb(uart_base + UART_LSR);
+	} while (lsr & (UART_LSR_DR | UART_LSR_BI));
+
+	callback(UART_EVENT_RX_BUFFER_ERROR, uart_priv->arg);
 
 	return lsr;
 }
@@ -385,6 +492,7 @@ static void uart_handle_tx(uart_port_t uart_port)
 	uart_priv_t *uart_priv = &g_uart_priv[uart_port];
 	const char *buf = uart_priv->tx_buf;
 	uint32_t buf_size = uart_priv->tx_buf_size;
+	uart_callback_t callback = uart_priv->func;
 	uint32_t usr;
 	uint16_t max_count = 128;
 
@@ -403,12 +511,12 @@ static void uart_handle_tx(uart_port_t uart_port)
 
 	if (buf_size == 0) {
 		/* disable tx irq*/
-		//uart_disable_irq(uart_port, UART_IER_THRI);
+		uart_disable_irq(uart_port, UART_IER_THRI);
 
 		/* tx finished, reset tx buffer and callback to user */
 		uart_priv->tx_buf = NULL;
 		uart_priv->tx_buf_size = 0;
-		//callback(UART_EVENT_TX_COMPLETE, uart_priv->arg);
+		callback(UART_EVENT_TX_COMPLETE, uart_priv->arg);
 	} else {
 		uart_priv->tx_buf = buf;
 		uart_priv->tx_buf_size = buf_size;
@@ -441,9 +549,9 @@ static int uart_irq_handler(int irq, void *dev_id, void *arg)
             hal_readb(uart_base + UART_RBR);
         }
 
-        //if (lsr & UART_LSR_THRE) {
-        //  uart_handle_tx(uart_port);
-	//}
+        if (lsr & UART_LSR_THRE) {
+	    uart_handle_tx(uart_port);
+	}
     }
     return 0;
 }
@@ -504,6 +612,52 @@ static void uart_pinctrl_init(uart_port_t uart_port)
     }
 }
 
+hal_uart_status_t uart_set_hardware_flowcontrol(uart_port_t uart_port, bool enable)
+{
+    if (!uart_port_is_valid(uart_port))
+	return HAL_UART_STATUS_ERROR_PARAMETER;
+
+    const unsigned long uart_base = sunxi_uart_port[uart_port];
+    uart_priv_t *uart_priv = &g_uart_priv[uart_port];
+    uint32_t value;
+
+    if(enable) {
+	value = hal_readb(uart_base + UART_MCR);
+	value |= UART_MCR_DTR | UART_MCR_RTS | UART_MCR_AFE;
+	uart_priv->mcr = value;
+	hal_writeb(uart_priv->mcr, uart_base + UART_MCR);
+
+	/* enable with modem status interrupts */
+	value = hal_readb(uart_base + UART_IER);
+	value |= UART_IER_MSI;
+	uart_priv->ier = value;
+	hal_writeb(uart_priv->ier, uart_base + UART_IER);
+    }
+    else {
+	value = hal_readb(uart_base + UART_MCR);
+	value &= ~(UART_MCR_DTR | UART_MCR_RTS | UART_MCR_AFE);
+	uart_priv->mcr = value;
+	hal_writeb(uart_priv->mcr, uart_base + UART_MCR);
+
+	/* enable with modem status interrupts */
+	value = hal_readb(uart_base + UART_IER);
+	value &= ~(UART_IER_MSI);
+	uart_priv->ier = value;
+	hal_writeb(uart_priv->ier, uart_base + UART_IER);
+    }
+	return HAL_UART_STATUS_OK;
+}
+
+void hal_uart_register_callback(uart_port_t uart_port,
+				uart_callback_t user_callback,
+				void *user_data)
+{
+	uart_priv_t *uart_priv = &g_uart_priv[uart_port];
+
+	uart_priv->func = user_callback;
+	uart_priv->arg = user_data;
+}
+
 static _uart_config_t uart_defconfig =
 {
     .baudrate    = UART_BAUDRATE_115200,
@@ -512,12 +666,17 @@ static _uart_config_t uart_defconfig =
     .parity      = UART_PARITY_NONE,
 };//defult uart config
 
-static int32_t initialize(int32_t uart_port)
+static hal_uart_status_t _hal_uart_init(uart_port_t uart_port, _uart_config_t *u_config)
 {
     uart_priv_t *uart_priv = &g_uart_priv[uart_port];
     uint32_t irqn = g_uart_irqn[uart_port];
     uint32_t value = 0;
-    _uart_config_t *uart_config = &uart_defconfig;
+    _uart_config_t *uart_config;
+
+    if(u_config == NULL)
+	uart_config = &uart_defconfig;
+    else
+	uart_config = u_config;
     char uart_name[8];
 
     UART_INIT("Initializing uart%ld \n", uart_port);
@@ -561,16 +720,51 @@ static int32_t initialize(int32_t uart_port)
     /* force config */
     uart_enable_busy_cfg(uart_port);
 
-	uint8_t *uart_buf = &g_uart_buffer[uart_port][0];
-	uart_ring_buf_init(uart_port, uart_buf, 256);
+    uint8_t *uart_buf = &g_uart_buffer[uart_port][0];
+    uart_ring_buf_init(uart_port, uart_buf, RING_BUF_SIZE);
 
     return SUNXI_HAL_OK;
 }
 
+#if 0
+/* Porting to AliOS Things HAL*/
+int32_t hal_uart_init(uart_dev_t *uart)
+{
+    uart_port_t uart_port = (uart_port_t)uart->port;
+
+    _uart_config_t uart_config;
+    uart_config_t  config = uart->config;
+
+    attr.mq_maxmsg = 8;
+    attr.mq_msgsize = 256;
+    attr.mq_curmsgs = 0;
+    attr.mq_flags = 0;
+
+    g_queuedesc[uart_port] = mq_open("uart_message", O_RDWR | O_CREAT, 0777, &attr);
+    if (g_queuedesc[uart_port] < 0)
+	return -EPERM;
+
+    uart_config.baudrate    = UART_BAUDRATE_1500000;
+    uart_config.word_length = (uart_word_length_t)config.data_width;
+    uart_config.stop_bit    = (uart_stop_bit_t)config.stop_bits;
+    uart_config.parity      = (uart_parity_t)config.parity;
+
+    return (int32_t)_hal_uart_init(uart_port, &uart_config);
+}
+#endif
+
+static int32_t initialize(int32_t uart_port)
+{
+    uart_port_t u_port = uart_port;
+
+    return _hal_uart_init(u_port, NULL);
+}
+
 static int32_t uninitialize(int32_t dev)
 {
-    //TODO: PINMUX and CLK
-    return SUNXI_HAL_OK;
+	//TODO: PINMUX and CLK
+
+	return SUNXI_HAL_OK;
 }
 
 static int32_t power_control(int32_t dev, sunxi_hal_power_state_e state)
@@ -578,6 +772,7 @@ static int32_t power_control(int32_t dev, sunxi_hal_power_state_e state)
     return SUNXI_HAL_OK;
 }
 
+#if 0
 static int _uart_putc(int devid, char c)
 {
     volatile uint32_t *sed_buf;
@@ -592,24 +787,35 @@ static int _uart_putc(int devid, char c)
 
     return 1;
 }
+#endif
 
 static int32_t _uart_send(int32_t dev, const char *data, uint32_t num)
 {
+	uart_priv_t *uart_priv = &g_uart_priv[dev];
+
+	uart_priv->tx_buf = data;
+	uart_priv->tx_buf_size = num;
+
+	uart_enable_irq(dev, UART_IER_THRI);
+
+	return SUNXI_HAL_OK;
+
+#if 0
     int size;
 
     assert(data != NULL);
 
     size = num;
-    while (num && (*data != '\0'))
+    while (num)
     {
         /*
         ¦   ¦* to be polite with serial console add a line feed
         ¦   ¦* to the carriage return character
         ¦   ¦*/
-        if (*data == '\n')
-        {
-            _uart_putc(dev, '\r');
-        }
+//        if (*data == '\n')
+//        {
+//            _uart_putc(dev, '\r');
+//        }
 
         _uart_putc(dev, *data);
 
@@ -618,65 +824,18 @@ static int32_t _uart_send(int32_t dev, const char *data, uint32_t num)
     }
 
     return size - num;
+#endif
 }
 
-static int _uart_getc(int devid)
-{
-    int ch = -1;
-    volatile uint32_t *rec_buf;
-    volatile uint32_t *sta;
-    volatile uint32_t *fifo;
-
-    rec_buf = (uint32_t *)(sunxi_uart_port[devid] + UART_RHB);
-    sta = (uint32_t *)(sunxi_uart_port[devid] + UART_USR);
-    fifo = (uint32_t *)(sunxi_uart_port[devid] + UART_RFL);
-
-    while (!(*fifo & 0x1ff));
-
-    /* Receive Data Available */
-    if (*sta & 0x08)
-    {
-        ch = *rec_buf & 0xff;
-    }
-
-    return ch;
-}
 
 static int32_t receive(int32_t dev, char *data, uint32_t num)
 {
 	uint8_t *tmp = (uint8_t *)data;
+	uint32_t recv_size;
 	if(data != NULL) {
-		uart_ring_buf_get(dev, tmp, num);
+		recv_size = uart_ring_buf_get(dev, tmp, num);
 	}
-	return num;
-
-#if 0
-    int ch;
-    int size;
-
-    assert(data != NULL);
-    size = num;
-
-    while (num)
-    {
-        ch = _uart_getc(dev);
-        if (ch == -1)
-        {
-            break;
-        }
-        *data = ch;
-        data ++;
-        num --;
-
-        if (ch == '\n')
-        {
-            break;
-        }
-    }
-
-    return size - num;
-#endif
-
+	return recv_size;
 }
 
 static int32_t transfer(int32_t dev, const void *data_out, void *data_in, uint32_t num)
@@ -698,15 +857,18 @@ static uint32_t get_rx_count(int32_t dev)
 
 static int32_t control(int32_t dev, uint32_t control, uint32_t arg)
 {
-	sunxi_uart_control_t cmd = control;
-	switch(cmd) {
-	case SUNXI_SET_BAUD:
-		uart_set_baudrate(dev, arg);
-		break;
-	case SUNXI_SET_FORMAT:
-	default:
-		break;
-	}
+    sunxi_uart_control_t cmd = control;
+    switch(cmd) {
+    case SUNXI_SET_BAUD:
+	uart_set_baudrate(dev, arg);
+	break;
+    case SUNXI_SET_FLOWCTL:
+	uart_set_hardware_flowcontrol(dev, arg);
+	break;
+    case SUNXI_SET_FORMAT:
+    default:
+	break;
+    }
 
     return SUNXI_HAL_OK;
 }
@@ -748,6 +910,6 @@ const sunxi_hal_driver_usart_t sunxi_hal_usart_driver =
 
 int serial_driver_init(void)
 {
-    sinfo("serial hal driver init");
+    sinfo("serial hal driver init\n");
     return 0;
 }

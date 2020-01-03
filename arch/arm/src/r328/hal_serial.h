@@ -72,6 +72,26 @@ typedef enum
     UART_STOP_BIT_2,
 } uart_stop_bit_t;
 
+/*
+ * UART data width
+ */
+typedef enum {
+    DATA_WIDTH_5BIT,
+    DATA_WIDTH_6BIT,
+    DATA_WIDTH_7BIT,
+    DATA_WIDTH_8BIT,
+    DATA_WIDTH_9BIT
+} hal_uart_data_width_t;
+
+/*
+ * UART mode
+ */
+typedef enum {
+    MODE_TX,
+    MODE_RX,
+    MODE_TX_RX
+} hal_uart_mode_t;
+
 /* This enum defines parity of the UART frame. */
 typedef enum
 {
@@ -79,6 +99,16 @@ typedef enum
     UART_PARITY_ODD,
     UART_PARITY_EVEN
 } uart_parity_t;
+
+/*
+ * UART flow control
+ */
+typedef enum {
+    FLOW_CONTROL_DISABLED,
+    FLOW_CONTROL_CTS,
+    FLOW_CONTROL_RTS,
+    FLOW_CONTROL_CTS_RTS
+} hal_uart_flow_control_t;
 
 /* This struct defines UART configure parameters. */
 typedef struct
@@ -89,7 +119,23 @@ typedef struct
     uart_parity_t parity;
 } _uart_config_t;
 
+#if 0
+/* UART configuration */
+typedef struct {
+    uint32_t                baud_rate;
+    hal_uart_data_width_t   data_width;
+    uart_parity_t	    parity;
+    uart_stop_bit_t	    stop_bits;
+    hal_uart_flow_control_t flow_control;
+    hal_uart_mode_t         mode;
+} uart_config_t;
 
+typedef struct {
+    uint8_t        port;   /* uart port */
+    uart_config_t  config; /* uart config */
+    void          *priv;   /* priv data */
+} uart_dev_t;
+#endif
 
 // brief General power states
 typedef enum sunxi_hal_power_state
@@ -154,6 +200,7 @@ typedef enum sunxi_hal_usart_modem_control
 typedef enum sunxi_uart_control
 {
 	SUNXI_SET_BAUD,
+	SUNXI_SET_FLOWCTL,
 	SUNXI_SET_FORMAT,
 } sunxi_uart_control_t;
 
@@ -169,6 +216,13 @@ typedef struct sunxi_hal_usart_modem_status
     uint32_t reserved : 28;
 } sunxi_hal_usart_modem_status_t;
 
+/* This enum defines the UART event when an interrupt occurs. */
+typedef enum {
+	UART_EVENT_TRANSACTION_ERROR = -1,
+	UART_EVENT_RX_BUFFER_ERROR = -2,
+	UART_EVENT_TX_COMPLETE = 1,
+	UART_EVENT_RX_COMPLETE = 2,
+} uart_callback_event_t;
 
 /** @brief This typedef defines user's callback function prototype.
  *             This callback function will be called in UART interrupt handler when UART interrupt is raised.
@@ -177,6 +231,8 @@ typedef struct sunxi_hal_usart_modem_status
  *             parameter "event" : for more information, please refer to description of #uart_callback_event_t.
  *             parameter "user_data" : a user defined data used in the callback function.
  */
+typedef void (*uart_callback_t)(uart_callback_event_t event, void *user_data);
+
 typedef struct
 {
     uint8_t *buf;
@@ -207,9 +263,11 @@ typedef struct
     /* rx ring buf */
     uart_ring_buf_t ring_buf;
 
+    /* user callback */
+    uart_callback_t func;
+
     void *arg;
 } uart_priv_t;
-
 /**
   \fn          sunxi_hal_version_t SUNXI_HAL_USART_GetVersion (void)
   \brief       Get driver version.
@@ -368,6 +426,9 @@ typedef struct sunxi_hal_driver_usart
     sunxi_hal_usart_modem_status_t (*get_modem_status)(int32_t dev);
 } const sunxi_hal_driver_usart_t;
 
+void hal_uart_register_callback(uart_port_t uart_port,
+				uart_callback_t user_callback,
+				void *user_data);
 
 #ifdef __cplusplus
 }
