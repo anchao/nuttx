@@ -66,6 +66,11 @@
  * Private Types
  ****************************************************************************/
 
+/* Defining an watchdog ioctl of R328
+ * Used to restart the system - Argument: Ignored
+ */
+#define WDIOC_RESTART    _WDIOC(0x081)
+
 /* This structure provides the private representation of the "lower-half"
  * driver state structure.  This structure must be cast-compatible with the
  * well-known watchdog_lowerhalf_s structure.
@@ -94,6 +99,8 @@ static int r328_getstatus(FAR struct watchdog_lowerhalf_s *lower,
                            FAR struct watchdog_status_s *status);
 static int r328_settimeout(FAR struct watchdog_lowerhalf_s *lower,
                             uint32_t timeout);
+static int r328_ioctl(FAR struct watchdog_lowerhalf_s *lower,
+                            int cmd, unsigned long arg);
 
 /****************************************************************************
  * Private Data
@@ -109,7 +116,7 @@ static const struct watchdog_ops_s g_wdtops =
   .getstatus  = r328_getstatus,
   .settimeout = r328_settimeout,
   .capture    = NULL,
-  .ioctl      = NULL,
+  .ioctl      = r328_ioctl,
 };
 
 /* "Lower half" driver state */
@@ -324,6 +331,49 @@ static int r328_settimeout(FAR struct watchdog_lowerhalf_s *lower, uint32_t time
 
   priv->timeout = timeout;
   priv->wdt_dev->timeout = (timeout / 1000);
+
+  return OK;
+}
+
+/****************************************************************************
+ * Name: r328_ioctl
+ *
+ * Description:
+ *   ioctl support restarting the system
+ *
+ * Input Parameters:
+ *   lower   - A pointer the publicly visible representation of the "lower-half"
+ *             driver state structure.
+ *
+ * Returned Values:
+ *   Zero on success; a negated errno value on failure.
+ *
+ ****************************************************************************/
+
+static int r328_ioctl(FAR struct watchdog_lowerhalf_s *lower, int cmd, unsigned long arg)
+{
+  FAR struct r328_wdt_lowerhalf_s *priv = (FAR struct r328_wdt_lowerhalf_s *)lower;
+
+  DEBUGASSERT(priv);
+
+  switch (cmd)
+  {
+      case WDIOC_RESTART:
+        {
+            if (sunxi_wdt_restart(priv->wdt_dev))
+            {
+                wdinfo("sunxi_wdt_restart faile\n");
+                return -1;
+            }
+        }
+        break;
+      default:
+        {
+            wdinfo("Unsupported command\n");
+            return -1;
+        }
+        break;
+  }
 
   return OK;
 }
