@@ -320,7 +320,7 @@ static void gpio_irq_set_type(struct gpio_irq_desc *dirq, unsigned long type)
 
 static int gpio_irq_handle(int dummy, void *data, void *arg)
 {
-	uint32_t hwirq = *((uint32_t *)data);
+	uint32_t hwirq = *((uint32_t *)arg);
 	struct gpio_desc *gpio_desc = g_gpio_desc;
 	uint32_t bank, reg, val, base_bank;
 
@@ -621,7 +621,7 @@ int gpio_to_irq(uint32_t pin)
 		if ( pin != gpio_desc->irq_desc[i].pin) {
 			continue;
 		}
-		GPIO_INFO("gpio %u to irq %u succeed!\n", pin, gpio_desc->irq_desc[i].virq);
+		//GPIO_INFO("gpio %u to irq %u succeed!\n", pin, gpio_desc->irq_desc[i].virq);
 		return gpio_desc->irq_desc[i].virq;
 	}
 
@@ -629,7 +629,7 @@ int gpio_to_irq(uint32_t pin)
 		goto ERR;
 	}
 ERR:
-	GPIO_ERR("gpio to irq error!\n");
+	//GPIO_ERR("gpio to irq error!\n");
 	return -1;
 }
 
@@ -719,7 +719,7 @@ int gpio_irq_disable(uint32_t irq)
 	uint32_t val = 0;
 
 	if ( irq < GPIO_IRQ_START || irq >= irq_max_num) {
-		GPIO_ERR("Wrong irq NO.(%u) to enable !!\n", irq);
+		//GPIO_ERR("Wrong irq NO.(%u) to enable !!\n", irq);
 		return -1;
 	}
 
