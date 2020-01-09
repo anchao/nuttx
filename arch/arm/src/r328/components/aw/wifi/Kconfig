@@ -1,0 +1,12 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+menu "AW Wifi Compenents"
+config COMPONENTS_AW_WIFI
+	bool "Allwinner wifi manager"
+	default n
+	help
+		this is wifi manager.
+endmenu

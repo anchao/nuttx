@@ -1,6 +1,8 @@
 ############################################################################
+# apps/examples/hello/Make.defs
+# Adds selected applications to apps/ build
 #
-#   Copyright (C) 2019 Gregory Nutt. All rights reserved.
+#   Copyright (C) 2015 Gregory Nutt. All rights reserved.
 #   Author: Gregory Nutt <gnutt@nuttx.org>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,8 +34,32 @@
 #
 ############################################################################
 
+ifneq ($(CONFIG_COMPONENTS_AW_WIFI),)
 
-include r328$(DELIM)components$(DELIM)aw$(DELIM)sound$(DELIM)Make.defs
-include r328$(DELIM)components$(DELIM)aw$(DELIM)usb$(DELIM)Make.defs
-include r328$(DELIM)components$(DELIM)aw$(DELIM)wifi$(DELIM)Make.defs
+AW_SRCDIR = $(TOPDIR)/arch/arm/src/r328
 
+CHIP_CSRCS += components/aw/wifi/sys_ctrl/sys_ctrl.c
+CHIP_CSRCS += components/aw/wifi/sys_ctrl/container.c
+CHIP_CSRCS += components/aw/wifi/sys_ctrl/publisher.c
+CHIP_CSRCS += components/aw/wifi/sys_ctrl/observer.c
+CHIP_CSRCS += components/aw/wifi/sys_ctrl/event_queue.c
+CHIP_CSRCS += components/aw/wifi/sys_ctrl/looper.c
+
+CHIP_CSRCS += components/aw/wifi/net_ctrl.c
+CHIP_CSRCS += components/aw/wifi/net_sys.c
+CHIP_CSRCS += components/aw/wifi/sysinfo.c
+CHIP_CSRCS += components/aw/wifi/wifi_adapter.c
+CHIP_CSRCS += components/aw/wifi/wifimanager.c
+
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)components$(DELIM)aw$(DELIM)wifi}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)components$(DELIM)aw$(DELIM)wifi$(DELIM)sys_ctrl}
+
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)include$(DELIM)drivers}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xr829}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xr829$(DELIM)os}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xr829$(DELIM)os$(DELIM)include}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xr829$(DELIM)os/include/net}
+
+CFLAGS += -DCONFIG_OS_NUTTX -DCONFIG_NUTTX_TCPIP -DCONFIG_RTOS_XR829
+
+endif
