@@ -32,7 +32,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define PRIORIY_BASE  210
+#define PRIORIY_BASE  90
 //TODO
 typedef enum  {
 	OS_PRIORITY_IDLE        	= (PRIORIY_BASE + 1),
