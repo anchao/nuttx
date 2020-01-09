@@ -593,7 +593,7 @@ static int _uart_putc(int devid, char c)
     return 1;
 }
 
-static int32_t send(int32_t dev, const char *data, uint32_t num)
+static int32_t _uart_send(int32_t dev, const char *data, uint32_t num)
 {
     int size;
 
@@ -735,7 +735,7 @@ const sunxi_hal_driver_usart_t sunxi_hal_usart_driver =
     .initialize = initialize,
     .uninitialize = uninitialize,
     .power_control = power_control,
-    .send = send,
+    .send = _uart_send,
     .receive = receive,
     .transfer = transfer,
     .get_tx_count = get_tx_count,
