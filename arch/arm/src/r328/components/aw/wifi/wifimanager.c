@@ -196,7 +196,10 @@ void aw_wifi_off(void)
 {
 	//TODO
 }
-
+int aw_wifi_scan(aw_wifi_scan_results_t *scan_result,int max_num)
+{
+	return wifi_scan(scan_result,max_num);
+}
 int aw_wifi_connect(const char *ssid,const char *password)
 {
 	int len;

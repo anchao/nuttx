@@ -91,7 +91,88 @@ void wifi_deinit(void)
 	;
 }
 
-#define TRY_FIND_SSID_TIME 3
+#define TRY_FIND_SSID_TIME 1
+int wifi_scan(aw_wifi_scan_results_t *scan_result,int max_num)
+{
+	int ret = -1;
+	int j;
+	int size;
+	int i;
+	wlan_sta_scan_results_t results;
+	uint32_t scan_timeout_ms = 3000;
+
+	size = max_num; //max_scan_num;
+
+	results.ap = malloc(size * sizeof(wlan_sta_ap_t));
+	if (results.ap == NULL) {
+		WIFI_DEBUG("do not have the mem\n");
+		return -1;
+	}
+	results.size = size;
+
+	for (j = 0;j < TRY_FIND_SSID_TIME; j++) {
+		ret = wlan_sta_scan_once();
+		if (ret != 0) {
+			free(results.ap);
+			WIFI_DEBUG("wlan sta scan cmd failed\n");
+			return -1;
+		}
+
+		uint32_t end_time = OS_JiffiesToMSecs(OS_GetJiffies()) + scan_timeout_ms;
+		scan_status = NET_CTRL_MSG_WLAN_SCAN_FAILED;
+		while (!(scan_status == NET_CTRL_MSG_WLAN_SCAN_SUCCESS) &&
+			OS_TimeBefore(OS_JiffiesToMSecs(OS_GetJiffies()), end_time)) {
+			OS_MSleep(20);
+		}
+
+		if(!OS_TimeBefore(OS_JiffiesToMSecs(OS_GetJiffies()), end_time)){
+			WIFI_DEBUG("wlan sta scan timeout %d\n", scan_timeout_ms);
+			free(results.ap);
+			return -1;
+		}
+
+		ret = wlan_sta_scan_result(&results);
+		if(ret == 0) {
+#if 1
+			for (i = 0; i < results.num; i++) {
+				memcpy(scan_result[i].ssid, results.ap[i].ssid.ssid, results.ap[i].ssid.ssid_len);
+				scan_result[i].ssid[results.ap[i].ssid.ssid_len] = '\0';
+
+				memcpy(scan_result[i].bssid, results.ap[i].bssid, 6);
+				scan_result[i].rssi = results.ap[i].level;
+				scan_result[i].channel = results.ap[i].channel;
+				if(results.ap[i].wpa_flags & WPA_FLAGS_WEP) {
+					scan_result[i].key = WIFIMG_WEP;
+				} else if(results.ap[i].wpa_flags & WPA_FLAGS_WPA2){
+					scan_result[i].key = WIFIMG_WPA2_PSK;
+				} else {
+					scan_result[i].key = WIFIMG_WPA_PSK;
+				}
+			}
+			ret = results.num;
+#endif
+#if 0
+			char scan_ssid[WLAN_SSID_MAX_LEN+1];
+			for (i = 0; i < results.num; i++) {
+				#if 1
+				WIFI_DEBUG("%2d    BSS %02X:%02X:%02X:%02X:%02X:%02X    SSID: %-32.32s\ 
+CHAN: %2d    RSSI: %d    flags: %08x    wpa_key_mgmt: %08x    \
+wpa_cipher: %08x    wpa2_key_mgmt: %08x    wpa2_cipher: %08x\n",
+						 i + 1, (results.ap[i].bssid)[0], (results.ap[i].bssid)[1],
+						 (results.ap[i].bssid)[2], (results.ap[i].bssid)[3],
+						 (results.ap[i].bssid)[4], (results.ap[i].bssid)[5],
+						 results.ap[i].ssid.ssid, results.ap[i].channel,results.ap[i].level,
+						 results.ap[i].wpa_flags, results.ap[i].wpa_key_mgmt,
+						 results.ap[i].wpa_cipher,results.ap[i].wpa2_key_mgmt,
+						 results.ap[i].wpa2_cipher);
+			 	#endif
+			}
+#endif
+		}
+	}
+	free(results.ap);
+	return ret;
+}
 int get_wep_security(int *is_wep_security, char *ssid, int ssid_len){
 
 	int ret = -1;

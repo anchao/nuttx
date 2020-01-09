@@ -79,6 +79,13 @@ typedef void (*aw_wifi_msg_cb_t)(aw_wifi_msg_data_t *p_msg);
  */
 typedef int (*aw_dhcp_cb_t)(int tries,int timeout_ms,void *arg);
 
+typedef enum {
+	WIFIMG_NONE = 0,
+	WIFIMG_WEP,
+	WIFIMG_WPA_PSK,
+	WIFIMG_WPA2_PSK,
+}aw_wifi_mgmt_t;
+
 typedef struct {
 	bool enable;
 	char ssid[WIFI_SSID_MAX_LENGTH+1];
@@ -92,7 +99,8 @@ typedef struct {
 typedef struct {
 	char ssid[WIFI_SSID_MAX_LENGTH+1];
 	int rssi;
-	int security_mode;
+	int channel;
+	aw_wifi_mgmt_t key;
 	uint8_t bssid[WC_BSSID_LEN];
 }aw_wifi_scan_results_t;
 
@@ -109,6 +117,8 @@ typedef struct {
 int aw_wifi_on(void);
 
 void aw_wifi_off(void);
+
+int aw_wifi_scan(aw_wifi_scan_results_t *scan_result,int max_num);
 
 int aw_wifi_get_network_info(aw_wifi_network_info_t *pinfo);
 
