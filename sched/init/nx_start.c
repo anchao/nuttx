@@ -367,6 +367,7 @@ static FAR char *g_idleargv[CONFIG_SMP_NCPUS][2];
 static FAR char *g_idleargv[1][2];
 #endif
 
+extern const unsigned int g_idle_topstack;
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -544,6 +545,11 @@ void nx_start(void)
       g_idleargv[cpu][1]  = NULL;
       g_idletcb[cpu].argv = &g_idleargv[cpu][0];
 
+      /* Set CPU0 IDLE task stack size, CPU[n]'s (n>0) IDLE stack size will be set by up_cpuidlestack */
+      if(cpu == 0) {
+          g_idletcb[cpu].cmn.adj_stack_size = CONFIG_IDLETHREAD_STACKSIZE;
+          g_idletcb[cpu].cmn.stack_alloc_ptr = (void *)(g_idle_topstack - CONFIG_IDLETHREAD_STACKSIZE);
+      }
       /* Then add the idle task's TCB to the head of the current ready to
        * run list.
        */
