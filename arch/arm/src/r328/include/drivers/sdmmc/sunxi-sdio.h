@@ -30,7 +30,7 @@
 #ifndef _DRIVER_CHIP_SDMMC_SDIO_H_
 #define _DRIVER_CHIP_SDMMC_SDIO_H_
 
-#include <nuttx/sunxi-sdmmc/sunxi-card.h>
+#include <sdmmc/sunxi-card.h>
 
 #ifdef __cplusplus
 extern "C" {

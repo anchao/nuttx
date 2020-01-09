@@ -27,9 +27,9 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <nuttx/sunxi-sdmmc/sunxi-sdmmc.h>
-#include <nuttx/sunxi-sdmmc/osal_sdmmc.h>
-#include <nuttx/sunxi-sdmmc/sdmmc_log.h>
+#include <sdmmc/sunxi-sdmmc.h>
+#include <sdmmc/osal_sdmmc.h>
+#include <sdmmc/sdmmc_log.h>
 #include "hal_sdmmc.h"
 #include "hal_sdhost.h"
 #ifdef CONFIG_USE_SDIO
@@ -678,7 +678,8 @@ static void SDC0_IRQHandler(int id, void *data)
 
 #if SDC1_SUPPORT
 //__nonxip_text TODO
- void SDC1_IRQHandler(int id, void *data) //static
+//void SDC1_IRQHandler(int id, void *data) //static
+int SDC1_IRQHandler(int irq, FAR void *context, FAR void *arg)
 {
 	__mci_irq_handler(SDC1);
 }

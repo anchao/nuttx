@@ -36,7 +36,7 @@ extern "C" {
 
 #include <debug.h>
 
-#define SDMMC_LOG_TAG sinfo
+#define SDMMC_LOG_TAG printf
 
 #define ROM_DUMP_MASK   (1 << 0)
 #define ROM_DBG_MASK    (1 << 1)

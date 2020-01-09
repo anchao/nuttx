@@ -28,7 +28,7 @@
  */
 
 #include <string.h> /* for strncmp() */
-#include <nuttx/sunxi-sdmmc/sunxi-card.h>
+#include <sdmmc/sunxi-card.h>
 
 #include "core.h"
 

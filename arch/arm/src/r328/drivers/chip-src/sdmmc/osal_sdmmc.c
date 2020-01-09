@@ -1,5 +1,5 @@
-#include <nuttx/sunxi-sdmmc/osal_sdmmc.h>
-#include <nuttx/sunxi-sdmmc/sdmmc_log.h>
+#include <sdmmc/osal_sdmmc.h>
+#include <sdmmc/sdmmc_log.h>
 
 #ifdef OS_RESOURCE_TRACE
 

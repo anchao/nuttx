@@ -30,7 +30,7 @@
 #ifndef _ROM_DRIVER_CHIP_SDMMC_MMC_H_
 #define _ROM_DRIVER_CHIP_SDMMC_MMC_H_
 
-#include <nuttx/sunxi-sdmmc/sunxi-sdmmc.h>
+#include <sdmmc/sunxi-sdmmc.h>
 
 #ifdef __cplusplus
 extern "C" {

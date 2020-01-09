@@ -14,10 +14,10 @@
  */
 
 //#include "sys/param.h"
-#include <nuttx/sunxi-sdmmc/sunxi-sdmmc.h>
-#include <nuttx/sunxi-sdmmc/sunxi-sdio.h>
-#include <nuttx/sunxi-sdmmc/osal_sdmmc.h>
-#include <nuttx/sunxi-sdmmc/sdmmc_log.h>
+#include <sdmmc/sunxi-sdmmc.h>
+#include <sdmmc/sunxi-sdio.h>
+#include <sdmmc/osal_sdmmc.h>
+#include <sdmmc/sdmmc_log.h>
 #include "hal_sdhost.h"
 #include "sdio.h"
 #include "sched.h"

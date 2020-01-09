@@ -27,8 +27,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <nuttx/sunxi-sdmmc/sunxi-sdmmc.h>
-#include <nuttx/sunxi-sdmmc/sdmmc_log.h>
+#include <sdmmc/sunxi-sdmmc.h>
+#include <sdmmc/sdmmc_log.h>
 #include "sdio.h"
 #include "hal_sdhost.h"
 #include "mmc.h"

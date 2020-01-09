@@ -30,8 +30,8 @@
 #ifndef __HAL_SDHOST__H_
 #define __HAL_SDHOST__H_
 
-#include <nuttx/sunxi-sdmmc/osal_sdmmc.h>
-#include <nuttx/sunxi-sdmmc/sunxi-sdhost.h>
+#include <sdmmc/osal_sdmmc.h>
+#include <sdmmc/sunxi-sdhost.h>
 #include <interrupt.h>
 #include <up_arch.h>
 

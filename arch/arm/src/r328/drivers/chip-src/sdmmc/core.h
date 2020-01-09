@@ -30,12 +30,12 @@
 #ifndef _ROM_DRIVER_CHIP_SDMMC__CORE_H_
 #define _ROM_DRIVER_CHIP_SDMMC__CORE_H_
 
-#include <nuttx/sunxi-sdmmc/sunxi-card.h>
+#include <sdmmc/sunxi-card.h>
 #include "hal_sdhost.h"
 #ifdef CONFIG_USE_SDIO
 #include "sdio.h"
 #endif
-#include <nuttx/sunxi-sdmmc/sunxi-sdmmc.h>
+#include <sdmmc/sunxi-sdmmc.h>
 #ifdef __cplusplus
 extern "C" {
 #endif

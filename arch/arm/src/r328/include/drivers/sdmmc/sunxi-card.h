@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-#include <nuttx/sunxi-sdmmc/osal_sdmmc.h>
+#include <sdmmc/osal_sdmmc.h>
 #define CONFIG_SDIO_USE_FUNS
 //#define CONFIG_USE_SDIO_COMBO
 //#define SD_SUPPORT_VERSION3           /* not support for not support 1V8 */ #error !!

@@ -2,7 +2,7 @@
 #define __HAL_SDMMC_H__
 
 #include <chip/osal4hal/hal_cache.h>
-#include <nuttx/sunxi-sdmmc/osal_sdmmc.h>
+#include <sdmmc/osal_sdmmc.h>
 
 /* IRQ disable/enable */
 #define HAL_DisableIRQ()    arch_irq_disable()
@@ -34,7 +34,7 @@ typedef irqstate_t osal_sdmmc_irqstate_t;
 
 
 /* Time */
-#define HAL_Ticks()             OSAL_GET_SYS_TICK
+#define HAL_Ticks()             OSAL_GET_SYS_TICK()
 #define HAL_MSleep(msec)        OS_MSleep(msec)
 #define HAL_UDelay(us)          OS_Udelay(us)
 
