@@ -1,1 +1,2 @@
 source arch/arm/src/r328/drivers/board/input/Kconfig
+source arch/arm/src/r328/drivers/board/xr829/Kconfig

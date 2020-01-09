@@ -33,3 +33,4 @@
 ############################################################################
 
 include r328$(DELIM)drivers$(DELIM)board$(DELIM)input$(DELIM)Make.defs
+include r328$(DELIM)drivers$(DELIM)board$(DELIM)xr829$(DELIM)Make.defs
