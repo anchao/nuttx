@@ -1,0 +1,4 @@
+config IEEE80211_XR829
+	bool "xr829 chip support"
+	default n
+
