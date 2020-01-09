@@ -504,8 +504,12 @@ static int xradio_drv_ifup(FAR struct net_driver_s *dev)
 	wd_start(priv->xr_txpolldog, XRADIO_DRV_WDDELAY, xradio_drv_poll_expiry, 1,
            (wdparm_t)dev);
 
-	priv->if_up = true;
+    if ((dev->d_flags & IFF_UP) == 0) {
+          /* No, bring the interface up now */
+		dev->d_flags |= IFF_UP;
+    }
 
+	priv->if_up = true;
 	return 0;
 }
 
@@ -565,6 +569,11 @@ static void xradio_mac_random(uint8_t mac_addr[6])
 	mac_addr[0] = 0xFC;
 }
 
+static void xradio_drv_if_up_work(FAR void *arg)
+{
+	FAR struct xradio_drv_s *priv = (struct xradio_drv_s *)arg;
+	xradio_drv_ifup(&priv->xr_dev);
+}
 int xradio_drv_init(void)
 {
 	FAR struct xradio_drv_s *priv;
@@ -605,5 +614,6 @@ int xradio_drv_init(void)
 
 	netdev_register(&priv->xr_dev, NET_LL_IEEE80211);
 
+	work_queue(LPWORK, &priv->xr_pollwork, xradio_drv_if_up_work, priv, (CLK_TCK/2));
 	return 0;
 }
