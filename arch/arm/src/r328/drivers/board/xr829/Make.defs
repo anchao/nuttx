@@ -27,8 +27,18 @@ CHIP_CSRCS += drivers/board/xr829/os/kernel/os/nuttx/os_semaphore.c
 CHIP_CSRCS += drivers/board/xr829/os/kernel/os/nuttx/os_thread.c
 CHIP_CSRCS += drivers/board/xr829/os/kernel/os/nuttx/os_timer.c
 
+CHIP_CSRCS += drivers/board/xr829/driver/port/atomic.c
+CHIP_CSRCS += drivers/board/xr829/driver/port/gpio.c
+CHIP_CSRCS += drivers/board/xr829/driver/port/sdio.c
+CHIP_CSRCS += drivers/board/xr829/driver/port/delay.c
+CHIP_CSRCS += drivers/board/xr829/driver/port/xr_drv_mem.c
+CHIP_CSRCS += drivers/board/xr829/driver/port/ffs.c
+CHIP_CSRCS += drivers/board/xr829/driver/port/hexdump.c
+CHIP_CSRCS += drivers/board/xr829/driver/port/workqueue.c
+
 
 CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)include$(DELIM)drivers}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xr829$(DELIM)include}
 CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xr829}
 CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xr829$(DELIM)os}
 CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xr829$(DELIM)os$(DELIM)include}
