@@ -1062,7 +1062,7 @@ static void __mci_send_cmd(struct mmc_host *host, struct mmc_command *cmd)
 				cmd_val |= SDXC_Write;
 			}
 #ifdef CONFIG_SDC_DMA_USED
-			if (host->dma_hdle) {
+			else if (host->dma_hdle) {
 				wait |= SDC_WAIT_IDMA_DONE;
 			}
 #endif
