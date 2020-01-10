@@ -1,6 +1,6 @@
 ############################################################################
 #
-#   Copyright (C) 2019 Gregory Nutt. All rights reserved.
+#   Copyright (C) 2008, 2010-2013 Gregory Nutt. All rights reserved.
 #   Author: Gregory Nutt <gnutt@nuttx.org>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,10 +32,13 @@
 #
 ############################################################################
 
+-include $(TOPDIR)/Make.defs
 
-include r328$(DELIM)components$(DELIM)aw$(DELIM)sound$(DELIM)Make.defs
-include r328$(DELIM)components$(DELIM)aw$(DELIM)usb$(DELIM)Make.defs
-include r328$(DELIM)components$(DELIM)aw$(DELIM)wifi$(DELIM)Make.defs
-include r328$(DELIM)components$(DELIM)aw$(DELIM)bluetooth$(DELIM)Make.defs
-include r328$(DELIM)components$(DELIM)aw$(DELIM)debug$(DELIM)Make.defs
+PROGNAME  = watchpoint
+PRIORITY  = 100
+STACKSIZE = 8192
+MODULE    = watchpoint
 
+MAINSRC = watchpoint_main.c
+
+include $(APPDIR)/Application.mk
