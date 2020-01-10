@@ -100,8 +100,35 @@ osal_sdmmc_status_t osal_sdmmc_mutex_delete(osal_sdmmc_mutex_t *mutex)
 osal_sdmmc_status_t osal_sdmmc_mutex_lock(osal_sdmmc_mutex_t *mutex,
 		osal_sdmmc_wait_timems_t waitMS)
 {
+#if 0
 	//TODO : wait time out,
 	return nxsem_wait(&mutex->handle);
+#else
+	struct timespec abstime;
+	unsigned int timeout_sec;
+
+	if(waitMS == OS_WAIT_FOREVER) {
+		waitMS = 0x0fffffffU;
+	}
+
+  /* Get the current time */
+
+	(void)clock_gettime(CLOCK_REALTIME, &abstime);
+
+	timeout_sec      = waitMS / 1000;
+	abstime.tv_sec  += timeout_sec;
+	abstime.tv_nsec += 1000 * 1000 * (waitMS % 1000);
+
+	if (abstime.tv_nsec >= 1000 * 1000 * 1000) {
+	    abstime.tv_sec++;
+	    abstime.tv_nsec -= 1000 * 1000 * 1000;
+	}
+
+	if(nxsem_timedwait(&mutex->handle, &abstime) == OK)
+		return OSAL_STATUS_OK;
+
+	return OSAL_STATUS_FAIL;
+#endif
 }
 
 /**
@@ -162,7 +189,35 @@ osal_sdmmc_status_t osal_sdmmc_sem_delete(osal_sdmmc_sem_t *sem)
 osal_sdmmc_status_t osal_sdmmc_sem_wait(osal_sdmmc_sem_t *sem,
 		osal_sdmmc_wait_timems_t waitMS)
 {
+#if 0
 	return nxsem_wait(sem);
+#else
+	struct timespec abstime;
+	unsigned int timeout_sec;
+
+	if(waitMS == OS_WAIT_FOREVER) {
+		waitMS = 0x0fffffffU;
+	}
+
+  /* Get the current time */
+
+	(void)clock_gettime(CLOCK_REALTIME, &abstime);
+
+	timeout_sec      = waitMS / 1000;
+	abstime.tv_sec  += timeout_sec;
+	abstime.tv_nsec += 1000 * 1000 * (waitMS % 1000);
+
+	if (abstime.tv_nsec >= 1000 * 1000 * 1000) {
+	    abstime.tv_sec++;
+	    abstime.tv_nsec -= 1000 * 1000 * 1000;
+	}
+
+	if(nxsem_timedwait(sem, &abstime) == OK)
+		return OSAL_STATUS_OK;
+
+	return OSAL_STATUS_FAIL;
+
+#endif
 }
 
 /**
