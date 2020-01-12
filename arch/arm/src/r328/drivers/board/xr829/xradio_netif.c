@@ -39,6 +39,10 @@
 #include <stdio.h>
 #include <sys/mbuf_0.h>
 #include <stdbool.h>
+#include <nuttx/kmalloc.h>
+#include <kernel/os/os_mutex.h>
+
+#define XR_TX_BUFF_SIZE 8
 
 #define ETH_DBG_ON      0
 #define ETH_WRN_ON      1
@@ -62,18 +66,24 @@
                __func__, __LINE__, ##arg);              \
     } while (0)
 
+#define ethernetif2netif(eth)	((struct netif *)(eth))
+#define netif2ethernetif(nif)	((struct ethernetif *)(nif))
+
 struct ethernetif {
 	struct netif nif;
 	bool netdev_open;
 	enum wlan_mode mode;
 };
 
-#define ethernetif2netif(eth)	((struct netif *)(eth))
-#define netif2ethernetif(nif)	((struct ethernetif *)(nif))
-
 static struct ethernetif g_eth_netif = {
 	.netdev_open = false,
 };
+
+
+struct xr_ring_buff *p_xr_ring_buff = NULL;
+struct xr_frame_s tx_frame[XR_TX_BUFF_SIZE];
+
+OS_Mutex_t xr_ring_mutex;
 
 void net_hex_dump(char *pref, int width, unsigned char *buf, int len)
 {
@@ -91,7 +101,150 @@ void net_hex_dump(char *pref, int width, unsigned char *buf, int len)
         printf("\n");
 }
 
+static void xradio_ring_buff_resource_dbg(void)
+{
+	if(NULL != p_xr_ring_buff) {
+		ETH_DBG("buff size: %d\n",XR_TX_BUFF_SIZE);
+		ETH_DBG("data len : %d\n",p_xr_ring_buff->data_len);
+		ETH_DBG("read idx : %d\n",p_xr_ring_buff->read_idx);
+		ETH_DBG("write idx: %d\n",p_xr_ring_buff->write_idx);
+	}
+}
 
+int xradio_tx_buff_init(void)
+{
+	int i = 0;
+
+	p_xr_ring_buff = (struct xr_ring_buff *)kmm_malloc(sizeof(struct xr_ring_buff));
+
+	if(NULL == p_xr_ring_buff) {
+		ETH_ERR("mallco xr ring buff failed\n.");
+		return -1;
+	}
+
+	memset(p_xr_ring_buff,0,sizeof(struct xr_ring_buff));
+
+	p_xr_ring_buff->frame = tx_frame;
+
+#if XR_FRAME_USE_MBUFF
+	for(i=0; i< XR_TX_BUFF_SIZE; i++) {
+		struct mbuf *m;
+
+		m = mb_get(MAX_NETDEV_PKTSIZE + CONFIG_NET_GUARDSIZE,
+				1 | MBUF_GET_FLAG_LIMIT_TX);
+
+		if(NULL == m) {
+			ETH_ERR("mbuff get failed.\n");
+			goto failed2;
+		}
+		p_xr_ring_buff->frame[i].priv = (void*)m;
+
+		p_xr_ring_buff->frame[i].data = mtod(m,uint8_t *);
+	}
+#endif
+	if(OS_MutexCreate(&xr_ring_mutex) != OS_OK) {
+		ETH_ERR("create xr ring buff mutex failed.\n");
+		goto failed1;
+	}
+
+	p_xr_ring_buff->data_len = XR_TX_BUFF_SIZE;
+
+	return 0;
+
+#if XR_FRAME_USE_MBUFF
+failed1:
+	for(i=0;i<XR_TX_BUFF_SIZE;i++) {
+		mb_free((struct mbuf*)p_xr_ring_buff->frame[i].priv);
+	}
+#endif
+failed2:
+	if(p_xr_ring_buff)
+		kmm_free(p_xr_ring_buff);
+	p_xr_ring_buff = NULL;
+	return 0;
+}
+
+struct xr_frame_s* xradio_tx_buff_get(void)
+{
+	int data_len = 0;
+
+	struct xr_frame_s *frame = NULL;
+
+	if(NULL == p_xr_ring_buff) {
+		ETH_ERR("xradio tx buff not init.\n");
+		return NULL;
+	}
+
+	/*lock*/
+	OS_MutexLock(&xr_ring_mutex,0x0fffffffU);
+
+	data_len = p_xr_ring_buff->data_len;
+
+	OS_MutexUnlock(&xr_ring_mutex);
+
+	/*unlock*/
+
+	if(data_len <= 0) {
+		ETH_ERR("xradio tx buff is empty.\n");
+		return NULL;
+	}
+
+	frame = &p_xr_ring_buff->frame[p_xr_ring_buff->read_idx];
+	p_xr_ring_buff->read_idx ++;
+
+	/*lock*/
+	OS_MutexLock(&xr_ring_mutex,0x0fffffffU);
+
+	p_xr_ring_buff->data_len --;
+
+	/*unlock*/
+	OS_MutexUnlock(&xr_ring_mutex);
+
+	p_xr_ring_buff->read_idx = p_xr_ring_buff->read_idx % XR_TX_BUFF_SIZE;
+
+	xradio_ring_buff_resource_dbg();
+	return frame;
+}
+
+int xradio_tx_buff_free(void)
+{
+	if(NULL == p_xr_ring_buff) {
+		ETH_ERR("xradio tx buff not init.");
+		return -1;
+	}
+
+	p_xr_ring_buff->write_idx ++;
+
+	/*lock*/
+	OS_MutexLock(&xr_ring_mutex,0x0fffffffU);
+
+	p_xr_ring_buff->data_len ++;
+
+	OS_MutexUnlock(&xr_ring_mutex);
+	/*unlock*/
+
+	p_xr_ring_buff->write_idx = p_xr_ring_buff->write_idx % XR_TX_BUFF_SIZE;
+
+	xradio_ring_buff_resource_dbg();
+	return 0;
+}
+
+int xradio_tx_buff_deinit(void)
+{
+	int i = 0;
+	/*free xr frame*/
+	if(p_xr_ring_buff) {
+#if XR_FRAME_USE_MBUFF
+		if(p_xr_ring_buff->frame)
+			for(i=0;i<XR_TX_BUFF_SIZE;i++) {
+				mb_free((struct mbuf*)p_xr_ring_buff->frame[i].priv);
+			}
+#endif
+		kmm_free(p_xr_ring_buff);
+		p_xr_ring_buff = NULL;
+	}
+	return 0;
+}
 #if 0
 static err_t ethernetif_sta_init(struct netif *nif)
 {
@@ -157,27 +310,8 @@ static err_t ethernetif_hw_init(struct netif *nif, enum wlan_mode mode)
 #if (__CONFIG_MBUF_IMPL_MODE == 0)
 err_t ethernetif_raw_input(struct netif *nif, uint8_t *data, u16_t len)
 {
-#if 0
-	struct xr_frame_s frame;
-	frame.data = (uint8_t*)malloc(sizeof(uint8_t) *len);
-	if(frame.data == NULL) {
-		ETH_ERR("rx malloc failed.\n");
-	}
-	frame.len = len;
-
-	memcpy(frame.data,data,len);
-
 	//net_hex_dump(__func__,20,frame.data,frame.len);
-
-	xradio_rx_poll(&frame);
-
-	free(frame.data);
-#endif
-
-	//net_hex_dump(__func__,20,frame.data,frame.len);
-
-	//xradio_rx_poll(&frame);
-	void xradio_rx_notify_rx(uint8_t *data, uint16_t len);
+	extern void xradio_rx_notify_rx(uint8_t *data, uint16_t len);
 	xradio_rx_notify_rx(data,len);
 	return ERR_OK;
 }
@@ -314,9 +448,11 @@ int xradio_wlan_init(enum wlan_mode mode,struct net_driver_s *dev)
 
 	nif->net_dev = dev;
 
+	xradio_tx_buff_init();
 	//init ip address.
 	g_eth_netif.netdev_open = true;
 #endif
+	return 0;
 }
 
 void xradio_wlan_deinit(void)
@@ -326,7 +462,7 @@ void xradio_wlan_deinit(void)
 	g_eth_netif.netdev_open = false;
 	wlan_netif_delete(nif);
 	wlan_detach();
-	return 0;
+	xradio_tx_buff_free();
 }
 
 enum wlan_mode ethernetif_get_mode(struct netif *nif)

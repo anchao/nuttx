@@ -66,20 +66,13 @@
 #define XR_DEV_ERR printf
 
 static uint8_t g_pktbuf[MAX_NETDEV_PKTSIZE + CONFIG_NET_GUARDSIZE];
-
-struct xr_frame_s {
-	uint8_t *data;
-	uint16_t len;
-};
-
 struct xradio_drv_s
 {
 	bool if_up;
 	WDOG_ID xr_txpolldog;
 	struct work_s xr_pollwork;
 	struct net_driver_s xr_dev;
-	//struct xr_frame_s cur_tx_frame;
-	struct xr_frame_s cur_rx_frame;
+	struct xr_frame_s *cur_tx_frame;
 };
 
 static struct xradio_drv_s *g_xradio_priv = NULL;
@@ -105,11 +98,25 @@ static int xradio_drv_ioctl(FAR struct net_driver_s *dev, int cmd,
 #endif
 static void xradio_drv_poll_expiry(int argc, wdparm_t arg, ...);
 
+#if USE_TX_GET_BUFF
+static int xradio_get_tx_payload_buffer(struct xradio_drv_s *priv)
+{
+	if(priv->cur_tx_frame != NULL) { //TX complete,clear.
+		return OK;
+	}
+
+	priv->cur_tx_frame = xradio_tx_buff_get();
+	if(NULL == priv->cur_tx_frame) {
+		XR_DEV_ERR("Cannot allocate TX frame.\n");
+		return -1;
+	}
+	return OK;
+}
+#endif
+
 static int xradio_drv_transmit(struct xradio_drv_s *priv)
 {
 	int ret;
-
-	extern err_t ethernetif_linkoutput(uint8_t *data, uint16_t len);
 
 	ret = ethernetif_linkoutput(priv->xr_dev.d_buf,priv->xr_dev.d_len);
 	if(ret) {
@@ -127,13 +134,11 @@ static int xradio_drv_txpoll(FAR struct net_driver_s *dev)
   /* If the polling resulted in data that should be sent out on the network,
    * the field d_len is set to a value > 0.
    */
-  //printf("[%s,%d] ========d_len:%d\n",__func__,__LINE__,dev->d_len);
   if (priv->xr_dev.d_len > 0)
     {
       /* Look up the destination MAC address and add it to the Ethernet
        * header.
        */
-      //net_hex_dump(__func__,20,dev->d_buf,dev->d_len);
 #ifdef CONFIG_NET_IPv4
 #ifdef CONFIG_NET_IPv6
       if (IFF_IS_IPv4(priv->xr_dev.d_flags))
@@ -161,7 +166,10 @@ static int xradio_drv_txpoll(FAR struct net_driver_s *dev)
           /* TODO: Check if there is room in the device to hold another packet.
            * If not, return a non-zero value to terminate the poll.
            */
-
+#if USE_TX_GET_BUFF
+		  xradio_tx_buff_free();
+		  priv->cur_tx_frame = NULL;
+#endif
           return 1;
         }
     }
@@ -177,7 +185,6 @@ static void xradio_drv_poll_work(FAR void *arg)
 {
 	FAR struct net_driver_s *dev = arg;
 	FAR struct xradio_drv_s *priv = dev->d_private;
-//	uint32_t size;
 
 	/* Lock the network and serialize driver operations if necessary.
 	 * NOTE: Serialization is only required in the case where the driver work
@@ -186,7 +193,7 @@ static void xradio_drv_poll_work(FAR void *arg)
 	 */
 
 	net_lock();
-#if 0
+#if USE_TX_GET_BUFF
 	/* Perform the poll */
 
 	/* Check if there is room in the send another TX packet.  We cannot perform
@@ -198,8 +205,7 @@ static void xradio_drv_poll_work(FAR void *arg)
 
 	dev->d_buf = priv->cur_tx_frame->data;
 	dev->d_len = 0;
-
-#else
+#endif
 	if (dev->d_buf) {
       /* If so, update TCP timing states and poll the network for new XMIT data.
        * Hmmm.. might be bug here.  Does this mean if there is a transmit in
@@ -208,12 +214,13 @@ static void xradio_drv_poll_work(FAR void *arg)
 
 		devif_timer(dev, xradio_drv_txpoll);
 	}
-#endif
   /* Setup the watchdog poll timer again */
 
 	wd_start(priv->xr_txpolldog, XRADIO_DRV_WDDELAY, xradio_drv_poll_expiry, 1,
 		(wdparm_t)dev);
-
+#if USE_TX_GET_BUFF
+exit_unlock:
+#endif
 	net_unlock();
 }
 
@@ -227,26 +234,11 @@ static void xradio_drv_poll_expiry(int argc, wdparm_t arg, ...)
 
   work_queue(LPWORK, &priv->xr_pollwork, xradio_drv_poll_work, dev, 0);
 }
-#if 0
-static int xradio_get_tx_payload_buffer(struct xradio_drv_s *priv)
-{
-	if(priv->cur_tx_frame != NULL) { //TX complete,clear.
-		return OK;
-	}
 
-	priv->cur_tx_frame = xradio_allocate_frame(MAX_NETDEV_PKTSIZE);
-	if(NULL == priv->cur_tx_frame) {
-		XR_DEV_ERR("Cannot allocate TX frame.\n");
-		return -1;
-	}
-	return OK;
-}
-#endif
 static void xradio_drv_txavail_work(FAR void *arg)
 {
 	FAR struct net_driver_s *dev = arg;
 	FAR struct xradio_drv_s *priv = dev->d_private;
-	//uint32_t size;
 
 	/* Lock the network and serialize driver operations if necessary.
 	 * NOTE: Serialization is only required in the case where the driver work
@@ -255,29 +247,20 @@ static void xradio_drv_txavail_work(FAR void *arg)
 	 */
 
 	net_lock();
-#if 0
-	/* Ignore the notification if the interface is not yet up */
-	if(xradio_get_tx_payload_buffer(priv)) {
-		goto exit_unlock;
-	}
-
-	dev->d_buf = priv->cur_tx_frame->data;
-	dev->d_len = 0;
-
-	if (dev->d_buf) {
-      /* If so, update TCP timing states and poll the network for new XMIT data.
-       * Hmmm.. might be bug here.  Does this mean if there is a transmit in
-       * progress, we will missing TCP time state updates?
-       */
-
-		devif_timer(dev, xradio_drv_txpoll);
-	}
-
-
-#else
 	if(priv->if_up) {
+#if USE_TX_GET_BUFF
+	/* Ignore the notification if the interface is not yet up */
+		if(xradio_get_tx_payload_buffer(priv)) {
+			goto exit_unlock;
+		}
+
+		dev->d_buf = priv->cur_tx_frame->data;
+		dev->d_len = 0;
+#endif
 		(void)devif_poll(&priv->xr_dev,xradio_drv_txpoll);
 	}
+#if USE_TX_GET_BUFF
+exit_unlock:
 #endif
 	net_unlock();
 
@@ -305,10 +288,6 @@ static void xradio_receive(FAR struct xradio_drv_s *priv)
   do
     {
       /* Request frame buffer from bus interface */
-
-	  memcpy(priv->xr_dev.d_buf,priv->cur_rx_frame.data,priv->cur_rx_frame.len);
-	  priv->xr_dev.d_len = priv->cur_rx_frame.len;
-
 	  //net_hex_dump(__func__,20,priv->xr_dev.d_buf,priv->xr_dev.d_len);
 #ifdef CONFIG_NET_PKT
       /* When packet sockets are enabled, feed the frame into the packet tap */
@@ -468,8 +447,14 @@ void xradio_rx_notify_rx(uint8_t *data, uint16_t len)
 {
 	FAR struct xradio_drv_s *priv = g_xradio_priv;
 
-	priv->cur_rx_frame.data = data;
-	priv->cur_rx_frame.len  = len;
+	net_lock();
+#if USE_TX_GET_BUFF
+	priv->xr_dev.d_buf = data;
+#else
+	memcpy(priv->xr_dev.d_buf,data,len);
+#endif
+	priv->xr_dev.d_len = len;
+	net_unlock();
 
 	work_queue(LPWORK, &priv->xr_pollwork, xradio_rx_poll, priv, 0);
 }
@@ -593,7 +578,9 @@ int xradio_drv_init(void)
 
 	memcpy(priv->xr_dev.d_mac.ether.ether_addr_octet,xradio_mac_addr,6);
 
+#if (USE_TX_GET_BUFF == 0)
 	priv->xr_dev.d_buf     = g_pktbuf;
+#endif
 	priv->xr_dev.d_ifup    = xradio_drv_ifup;
 	priv->xr_dev.d_ifdown  = xradio_drv_ifdown;
 	priv->xr_dev.d_txavail = xradio_drv_txavail;

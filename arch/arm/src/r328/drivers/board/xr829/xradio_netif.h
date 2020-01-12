@@ -117,6 +117,30 @@ struct netif {
   u8_t num;
 };
 
+#define XR_FRAME_USE_MBUFF 1
+#define USE_TX_GET_BUFF 1
+
+struct xr_frame_s {
+	uint16_t len;
+#if XR_FRAME_USE_MBUFF
+	uint8_t *data;
+	void *priv;
+#else
+	uint8_t data[MAX_NETDEV_PKTSIZE + CONFIG_NET_GUARDSIZE];
+#endif
+};
+
+struct xr_ring_buff {
+	struct xr_frame_s *frame;
+	uint8_t data_len;
+	uint8_t read_idx;
+	uint8_t write_idx;
+};
+
+struct xr_frame_s* xradio_tx_buff_get(void);
+int xradio_tx_buff_free(void);
+
+
 err_t ethernetif_linkoutput(uint8_t *data, uint16_t len);
 void net_hex_dump(char *pref, int width, unsigned char *buf, int len);
 
