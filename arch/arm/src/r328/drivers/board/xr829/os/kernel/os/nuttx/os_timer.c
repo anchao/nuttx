@@ -52,7 +52,7 @@ static void nx_timer_callback(int argc, wdparm_t arg1, ...)
 	timer = (OS_Timer_t *)arg1;
 
 	if(timer->cb_enable == true)
-		work_queue(LPWORK, &timer->wq_s, timer->cb, timer->cb_para, 0);
+		work_queue(HPWORK, &timer->wq_s, timer->cb, timer->cb_para, 0);
 	/*
 	else
 		NX_TIMER_LOGE("forbiden create work queue.\n");

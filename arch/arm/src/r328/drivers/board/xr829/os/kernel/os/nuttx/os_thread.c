@@ -42,6 +42,8 @@
 #define OS_TH_DBG(fmt,arg...)
 #define OS_TH_ERR printf
 
+#define PRIORIY_BASE  200
+
 #if USE_POSIX_PTHREAD
 OS_Status OS_ThreadCreate(OS_Thread_t *thread, const char *name,
 										OS_ThreadEntry_t entry, void *arg,
@@ -113,7 +115,7 @@ OS_Status OS_ThreadCreate(OS_Thread_t *thread, const char *name,
 	OS_TH_DBG("[%s,%d] -+-+%p-+-+:%d\n",__func__,__LINE__,thread,thread->handle);
 	argv[0] = str;
 	argv[1] = NULL;
-	thread->handle = kthread_create(name,priority,stackSize,kthread_entry_wrapper,argv);
+	thread->handle = kthread_create(name,priority+PRIORIY_BASE,stackSize,kthread_entry_wrapper,argv);
 	OS_TH_DBG("[%s,%d] -+-+%p-+-+:%d\n",__func__,__LINE__,thread,thread->handle);
 	if(thread->handle < 0) {
 		leave_critical_section(flags);
