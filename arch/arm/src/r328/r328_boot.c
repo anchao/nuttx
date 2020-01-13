@@ -406,4 +406,11 @@ extern int sunxi_soundcard_init(void);
         syslog(LOG_ERR, "ERROR: Failed to mount procfs at /proc: %d\n", ret);
     }
 #endif
+
+#ifdef CONFIG_IEEE80211_XR829
+extern int xradio_drv_init(void);
+	xradio_drv_init();
+#endif
+
+
 }

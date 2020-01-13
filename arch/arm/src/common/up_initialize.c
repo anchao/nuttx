@@ -253,11 +253,6 @@ void up_initialize(void)
   (void)localhost_initialize();
 #endif
 
-#ifdef CONFIG_IEEE80211_XR829
-extern int xradio_drv_init(void);
-	xradio_drv_init();
-#endif
-
 #ifdef CONFIG_NET_TUN
   /* Initialize the TUN device */
 
