@@ -31,6 +31,7 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <semaphore.h>
 #include <interrupt.h>
 #include <nuttx/nuttx.h>
@@ -118,6 +119,8 @@ typedef struct sunxi_i2c {
 	uint8_t			twi_drv_used;
 	uint8_t			pkt_interval;
 	struct i2c_master_s	*dev_s;
+	i2c_msg_t		*msg_bk; /*message backup*/
+	uint8_t			msgc;    /*message count*/
 //	struct sunxi_i2c_dma	*dma_tx;
 //	struct sunxi_i2c_dma	*dma_rx;
 //	struct sunxi_i2c_dma	*dma_using;
@@ -915,7 +918,6 @@ static int i2c_drv_write(sunxi_i2c_t *i2c, i2c_msg_t *msgs)
 {
 	I2C_INFO("i2c write\n");
 	i2c->msgs = msgs;
-
 	i2c_slave_addr(i2c->base_addr, msgs);
 	if (msgs->len == 1) {
 		i2c_set_packet_addr_byte(0, i2c->base_addr);
@@ -1162,7 +1164,6 @@ static void sunxi_i2c_addr_byte(sunxi_i2c_t *i2c)
 	/* send 7bits+r/w or the first part of 10bits */
 	twi_put_byte(i2c->base_addr, &addr);
 }
-
 static int sunxi_i2c_core_process(struct sunxi_i2c *i2c)
 {
 	const uint32_t base_addr = i2c->base_addr;
@@ -1170,7 +1171,6 @@ static int sunxi_i2c_core_process(struct sunxi_i2c *i2c)
 	int  err_code   = 0;
 	unsigned char  state = 0;
 	unsigned char  tmp   = 0;
-
 	state = twi_query_irq_status(base_addr);
 
 	//spin_lock_irqsave(&i2c->lock, flags);
@@ -1318,7 +1318,6 @@ err_out:
 	if (twi_stop(base_addr, i2c->port) == SUNXI_I2C_FAIL)
 		I2C_ERR("[i2c%d] STOP failed!\n", i2c->port);
 
-
 msg_null:
 	ret = sunxi_i2c_engine_complete(i2c, err_code);/* wake up */
 	//spin_unlock_irqrestore(&i2c->lock, flags);
@@ -1393,6 +1392,7 @@ err_out:
 	i2c->msgs_idx = code;
 	i2c->result = RESULT_ERR;
 	I2C_INFO("packet transmission failed , status : 0x%0x\n", code);
+	return code;
 
 ok_out:
 	//wake up
@@ -1514,29 +1514,31 @@ static int sunxi_i2c_drv_do_xfer(struct sunxi_i2c *i2c, struct i2c_msg *msgs, in
 		}
 #endif
 	} else {
-			/* 1 msgs write */
-			i2c_disable_read_tran_mode(i2c->base_addr);
+		/* 1 msgs write */
+		i2c_disable_read_tran_mode(i2c->base_addr);
 #ifdef DMA_XXX
-			if (i2c->dma_tx && (msgs->len >= DMA_THRESHOLD)) {
-//				dprintk(DEBUG_INFO,
-//						"master dma write\n",
-//						i2c->port);
-				ret = i2c_dma_write(i2c, msgs);
-			} else {
+		if (i2c->dma_tx && (msgs->len >= DMA_THRESHOLD)) {
+//			dprintk(DEBUG_INFO, "master dma write\n",
+//					i2c->port);
+			ret = i2c_dma_write(i2c, msgs);
+		} else {
 #endif
-//				dprintk(DEBUG_INFO,
-//						"master cpu write\n",
-//						i2c->port);
-				ret = i2c_drv_write(i2c, msgs);
+//			dprintk(DEBUG_INFO, "master cpu write\n",
+//					i2c->port);
+			ret = i2c_drv_write(i2c, msgs);
 #ifdef DMA_XXX
-			}
-#endif
 		}
+#endif
+	}
 
 	if (ret)
 		return ret;
 
-	return sunxi_i2c_drv_complete(i2c);
+	ret = sunxi_i2c_drv_complete(i2c);
+	if (ret == SUNXI_I2C_OK)
+		return num;
+	else
+		return SUNXI_I2C_FAIL;
 }
 
 
@@ -1617,12 +1619,11 @@ hal_i2c_status_t sunxi_i2c_xfer(hal_i2c_port_t port, i2c_msg_t *msgs, int32_t nu
 {
 	sunxi_i2c_t *i2c = &g_sunxi_i2c[port];
 	int ret;
-
+	int flag = 0;
 	if ((msgs == NULL) || (num <= 0)) {
 		I2C_ERR("[i2c%d] invalid argument\n", port);
 		return HAL_I2C_STATUS_INVALID_PARAMETER;
 	}
-
 
 #if 0
 	I2C_INFO("num = %d\n", num);
@@ -1643,14 +1644,58 @@ hal_i2c_status_t sunxi_i2c_xfer(hal_i2c_port_t port, i2c_msg_t *msgs, int32_t nu
 	//i2c->result = I2C_XFER_OK;
 	//spin_unlock_irq();
 
+	if (num == 1) {
+		if (msgs[0].flags == I2C_M_NOSTOP) {
+			i2c->msg_bk->addr  = msgs[0].addr;
+			i2c->msg_bk->flags = msgs[0].flags;
+			i2c->msg_bk->len   = msgs[0].len;
+			i2c->msg_bk->buf   = msgs[0].buf;
+			i2c->msgc = 1;
+		} else if ((i2c->msgc == 1) && (msgs[0].flags != I2C_M_RD)) {
+			memcpy((i2c->msg_bk->buf + i2c->msg_bk->len),
+					msgs[0].buf, msgs[0].len);
+			i2c->msg_bk->len += msgs[0].len;
+			i2c->msgc = 0;
+			flag = 1;
+		}
+		if (msgs[0].flags == I2C_M_RD)
+			i2c->msgc = 0;
+	}
+	if (num == 2) {
+		if (msgs[0].flags != I2C_M_RD && msgs[1].flags != I2C_M_RD) {
+			memcpy((msgs[0].buf + msgs[0].len),
+					msgs[1].buf, msgs[1].len);
+			msgs[0].len += msgs[1].len;
+			flag = 2;
+		}
+	}
+
 	if (i2c->twi_drv_used) {
 		I2C_INFO("[i2c%d] twi driver xfer\n", i2c->port);
-		ret = sunxi_i2c_drv_do_xfer(i2c, msgs, num);
+
+		if (flag == 0) {
+			ret = sunxi_i2c_drv_do_xfer(i2c, msgs, num);
+		} else if (flag == 1){
+			ret = sunxi_i2c_drv_do_xfer(i2c, i2c->msg_bk, num);
+			flag = 0;
+		} else {
+			ret = sunxi_i2c_drv_do_xfer(i2c, &msgs[0], num);
+			flag = 0;
+		}
 		if (ret < 0)
 			return HAL_I2C_STATUS_ERROR;
 	} else {
 		I2C_INFO("[i2c%d] twi engine xfer\n", i2c->port);
-		ret = sunxi_i2c_engine_do_xfer(i2c, msgs, num);
+
+		if (flag == 0) {
+			ret = sunxi_i2c_engine_do_xfer(i2c, msgs, num);
+		} else if (flag == 1) {
+			ret = sunxi_i2c_engine_do_xfer(i2c, i2c->msg_bk, num);
+			flag = 0;
+		} else {
+			ret = sunxi_i2c_engine_do_xfer(i2c, &msgs[0], num);
+			flag = 0;
+		}
 		if (ret < 0)
 			return HAL_I2C_STATUS_ERROR;
 	}
@@ -1765,7 +1810,7 @@ hal_i2c_status_t sunxi_i2c_init(hal_i2c_config_t *i2c_config)
 
 	i2c->status       = I2C_XFER_IDLE;
 	i2c->timeout = 5;
-
+	i2c->msg_bk = (i2c_msg_t *)malloc(sizeof(i2c_msg_t));
 	//spin_unlock_irq();
 
 	/*i2c->sem = (xSemaphoreHandle)xSemaphoreCreateCounting(I2C_SEM_MAX_COUNT, 0);
