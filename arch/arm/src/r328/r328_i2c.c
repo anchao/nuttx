@@ -53,7 +53,6 @@
 #include <hal_i2c.h>
 #include <hal_gpio.h>
 
-#define DEBUG 1
 #ifdef DEBUG
 #define I2C_INFO(fmt, arg...) printf("%s:%d "fmt,__func__,  __LINE__, ##arg)
 #else
@@ -76,6 +75,7 @@ struct r328_i2c_priv_s {
 	hal_i2c_config_t *config;
 	//int port;
 };
+
 
 /************************************************************************************
  * Function declaration
@@ -116,6 +116,7 @@ struct r328_i2c_priv_s priv_s0 = {
 hal_i2c_config_t config_s1 = {
         .port = HAL_I2C_MASTER_1,
         .freq = HAL_I2C_FREQUENCY_200K,
+	//.trans_mode = HAL_TWI_DRV_XFER,
         .clk = {GPIOH(2), 2, 7},
         .sda = {GPIOH(3), 2, 7},
 };
@@ -149,15 +150,16 @@ static int sunxi_i2c_transfer(FAR struct i2c_master_s *dev,
 			msg_t[1].len   = msg_s[1].length;
 		}
 	}
-	if (msg_t[1].flags == I2C_M_RD || msg_t[0].flags == I2C_M_RD) {
-		I2C_INFO("choose i2c%d to transfer read.\n", priv->config->port);
+
+	if (msg_t[0].flags == I2C_M_RD || msg_t[1].flags == I2C_M_RD) {
+		I2C_ERR("choose i2c%d to transfer read.\n", priv->config->port);
 		ret = hal_i2c_msg_receive(priv->config->port, msg_t, count);
 		if (ret < 0) {
 			I2C_ERR("ERROR:i2c msg receive failed %d.\n",count);
 			return R328_I2C_FAIL;
 		}
 	} else {
-		I2C_INFO("choose i2c%d to transfer write.\n", priv->config->port);
+		I2C_ERR("choose i2c%d to transfer write.\n", priv->config->port);
 		ret = hal_i2c_msg_send(priv->config->port, msg_t, count);
 		if (ret != 0) {
 			I2C_ERR("ERROR:i2c msg send failed %d.\n",count);
@@ -199,7 +201,7 @@ FAR struct i2c_master_s *r328_i2cbus_initialize(int port)
 		default:
 			return NULL;
 	}
-	I2C_ERR("choose the i2c%d channel.\n",port);
+	I2C_INFO("choose the i2c%d channel.\n",port);
 	ret = hal_i2c_master_init(priv->config);
 	if(ret == 0)
 		I2C_INFO("i2c init success.\n");

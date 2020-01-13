@@ -112,13 +112,13 @@ hal_i2c_status_t hal_i2c_master_deinit(hal_i2c_port_t port)
 hal_i2c_status_t hal_i2c_master_send(hal_i2c_port_t port, uint8_t slave_address,
 		uint8_t *data, uint32_t size, uint16_t flag)
 {
-	 i2c_msg_t msg;
-	 uint8_t num = 1;
+	i2c_msg_t msg;
+	uint8_t num = 1;
 
-	 msg.addr =  slave_address;
-	 msg.flags = flag & ~I2C_M_RD;
-	 msg.len = size;
-	 msg.buf = data;
+	msg.addr  = slave_address;
+	msg.flags = flag & ~I2C_M_RD;
+	msg.len   = size;
+	msg.buf   = data;
 
 	return sunxi_i2c_xfer(port, &msg, num);
 
@@ -128,18 +128,18 @@ hal_i2c_status_t hal_i2c_master_receive(hal_i2c_port_t port, uint8_t slave_addre
 		uint8_t *command, uint8_t command_len, uint8_t *buffer,
 		uint32_t size, uint16_t flag)
 {
-	 i2c_msg_t msg[2];
-	 uint8_t num = 2;
+	i2c_msg_t msg[2];
+	uint8_t num = 2;
 
-	 msg[0].addr =  slave_address;
-	 msg[0].flags = flag & ~I2C_M_RD;
-	 msg[0].len = command_len;
-	 msg[0].buf = command;
+	msg[0].addr  = slave_address;
+	msg[0].flags = flag & ~I2C_M_RD;
+	msg[0].len   = command_len;
+	msg[0].buf   = command;
 
-	 msg[1].addr =  slave_address;
-	 msg[1].flags = I2C_M_RD;
-	 msg[1].len = size;
-	 msg[1].buf = buffer;
+	msg[1].addr  =  slave_address;
+	msg[1].flags = I2C_M_RD;
+	msg[1].len   = size;
+	msg[1].buf   = buffer;
 	return sunxi_i2c_xfer(port, msg, num);
 }
 
@@ -155,10 +155,5 @@ hal_i2c_status_t hal_i2c_msg_receive(hal_i2c_port_t port, i2c_msg_t *msg, uint8_
 }
 hal_i2c_status_t hal_i2c_msg_send(hal_i2c_port_t port, i2c_msg_t *msg, uint8_t num)
 {
-	if (num == 2) {
-		memcpy(msg[0].buf + msg[0].len, msg[1].buf, msg[1].len);
-		msg[0].len = msg[0].len + msg[1].len;
-		return sunxi_i2c_xfer(port, &msg[0], num);
-	}
 	return sunxi_i2c_xfer(port, msg, num);
 }
