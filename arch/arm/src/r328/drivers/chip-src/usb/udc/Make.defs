@@ -11,7 +11,7 @@
 #    notice, this list of conditions and the following disclaimer.
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in
-#    the documentation and$(DELIM)or other materials provided with the
+#    the documentation and/or other materials provided with the
 #    distribution.
 # 3. Neither the name NuttX nor the names of its contributors may be
 #    used to endorse or promote products derived from this software
@@ -32,57 +32,16 @@
 #
 ############################################################################
 
-ifeq ($(CONFIG_DRIVERS_DMA),y)
-CHIP_CSRCS += drivers/chip-hal/hal_dma.c
-endif
+
+CHIP_CSRCS += drivers/chip-src/usb/udc/udc.c
 
 
-ARCH_SRC = $(TOPDIR)$(DELIM)arch$(DELIM)$(CONFIG_ARCH)$(DELIM)src
-ARCH_INC = $(TOPDIR)$(DELIM)arch$(DELIM)$(CONFIG_ARCH)$(DELIM)include
-
-ifeq ($(CONFIG_DRIVERS_CCMU),y)
-CHIP_CSRCS+=drivers$(DELIM)chip-hal$(DELIM)hal_clk.c
-CFLAGS+=${shell $(INCDIR) $(INCDIROPT) "$(CC)" \
-	$(ARCH_SRC)$(DELIM)$(CONFIG_ARCH_CHIP)$(DELIM)drivers$(DELIM)chip-src$(DELIM)ccmu }
-endif
-
-ifeq ($(CONFIG_DRIVERS_SPI),y)
-CHIP_CSRCS += drivers/chip-hal/hal_spi.c
-endif
-
-ifeq ($(CONFIG_DRIVERS_EFUSE),y)
-CHIP_CSRCS+=drivers$(DELIM)chip-hal$(DELIM)hal_efuse.c
-CFLAGS+=${shell $(INCDIR) $(INCDIROPT) "$(CC)" \
-	$(ARCH_SRC)$(DELIM)$(CONFIG_ARCH_CHIP)$(DELIM)drivers$(DELIM)chip-src$(DELIM)efuse }
-endif
-
-ifeq ($(CONFIG_DRIVERS_THERMAL),y)
-CHIP_CSRCS+=drivers$(DELIM)chip-hal$(DELIM)hal_thermal.c
-CFLAGS+=${shell $(INCDIR) $(INCDIROPT) "$(CC)" \
-	$(ARCH_SRC)$(DELIM)$(CONFIG_ARCH_CHIP)$(DELIM)drivers$(DELIM)chip-src$(DELIM)thermal }
-endif
-
-ifeq ($(CONFIG_DRIVERS_PWM),y)
-CHIP_CSRCS+=drivers$(DELIM)chip-hal$(DELIM)hal_pwm.c
-CFLAGS+=${shell $(INCDIR) $(INCDIROPT) "$(CC)" \
-	$(ARCH_SRC)$(DELIM)$(CONFIG_ARCH_CHIP)$(DELIM)drivers$(DELIM)chip-src$(DELIM)pwm }
-endif
-
-CHIP_CSRCS += drivers/chip-hal/hal_gpio.c
-
-ifeq ($(CONFIG_DRIVERS_LRADC),y)
-CHIP_CSRCS += drivers/chip-hal/hal_lradc.c
-endif
-
-ifeq ($(CONFIG_DRIVERS_GPADC),y)
-CHIP_CSRCS += drivers/chip-hal/hal_gpadc.c
-endif
-
-ifeq ($(CONFIG_DRIVERS_I2C),y)
-CHIP_CSRCS += drivers/chip-hal/hal_i2c.c
-endif
-
-ifeq ($(CONFIG_DRIVERS_USB_UDC),y)
-CHIP_CSRCS += drivers/chip-hal/hal_udc.c
-endif
-
+#$(DRIVERS_USB_UDC_OBJECTS):MODULE_NAME="drivers-usb-udc"
+#
+#$(DRIVERS_USB_UDC_OBJECTS):CFLAGS += -I $(BASE)/include/drivers/
+#$(DRIVERS_USB_UDC_OBJECTS):CFLAGS += -I $(BASE)/include/freertos/
+#$(DRIVERS_USB_UDC_OBJECTS):CFLAGS += -I $(BASE)/kernel/FreeRTOS/Source/include/
+#$(DRIVERS_USB_UDC_OBJECTS):CFLAGS += -I $(BASE)/kernel/FreeRTOS/Source/port/
+#$(DRIVERS_USB_UDC_OBJECTS):CFLAGS += -I $(BASE)/kernel/FreeRTOS/Source/portable/GCC/ARM_CA9
+#
+#OBJECTS += $(DRIVERS_USB_UDC_OBJECTS)

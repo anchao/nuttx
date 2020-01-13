@@ -1,0 +1,4 @@
+menu "USB Gadget Support"
+source arch/arm/src/r328/components/aw/usb/gadget/demo/Kconfig
+source arch/arm/src/r328/components/aw/usb/gadget/adbd/Kconfig
+endmenu

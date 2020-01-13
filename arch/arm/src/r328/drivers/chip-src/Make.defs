@@ -78,3 +78,7 @@ endif
 ifeq ($(CONFIG_DRIVERS_SDMMC),y)
 include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)sdmmc$(DELIM)Make.defs
 endif
+
+ifeq ($(CONFIG_DRIVERS_USB_UDC),y)
+include r328$(DELIM)drivers$(DELIM)chip-src$(DELIM)usb$(DELIM)Make.defs
+endif

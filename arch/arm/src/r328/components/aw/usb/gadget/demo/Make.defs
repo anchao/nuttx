@@ -1,0 +1,2 @@
+CHIP_CSRCS += components/aw/usb/gadget/demo/main.o
+CHIP_CSRCS += components/aw/usb/gadget/demo/usb_msg.o

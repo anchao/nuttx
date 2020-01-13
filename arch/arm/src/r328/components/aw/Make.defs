@@ -34,4 +34,5 @@
 
 
 include r328$(DELIM)components$(DELIM)aw$(DELIM)sound$(DELIM)Make.defs
+include r328$(DELIM)components$(DELIM)aw$(DELIM)usb$(DELIM)Make.defs
 

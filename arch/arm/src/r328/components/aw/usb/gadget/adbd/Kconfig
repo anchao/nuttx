@@ -1,0 +1,9 @@
+config COMPONENTS_USB_GADGET_ADBD
+    bool "adbd service"
+    select DRIVERS_USB_UDC
+    select DRIVERS_USB_GADGET
+    select DRIVERS_USB_GADGET_ADB
+    select DRIVERS_EFUSE
+    default n
+    help
+	adbd service

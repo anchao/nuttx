@@ -10,3 +10,4 @@ source arch/arm/src/r328/drivers/chip-src/lradc/Kconfig
 source arch/arm/src/r328/drivers/chip-src/gpadc/Kconfig
 source arch/arm/src/r328/drivers/chip-src/i2c/Kconfig
 source arch/arm/src/r328/drivers/chip-src/sdmmc/Kconfig
+source arch/arm/src/r328/drivers/chip-src/usb/Kconfig

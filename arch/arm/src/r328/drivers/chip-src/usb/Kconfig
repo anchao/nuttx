@@ -1,0 +1,4 @@
+menu "USB Devices"
+source "arch/arm/src/r328/drivers/chip-src/usb/udc/Kconfig"
+source "arch/arm/src/r328/drivers/chip-src/usb/gadget/Kconfig"
+endmenu

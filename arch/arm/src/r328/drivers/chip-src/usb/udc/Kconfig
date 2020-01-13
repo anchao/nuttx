@@ -1,0 +1,7 @@
+config DRIVERS_USB_UDC
+    bool "enable udc driver"
+        default n
+
+
+
+
