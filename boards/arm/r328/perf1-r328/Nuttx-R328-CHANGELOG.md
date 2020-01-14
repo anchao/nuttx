@@ -10,13 +10,13 @@
 - Added support Nsh， can run to uart console, but should set new line mode.
 
 **Known Issues**
-- ostest failed if enable smp
-- ostest failed if enable debug options.
+- Ostest failed if enable smp
+- Ostest failed if enable debug options.
 
 **TODO**
-- undo os header wrapper.
-- undo common arch code modify.
-- more r328 driver support.
+- Undo os header wrapper.
+- Undo common arch code modify.
+- More r328 driver support.
 
 ### Nuttx-8.2-r328-0.3 - December 23 2019
 **System**
@@ -26,10 +26,30 @@
 - Added support versioned sdk.
 
 **Known Issues**
-- system maybe crashed if enable smp
-- ostest failed if enable smp.
+- System maybe crashed if enable smp
+- Ostest failed if enable smp.
 
 **TODO**
-- fixed smp stability.
-- support more bsp drivers.
-- support wifi/bt communication.
+- Fixed smp stability issues
+- Support more bsp drivers
+- Support wifi/bt communication
+
+### Nuttx-8.2-r328-0.5 - January 14 20120
+**System**
+- Added CrytoEngine/I2C/Key/AC107/USB/SDMMC/ driver support
+- Added neon support for VFP
+- Added usb udc driver support and adb library
+- Added spinor support and auto mount procfs/littlefs default
+- Added XR829 driver and enable network connectivity default
+- Added more iobox commands like cd/ls...
+- Reverted some modify according to xiao xiang's suggestion
+- Updated audio core and alsa library
+
+**Known Issues**
+- SMP not work well under cortex-a serial, some stability issues should be fixed.
+- PS command show cpu0 idle stack size zero seems a known issue listed in TODO files.
+
+**TODO**
+- Fixed smp stability issues
+- Support ble communication
+- Support more thirdparty components
