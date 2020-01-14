@@ -37,19 +37,18 @@
 #include <aw_list.h>
 #include <stdlib.h>
 #include <errno.h>
-#if 0
-#include "k_api.h"
-#include <aos/kernel.h>
-#include <aos/list.h>
-#endif
-#include <aw_os_api.h>
+#include <hal_mem.h>
+#include <hal_interrupt.h>
+#include <hal_spinlock.h>
+#include <hal_mutex.h>
+#include <hal_sem.h>
 
 #include "pcm_common.h"
 #include <debug.h>
 
 //#define SNDRV_DEBUG
 
-#define SND_CORE_VERSION 	"V1.4.0"
+#define SND_CORE_VERSION	"V1.4.0"
 
 typedef uintptr_t dma_addr_t;
 
@@ -59,18 +58,13 @@ struct snd_pcm_hw_params;
 struct snd_pcm_runtime;
 struct snd_pcm;
 
-typedef aw_mutex_t* snd_mutex_t;
+typedef hal_mutex_t* snd_mutex_t;
 snd_mutex_t snd_mutex_init(void);
 int snd_mutex_lock(snd_mutex_t mutex);
 void snd_mutex_unlock(snd_mutex_t mutex);
 void snd_mutex_destroy(snd_mutex_t mutex);
 
-#define SND_SCHD  0x1
-#if 0
-typedef mqd_t snd_schd_t;
-#else
-typedef sem_t *snd_schd_t;
-#endif
+typedef hal_sem_t *snd_schd_t;
 snd_schd_t snd_schd_init(void);
 int snd_schd_timeout(snd_schd_t schd, long ms);
 void snd_schd_wakeup(snd_schd_t schd);
@@ -79,7 +73,7 @@ void snd_schd_destroy(snd_schd_t schd);
 void snd_pcm_stream_lock_irq(struct snd_pcm_substream *substream);
 void snd_pcm_stream_unlock_irq(struct snd_pcm_substream *substream);
 
-unsigned long _snd_pcm_stream_lock_irqsave(struct snd_pcm_substream *substream);
+hal_irq_state_t _snd_pcm_stream_lock_irqsave(struct snd_pcm_substream *substream);
 void snd_pcm_stream_unlock_irqrestore(struct snd_pcm_substream *substream,
 					unsigned long flags);
 #define snd_pcm_stream_lock_irqsave(substream, flags) \
@@ -97,9 +91,9 @@ void snd_pcm_stream_unlock_irqrestore(struct snd_pcm_substream *substream,
 #define snd_writel(v, addr) (*((volatile unsigned long  *)(addr)) = (unsigned long)(v))
 
 
-#define snd_malloc(size)	calloc(size, 1)
+#define snd_malloc(size)	hal_zalloc(size)
 #define snd_strdup(ptr)		strdup(ptr)
-#define snd_free(ptr)		free((void *)ptr)
+#define snd_free(ptr)		hal_free((void *)ptr)
 
 
 #define SNDRV_LOG_COLOR_NONE		"\e[0m"
@@ -442,7 +436,7 @@ struct snd_pcm_substream {
 	struct snd_pcm_runtime *runtime;
 	struct snd_pcm_ops *ops;
 	struct snd_dma_buffer dma_buffer;
-	volatile kspinlock_t lock;
+	hal_spinlock_t lock;
 	int ref_count;
 	int dapm_state;
 	int hw_opened;

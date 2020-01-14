@@ -95,6 +95,9 @@ typedef struct snd_pcm_rate_ops {
 	 */
 	void (*convert_s16)(void *obj, int16_t *dst, unsigned int dst_frames,
 			    const int16_t *src, unsigned int src_frames);
+
+	void (*convert_s16_fix)(void *obj, int16_t *dst, unsigned int *dst_frames,
+			    const int16_t *src, unsigned int *src_frames);
 	/**
 	 * compute the frame size for input
 	 */

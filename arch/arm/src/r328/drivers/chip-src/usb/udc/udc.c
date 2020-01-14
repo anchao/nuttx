@@ -43,8 +43,8 @@
 #include "udc.h"
 #include "udc_platform.h"
 
-#define hal_spin_lock_irqsave(lock, flags)
-#define hal_spin_unlock_irqrestore(lock, flags)
+//#define hal_spin_lock_irqsave(lock, flags)
+//#define hal_spin_unlock_irqrestore(lock, flags)
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x)	(sizeof(x)/sizeof((x)[0]))

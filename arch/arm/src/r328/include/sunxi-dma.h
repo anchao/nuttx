@@ -46,6 +46,7 @@
 #define DMA_IRQ_NUM	66
 //typedef char bool;
 #include <aw_common.h>
+#include <hal_spinlock.h>
 
 //#endif
 
@@ -267,7 +268,7 @@ struct sunxi_dma_chan {
 	uint32_t	irq_type;
 	dma_callback callback;
 	void *callback_param;
-	kspinlock_t lock;
+	hal_spinlock_t lock;
 };
 
 #ifdef __cplusplus

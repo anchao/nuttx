@@ -74,7 +74,7 @@ static const snd_pcm_dsnoop_config_t snd_pcm_dsnoop_config = {
 		.pcm		= "hw:audiocodec",
 		.format		= SND_PCM_FORMAT_S16_LE,
 		.rate		= 16000,
-		.channels	= 4,
+		.channels	= 3,
 		.period_size	= 1024,
 		.periods	= 4,
 	},
@@ -88,7 +88,7 @@ static const snd_pcm_dmix_config_t snd_pcm_dmix_config = {
 		.format		= SND_PCM_FORMAT_S16_LE,
 		.rate		= 48000,
 		.channels	= 1,
-		.period_size	= 1600,
+		.period_size	= 1024,
 		.periods	= 4,
 	},
 };
@@ -120,8 +120,8 @@ static const snd_pcm_plug_config_t snd_pcm_plug_config = {
 		.channels       = 1,
 		.rate           = 48000,
 	},
-	/*.rate_converter = "speexrate",*/
-	.rate_converter = "linear",
+	.rate_converter = "speexrate",
+	/*.rate_converter = "linear",*/
 	.route_policy   = "default",
 	.ttable         = {
 		TTABLE_CONFIG_END
@@ -150,7 +150,7 @@ static const snd_pcm_file_config_t snd_pcm_file_cap_config = {
 
 static const snd_pcm_dsnoop_config_t snd_pcm_dsnoop_ac107_config = {
 	.type		= "dsnoop",
-	.ipc_key	= 1113,
+	.ipc_key	= 1112,
 	.slave = {
 		.pcm		= "hw:ac107",
 		.format		= SND_PCM_FORMAT_S16_LE,

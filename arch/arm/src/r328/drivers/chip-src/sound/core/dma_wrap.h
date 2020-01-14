@@ -32,6 +32,7 @@
 #ifndef __DMA_WRAP_H_
 #define __DMA_WRAP_H_
 #include <hal_dma.h>
+#include <hal_mem.h>
 
 struct dma_chan {
 	unsigned long *dma_handle;
@@ -40,29 +41,15 @@ typedef void (*dma_callback)(void *dma_callback_param);
 
 static inline void *dma_alloc_coherent(size_t size)
 {
-	void *malloc_ptr;
-	uint32_t fake_ptr;
+	void *ptr;
 
-	malloc_ptr = malloc(size + 64);
-	if (!malloc_ptr)
-		return NULL;
-	if ((uint32_t)malloc_ptr & 0x3)
-		printf("malloc not align to 4 bytes\n");
-	fake_ptr = (uint32_t)(malloc_ptr + 64);
-	fake_ptr &= (~63);
-	/* save actual pointer */
-	*((uint32_t *)(fake_ptr - 4)) = (uint32_t)malloc_ptr;
-	return (void *)fake_ptr;
+	ptr = hal_align_malloc(size, 64);
+	return ptr;
 }
 
 static inline void dma_free_coherent(void *addr)
 {
-	void *malloc_ptr = NULL;
-	if (!addr)
-		return;
-	/* get actual pointer */
-	malloc_ptr = (void *)(*(uint32_t *)(addr - 4));
-	free(malloc_ptr);
+	hal_align_free(addr);
 }
 
 static inline struct dma_chan *dma_request_channel(void)
@@ -70,7 +57,7 @@ static inline struct dma_chan *dma_request_channel(void)
 	struct dma_chan *chan = NULL;
 	hal_dma_chan_status_t status = HAL_DMA_CHAN_STATUS_BUSY;
 
-	chan = calloc(1, sizeof(struct dma_chan));
+	chan = hal_zalloc(sizeof(struct dma_chan));
 	if (!chan) {
 		printf("no memory\n");
 		return NULL;
@@ -78,7 +65,7 @@ static inline struct dma_chan *dma_request_channel(void)
 	status = hal_dma_chan_request(&chan->dma_handle);
 	if (status != HAL_DMA_CHAN_STATUS_FREE) {
 		printf("request dma chan failed\n");
-		free(chan);
+		hal_free(chan);
 		return NULL;
 	}
 	return chan;

@@ -32,6 +32,8 @@
 #
 ############################################################################
 
-CHIP_ASRCS += osal4hal/cacheop.S
-CHIP_CSRCS += osal4hal/hal_cache.c
+CHIP_ASRCS += osal4hal/src/cacheop.S
+CHIP_CSRCS += osal4hal/src/hal_cache.c
+CHIP_CSRCS += osal4hal/src/hal_mem.c
+CHIP_CSRCS += osal4hal/src/hal_thread.c
 

@@ -27,7 +27,6 @@ extern "C"
 
 #include <stddef.h>
 #include <stdint.h>
-#include "cacheop.h"
 
 void cpu_dcache_clean(unsigned long vaddr_start, unsigned long size);
 void cpu_dcache_clean_invalidate(unsigned long vaddr_start, unsigned long size);

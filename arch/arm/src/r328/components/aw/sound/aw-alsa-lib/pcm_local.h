@@ -46,7 +46,9 @@ extern "C" {
 
 #define ATTRIBUTE_UNUSED 	__attribute__ ((__unused__))
 
-#define SND_PCM_VERSION 	"V1.7.1"
+#define SND_PCM_VERSION 	"V1.7.2"
+
+#define SND_PCM_RATE_FIX_PERIOD_SIZE
 
 #if 0
 #define REFINE_DEBUG

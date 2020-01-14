@@ -40,20 +40,11 @@
 #include <hal_cache.h>
 
 /**************************fix*********************/
-#if 0
-#define krhino_spin_lock_irq_save(fmt, args...)
-#define k_dcache_clean(fmt, args...)
-#define krhino_spin_unlock_irq_restore(fmt, args...)
-#define krhino_spin_lock_init(fmt, args...)
-#define krhino_spin_lock_irq_save(fmt, args...)
-#endif
-/**************************fix*********************/
 
 #define readl(addr)             (*((volatile unsigned long  *)(addr)))
 #define writel(v, addr)		(*((volatile unsigned long  *)(addr)) = (unsigned long)(v))
 /*#define DMA_DEBUG*/
 
-typedef uint32_t cpu_cpsr_t;
 typedef unsigned int u32;
 
 static struct sunxi_dma_chan	dma_chan_source[NR_MAX_CHAN];
@@ -222,16 +213,16 @@ int sunxi_dma_irq_handle(int irq, void *context, FAR void *arg)
 #endif
 
 	for (i = 0; i < NR_MAX_CHAN;i++) {
-		cpu_cpsr_t flags_cpsr;
+		hal_cpu_cpsr_t flags_cpsr;
 		struct sunxi_dma_chan *chan = &dma_chan_source[i];
 
-		krhino_spin_lock_irq_save(&chan->lock,flags_cpsr);
+		hal_spin_lock_irqsave(&chan->lock,flags_cpsr);
 		uint32_t chan_num = chan->chan_count;
 		uint32_t status = 0;
 
 		if (chan->used == 0){
 
-			krhino_spin_unlock_irq_restore(&chan->lock,flags_cpsr);
+			hal_spin_unlock_irqrestore(&chan->lock,flags_cpsr);
 			continue;
 		}
 
@@ -253,10 +244,10 @@ int sunxi_dma_irq_handle(int irq, void *context, FAR void *arg)
 			cb = chan->callback;
 			cb_data = chan->callback_param;
 
-			krhino_spin_unlock_irq_restore(&chan->lock,flags_cpsr);
+			hal_spin_unlock_irqrestore(&chan->lock,flags_cpsr);
 			if(cb)
 				cb(cb_data);
-			krhino_spin_lock_irq_save(&chan->lock,flags_cpsr);
+			hal_spin_lock_irqsave(&chan->lock,flags_cpsr);
 		} else {
 			dma_callback cb = NULL;
 			void *cb_data = NULL;
@@ -264,13 +255,13 @@ int sunxi_dma_irq_handle(int irq, void *context, FAR void *arg)
 			cb = chan->callback;
 			cb_data = chan->callback_param;
 
-			krhino_spin_unlock_irq_restore(&chan->lock,flags_cpsr);
+			hal_spin_unlock_irqrestore(&chan->lock,flags_cpsr);
 			if(cb)
 				cb(cb_data);
-			krhino_spin_lock_irq_save(&chan->lock,flags_cpsr);
+			hal_spin_lock_irqsave(&chan->lock,flags_cpsr);
 		}
 unlock:
-		krhino_spin_unlock_irq_restore(&chan->lock,flags_cpsr);
+		hal_spin_unlock_irqrestore(&chan->lock,flags_cpsr);
 	}
 	return 0;
 }
@@ -282,7 +273,7 @@ void sunxi_dma_init(void)
 	memset((void *)dma_chan_source, 0, NR_MAX_CHAN * sizeof(struct sunxi_dma_chan));
 
 	for (i = 0; i<NR_MAX_CHAN;i++) {
-		krhino_spin_lock_init(&dma_chan_source[i].lock);
+		hal_spin_lock_init(&dma_chan_source[i].lock);
 
 		high = (i >= HIGH_CHAN)?1:0;
 
@@ -305,17 +296,17 @@ unsigned long sunxi_dma_chan_request(void)
 {
 	int i = 0;
 	struct sunxi_dma_chan *chan;
-	cpu_cpsr_t flags_cpsr;
+	hal_cpu_cpsr_t flags_cpsr;
 	for (i = 0; i < NR_MAX_CHAN;i++) {
 		chan = &dma_chan_source[i];
-		krhino_spin_lock_irq_save(&chan->lock,flags_cpsr);
+		hal_spin_lock_irqsave(&chan->lock,flags_cpsr);
 		if (chan->used == 0) {
 			chan->used = 1;
 			chan->chan_count = i;
-			krhino_spin_unlock_irq_restore(&chan->lock,flags_cpsr);
+			hal_spin_unlock_irqrestore(&chan->lock,flags_cpsr);
 			return (unsigned long)&dma_chan_source[i];
 		}
-		krhino_spin_unlock_irq_restore(&chan->lock,flags_cpsr);
+		hal_spin_unlock_irqrestore(&chan->lock,flags_cpsr);
 	}
 
 	return 0;
@@ -345,7 +336,7 @@ int sunxi_dma_chan_free(struct sunxi_dma_chan *chan)
 {
 	uint32_t high;
 	uint32_t irq_val = 0; // pending_val = 0;
-	cpu_cpsr_t flags_cpsr;
+	hal_cpu_cpsr_t flags_cpsr;
 
 	if (NULL == chan)
 		return -1;
@@ -353,7 +344,7 @@ int sunxi_dma_chan_free(struct sunxi_dma_chan *chan)
 	if (!chan->used)
 		return -1;
 
-	krhino_spin_lock_irq_save(&chan->lock,flags_cpsr);
+	hal_spin_lock_irqsave(&chan->lock,flags_cpsr);
 
 	high = (chan->chan_count >=HIGH_CHAN)?1:0;
 
@@ -364,7 +355,7 @@ int sunxi_dma_chan_free(struct sunxi_dma_chan *chan)
 	sunxi_dma_free_ill(chan);
 
 	chan->used = 0;
-	krhino_spin_unlock_irq_restore(&chan->lock,flags_cpsr);
+	hal_spin_unlock_irqrestore(&chan->lock,flags_cpsr);
 	return 0;
 }
 
@@ -373,12 +364,12 @@ void dma_slave_config(struct sunxi_dma_chan *chan, struct dma_slave_config *conf
 	if (NULL == config || NULL == chan)
 		return;
 
-	cpu_cpsr_t flags_cpsr;
-	krhino_spin_lock_irq_save(&chan->lock,flags_cpsr);
+	hal_cpu_cpsr_t flags_cpsr;
+	hal_spin_lock_irqsave(&chan->lock,flags_cpsr);
 	convert_burst(&config->src_maxburst);
 	convert_burst(&config->dst_maxburst);
 	memcpy((void *)&(chan->cfg), (void *)config, sizeof(struct dma_slave_config));
-	krhino_spin_unlock_irq_restore(&chan->lock,flags_cpsr);
+	hal_spin_unlock_irqrestore(&chan->lock,flags_cpsr);
 }
 
 //fix : for test, malloc can not used now.
@@ -386,7 +377,7 @@ int sunxi_prep_dma_memcpy(struct sunxi_dma_chan * chan, uint32_t dest, uint32_t 
 {
 	struct sunxi_dma_lli *l_item = NULL;
 	struct dma_slave_config *config = NULL;
-	cpu_cpsr_t flags_cpsr;
+	hal_cpu_cpsr_t flags_cpsr;
 	if (NULL == chan)
 		return -1;
 
@@ -396,7 +387,7 @@ int sunxi_prep_dma_memcpy(struct sunxi_dma_chan * chan, uint32_t dest, uint32_t 
 	}
 	memset(l_item, 0, sizeof(struct sunxi_dma_lli));
 
-	krhino_spin_lock_irq_save(&chan->lock,flags_cpsr);
+	hal_spin_lock_irqsave(&chan->lock,flags_cpsr);
 	config = &chan->cfg;
 
 	sunxi_cfg_lli(l_item, src, dest, len,config);
@@ -409,7 +400,7 @@ int sunxi_prep_dma_memcpy(struct sunxi_dma_chan * chan, uint32_t dest, uint32_t 
 
 	sunxi_dump_lli(chan, l_item);
 
-	krhino_spin_unlock_irq_restore(&chan->lock,flags_cpsr);
+	hal_spin_unlock_irqrestore(&chan->lock,flags_cpsr);
 
 	return 0;
 }
@@ -418,7 +409,7 @@ int sunxi_prep_dma_device(struct sunxi_dma_chan * chan, uint32_t dest, uint32_t 
 {
 	struct sunxi_dma_lli *l_item = NULL;
 	struct dma_slave_config *config = NULL;
-	cpu_cpsr_t flags_cpsr;
+	hal_cpu_cpsr_t flags_cpsr;
 	if (NULL == chan)
 		return -1;
 
@@ -428,7 +419,7 @@ int sunxi_prep_dma_device(struct sunxi_dma_chan * chan, uint32_t dest, uint32_t 
 	}
 	memset(l_item, 0, sizeof(struct sunxi_dma_lli));
 
-	krhino_spin_lock_irq_save(&chan->lock,flags_cpsr);
+	hal_spin_lock_irqsave(&chan->lock,flags_cpsr);
 
 	config = &chan->cfg;
 
@@ -455,7 +446,7 @@ int sunxi_prep_dma_device(struct sunxi_dma_chan * chan, uint32_t dest, uint32_t 
 
 	sunxi_dump_lli(chan, l_item);
 
-	krhino_spin_unlock_irq_restore(&chan->lock,flags_cpsr);
+	hal_spin_unlock_irqrestore(&chan->lock,flags_cpsr);
 
 	return 0;
 }
@@ -466,18 +457,18 @@ int sunxi_prep_dma_cyclic(struct sunxi_dma_chan *chan, uint32_t buf_addr, uint32
 	uint32_t periods = buf_len / period_len;
 	struct dma_slave_config *config = NULL;
 	uint32_t i = 0;
-	cpu_cpsr_t flags_cpsr;
+	hal_cpu_cpsr_t flags_cpsr;
 
 	if (NULL == chan && chan->cyclic)
 		return -1;
 
-	krhino_spin_lock_irq_save(&chan->lock,flags_cpsr);
+	hal_spin_lock_irqsave(&chan->lock,flags_cpsr);
 
 	config = &chan->cfg;
 	for (i = 0; i < periods; i++) {
 		l_item = (struct sunxi_dma_lli *)malloc(sizeof(struct sunxi_dma_lli));
 		if (!l_item) {
-			krhino_spin_unlock_irq_restore(&chan->lock,flags_cpsr);
+			hal_spin_unlock_irqrestore(&chan->lock,flags_cpsr);
 			return -1;
 		}
 		memset(l_item, 0, sizeof(struct sunxi_dma_lli));
@@ -521,7 +512,7 @@ int sunxi_prep_dma_cyclic(struct sunxi_dma_chan *chan, uint32_t buf_addr, uint32
 	for (prev = chan->desc; prev != NULL; prev = prev->vlln)
 		sunxi_dump_lli(chan, prev);
 #endif
-	krhino_spin_unlock_irq_restore(&chan->lock,flags_cpsr);
+	hal_spin_unlock_irqrestore(&chan->lock,flags_cpsr);
 	return 0;
 }
 
@@ -530,12 +521,12 @@ enum dma_status sunxi_tx_status(struct sunxi_dma_chan *chan, uint32_t *left_size
 	uint32_t i = 0;
 	struct sunxi_dma_lli *l_item = NULL;
 	enum dma_status status = DMA_INVALID_PARAMETER;
-	cpu_cpsr_t flags_cpsr;
+	hal_cpu_cpsr_t flags_cpsr;
 
 	if (NULL == chan || NULL == left_size)
 		return status;
 
-	krhino_spin_lock_irq_save(&chan->lock,flags_cpsr);
+	hal_spin_lock_irqsave(&chan->lock,flags_cpsr);
 	if (chan->cyclic) {
 		for (i = 0, l_item = chan->desc; i <= chan->periods_pos; i++, l_item = l_item->vlln) {
 			if (NULL == l_item) {
@@ -576,7 +567,7 @@ enum dma_status sunxi_tx_status(struct sunxi_dma_chan *chan, uint32_t *left_size
 			status = DMA_IN_PROGRESS;
 	}
 unlock:
-	krhino_spin_unlock_irq_restore(&chan->lock,flags_cpsr);
+	hal_spin_unlock_irqrestore(&chan->lock,flags_cpsr);
 	return status;
 }
 
@@ -586,12 +577,12 @@ int sunxi_dma_start_desc(struct sunxi_dma_chan *chan)
 	uint32_t high = 0;
 	uint32_t irq_val = 0;
 	struct sunxi_dma_lli *prev = NULL;
-	cpu_cpsr_t flags_cpsr;
+	hal_cpu_cpsr_t flags_cpsr;
 
 	if (NULL == chan)
 		return -1;
 
-	krhino_spin_lock_irq_save(&chan->lock,flags_cpsr);
+	hal_spin_lock_irqsave(&chan->lock,flags_cpsr);
 
 	if (chan->cyclic)
 		chan->irq_type = IRQ_PKG;
@@ -615,7 +606,7 @@ int sunxi_dma_start_desc(struct sunxi_dma_chan *chan)
 
 	sunxi_dump_com_regs();
 	sunxi_dump_chan_regs(chan);
-	krhino_spin_unlock_irq_restore(&chan->lock,flags_cpsr);
+	hal_spin_unlock_irqrestore(&chan->lock,flags_cpsr);
 	return 0;
 }
 
@@ -624,8 +615,8 @@ int sunxi_dma_stop_desc(struct sunxi_dma_chan *chan)
 	if (NULL == chan)
 		return -1;
 
-	cpu_cpsr_t flags_cpsr;
-	krhino_spin_lock_irq_save(&chan->lock,flags_cpsr);
+	hal_cpu_cpsr_t flags_cpsr;
+	hal_spin_lock_irqsave(&chan->lock,flags_cpsr);
 
 	/*We should entry PAUSE state first to avoid missing data
 	 * count witch transferring on bus.
@@ -638,7 +629,7 @@ int sunxi_dma_stop_desc(struct sunxi_dma_chan *chan)
 		chan->cyclic = false;
 	}
 	//chan->desc = NULL;
-	krhino_spin_unlock_irq_restore(&chan->lock,flags_cpsr);
+	hal_spin_unlock_irqrestore(&chan->lock,flags_cpsr);
 
 	return 0;
 }

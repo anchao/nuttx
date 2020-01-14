@@ -17,6 +17,7 @@
  * ===========================================================================================
  */
 #include "hal_cache.h"
+#include "cacheop.h"
 
 void cpu_dcache_clean(unsigned long vaddr_start, unsigned long size)
 {

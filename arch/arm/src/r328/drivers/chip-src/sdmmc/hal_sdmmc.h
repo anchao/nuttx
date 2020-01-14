@@ -1,7 +1,7 @@
 #ifndef __HAL_SDMMC_H__
 #define __HAL_SDMMC_H__
 
-#include <chip/osal4hal/hal_cache.h>
+#include <chip/osal4hal/include/hal_cache.h>
 #include <sdmmc/osal_sdmmc.h>
 
 /* IRQ disable/enable */

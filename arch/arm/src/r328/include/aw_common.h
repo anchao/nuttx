@@ -36,54 +36,6 @@ extern "C" {
 	const typeof(((type *)0)->member) * __mptr = (ptr);	\
 	(type *)((char *)__mptr - offsetof(type, member)); })
 
-typedef uint32_t cpu_cpsr_t;
-
-static inline int cpu_intrpt_save(void)
-{
-	return (int)up_irq_save();
-}
-static inline int cpu_intrpt_restore(int flags)
-{
-	up_irq_restore((irqstate_t)flags);
-	return 0;
-}
-
-typedef spinlock_t kspinlock_t;
-
-#define krhino_spin_lock_init(lock) \
-do { \
-	spin_initialize(lock, SP_UNLOCKED); \
- \
-} while (0)
-
-static inline void krhino_spin_lock(kspinlock_t *lock)
-{
-	spin_lock(lock);
-}
-
-static inline void krhino_spin_unlock(kspinlock_t *lock)
-{
-	spin_unlock(lock);
-}
-#define KRHINO_SPIN_LOCK_DEFINE(lock) kspinlock_t lock = {0}
-#define krhino_spin_lock_irq_save(lock, flags) \
-do { \
-	flags = cpu_intrpt_save(); \
-	krhino_spin_lock(lock);		 \
-} while (0)
-#define krhino_spin_unlock_irq_restore(lock, flags) \
-do { \
-	cpu_intrpt_restore(flags); \
-	krhino_spin_unlock(lock);		 \
-} while (0)
-
-
-#define xTaskResumeAll()
-#define vTaskSuspendAll()
-
-#define __disable_irq()  	do { asm volatile ("cpsie i"); } while (0)
-#define __enable_irq() 		do { asm volatile ("cpsid i"); } while (0)
-
 #ifdef __cplusplus
 }
 #endif

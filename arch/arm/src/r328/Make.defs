@@ -152,7 +152,7 @@ CHIP_CSRCS += r328_timerisr.c
 AW_SRCDIR = $(TOPDIR)/arch/arm/src/r328
 
 CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)include}
-CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)osal4hal}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)osal4hal$(DELIM)include}
 CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)include$(DELIM)drivers}
 
 include r328$(DELIM)drivers$(DELIM)Make.defs

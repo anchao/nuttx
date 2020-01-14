@@ -18,8 +18,8 @@
  */
 
 #include "cfi.h"
+#include <nuttx/config.h>
 
-#define CONFIG_SMP
 /*
  * void awos_arch_flush_kern_dcache_area(void *addr, size_t size)
  * Ensure that the data held in the page kaddr is written back
