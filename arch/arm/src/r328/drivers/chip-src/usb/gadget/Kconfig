@@ -1,6 +1,6 @@
 menuconfig DRIVERS_USB_GADGET
 	bool "USB Gadget Support"
-	default n
+	depends on DRIVERS_USB_UDC
 	help
 	  Enable this configuration option if you want to run USB peripheral device.
 

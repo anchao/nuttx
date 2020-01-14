@@ -84,7 +84,11 @@ static int pcm_src_init(void *obj, snd_pcm_rate_info_t *info)
       if (rate->st)
          speex_resampler_destroy(rate->st);
       rate->channels = info->channels;
+#ifdef SND_PCM_RATE_FIX_PERIOD_SIZE
+      rate->st = speex_resampler_init_frac(rate->channels, info->in.rate, info->out.rate, info->in.rate, info->out.rate, rate->quality, &err);
+#else
       rate->st = speex_resampler_init_frac(rate->channels, info->in.period_size, info->out.period_size, info->in.rate, info->out.rate, rate->quality, &err);
+#endif
       if (! rate->st)
          return -EINVAL;
    }
@@ -95,7 +99,11 @@ static int pcm_src_init(void *obj, snd_pcm_rate_info_t *info)
 static int pcm_src_adjust_pitch(void *obj, snd_pcm_rate_info_t *info)
 {
    struct rate_src *rate = obj;
+#ifdef SND_PCM_RATE_FIX_PERIOD_SIZE
+   speex_resampler_set_rate_frac(rate->st, info->in.rate, info->out.rate, info->in.rate, info->out.rate);
+#else
    speex_resampler_set_rate_frac(rate->st, info->in.period_size, info->out.period_size, info->in.rate, info->out.rate);
+#endif
    return 0;
 }
 
@@ -111,6 +119,15 @@ static void pcm_src_convert_s16(void *obj, int16_t *dst, unsigned int dst_frames
    struct rate_src *rate = obj;
    speex_resampler_process_interleaved_int(rate->st, src, &src_frames, dst, &dst_frames);
 }
+
+#ifdef SND_PCM_RATE_FIX_PERIOD_SIZE
+static void pcm_src_convert_s16_fix(void *obj, int16_t *dst, unsigned int *dst_frames,
+				const int16_t *src, unsigned int *src_frames)
+{
+   struct rate_src *rate = obj;
+   speex_resampler_process_interleaved_int(rate->st, src, src_frames, dst, dst_frames);
+}
+#endif
 
 static void pcm_src_close(void *obj)
 {
@@ -145,6 +162,9 @@ static snd_pcm_rate_ops_t pcm_src_ops = {
 	.reset = pcm_src_reset,
 	.adjust_pitch = pcm_src_adjust_pitch,
 	.convert_s16 = pcm_src_convert_s16,
+#ifdef SND_PCM_RATE_FIX_PERIOD_SIZE
+	.convert_s16_fix = pcm_src_convert_s16_fix,
+#endif
 	.input_frames = input_frames,
 	.output_frames = output_frames,
 #if SND_PCM_RATE_PLUGIN_VERSION >= 0x010002
