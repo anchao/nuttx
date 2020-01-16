@@ -28,9 +28,9 @@ config ARCH_CHIP_R328
 	bool "Allwinner R328"
 	select ARCH_CORTEXA7
 	select ARCH_HAVE_FPU
-        select ARMV7A_HAVE_GICv2
-        select ARCH_HAVE_MULTICPU
-        select ARCH_HAVE_TRUSTZONE
+	select ARMV7A_HAVE_GICv2
+	select ARCH_HAVE_MULTICPU
+	select ARCH_HAVE_TRUSTZONE
 	select ARCH_HAVE_IRQPRIO
 	select ARCH_HAVE_LOWVECTORS
 	select ARCH_HAVE_SDRAM
