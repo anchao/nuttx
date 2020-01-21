@@ -330,7 +330,7 @@ CONFIG_DRIVERS_CCMU=y
 #
 # Efuse Devices
 #
-# CONFIG_DRIVERS_EFUSE is not set
+CONFIG_DRIVERS_EFUSE=y
 
 #
 # efuse option featuers
@@ -402,7 +402,9 @@ CONFIG_DRIVERS_SPINOR=y
 #
 # USB Devices
 #
-# CONFIG_DRIVERS_USB_UDC is not set
+CONFIG_DRIVERS_USB_UDC=y
+CONFIG_DRIVERS_USB_GADGET=y
+CONFIG_DRIVERS_USB_GADGET_ADB=y
 
 #
 # board related device drivers
@@ -440,7 +442,7 @@ CONFIG_BUILTIN_WAV_FILE=y
 # USB Gadget Support
 #
 # CONFIG_COMPONENTS_USB_GADGET_DEMO is not set
-# CONFIG_COMPONENTS_USB_GADGET_ADBD is not set
+CONFIG_COMPONENTS_USB_GADGET_ADBD=y
 
 #
 # AW Wifi Compenents
