@@ -412,5 +412,8 @@ extern int xradio_drv_init(void);
 	xradio_drv_init();
 #endif
 
-
+#ifdef CONFIG_COMPONENTS_USB_GADGET_ADBD
+extern int cmd_adbd(int argc, char *argv[]);
+	cmd_adbd(1, 0);
+#endif
 }
