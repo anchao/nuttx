@@ -201,8 +201,8 @@ int hal_efuse_read(char *key_name, unsigned char *key_data, size_t key_bit_len)
 		EFUSE_DBG("bit lft is %d\n",bit_lft);
 		tmp = efuse_sram_read_key(offset);
 		memcpy((void*)(u8_p + k_u32_l * 4),(void*)(&tmp),
-			   EFUSE_ROUND_UP(bit_lft,8));
-		tmp_sz +=EFUSE_ROUND_UP(bit_lft,8);
+			   EFUSE_ROUND_UP(bit_lft,8) / 8);
+		tmp_sz += (EFUSE_ROUND_UP(bit_lft,8) / 8);
 	}
 
 	EFUSE_DBG_DUMP(key_name, key_data, key_bit_len/8);
