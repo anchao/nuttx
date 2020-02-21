@@ -79,7 +79,7 @@ struct littlefs_mountpt_s
   sem_t                 sem;
   FAR struct inode     *drv;
   struct mtd_geometry_s geo;
-  struct lfs_config_s   cfg;
+  struct lfs_config     cfg;
   lfs_t                 lfs;
 };
 
@@ -188,21 +188,7 @@ const struct mountpt_operations littlefs_operations =
 
 static void littlefs_semtake(FAR struct littlefs_mountpt_s *fs)
 {
-  int ret;
-
-  do
-    {
-      /* Take the semaphore (perhaps waiting) */
-
-      ret = nxsem_wait(&fs->sem);
-
-      /* The only case that an error should occur here is if the wait was
-       * awakened by a signal.
-       */
-
-      DEBUGASSERT(ret == OK || ret == -EINTR);
-    }
-  while (ret == -EINTR);
+  nxsem_wait_uninterruptible(&fs->sem);
 }
 
 /****************************************************************************
@@ -263,7 +249,7 @@ static int littlefs_open(FAR struct file *filep, FAR const char *relpath,
                          int oflags, mode_t mode)
 {
   FAR struct littlefs_mountpt_s *fs;
-  FAR struct lfs_file_s *priv;
+  FAR struct lfs_file *priv;
   FAR struct inode *inode;
   int ret;
 
@@ -336,7 +322,7 @@ errout:
 static int littlefs_close(FAR struct file *filep)
 {
   FAR struct littlefs_mountpt_s *fs;
-  FAR struct lfs_file_s *priv;
+  FAR struct lfs_file *priv;
   FAR struct inode *inode;
 
   /* Recover our private data from the struct file instance */
@@ -365,7 +351,7 @@ static ssize_t littlefs_read(FAR struct file *filep, FAR char *buffer,
                              size_t buflen)
 {
   FAR struct littlefs_mountpt_s *fs;
-  FAR struct lfs_file_s *priv;
+  FAR struct lfs_file *priv;
   FAR struct inode *inode;
   ssize_t ret;
 
@@ -397,7 +383,7 @@ static ssize_t littlefs_write(FAR struct file *filep, const char *buffer,
                               size_t buflen)
 {
   FAR struct littlefs_mountpt_s *fs;
-  FAR struct lfs_file_s *priv;
+  FAR struct lfs_file *priv;
   FAR struct inode *inode;
   ssize_t ret;
 
@@ -428,7 +414,7 @@ static ssize_t littlefs_write(FAR struct file *filep, const char *buffer,
 static off_t littlefs_seek(FAR struct file *filep, off_t offset, int whence)
 {
   FAR struct littlefs_mountpt_s *fs;
-  FAR struct lfs_file_s *priv;
+  FAR struct lfs_file *priv;
   FAR struct inode *inode;
   off_t ret;
 
@@ -489,7 +475,7 @@ static int littlefs_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
 static int littlefs_sync(FAR struct file *filep)
 {
   FAR struct littlefs_mountpt_s *fs;
-  FAR struct lfs_file_s *priv;
+  FAR struct lfs_file *priv;
   FAR struct inode *inode;
   int ret;
 
@@ -530,7 +516,7 @@ static int littlefs_dup(FAR const struct file *oldp, FAR struct file *newp)
 static int littlefs_fstat(FAR const struct file *filep, FAR struct stat *buf)
 {
   FAR struct littlefs_mountpt_s *fs;
-  FAR struct lfs_file_s *priv;
+  FAR struct lfs_file *priv;
   FAR struct inode *inode;
 
   memset(buf, 0, sizeof(*buf));
@@ -571,7 +557,7 @@ static int littlefs_fstat(FAR const struct file *filep, FAR struct stat *buf)
 static int littlefs_truncate(FAR struct file *filep, off_t length)
 {
   FAR struct littlefs_mountpt_s *fs;
-  FAR struct lfs_file_s *priv;
+  FAR struct lfs_file *priv;
   FAR struct inode *inode;
   int ret;
 
@@ -602,7 +588,7 @@ static int littlefs_opendir(FAR struct inode *mountpt,
                             FAR struct fs_dirent_s *dir)
 {
   FAR struct littlefs_mountpt_s *fs;
-  FAR struct lfs_dir_s *priv;
+  FAR struct lfs_dir *priv;
   int ret;
 
   /* Recover our private data from the inode instance */
@@ -652,7 +638,7 @@ static int littlefs_closedir(FAR struct inode *mountpt,
                              FAR struct fs_dirent_s *dir)
 {
   struct littlefs_mountpt_s *fs;
-  FAR struct lfs_dir_s *priv;
+  FAR struct lfs_dir *priv;
 
   /* Recover our private data from the inode instance */
 
@@ -680,8 +666,8 @@ static int littlefs_readdir(FAR struct inode *mountpt,
                             FAR struct fs_dirent_s *dir)
 {
   FAR struct littlefs_mountpt_s *fs;
-  FAR struct lfs_dir_s *priv;
-  struct lfs_info_s info;
+  FAR struct lfs_dir *priv;
+  struct lfs_info info;
   int ret;
 
   /* Recover our private data from the inode instance */
@@ -728,7 +714,7 @@ static int littlefs_rewinddir(FAR struct inode *mountpt,
                               FAR struct fs_dirent_s *dir)
 {
   struct littlefs_mountpt_s *fs;
-  FAR struct lfs_dir_s *priv;
+  FAR struct lfs_dir *priv;
   int ret;
 
   /* Recover our private data from the inode instance */
@@ -761,7 +747,7 @@ static int littlefs_rewinddir(FAR struct inode *mountpt,
  *
  ****************************************************************************/
 
-static int littlefs_read_block(FAR const struct lfs_config_s *c,
+static int littlefs_read_block(FAR const struct lfs_config *c,
                                lfs_block_t block, lfs_off_t off,
                                FAR void *buffer, lfs_size_t size)
 {
@@ -789,7 +775,7 @@ static int littlefs_read_block(FAR const struct lfs_config_s *c,
  * Name: littlefs_write_block
  ****************************************************************************/
 
-static int littlefs_write_block(FAR const struct lfs_config_s *c,
+static int littlefs_write_block(FAR const struct lfs_config *c,
                                 lfs_block_t block, lfs_off_t off,
                                 FAR const void *buffer, lfs_size_t size)
 {
@@ -817,7 +803,7 @@ static int littlefs_write_block(FAR const struct lfs_config_s *c,
  * Name: littlefs_erase_block
  ****************************************************************************/
 
-static int littlefs_erase_block(FAR const struct lfs_config_s *c,
+static int littlefs_erase_block(FAR const struct lfs_config *c,
                                 lfs_block_t block)
 {
   FAR struct littlefs_mountpt_s *fs = c->context;
@@ -840,7 +826,7 @@ static int littlefs_erase_block(FAR const struct lfs_config_s *c,
  * Name: littlefs_sync_block
  ****************************************************************************/
 
-static int littlefs_sync_block(FAR const struct lfs_config_s *c)
+static int littlefs_sync_block(FAR const struct lfs_config *c)
 {
   FAR struct littlefs_mountpt_s *fs = c->context;
   FAR struct inode *drv = fs->drv;
@@ -934,21 +920,18 @@ static int littlefs_bind(FAR struct inode *driver, FAR const void *data,
 
   /* Initialize lfs_config structure */
 
-  fs->cfg.context     = fs;
-  fs->cfg.read        = littlefs_read_block;
-  fs->cfg.prog        = littlefs_write_block;
-  fs->cfg.erase       = littlefs_erase_block;
-  fs->cfg.sync        = littlefs_sync_block;
-  fs->cfg.read_size   = fs->geo.blocksize;
-  fs->cfg.prog_size   = fs->geo.blocksize;
-  fs->cfg.block_size  = fs->geo.erasesize;
-  fs->cfg.block_count = fs->geo.neraseblocks;
-  fs->cfg.lookahead   = 32 * ((fs->cfg.block_count + 31) / 32);
-
-  if (fs->cfg.lookahead > 32 * fs->cfg.read_size)
-    {
-      fs->cfg.lookahead = 32 * fs->cfg.read_size;
-    }
+  fs->cfg.context        = fs;
+  fs->cfg.read           = littlefs_read_block;
+  fs->cfg.prog           = littlefs_write_block;
+  fs->cfg.erase          = littlefs_erase_block;
+  fs->cfg.sync           = littlefs_sync_block;
+  fs->cfg.read_size      = fs->geo.blocksize;
+  fs->cfg.prog_size      = fs->geo.blocksize;
+  fs->cfg.block_size     = fs->geo.erasesize;
+  fs->cfg.block_count    = fs->geo.neraseblocks;
+  fs->cfg.block_cycles   = 500;
+  fs->cfg.cache_size     = fs->geo.blocksize;
+  fs->cfg.lookahead_size = lfs_min(lfs_alignup(fs->cfg.block_count / 8, 8), fs->cfg.read_size);
 
   /* Then get information about the littlefs filesystem on the devices
    * managed by this driver.
@@ -1058,20 +1041,6 @@ static int littlefs_unbind(FAR void *handle, FAR struct inode **driver,
 }
 
 /****************************************************************************
- * Name: littlefs_used_block
- ****************************************************************************/
-
-static int littlefs_used_block(void *arg, lfs_block_t block)
-{
-  FAR struct statfs *buf = arg;
-
-  buf->f_bfree--;
-  buf->f_bavail--;
-
-  return 0;
-}
-
-/****************************************************************************
  * Name: littlefs_statfs
  *
  * Description: Return filesystem statistics
@@ -1098,7 +1067,14 @@ static int littlefs_statfs(FAR struct inode *mountpt, FAR struct statfs *buf)
   buf->f_bavail  = fs->cfg.block_count;
 
   littlefs_semtake(fs);
-  ret = lfs_traverse(&fs->lfs, littlefs_used_block, buf);
+  ret = lfs_fs_size(&fs->lfs);
+  if (ret > 0)
+    {
+      buf->f_bfree -= ret;
+      buf->f_bavail -= ret;
+
+      ret = 0;
+    }
   littlefs_semgive(fs);
 
   return ret;
@@ -1206,7 +1182,7 @@ static int littlefs_stat(FAR struct inode *mountpt, FAR const char *relpath,
                          FAR struct stat *buf)
 {
   FAR struct littlefs_mountpt_s *fs;
-  struct lfs_info_s info;
+  struct lfs_info info;
   int ret;
 
   memset(buf, 0, sizeof(*buf));
