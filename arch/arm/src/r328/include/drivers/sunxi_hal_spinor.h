@@ -107,6 +107,8 @@ extern const sunxi_hal_driver_spinor_t sunxi_hal_spinor_driver;
 
 #define FACTORY_MXIC 0xC2
 #define FACTORY_GD 0xC8
+#define FACTORY_XTX 0x0B
+
 struct nor_info
 {
     char *name;
