@@ -33,6 +33,10 @@
 #define NOR_DEFAULT_FREQUENCY 50
 #define NOR_PAGE_SIZE 256
 
+/* XTX */
+#define NOR_XTX_QE_BIT (0x01 << 1)
+#define NOR_XTX_CMD_READ_SR1 (0x35)
+
 #ifndef MIN
 #define MIN(a, b) (a > b ? b : a)
 #endif
@@ -41,6 +45,7 @@
 #define SZ_32K (32 * 1024)
 #define SZ_4K (4 * 1024)
 
+#define MAX_WAIT_LOOP ((unsigned int)(-1))
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(array) (sizeof(array)/sizeof(array[0]))
 #endif
@@ -133,6 +138,14 @@ struct nor_info nor_ids[] =
     {
         .name = "GD25Q127C",
         .id = {0xc8, 0x40, 0x18},
+        .blk_size = 4 * 1024,
+        .blk_cnt = 4096,
+        .flag = 0,
+    },
+    /* XTX */
+    {
+        .name = "xt25f128",
+        .id = {0x0b, 0x40, 0x18},
         .blk_size = 4 * 1024,
         .blk_cnt = 4096,
         .flag = 0,
@@ -419,6 +432,31 @@ static struct nor_info *match_nor(char *id, int id_len)
     return &nor_ids[i];
 }
 
+static int nor_write_status(unsigned char *sr, unsigned int len)
+{
+    int ret, i;
+    char tbuf[5] = {0};
+
+    ret = nor_write_enable();
+    if (ret)
+        return ret;
+
+    if (len > 5)
+        return -EINVAL;
+
+    tbuf[0] = NOR_CMD_WRITE_SR;
+    for (i = 0; i < len; i++)
+        tbuf[i + 1] = *(sr + i);
+    i++;
+    ret = nor_read_write(i, tbuf, i, NULL, 0);
+    if (ret) {
+        pr_err("write status register fail\n");
+        return ret;
+    }
+
+    return nor_wait_ready_us(10, MAX_WAIT_LOOP);
+}
+
 #define NOR_MXIC_QE_BIT (1 << 6)
 static int nor_mxic_quad_mode(void)
 {
@@ -519,6 +557,55 @@ static int nor_gd_quad_mode(void)
     return 0;
 }
 
+/* xtx private function */
+static int nor_xtx_read_status1(unsigned char *sr1)
+{
+    int ret;
+    char cmd[1] = {NOR_XTX_CMD_READ_SR1};
+    char reg[2] = {0};
+
+    ret = nor_read_write(1, cmd, 1, reg, 2);
+    if (ret) {
+        pr_err("read xtx status1 register fail\n");
+        return ret;
+    }
+
+    *sr1 = reg[1];
+    return 0;
+}
+
+static int nor_xtx_quad_mode(void)
+{
+    int ret;
+    unsigned char sr[2];
+
+    ret = nor_xtx_read_status1(&sr[1]);
+    if (ret)
+        return ret;
+
+    if (sr[1] & NOR_XTX_QE_BIT)
+        return 0;
+
+    sr[1] |= NOR_XTX_QE_BIT;
+
+    ret = nor_read_status(&sr[0]);
+    if (ret)
+        return ret;
+
+    ret = nor_write_status(sr, 2);
+    if (ret)
+        return ret;
+
+    ret = nor_xtx_read_status1(&sr[1]);
+    if (ret)
+        return ret;
+    if (!(sr[1] & NOR_XTX_QE_BIT)) {
+        pr_err("set xtx QE failed (0x%x)\n", sr[1]);
+        return -EINVAL;
+    }
+    return 0;
+}
+
 static int nor_set_quad_mode(void)
 {
     switch (nor->info->id[0])
@@ -527,6 +614,8 @@ static int nor_set_quad_mode(void)
             return nor_mxic_quad_mode();
         case FACTORY_GD:
             return nor_gd_quad_mode();
+        case FACTORY_XTX:
+            return nor_xtx_quad_mode();
         default:
             return 0;
     }
@@ -879,10 +968,10 @@ int32_t spinor_initialize(sunxi_hal_spinor_signal_event_t cb_event)
         goto unlock;
     }
 
-    pr_info("Nor Flash %s size %uMB write %dbit read %dbit blk size %uKB\n",
+    printf("Nor Flash %s size %uMB write %dbit read %dbit blk size %uKB\n",
             nor->info->name, nor->info->blk_cnt * nor->info->blk_size / 1024 / 1024,
             cmd_bit(nor->cmd_write), cmd_bit(nor->cmd_read), nor->blk_size / 1024);
-    pr_info("Nor Flash ID (hex): %02x %02x %02x\n", nor->info->id[0],
+    printf("Nor Flash ID (hex): %02x %02x %02x\n", nor->info->id[0],
             nor->info->id[1], nor->info->id[2]);
 
 unlock:
