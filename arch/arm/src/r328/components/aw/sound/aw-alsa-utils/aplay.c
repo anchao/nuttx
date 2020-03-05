@@ -324,6 +324,8 @@ int cmd_aplay(int argc, char ** argv)
 	audio_mgr = audio_mgr_create();
 	if (!audio_mgr)
 		return -1;
+
+	optind = 0;
 	while ((c = getopt(argc, argv, "D:p:b:hslv")) != -1) {
 		switch (c) {
 		case 'D':

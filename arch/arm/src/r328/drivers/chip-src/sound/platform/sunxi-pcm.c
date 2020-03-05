@@ -258,3 +258,22 @@ struct snd_pcm_ops sunxi_pcm_ops = {
 	.trigger	= sunxi_pcm_trigger,
 	.pointer	= snd_dmaengine_pcm_pointer,
 };
+
+#ifndef CONFIG_SND_PLATFORM_SUNXI_CPUDAI
+int snd_platform_cpudai_register(struct snd_platform *platform, int arg)
+{
+	return -1;
+}
+#endif
+#ifndef CONFIG_SND_PLATFORM_SUNXI_DAUDIO
+int snd_platform_daudio_register(struct snd_platform *platform, int num)
+{
+	return -1;
+}
+#endif
+#ifndef CONFIG_SND_PLATFORM_SUNXI_DMIC
+int snd_platform_dmic_register(struct snd_platform *platform, int arg)
+{
+	return -1;
+}
+#endif
