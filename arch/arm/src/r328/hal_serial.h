@@ -119,23 +119,7 @@ typedef struct
     uart_parity_t parity;
 } _uart_config_t;
 
-#if 0
-/* UART configuration */
-typedef struct {
-    uint32_t                baud_rate;
-    hal_uart_data_width_t   data_width;
-    uart_parity_t	    parity;
-    uart_stop_bit_t	    stop_bits;
-    hal_uart_flow_control_t flow_control;
-    hal_uart_mode_t         mode;
-} uart_config_t;
 
-typedef struct {
-    uint8_t        port;   /* uart port */
-    uart_config_t  config; /* uart config */
-    void          *priv;   /* priv data */
-} uart_dev_t;
-#endif
 
 // brief General power states
 typedef enum sunxi_hal_power_state

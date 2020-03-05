@@ -1,0 +1,5 @@
+#include r328$(DELIM)components$(DELIM)aw$(DELIM)bluetooth$(DELIM)bluedroid$(DELIM)Make.defs
+ifneq ($(CONFIG_COMPONENTS_AW_BT),)
+include r328$(DELIM)components$(DELIM)aw$(DELIM)bluetooth$(DELIM)interface$(DELIM)Make.defs
+endif
+
