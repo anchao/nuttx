@@ -563,8 +563,9 @@ int cmd_arecord(int argc, char ** argv)
 
 	/* default param */
 	audio_mgr->rate = 16000;
-	audio_mgr->channels = 4;
+	audio_mgr->channels = 3;
 
+	optind = 0;
 	while ((c = getopt(argc, argv, "D:r:f:c:p:b:d:khls:o:vt")) != -1) {
 		switch (c) {
 		case 'D':

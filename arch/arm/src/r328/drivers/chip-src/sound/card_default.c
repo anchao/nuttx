@@ -39,6 +39,12 @@ int sunxi_soundcard_init(void)
 		return ret;
 #endif
 
+#if defined(CONFIG_SND_PLATFORM_SUNXI_DMIC) && defined(CONFIG_SND_CODEC_DUMMY)
+	ret = snd_card_register("snddmic", &dummy_codec, SND_PLATFORM_TYPE_DMIC);
+	if (ret != 0)
+		return ret;
+#endif
+
 #if defined(CONFIG_SND_PLATFORM_SUNXI_DAUDIO) && defined(CONFIG_SND_CODEC_AC107)
 	ret = snd_card_register("ac107", &ac107_codec, SND_PLATFORM_TYPE_DAUDIO1);
 	if (ret != 0)

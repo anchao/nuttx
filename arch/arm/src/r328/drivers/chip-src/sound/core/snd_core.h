@@ -45,7 +45,6 @@
 
 #include "pcm_common.h"
 #include <debug.h>
-
 //#define SNDRV_DEBUG
 
 #define SND_CORE_VERSION	"V1.4.0"
@@ -64,7 +63,10 @@ int snd_mutex_lock(snd_mutex_t mutex);
 void snd_mutex_unlock(snd_mutex_t mutex);
 void snd_mutex_destroy(snd_mutex_t mutex);
 
-typedef hal_sem_t *snd_schd_t;
+typedef struct {
+	hal_sem_t sem;
+	int waiting;
+} *snd_schd_t;
 snd_schd_t snd_schd_init(void);
 int snd_schd_timeout(snd_schd_t schd, long ms);
 void snd_schd_wakeup(snd_schd_t schd);
