@@ -450,6 +450,23 @@ static void ble_gatts_cb_event_handler(t_ble_gatts_cb_event cb_event, uint8_t ga
 			}
 			write_event_env_demo(gatts_if, &prepare_write_envent, arg);
 			break;
+		case BLE_GATTS_READ_EVT:
+			loge("GATT_READ_EVT, conn_id %d, trans_id %d, handle %d\n", arg->read.conn_id, arg->read.trans_id, arg->read.handle);
+			t_gatt_rsp gatt_res;
+			static uint8_t _value = 0x01;
+
+			memset(&gatt_res, 0, sizeof(t_gatt_rsp));
+            gatt_res.attr_value.len = 1;
+            gatt_res.attr_value.handle = arg->read.handle;
+			gatt_res.attr_value.value[0] = _value;
+
+			ble_gatts_send_response(gatts_if,arg->read.conn_id, arg->read.trans_id,
+                                      XR_GATT_OK, &gatt_res);
+			_value ++;
+			if(_value >= 128)
+				_value = 0;
+
+			break;
 		case BLE_GATTS_MTU_EVT:
 			logi("GATTS_MTU_EVT, MTU %d\n", arg->mtu.mtu);
 			break;
