@@ -1,0 +1,212 @@
+/*
+ * Copyright (C) 2017 ALLWINNERTECH TECHNOLOGY CO., LTD. All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *    1. Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *    2. Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the
+ *       distribution.
+ *    3. Neither the name of ALLWINNERTECH TECHNOLOGY CO., LTD. nor the names of
+ *       its contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ *  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ *  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ *  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <wifimanager.h>
+#include <net/if.h>
+#include "netutils/netlib.h"
+#include "netutils/dhcpc.h"
+
+static const char* wifi_state_to_str(int sta)
+{
+	switch(sta) {
+		case WIFI_DISCONNECTED:
+			return "WIFI_DISCONNECTED";
+		case WIFI_SCAN_STARTED:
+			return "WIFI_SCAN_STARTED";
+		case WIFI_SCAN_FAILED:
+			return "WIFI_SCAN_FAILED";
+		case WIFI_NETWORK_NOT_FOUND:
+			return "WIFI_NETWORK_NOT_FOUND";
+		case WIFI_ASSOCIATING:
+			return "WIFI_ASSOCIATING";
+		case WIFI_AUTH_REJECT:
+			return "WIFI_AUTH_REJECT";
+		case WIFI_AUTH_TIMEOUT:
+			return "WIFI_AUTH_TIMEOUT";
+		case WIFI_HANDSHAKE_FAILED:
+			return "WIFI_HANDSHAKE_FAILED";
+		case WIFI_CONNECTED:
+			return "WIFI_CONNECTED";
+		case WIFI_CONN_TIMEOUT:
+			return "WIFI_CONN_TIMEOUT";
+		case DHCP_START_FAILED:
+			return "DHCP_START_FAILED";
+		case DHCP_TIMEOUT:
+			return "DHCP_TIMEOUT";
+		case DHCP_SUCCESS:
+			return "DHCP_SUCCESS";
+		default:
+			return "UNKNOWN";
+	}
+}
+
+static void wifi_status_change(aw_wifi_status_change_t *wifi_status)
+{
+	if(strncmp(wifi_status->status,"connect",7) == 0)
+		printf("wifi connect successful:%s\n",wifi_status->ssid);
+	else
+		printf("wifi connect failed.\n");
+}
+
+static void wifi_state_change(aw_wifi_state_t state)
+{
+	printf("wifi state:%s\n",wifi_state_to_str(state));
+}
+
+static void wifi_hw_status(aw_wifi_hw_status_t hw_status)
+{
+	printf("wifi %s\n",hw_status?"up":"down");
+}
+
+void wifi_msg_callback(aw_wifi_msg_data_t *p_msg)
+{
+	switch(p_msg->id) {
+		case WIFI_MSG_ID_WIFI_HW_STATUS:
+			wifi_hw_status(p_msg->data.wlan_status);
+			break;
+		case WIFI_MSG_ID_WIFI_STATE:
+			wifi_state_change(p_msg->data.wlan_status);
+			break;
+		case WIFI_MSG_ID_NETWORK_STATUS:
+			wifi_status_change(p_msg->data.network_status_change);
+			break;
+		default:
+			printf("Not support.!\n");
+			break;
+	}
+}
+//TODO:tries,timeout.
+static int dhcp_handle(int tries,int timeout_ms,void *arg)
+{
+	FAR const char devname[]="wlan0";
+	FAR void *handle;
+	uint8_t mac[6];
+	struct dhcpc_state ds;
+	int ret;
+	/* Get the MAC address of the NIC */
+
+	netlib_getmacaddr(devname, mac);
+
+	/* Set up the DHCPC modules */
+
+	handle = dhcpc_open(devname, &mac, IFHWADDRLEN);
+	if (handle == NULL) {
+	    fprintf(stderr, "ERROR: dhcpc_open() for '%s' failed\n", devname);
+		return -1;
+	}
+
+	/* Get an IP address. */
+
+	ret = dhcpc_request(handle, &ds);
+	if (ret < 0) {
+	    (void)dhcpc_close(handle);
+	    fprintf(stderr, "ERROR: dhcpc_request() failed\n");
+		return -1;
+	}
+
+	/* Save the addresses that we obtained. */
+
+	netlib_set_ipv4addr(devname, &ds.ipaddr);
+
+	if (ds.netmask.s_addr != 0) {
+	    netlib_set_ipv4netmask(devname, &ds.netmask);
+	}
+
+	if (ds.default_router.s_addr != 0) {
+	    netlib_set_dripv4addr(devname, &ds.default_router);
+	}
+
+	if (ds.dnsaddr.s_addr != 0) {
+	    netlib_set_ipv4dnsaddr(&ds.dnsaddr);
+	}
+
+	dhcpc_close(handle);
+	return 0;
+}
+
+#define MAX_SCAN_RESULTS_NUM 32
+
+int main(int argc,FAR char  *argv[])
+{
+	int c;
+	aw_wifi_scan_results_t scan_result[MAX_SCAN_RESULTS_NUM];
+	int ret;
+	int i = 0;
+
+	aw_attr_t attr = {
+		.dhcp_cb = dhcp_handle,
+		.msg_cb  = wifi_msg_callback,
+		.dhcp_tries = 3,
+		.dhcp_timeout = 180000,
+		.connect_timeout = 180000,
+	};
+
+	if(argc < 2) {
+		goto help;
+	}
+
+	aw_wifi_init(&attr);
+
+	if(aw_wifi_on() != 0) {
+		printf("wifi on failed.\n");
+		return -1;
+	}
+
+	while((c = getopt(argc,argv,"c:s")) != -1) {
+		switch(c) {
+			case 'c':
+				if(argc < 4 || argc > 6){
+					goto help;
+				}
+				aw_wifi_connect(argv[2],argv[3]);
+				break;
+			case 's':
+				ret = aw_wifi_scan(scan_result,MAX_SCAN_RESULTS_NUM);
+				for(i=0;i>=0 && i<ret;i++) {
+					printf("%2d bssid: %02X:%02X:%02X:%02X:%02X:%02X   ssid:%-24.24s "
+							"ch: %-2d   rssi: %2d   key_mgmt: %2d\n",i,
+							scan_result[i].bssid[0],scan_result[i].bssid[1],scan_result[i].bssid[2],
+							scan_result[i].bssid[3],scan_result[i].bssid[4],scan_result[i].bssid[5],
+							scan_result[i].ssid,scan_result[i].channel,scan_result[i].rssi,
+							scan_result[i].key);
+				}
+				break;
+			default:
+				printf("invaild.\n");
+				break;
+		}
+	}
+	return 0;
+help:
+	printf("-c connect AP, -c <ssid> <passwd>\n");
+	return 0;
+}
