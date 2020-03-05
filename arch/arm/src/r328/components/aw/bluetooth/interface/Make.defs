@@ -1,0 +1,17 @@
+AW_SRCDIR = $(TOPDIR)/arch/arm/src/r328
+CHIP_CSRCS += 	components/aw/bluetooth/interface/aw_ble_gatts_app.c \
+				components/aw/bluetooth/interface/aw_bt_a2dp_app.c \
+				components/aw/bluetooth/interface/aw_bt_avrcp_app.c \
+				components/aw/bluetooth/interface/bt_app_audio.c \
+				components/aw/bluetooth/interface/bt_app_core.c \
+				components/aw/bluetooth/interface/bt_app_gap.c \
+				components/aw/bluetooth/interface/bt_example.c \
+
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)components$(DELIM)aw$(DELIM)bluetooth$(DELIM)interface}
+CFLAGS += -Wundef
+
+R328_ARCH_DIR=${TOPDIR}$(DELIM)arch$(DELIM)arm$(DELIM)src$(DELIM)r328
+EXTRA_LIBPATHS += -L "$(R328_ARCH_DIR)$(DELIM)components$(DELIM)aw$(DELIM)bluetooth"
+EXTRA_LIBS += -lbluedroid
+
+include r328$(DELIM)components$(DELIM)aw$(DELIM)bluetooth$(DELIM)interface$(DELIM)sys_ctrl$(DELIM)Make.defs

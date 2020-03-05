@@ -1,3 +1,4 @@
 source arch/arm/src/r328/components/aw/sound/Kconfig
 source arch/arm/src/r328/components/aw/usb/Kconfig
 source arch/arm/src/r328/components/aw/wifi/Kconfig
+source arch/arm/src/r328/components/aw/bluetooth/Kconfig

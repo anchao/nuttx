@@ -1,0 +1,9 @@
+AW_SRCDIR = $(TOPDIR)/arch/arm/src/r328
+CHIP_CSRCS += 	components/aw/bluetooth/interface/sys_ctrl/container.c \
+				components/aw/bluetooth/interface/sys_ctrl/event_queue.c \
+				components/aw/bluetooth/interface/sys_ctrl/looper.c \
+				components/aw/bluetooth/interface/sys_ctrl/observer.c \
+				components/aw/bluetooth/interface/sys_ctrl/publisher.c \
+				components/aw/bluetooth/interface/sys_ctrl/sys_ctrl.c \
+			
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)components$(DELIM)aw$(DELIM)bluetooth$(DELIM)interface$(DELIM)sys_ctrl}
