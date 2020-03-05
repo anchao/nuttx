@@ -49,7 +49,7 @@
 #include "up_arch.h"
 #include "up_internal.h"
 #include "sctlr.h"
-
+#include "sched/sched.h"
 #include "r328_pio.h"
 #include "r328_irq.h"
 #include "gic.h"
@@ -140,6 +140,15 @@ extern uint32_t _vector_end;   /* End+1 of vector block */
 
 void up_irqinitialize(void)
 {
+
+    struct tcb_s *idle;
+
+    /* Initialize the idle task stack info */
+    idle = this_task();  /* It should be idle task */
+    idle->stack_alloc_ptr = _END_BSS;
+    idle->adj_stack_ptr   = (FAR void *)g_idle_topstack;
+    idle->adj_stack_size  = CONFIG_IDLETHREAD_STACKSIZE;
+
   /* The following operations need to be atomic, but since this function is
    * called early in the initialization sequence, we expect to have exclusive
    * access to the GIC.
