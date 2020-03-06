@@ -1,7 +1,7 @@
 menu "Debug Components Support"
 config DEBUG_WATCHPOINT
     bool "Debug Watchpoint"
-	default y
+	default n
 	help
 	    "Enable Debug Components Watchpoint"
 endmenu
