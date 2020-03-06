@@ -34,7 +34,7 @@
 - Support more bsp drivers
 - Support wifi/bt communication
 
-### Nuttx-8.2-r328-0.5 - January 14 20120
+### Nuttx-8.2-r328-0.5 - January 14 2020
 **System**
 - Added CrytoEngine/I2C/Key/AC107/USB/SDMMC/ driver support
 - Added neon support for VFP
@@ -52,4 +52,25 @@
 **TODO**
 - Fixed smp stability issues
 - Support ble communication
+- Support more thirdparty components
+
+### Nuttx-8.2-r328-0.7 - March 06 2020
+**System**
+- Added bluetooth ble stack and xr829 hci driver
+- Added bluetooth avrcp/a2dpsink profiles support
+- Added xt25f128 spinor flash support
+- Added dmic support
+- Updated littlefs filesystem patch from xiaomi
+- Updated alsa and adb library
+- Reverted some patches according to xiao xiang's suggestion
+
+**Known Issues**
+- ostest run under SMP mode hang at sched/irq/irq_csection.c
+- bluetooth avrcp/a2dpsink not work well
+- ls command may return stat failed result
+
+**TODO**
+- Fixed smp stability issues
+- Support bluetooth mesh stack
+- Support audio enc/dec framework
 - Support more thirdparty components
