@@ -31,7 +31,5 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 ############################################################################
-ifneq (CONFIG_COMPONENTS_USB_GADGET_ADBD,)
-CONFIGURED_APPS += $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/adbd
-endif
+CONFIGURED_APPS += $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/adb/adbd
 
