@@ -1141,7 +1141,7 @@ typedef enum
 
 typedef struct sunxi_hal_driver_spi
 {
-    spi_master_status_t (*initialize)(hal_spi_master_port_t port);
+    spi_master_status_t (*initialize)(hal_spi_master_port_t port, hal_spi_master_config_t *spi_cfg);
     spi_master_status_t (*uninitialize)(hal_spi_master_port_t port);
     spi_master_status_t (*send)(hal_spi_master_port_t port,
                                 const void *buf, uint32_t size, hal_spi_sync_mode_e mode);
