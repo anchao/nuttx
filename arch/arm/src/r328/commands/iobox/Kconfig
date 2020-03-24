@@ -1,0 +1,18 @@
+
+menu "IOBOX Commands"
+
+config EXAMPLES_AWC_RWCHECK
+	bool "AW rwcheck command"
+	depends on DRIVERS_SPINOR
+	default n
+	help
+	  read/write check command for flash.
+
+config EXAMPLES_AWC_RWSPEED
+	bool "AW rwspeed command"
+	depends on DRIVERS_SPINOR
+	default n
+	help
+	  command for calculating read/write rates.
+
+endmenu
