@@ -84,7 +84,7 @@ static int sunxi_spinor_erase(FAR struct mtd_dev_s *mtd_dev, off_t startblock, s
         return -EIO;
     }
 
-    if (spinor_driver && spinor_driver->program_data)
+    if (spinor_driver && spinor_driver->erase_sector)
     {
         ret = spinor_driver->erase_sector(startblock * geo.erasesize, nblocks * geo.erasesize);
     }

@@ -109,6 +109,18 @@ extern const sunxi_hal_driver_spinor_t sunxi_hal_spinor_driver;
 #define FACTORY_GD 0xC8
 #define FACTORY_XTX 0x0B
 
+#define BIT(x) (1 << x)
+
+#define NOR_FLAG_PT_NOT_EXPAND BIT(0)
+
+struct nor_protection {
+    unsigned int boundary; /*  protected addr [0, boundary) */
+    int bp:8;
+    int flag:24;
+#define SET_TB BIT(0)
+#define SET_CMP BIT(1)
+};
+
 struct nor_info
 {
     char *name;
@@ -116,12 +128,17 @@ struct nor_info
     unsigned int blk_size;
     unsigned int blk_cnt;
 
+    struct nor_protection *pt;
+    unsigned int pt_len;
+    unsigned int pt_def;
+
     int flag;
 #define EN_IO_PROG_X4 (1 << 1)
 #define EN_IO_READ_X2 (1 << 2)
 #define EN_IO_READ_X4 (1 << 3)
 #define HAS_SCUR (1 << 4)
 #define NO_ERASE_64K (1 << 5)
+#define EN_INDIVIDUAL_PROTECT_MODE (1 << 4)
 };
 
 struct spi_master
@@ -145,6 +162,9 @@ struct nor_flash
     unsigned int page_size;
     struct spi_master spim;
     struct nor_info *info;
+    unsigned int pt_now;
+
+    unsigned int flag;
 
     sem_t hal_sem;
 };

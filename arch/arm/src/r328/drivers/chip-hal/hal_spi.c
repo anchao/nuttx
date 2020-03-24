@@ -1827,6 +1827,7 @@ static spi_master_status_t sunxi_spi_sync(hal_spi_master_port_t port,
     sunxi_spi_t *sspi = &g_sunxi_spi[port];
     hal_spi_master_transfer_t *tr = malloc(sizeof(hal_spi_master_transfer_t));
 
+    memset(tr, 0, sizeof(hal_spi_master_transfer_t));
     memcpy(tr, transfer, sizeof(hal_spi_master_transfer_t));
 
     list_add_tail(&tr->node, &sspi->queue);
@@ -1990,10 +1991,16 @@ static hal_spi_master_config_t cfg =
     .bit_order = HAL_SPI_MASTER_LSB_FIRST,
 };//default SPI configure
 
-spi_master_status_t sunxi_spi_init(hal_spi_master_port_t port)
+spi_master_status_t sunxi_spi_init(hal_spi_master_port_t port, hal_spi_master_config_t *spi_cfg)
 {
     uint8_t i;
     sunxi_spi_t *sspi = &g_sunxi_spi[port];
+    hal_spi_master_config_t *config;
+
+    if (NULL != spi_cfg)
+	    config = spi_cfg;
+    else
+	    config = &cfg;
 
     for (i = 0; i < HAL_SPI_MASTER_MAX; i++)
     {
@@ -2034,7 +2041,7 @@ spi_master_status_t sunxi_spi_init(hal_spi_master_port_t port)
 
     spi_soft_reset(sspi);
 
-    sunxi_spi_hw_config(port, &cfg);
+    sunxi_spi_hw_config(port, config);
 
     spi_enable_bus(sspi);
     spi_set_master(sspi);
@@ -2156,7 +2163,7 @@ spi_master_status_t sunxi_spi_control(hal_spi_master_port_t port,
 {
     spi_master_status_t ret;
     hal_spi_master_transfer_t *tr;
-    SPI_INFO("control cmd  is %d \n");
+    SPI_INFO("control cmd  is %d \n", cmd);
     switch (cmd)
     {
         case SPI_WRITE_READ:
