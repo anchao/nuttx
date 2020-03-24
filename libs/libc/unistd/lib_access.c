@@ -40,6 +40,8 @@
 #include <nuttx/config.h>
 
 #include <unistd.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -88,5 +90,18 @@
 
 int access(FAR const char *path, int amode)
 {
+  struct stat s;
+
+  if (path == NULL)
+    return -EACCES;
+
+  if (amode & R_OK == 0
+    && amode & W_OK == 0
+    && amode & X_OK == 0)
+    return -EINVAL;
+
+  if (stat(path, &s) < 0)
+    return -EACCES;
+
   return 0;
 }
