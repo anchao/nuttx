@@ -65,7 +65,9 @@
 #define XR_DEV_DBG printf
 #define XR_DEV_ERR printf
 
+#ifndef USE_TX_GET_BUFF
 static uint8_t g_pktbuf[MAX_NETDEV_PKTSIZE + CONFIG_NET_GUARDSIZE];
+#endif
 struct xradio_drv_s
 {
 	bool if_up;
@@ -98,6 +100,8 @@ static int xradio_drv_ioctl(FAR struct net_driver_s *dev, int cmd,
 #endif
 static void xradio_drv_poll_expiry(int argc, wdparm_t arg, ...);
 
+static void xradio_drv_poll_work(FAR void *arg);
+
 #if USE_TX_GET_BUFF
 static int xradio_get_tx_payload_buffer(struct xradio_drv_s *priv)
 {
@@ -113,6 +117,11 @@ static int xradio_get_tx_payload_buffer(struct xradio_drv_s *priv)
 	return OK;
 }
 #endif
+
+static void xradio_netdev_notify_tx_done(FAR struct xradio_drv_s *priv)
+{
+	work_queue(LPWORK,&priv->xr_pollwork,xradio_drv_poll_work,priv,0);
+}
 
 static int xradio_drv_transmit(struct xradio_drv_s *priv)
 {
@@ -161,15 +170,27 @@ static int xradio_drv_txpoll(FAR struct net_driver_s *dev)
         {
           /* Send the packet */
 
+          net_lock();
+
+		  if(priv->cur_tx_frame == NULL) {
+			net_unlock();
+			xradio_netdev_notify_tx_done(priv);
+			return 0;
+		  }
+
           xradio_drv_transmit(priv);
 
           /* TODO: Check if there is room in the device to hold another packet.
            * If not, return a non-zero value to terminate the poll.
            */
+		  priv->xr_dev.d_buf = NULL;
 #if USE_TX_GET_BUFF
 		  xradio_tx_buff_free();
 		  priv->cur_tx_frame = NULL;
 #endif
+          net_unlock();
+          NETDEV_TXPACKETS(&priv->xr_dev);
+		  xradio_netdev_notify_tx_done(priv);
           return 1;
         }
     }
@@ -193,47 +214,42 @@ static void xradio_drv_poll_work(FAR void *arg)
 	 */
 
 	net_lock();
+	if(IFF_IS_UP(dev->d_flags)) {
+		if(priv->cur_tx_frame == NULL) {
 #if USE_TX_GET_BUFF
 	/* Perform the poll */
 
 	/* Check if there is room in the send another TX packet.  We cannot perform
 	 * the TX poll if he are unable to accept another packet for transmission.
 	 */
-	if(xradio_get_tx_payload_buffer(priv)) {
-		goto exit_unlock;
-	}
+			if(xradio_get_tx_payload_buffer(priv)) {
+				goto exit_unlock;
+			}
 
-	dev->d_buf = priv->cur_tx_frame->data;
-	dev->d_len = 0;
+			dev->d_buf = priv->cur_tx_frame->data;
+			dev->d_len = 0;
 #endif
-	if (dev->d_buf) {
-      /* If so, update TCP timing states and poll the network for new XMIT data.
+		}
+		if (dev->d_buf) {
+	   /* If so, update TCP timing states and poll the network for new XMIT data.
        * Hmmm.. might be bug here.  Does this mean if there is a transmit in
        * progress, we will missing TCP time state updates?
        */
 
-		devif_timer(dev, xradio_drv_txpoll);
-	}
+			devif_timer(dev, xradio_drv_txpoll);
   /* Setup the watchdog poll timer again */
 
-	wd_start(priv->xr_txpolldog, XRADIO_DRV_WDDELAY, xradio_drv_poll_expiry, 1,
-		(wdparm_t)dev);
+			wd_start(priv->xr_txpolldog, XRADIO_DRV_WDDELAY, xradio_drv_poll_expiry, 1,
+				(wdparm_t)dev);
+		}
+	}
 #if USE_TX_GET_BUFF
 exit_unlock:
 #endif
+
 	net_unlock();
 }
 
-
-static void xradio_drv_poll_expiry(int argc, wdparm_t arg, ...)
-{
-  FAR struct net_driver_s *dev = (FAR struct net_driver_s *)arg;
-  FAR struct xradio_drv_s *priv = dev->d_private;
-
-  /* Schedule to perform the interrupt processing on the worker thread. */
-
-  work_queue(LPWORK, &priv->xr_pollwork, xradio_drv_poll_work, dev, 0);
-}
 
 static void xradio_drv_txavail_work(FAR void *arg)
 {
@@ -245,19 +261,21 @@ static void xradio_drv_txavail_work(FAR void *arg)
 	 * is performed on an LP worker thread and where more than one LP worker
 	 * thread has been configured.
 	 */
-
 	net_lock();
 	if(priv->if_up) {
 #if USE_TX_GET_BUFF
+		if(priv->cur_tx_frame == NULL) {
 	/* Ignore the notification if the interface is not yet up */
-		if(xradio_get_tx_payload_buffer(priv)) {
-			goto exit_unlock;
-		}
+			if(xradio_get_tx_payload_buffer(priv)) {
+				goto exit_unlock;
+			}
 
-		dev->d_buf = priv->cur_tx_frame->data;
-		dev->d_len = 0;
+			dev->d_buf = priv->cur_tx_frame->data;
+			dev->d_len = 0;
 #endif
-		(void)devif_poll(&priv->xr_dev,xradio_drv_txpoll);
+		}
+		if(dev->d_buf)
+			(void)devif_poll(&priv->xr_dev,xradio_drv_txpoll);
 	}
 #if USE_TX_GET_BUFF
 exit_unlock:
@@ -265,6 +283,17 @@ exit_unlock:
 	net_unlock();
 
 }
+
+static void xradio_drv_poll_expiry(int argc, wdparm_t arg, ...)
+{
+  FAR struct net_driver_s *dev = (FAR struct net_driver_s *)arg;
+  FAR struct xradio_drv_s *priv = dev->d_private;
+
+  /* Schedule to perform the interrupt processing on the worker thread. */
+
+  work_queue(LPWORK, &priv->xr_pollwork, xradio_drv_poll_work, dev, 0);
+}
+
 
 extern void net_hex_dump(char *pref, int width, unsigned char *buf, int len);
 static int xradio_drv_txavail(FAR struct net_driver_s *dev)
@@ -282,7 +311,7 @@ static int xradio_drv_txavail(FAR struct net_driver_s *dev)
 
 	return OK;
 }
-
+#if 0
 static void xradio_receive(FAR struct xradio_drv_s *priv)
 {
   do
@@ -420,43 +449,93 @@ static void xradio_receive(FAR struct xradio_drv_s *priv)
     }
   while (0); /* While there are more packets to be processed */
 }
-#if 0
-void xradio_rx_poll(struct xr_frame_s *frame)
+#else
+static void xradio_reply(FAR struct xradio_drv_s *priv)
+{
+	if(priv->xr_dev.d_len > 0) {
+#ifdef CONFIG_NET_IPv6
+		if(IFF_IS_IPv4(priv->dev.d_flags))
+#endif
+		{
+			arp_out(&priv->xr_dev);
+		}
+#ifdef CONFIG_NET_IPv6
+		else {
+			neighbor_out(&priv->xr_dev);
+		}
+#endif
+		xradio_drv_transmit(priv);
+	}
+}
+static void xradio_receive(FAR struct xradio_drv_s *priv)
 {
 
-	net_lock();
+#ifdef CONFIG_NET_PKT
+	pkt_input(&priv->xr_dev);
+#endif
+	if(BUF->type == HTONS(TPID_8021QVLAN)) {
+		XR_DEV_ERR("ERROR:Not implement!!!!\n");
+	}
 
-	xradio_receive(frame);
-
-	net_unlock();
-}
+#ifdef CONFIG_NET_IPv4
+	if(BUF->type == (HTONS(ETHTYPE_IP))) {   //case IP Packet:
+        ninfo("IPv4 frame\n");
+        NETDEV_RXIPV6(&priv->xr_dev);
+		arp_ipin(&priv->xr_dev); //update send mac address based on ip address.
+		ipv4_input(&priv->xr_dev);
+		xradio_reply(priv);
+	}else
 #endif
 
-void xradio_rx_poll(FAR void *arg)
-{
-	FAR struct xradio_drv_s *priv = (struct xradio_drv_s *)arg;
+#ifdef CONFIG_NET_IPv6
+    if (BUF->type == HTONS(ETHTYPE_IP6))
+	{
+        NETDEV_RXIPV6(&priv->xr_dev);
 
-	net_lock();
+        ipv6_input(&priv->xr_dev);
 
-	xradio_receive(priv);
+        xradio_reply(priv);
+	}
+    else
+#endif
+#ifdef CONFIG_NET_ARP
+	if (BUF->type == htons(ETHTYPE_ARP)) //case ARP Packet:
+	{
+        ninfo("ARP frame\n");
+		arp_arpin(&priv->xr_dev);
+		NETDEV_RXARP(&priv->xr_dev);
 
-	net_unlock();
+		if (priv->xr_dev.d_len > 0)
+        {
+            xradio_drv_transmit(priv);
+        }
+    } else
+#endif
+	{
+		NETDEV_RXDROPPED(&priv->xr_dev);
+	}
 }
 
+#endif
 void xradio_rx_notify_rx(uint8_t *data, uint16_t len)
 {
 	FAR struct xradio_drv_s *priv = g_xradio_priv;
+	void *old_buff = NULL;
 
 	net_lock();
+	old_buff = priv->xr_dev.d_buf;
 #if USE_TX_GET_BUFF
 	priv->xr_dev.d_buf = data;
 #else
 	memcpy(priv->xr_dev.d_buf,data,len);
 #endif
 	priv->xr_dev.d_len = len;
+
+	xradio_receive(priv);
+
+	priv->xr_dev.d_buf = old_buff;
 	net_unlock();
 
-	work_queue(LPWORK, &priv->xr_pollwork, xradio_rx_poll, priv, 0);
 }
 
 struct net_driver_s* xradio_get_net_dev(void)
