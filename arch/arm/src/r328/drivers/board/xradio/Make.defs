@@ -1,0 +1,57 @@
+ifeq ($(CONFIG_DRIVERS_XRADIO),y)
+
+AW_SRCDIR = $(TOPDIR)/arch/arm/src/r328
+
+CFLAGS_COMMON += -DCONFIG_BACKEND_XRADIO
+CFLAGS_COMMON += -DCONFIG_DRIVER_XRADIO
+CFLAGS_COMMON += -DCONFIG_CRYPTO_INTERNAL
+CFLAGS_COMMON += -DCONFIG_NO_RANDOM_POOL
+CFLAGS_WPAS += -DCONFIG_NO_CONFIG_BLOBS
+CFLAGS_WPAS += -DCONFIG_NO_ROAMING
+CFLAGS_HOSTAPD += -DCONFIG_NO_RADIUS
+CFLAGS_HOSTAPD += -DCONFIG_NO_ACCOUNTING
+CFLAGS_HOSTAPD += -DCONFIG_NO_VLAN
+CFLAGS_HOSTAPD += -DCONFIG_NO_CTRL_IFACE
+
+include $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xradio$(DELIM)config.mk
+
+CFLAGS +=-DCONFIG_OS_NUTTX -DCONFIG_OS_NUTTX_CM_PASS
+CFLAGS +=$(CONFIG_SYMBOLS) $(CFLAGS_COMMON) $(CFLAGS_WPAS) $(CFLAGS_HOSTAPD)
+
+CHIP_CSRCS += drivers/board/xradio/xradio_netif.c
+CHIP_CSRCS += drivers/board/xradio/os/sys/mbuf/mbuf_0.c
+CHIP_CSRCS += drivers/board/xradio/os/sys/atomic.c
+CHIP_CSRCS += drivers/board/xradio/os/kernel/os/nuttx/os_mutex.c
+CHIP_CSRCS += drivers/board/xradio/os/kernel/os/nuttx/os_queue.c
+CHIP_CSRCS += drivers/board/xradio/os/kernel/os/nuttx/os_semaphore.c
+CHIP_CSRCS += drivers/board/xradio/os/kernel/os/nuttx/os_thread.c
+CHIP_CSRCS += drivers/board/xradio/os/kernel/os/nuttx/os_timer.c
+
+CHIP_CSRCS += drivers/board/xradio/driver/port/atomic.c
+CHIP_CSRCS += drivers/board/xradio/driver/port/gpio.c
+CHIP_CSRCS += drivers/board/xradio/driver/port/sdio.c
+CHIP_CSRCS += drivers/board/xradio/driver/port/delay.c
+CHIP_CSRCS += drivers/board/xradio/driver/port/xr_drv_mem.c
+CHIP_CSRCS += drivers/board/xradio/driver/port/ffs.c
+CHIP_CSRCS += drivers/board/xradio/driver/port/hexdump.c
+CHIP_CSRCS += drivers/board/xradio/driver/port/workqueue.c
+
+
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)include$(DELIM)drivers}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xradio$(DELIM)include}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xradio}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xradio$(DELIM)os}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xradio$(DELIM)os$(DELIM)include}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xradio$(DELIM)os/include/net}
+
+R328_ARCH_DIR=${TOPDIR}$(DELIM)arch$(DELIM)arm$(DELIM)src$(DELIM)r328
+EXTRA_LIBPATHS += -L "$(R328_ARCH_DIR)$(DELIM)drivers$(DELIM)board$(DELIM)xradio"
+ifeq ($(CONFIG_DRIVER_XR819),y)
+EXTRA_LIBS += -lxr819
+endif
+ifeq ($(CONFIG_DRIVER_XR829),y)
+EXTRA_LIBS += -lxr829
+endif
+endif
+
+

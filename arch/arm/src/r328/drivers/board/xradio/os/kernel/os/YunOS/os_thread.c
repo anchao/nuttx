@@ -26,57 +26,25 @@
  *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _KERNEL_OS_NUTTX_OS_MUTEX_H_
-#define _KERNEL_OS_NUTTX_OS_MUTEX_H_
-#include "kernel/os/nuttx/os_common.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-//#define USE_PHTREAD_MUTEX 0
+#include <stdlib.h>
+#include "kernel/os/YunOS/os_common.h"
+#include "kernel/os/YunOS/os_time.h"
+#include "sys/interrupt.h"
 
-#if USE_PHTREAD_MUTEX
-#include <pthread.h>
-typedef struct OS_Mutex {
-	pthread_mutex_t mutex_hd;
-	pthread_mutexattr_t attr;
-	pid_t thread_ower;
-	int invalid;
-}OS_Mutex_t;
-#else
-#include <nuttx/semaphore.h>
-typedef struct OS_Mutex {
-	sem_t handle;
-	pid_t thread_ower;
-	int count;
-	int invalid;
-} OS_Mutex_t;
-#endif
+extern uint8_t g_sched_lock[RHINO_CONFIG_CPU_NUM];
+int OS_ThreadIsSchedulerRunning(void)
+{
+	unsigned long flags;
+	flags = arch_irq_save();
 
-OS_Status OS_MutexCreate(OS_Mutex_t *mutex);
-
-OS_Status OS_MutexDelete(OS_Mutex_t *mutex);
-
-OS_Status OS_MutexLock(OS_Mutex_t *mutex, OS_Time_t waitMS);
-
-OS_Status OS_MutexUnlock(OS_Mutex_t *mutex);
-
-OS_Status OS_RecursiveMutexCreate(OS_Mutex_t *mutex);
-
-OS_Status OS_RecursiveMutexDelete(OS_Mutex_t *mutex);
-
-OS_Status OS_RecursiveMutexLock(OS_Mutex_t *mutex, OS_Time_t waitMS);
-
-OS_Status OS_RecursiveMutexUnlock(OS_Mutex_t *mutex);
-
-int OS_MutexIsValid(OS_Mutex_t *mutex);
-
-void OS_MutexSetInvalid(OS_Mutex_t *mutex);
-
-pid_t OS_MutexGetOwner(OS_Mutex_t *mutex);
-
-#ifdef __cplusplus
+	if (g_sched_lock[cpu_cur_get()] == 0u) {//RHINO_SCHED_ALREADY_ENABLED
+		arch_irq_restore(flags);
+		return 1;
+  } else {
+	  arch_irq_restore(flags);
+	return 0;
+	}
 }
-#endif
 
-#endif /* _KERNEL_OS_NUTTX_OS_MUTEX_H_ */
+

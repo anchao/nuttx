@@ -1,0 +1,23 @@
+menuconfig DRIVERS_XRADIO
+	default n
+	bool "XRADIO driver"
+
+if DRIVERS_XRADIO
+choice XRADIO_CHIP
+	default DRIVER_XR829
+	prompt "Xradio chip"
+	help
+		Specify the xradio chip.
+
+config DRIVER_XR819
+	bool "Enable xr819 driver"
+	help
+		this will use xr819 chip.
+
+config DRIVER_XR829
+	bool "Enable xr829 driver"
+	help
+		this will use xr829 chip.
+
+endchoice
+endif

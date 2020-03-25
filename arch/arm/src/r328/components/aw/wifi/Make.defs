@@ -55,10 +55,10 @@ CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)components$
 CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)components$(DELIM)aw$(DELIM)wifi$(DELIM)sys_ctrl}
 
 CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)include$(DELIM)drivers}
-CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xr829}
-CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xr829$(DELIM)os}
-CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xr829$(DELIM)os$(DELIM)include}
-CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xr829$(DELIM)os/include/net}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xradio}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xradio$(DELIM)os}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xradio$(DELIM)os$(DELIM)include}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xradio$(DELIM)os/include/net}
 
 CFLAGS += -DCONFIG_OS_NUTTX -DCONFIG_NUTTX_TCPIP -DCONFIG_RTOS_XR829
 
