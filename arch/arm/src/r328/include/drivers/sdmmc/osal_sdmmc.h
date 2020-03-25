@@ -137,7 +137,7 @@ typedef clock_t os_time_t;
  */
 /* sleep */
 #ifndef OS_MSleep
-#define OS_MSleep(msec)			nxsig_usleep(msec)
+#define OS_MSleep(msec)			nxsig_usleep(1000*msec)
 #endif
 
 #ifndef OS_Sleep
