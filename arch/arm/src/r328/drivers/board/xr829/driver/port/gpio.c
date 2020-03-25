@@ -164,7 +164,6 @@ void xr_wlan_irq_unsubscribe(void *func)
 #endif
 
 #elif (defined(CONFIG_OS_NUTTX))
-
 void xr_wlan_irq_subscribe(void *func)
 {
 	uint32_t irq_num;
@@ -221,11 +220,11 @@ int xradio_wlan_gpio_power(int on)
 
 	if (on) {
 		hal_gpio_set_output(HAL_GPIO_134, HAL_GPIO_DATA_HIGH);
-		OS_MSleep(50);
+		OS_MSleep(10);
 		hal_gpio_set_output(HAL_GPIO_134, HAL_GPIO_DATA_LOW);
-		OS_MSleep(5);
+		OS_MSleep(20);
 		hal_gpio_set_output(HAL_GPIO_134, HAL_GPIO_DATA_HIGH);
-		OS_MSleep(50);
+		OS_MSleep(500);
 	} else {
 		hal_gpio_set_output(HAL_GPIO_134, HAL_GPIO_DATA_LOW);
 		OS_MSleep(50);
