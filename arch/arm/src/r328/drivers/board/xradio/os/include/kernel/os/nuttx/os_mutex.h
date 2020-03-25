@@ -33,7 +33,7 @@
 extern "C" {
 #endif
 
-//#define USE_PHTREAD_MUTEX 0
+#define USE_PHTREAD_MUTEX 0
 
 #if USE_PHTREAD_MUTEX
 #include <pthread.h>
