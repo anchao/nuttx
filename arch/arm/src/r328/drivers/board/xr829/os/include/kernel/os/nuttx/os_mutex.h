@@ -33,7 +33,7 @@
 extern "C" {
 #endif
 
-#define USE_PHTREAD_MUTEX 1
+//#define USE_PHTREAD_MUTEX 0
 
 #if USE_PHTREAD_MUTEX
 #include <pthread.h>
@@ -48,6 +48,7 @@ typedef struct OS_Mutex {
 typedef struct OS_Mutex {
 	sem_t handle;
 	pid_t thread_ower;
+	int count;
 	int invalid;
 } OS_Mutex_t;
 #endif

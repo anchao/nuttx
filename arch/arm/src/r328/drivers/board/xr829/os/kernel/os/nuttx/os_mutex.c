@@ -51,9 +51,10 @@ OS_Status OS_MutexCreate(OS_Mutex_t *mutex)
 	mutex->invalid = 0;
 	return OS_OK;
 #else
-	OS_MUTEX_DBG("[%s, %d] -+-+- %p\n",__func__,__LINE__,mutex);
 	if(nxsem_init(&mutex->handle,0,1) == OK) {
 		mutex->invalid = 0;
+		mutex->thread_ower = -1;
+		mutex->count = 0;
 		//mutex->thread_ower = getpid();
 		return OS_OK;
 	} else
@@ -69,7 +70,6 @@ OS_Status OS_MutexDelete(OS_Mutex_t *mutex)
 	mutex->invalid = 1;
 	return OS_OK;
 #else
-	OS_MUTEX_DBG("[%s, %d] -+-+- %p\n",__func__,__LINE__,mutex);
 	if(nxsem_destroy(&mutex->handle) == OK) {
 		mutex->invalid = 1;
 		return OS_OK;
@@ -85,35 +85,18 @@ OS_Status OS_MutexLock(OS_Mutex_t *mutex, OS_Time_t waitMS)
 	mutex->thread_ower = getpid();
 	return OS_OK;
 #else
-	//OS_MUTEX_DBG("[%s, %d] -+-+- %p\n",__func__,__LINE__,mutex);
-#if 1
-	struct timespec abstime;
-	unsigned int timeout_sec;
-
-	if(waitMS == OS_WAIT_FOREVER) {
-		waitMS = 0x0fffffffU;
+	pid_t me = getpid();
+	if(mutex->thread_ower == me) {
+		mutex->count ++;
+	} else {
+		if(nxsem_timedwait(&mutex->handle, &abstime) == OK) {
+			mutex->thread_ower = me;
+			mutex->count ++;
+			return OS_OK;
+		}
+		else
+			return OS_FAIL;
 	}
-
-  /* Get the current time */
-
-	(void)clock_gettime(CLOCK_REALTIME, &abstime);
-
-	timeout_sec      = waitMS / 1000;
-	abstime.tv_sec  += timeout_sec;
-	abstime.tv_nsec += 1000 * 1000 * (waitMS % 1000);
-
-	if (abstime.tv_nsec >= 1000 * 1000 * 1000) {
-	    abstime.tv_sec++;
-	    abstime.tv_nsec -= 1000 * 1000 * 1000;
-	}
-
-	if(nxsem_timedwait(&mutex->handle, &abstime) == OK)
-#else
-	if(nxsem_wait(&mutex->handle) == OK)
-#endif
-		return OS_OK;
-	else
-		return OS_FAIL;
 #endif
 }
 
@@ -123,11 +106,16 @@ OS_Status OS_MutexUnlock(OS_Mutex_t *mutex)
 	pthread_mutex_unlock(&mutex->mutex_hd);
 	return OS_OK;
 #else
-	//OS_MUTEX_DBG("[%s, %d] -+-+- %p\n",__func__,__LINE__,mutex);
-	if(nxsem_post(&mutex->handle) == OK) {
-		return OS_OK;
-	} else {
-		return OS_FAIL;
+	if(mutex->count == 1) {
+		mutex->thread_ower = -1;
+		mutex->count = 0;
+		if(nxsem_post(&mutex->handle) == OK) {
+			return OS_OK;
+		} else {
+			return OS_FAIL;
+		}
+	}else {
+		mutex->count--;
 	}
 #endif
 }
@@ -172,7 +160,6 @@ void OS_MutexSetInvalid(OS_Mutex_t *mutex)
 pid_t OS_MutexGetOwner(OS_Mutex_t *mutex)
 {
 	if(mutex != NULL) {
-		//printf("[%s,%d]======%d\n",__func__,__LINE__,mutex->thread_ower);
 		return mutex->thread_ower;
 	}
 	OS_MUTEX_ERROR("get muttex ower invalid\n");
