@@ -1,0 +1,17 @@
+# Include xr829 drivers into the build
+ifeq ($(CONFIG_DRIVERS_XRADIO),y)
+
+CSRCS += xradio_netdev.c
+
+
+AW_SRCDIR = $(TOPDIR)/arch/arm/src/r328
+DEPPATH += --dep-path wireless$(DELIM)ieee80211$(DELIM)xradio
+VPATH += :wireless$(DELIM)ieee80211$(DELIM)xradio
+
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)xradio$(DELIM)}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(TOPDIR)$(DELIM)drivers$(DELIM)wireless$(DELIM)ieee80211$(DELIM)xradio}
+
+CFLAGS += -DCONFIG_OS_NUTTX
+
+endif
+
