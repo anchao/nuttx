@@ -158,7 +158,7 @@
 #define SDC1_SET_GPIO_DRV()        ({int v =  sdmmc_reg_readl(SDC_GPIO_BASE + 0xec);\
 								    SDC_LOGD("RAW SET SDC1 DRV\n");\
 								    v &= ~(0xfff);\
-								    v |=0x000; sdmmc_reg_writel(v,SDC_GPIO_BASE + 0xec);\
+								    v |=0xfff; sdmmc_reg_writel(v,SDC_GPIO_BASE + 0xec);\
 								     SDC_LOGD("RAW SDC1 DRV %x\n",sdmmc_reg_readl(SDC_GPIO_BASE + 0xec));})
 #define SDC1_SET_GPIO_PULL()       ({int v =  sdmmc_reg_readl(SDC_GPIO_BASE + 0xf4);\
 								    SDC_LOGD("RAW SET SDC1 PULL\n");\
