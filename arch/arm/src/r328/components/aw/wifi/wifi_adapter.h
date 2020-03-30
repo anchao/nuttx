@@ -32,6 +32,9 @@ int wifi_get_ap_bssid(unsigned char *bssid);
 
 void wifi_reconnect(void);
 
+int wifi_ap_start(char *ssid,char *pwd);//(CONST WF_AP_CFG_IF_S *cfg)
+
+int wifi_ap_stop(void);
 #ifdef __cplusplus
 }
 #endif

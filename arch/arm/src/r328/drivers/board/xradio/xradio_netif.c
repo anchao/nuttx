@@ -58,6 +58,7 @@
             ETH_SYSLOG("%d" fmt,__LINE__, ##arg);     \
     } while (0)
 
+#define ETH_INF(fmt, arg...)   ETH_LOG(ETH_DBG_ON, "[eth] "fmt, ##arg)
 #define ETH_DBG(fmt, arg...)   ETH_LOG(ETH_DBG_ON, "[eth] "fmt, ##arg)
 #define ETH_WRN(fmt, arg...)   ETH_LOG(ETH_WRN_ON, "[eth W] "fmt, ##arg)
 #define ETH_ERR(fmt, arg...)                            \
@@ -380,7 +381,8 @@ void ethernetif_set_mac_addr(void)
 struct netif *ethernetif_create(enum wlan_mode mode)
 {
 	struct netif *nif;
-	ETH_DBG("-+-+-+\n");
+
+	ETH_INF("create netif,mode:%d\n",mode);
 
 	nif = ethernetif2netif(&g_eth_netif);
 	memset(nif, 0, sizeof(*nif));
@@ -388,10 +390,6 @@ struct netif *ethernetif_create(enum wlan_mode mode)
 	nif->name[0]='w';
 	nif->name[1]='l';
 	nif->hwaddr_len = 6;
-
-	//extern struct net_driver_s* xradio_get_net_dev(void);
-	//nif->net_dev = xradio_get_net_dev();
-	nif->net_dev = NULL;
 
 	nif->mtu=1500;
 
@@ -404,7 +402,7 @@ void ethernetif_delete(struct netif *nif)
 {
 	ethernetif_hw_deinit(nif);
 }
-
+#if 0
 static wlan_event_cb_func event_cb = NULL;
 
 void wlan_set_event_callback(wlan_event_cb_func cb)
@@ -418,7 +416,7 @@ static void wlan_event_callback(uint32_t param0, uint32_t param1)
 		event_cb(param0,param1);
 	}
 }
-
+#endif
 struct netif* wlan_get_netif(void)
 {
 	if(g_eth_netif.netdev_open == true)
@@ -428,13 +426,11 @@ struct netif* wlan_get_netif(void)
 
 int xradio_wlan_init(enum wlan_mode mode,struct net_driver_s *dev)
 {
-	struct netif *nif;
-
 	ETH_DBG("enter mode %d\n",mode);
 	if(g_eth_netif.netdev_open == true)
 		return 0;
 #ifndef __CONFIG_ETF_CLI
-
+#if 0
 	wlan_set_mac_addr(NULL,dev->d_mac.ether.ether_addr_octet,ETHARP_HWADDR_LEN);
 
 	wlan_attach(wlan_event_callback);
@@ -445,11 +441,9 @@ int xradio_wlan_init(enum wlan_mode mode,struct net_driver_s *dev)
 		ETH_ERR("create net failed.");
 		return -1;
 	}
-
-	nif->net_dev = dev;
-
+#endif
 	xradio_tx_buff_init();
-	//init ip address.
+
 	g_eth_netif.netdev_open = true;
 #endif
 	return 0;
@@ -457,17 +451,19 @@ int xradio_wlan_init(enum wlan_mode mode,struct net_driver_s *dev)
 
 void xradio_wlan_deinit(void)
 {
+#if 0
 	struct netif *nif;
 	nif = ethernetif2netif(&g_eth_netif);
 	g_eth_netif.netdev_open = false;
 	wlan_netif_delete(nif);
 	wlan_detach();
+#endif
 	xradio_tx_buff_free();
 }
 
 enum wlan_mode ethernetif_get_mode(struct netif *nif)
 {
-	ETH_DBG("-+-+-+ %p\n",nif);
+	ETH_INF("current mode:%d\n",g_eth_netif.mode);
 	if (nif == ethernetif2netif(&g_eth_netif)) {
 		return g_eth_netif.mode;
 	} else {

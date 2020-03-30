@@ -86,6 +86,13 @@ typedef enum {
 	WIFIMG_WPA2_PSK,
 }aw_wifi_mgmt_t;
 
+typedef enum {
+	WIFI_MODE_STA = 0,
+	WIFI_MODE_HOSTAP,
+	WIFI_MODE_MONITOR,
+	WIFI_MODE_INVALID,
+}aw_wifi_mode_t;
+
 typedef struct {
 	bool enable;
 	char ssid[WIFI_SSID_MAX_LENGTH+1];
@@ -114,17 +121,21 @@ typedef struct {
 }aw_attr_t;
 
 
-int aw_wifi_on(void);
+int aw_wifi_on(aw_wifi_mode_t mode);
 
 void aw_wifi_off(void);
 
 int aw_wifi_scan(aw_wifi_scan_results_t *scan_result,int max_num);
+
+aw_wifi_mode_t aw_wifi_get_current_mode(void);
 
 int aw_wifi_get_network_info(aw_wifi_network_info_t *pinfo);
 
 int aw_wifi_network_info_save_to_file(aw_wifi_network_info_t *pinfo);
 
 int aw_wifi_connect(const char *ssid,const char *password);
+
+int aw_wifi_ap_start(char *ssid,char *pwd);
 
 int aw_wifi_disconnect(void);
 

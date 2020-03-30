@@ -39,7 +39,7 @@
 
 PROGNAME  = wifi
 PRIORITY  = 100
-STACKSIZE = 4096
+STACKSIZE = 6144
 MODULE    = wifi
 
 AW_SRCDIR = $(TOPDIR)/arch/arm/src/r328

@@ -280,7 +280,7 @@ static void gpio_irq_ack(struct gpio_irq_desc *dirq)
 
 static int bad_gpio_irq_handle(int dummy, void *context, void *data)
 {
-	GPIO_INFO("No irq registered handler for this calling !!\n");
+	//GPIO_INFO("No irq registered handler for this calling !!\n");
 	return 0;
 }
 

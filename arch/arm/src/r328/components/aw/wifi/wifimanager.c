@@ -54,11 +54,17 @@ typedef struct {
 	aw_dhcp_cb_t dhcp_cb;
 	current_netinfo_t current_network;
 	aw_attr_t init_attr;
+	aw_wifi_mode_t current_mode;
+	bool wifi_is_on;
+	bool enable;
 }aw_wifi_handle_t;
 
 aw_wifi_handle_t g_aw_wifi_worker = {
 	.init_attr.msg_cb = NULL,
 	.init_attr.dhcp_cb = NULL,
+	.current_mode = WIFI_MODE_STA,
+	.wifi_is_on = false,
+	.enable = false,
 };
 
 aw_wifi_handle_t *p_wifi_handle = &g_aw_wifi_worker;
@@ -123,7 +129,12 @@ void aw_wifi_event(aw_wifi_state_t event)
 void aw_wifi_indicate_event_handle(aw_wifi_state_t event_cmd)
 {
 	static bool msg_cb_enable = true;
-	int ret;
+	int ret = -1;
+	if(p_wifi_handle->enable == false)
+		return ;
+
+	if(p_wifi_handle->current_mode != WIFI_MODE_STA)
+		return ;
 
 	if(event_cmd == WIFI_SCAN_STARTED)
 		msg_cb_enable = true;
@@ -167,43 +178,79 @@ int aw_wifi_init(aw_attr_t *attr)
 }
 
 
-int aw_wifi_on(void)
+int aw_wifi_on(aw_wifi_mode_t mode)
 {
 	int ret = 0;
 
 	aw_wifi_msg_data_t msg_data = {
 		.id = WIFI_MSG_ID_WIFI_HW_STATUS,
 	};
-	static bool wifi_is_open = false;
 
-	if(wifi_is_open == false) {
-		ret = wifi_on(0);
-		if(ret == 0)
-			msg_data.data.wlan_status = WLAN0_STATUS_UP;
-		else
-			msg_data.data.wlan_status = WLAN0_STATUS_DOWN;
+	if(mode == WIFI_MODE_HOSTAP &&
+			p_wifi_handle->current_mode != WIFI_MODE_HOSTAP) {
 
-		wifi_is_open = true;
+		ret = wifi_on(WIFI_MODE_HOSTAP);
+		p_wifi_handle->current_mode = WIFI_MODE_HOSTAP;
+
+	}else if(mode == WIFI_MODE_STA) {
+
+		ret = wifi_on(WIFI_MODE_STA);
+		p_wifi_handle->current_mode = WIFI_MODE_STA;
+	}
+
+	if(ret == 0) {
+		msg_data.data.wlan_status = WLAN0_STATUS_UP;
+		p_wifi_handle->wifi_is_on = true;
+	}else {
+		msg_data.data.wlan_status = WLAN0_STATUS_DOWN;
 	}
 
 	if(p_wifi_handle->init_attr.msg_cb)
 		p_wifi_handle->init_attr.msg_cb(&msg_data);
 
+	p_wifi_handle->enable = true;
+
 	return ret;
+}
+
+aw_wifi_mode_t aw_wifi_get_current_mode(void)
+{
+	return p_wifi_handle->current_mode;
 }
 
 void aw_wifi_off(void)
 {
-	//TODO
+	wifi_off();
+	p_wifi_handle->wifi_is_on = false;
+	p_wifi_handle->enable = false;
 }
 int aw_wifi_scan(aw_wifi_scan_results_t *scan_result,int max_num)
 {
 	return wifi_scan(scan_result,max_num);
 }
+
+int aw_wifi_ap_start(char *ssid,char *pwd)
+{
+	if(p_wifi_handle->wifi_is_on == false ||
+			p_wifi_handle->current_mode != WIFI_MODE_HOSTAP)
+	{
+		aw_wifi_on(WIFI_MODE_HOSTAP);
+	}
+
+	return wifi_ap_start(ssid,pwd);
+}
+
 int aw_wifi_connect(const char *ssid,const char *password)
 {
 	int len;
 	len = strlen(ssid);
+
+	if(p_wifi_handle->wifi_is_on == false ||
+			p_wifi_handle->current_mode != WIFI_MODE_STA)
+	{
+		aw_wifi_on(WIFI_MODE_STA);
+	}
+
 	strncpy(p_wifi_handle->current_network.ssid,ssid,len);
 	p_wifi_handle->current_network.ssid[len] = '\0';
 
@@ -211,14 +258,12 @@ int aw_wifi_connect(const char *ssid,const char *password)
 	strncpy(p_wifi_handle->current_network.password,password,len);
 	p_wifi_handle->current_network.password[len] = '\0';
 
-	//TODO:
 	return wifi_connect(ssid,password);
 }
 
 int aw_wifi_disconnect(void)
 {
-	//TODO;
-	return 0;
+	return wifi_disconnect();
 }
 
 int aw_wifi_get_network_info(aw_wifi_network_info_t *pinfo)

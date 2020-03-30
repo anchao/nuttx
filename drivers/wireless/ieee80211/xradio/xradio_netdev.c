@@ -58,26 +58,21 @@
 #include <nuttx/net/pkt.h>
 #include <nuttx/net/net.h>
 
+#include <aw/wifi/wifi_adapter.h>
+
 #include <xradio_netif.h>
+#include "xradio_netdev.h"
 
 #define BUF ((struct eth_hdr_s *)priv->xr_dev.d_buf)
 
 #define XR_DEV_DBG printf
 #define XR_DEV_ERR printf
 
-#ifndef USE_TX_GET_BUFF
+#if (USE_TX_GET_BUFF == 0)
 static uint8_t g_pktbuf[MAX_NETDEV_PKTSIZE + CONFIG_NET_GUARDSIZE];
 #endif
-struct xradio_drv_s
-{
-	bool if_up;
-	WDOG_ID xr_txpolldog;
-	struct work_s xr_pollwork;
-	struct net_driver_s xr_dev;
-	struct xr_frame_s *cur_tx_frame;
-};
 
-static struct xradio_drv_s *g_xradio_priv = NULL;
+static struct xradio_dev_s *g_xradio_priv = NULL;
 
 #define XRADIO_DRV_WDDELAY      (1*CLK_TCK)
 
@@ -103,7 +98,7 @@ static void xradio_drv_poll_expiry(int argc, wdparm_t arg, ...);
 static void xradio_drv_poll_work(FAR void *arg);
 
 #if USE_TX_GET_BUFF
-static int xradio_get_tx_payload_buffer(struct xradio_drv_s *priv)
+static int xradio_get_tx_payload_buffer(struct xradio_dev_s *priv)
 {
 	if(priv->cur_tx_frame != NULL) { //TX complete,clear.
 		return OK;
@@ -118,12 +113,12 @@ static int xradio_get_tx_payload_buffer(struct xradio_drv_s *priv)
 }
 #endif
 
-static void xradio_netdev_notify_tx_done(FAR struct xradio_drv_s *priv)
+static void xradio_netdev_notify_tx_done(FAR struct xradio_dev_s *priv)
 {
 	work_queue(LPWORK,&priv->xr_pollwork,xradio_drv_poll_work,priv,0);
 }
 
-static int xradio_drv_transmit(struct xradio_drv_s *priv)
+static int xradio_drv_transmit(struct xradio_dev_s *priv)
 {
 	int ret;
 
@@ -139,7 +134,7 @@ static int xradio_drv_transmit(struct xradio_drv_s *priv)
 static int xradio_drv_txpoll(FAR struct net_driver_s *dev)
 {
 
-  FAR struct xradio_drv_s *priv = dev->d_private;
+  FAR struct xradio_dev_s *priv = (struct xradio_dev_s *) dev->d_private;
   /* If the polling resulted in data that should be sent out on the network,
    * the field d_len is set to a value > 0.
    */
@@ -204,8 +199,8 @@ static int xradio_drv_txpoll(FAR struct net_driver_s *dev)
 
 static void xradio_drv_poll_work(FAR void *arg)
 {
-	FAR struct net_driver_s *dev = arg;
-	FAR struct xradio_drv_s *priv = dev->d_private;
+	FAR struct net_driver_s *dev = (struct net_driver_s *)arg;
+	FAR struct xradio_dev_s *priv = (struct xradio_dev_s *)dev->d_private;
 
 	/* Lock the network and serialize driver operations if necessary.
 	 * NOTE: Serialization is only required in the case where the driver work
@@ -254,7 +249,7 @@ exit_unlock:
 static void xradio_drv_txavail_work(FAR void *arg)
 {
 	FAR struct net_driver_s *dev = arg;
-	FAR struct xradio_drv_s *priv = dev->d_private;
+	FAR struct xradio_dev_s *priv = (struct xradio_dev_s *)dev->d_private;
 
 	/* Lock the network and serialize driver operations if necessary.
 	 * NOTE: Serialization is only required in the case where the driver work
@@ -287,7 +282,7 @@ exit_unlock:
 static void xradio_drv_poll_expiry(int argc, wdparm_t arg, ...)
 {
   FAR struct net_driver_s *dev = (FAR struct net_driver_s *)arg;
-  FAR struct xradio_drv_s *priv = dev->d_private;
+  FAR struct xradio_dev_s *priv = (struct xradio_dev_s *)dev->d_private;
 
   /* Schedule to perform the interrupt processing on the worker thread. */
 
@@ -298,7 +293,7 @@ static void xradio_drv_poll_expiry(int argc, wdparm_t arg, ...)
 extern void net_hex_dump(char *pref, int width, unsigned char *buf, int len);
 static int xradio_drv_txavail(FAR struct net_driver_s *dev)
 {
-	FAR struct xradio_drv_s *priv = dev->d_private;
+	FAR struct xradio_dev_s *priv = (struct xradio_dev_s *)dev->d_private;
 
 	/* Is our single work structure available?  It may not be if there are
 	 * pending interrupt actions and we will have to ignore the Tx
@@ -312,7 +307,7 @@ static int xradio_drv_txavail(FAR struct net_driver_s *dev)
 	return OK;
 }
 #if 0
-static void xradio_receive(FAR struct xradio_drv_s *priv)
+static void xradio_receive(FAR struct xradio_dev_s *priv)
 {
   do
     {
@@ -450,7 +445,7 @@ static void xradio_receive(FAR struct xradio_drv_s *priv)
   while (0); /* While there are more packets to be processed */
 }
 #else
-static void xradio_reply(FAR struct xradio_drv_s *priv)
+static void xradio_reply(FAR struct xradio_dev_s *priv)
 {
 	if(priv->xr_dev.d_len > 0) {
 #ifdef CONFIG_NET_IPv6
@@ -467,7 +462,7 @@ static void xradio_reply(FAR struct xradio_drv_s *priv)
 		xradio_drv_transmit(priv);
 	}
 }
-static void xradio_receive(FAR struct xradio_drv_s *priv)
+static void xradio_receive(FAR struct xradio_dev_s *priv)
 {
 
 #ifdef CONFIG_NET_PKT
@@ -519,7 +514,7 @@ static void xradio_receive(FAR struct xradio_drv_s *priv)
 #endif
 void xradio_rx_notify_rx(uint8_t *data, uint16_t len)
 {
-	FAR struct xradio_drv_s *priv = g_xradio_priv;
+	FAR struct xradio_dev_s *priv = g_xradio_priv;
 	void *old_buff = NULL;
 
 	net_lock();
@@ -540,13 +535,13 @@ void xradio_rx_notify_rx(uint8_t *data, uint16_t len)
 
 struct net_driver_s* xradio_get_net_dev(void)
 {
-	FAR struct xradio_drv_s *priv = g_xradio_priv;
+	FAR struct xradio_dev_s *priv = g_xradio_priv;
 	return &priv->xr_dev;
 }
 
 static int xradio_drv_ifup(FAR struct net_driver_s *dev)
 {
-	FAR struct xradio_drv_s *priv = dev->d_private;
+	FAR struct xradio_dev_s *priv = (struct xradio_dev_s *)dev->d_private;
 
 	XR_DEV_DBG("priv addr:%p,dev addr:%p\n",priv,&priv->xr_dev);
 
@@ -579,7 +574,7 @@ static int xradio_drv_ifup(FAR struct net_driver_s *dev)
 
 static int xradio_drv_ifdown(FAR struct net_driver_s *dev)
 {
-	FAR struct xradio_drv_s *priv = dev->d_private;
+	FAR struct xradio_dev_s *priv = (struct xradio_dev_s *)dev->d_private;
 	irqstate_t flags;
 
 	xradio_wlan_deinit(); //deinit xradio device
@@ -618,7 +613,48 @@ static int xradio_drv_rmmac(FAR struct net_driver_s *dev,
 static int xradio_drv_ioctl(FAR struct net_driver_s *dev, int cmd,
                                unsigned long arg)
 {
-	return 0;
+	int ret;
+	FAR struct xradio_dev_s *priv = (struct xradio_dev_s *)dev->d_private;
+
+	switch(cmd) {
+		case SIOCSIWSCAN:
+			ret = xradio_wl_start_scan(priv,(void *)arg);
+			break;
+
+		case SIOCGIWSCAN:
+			ret = xradio_wl_get_scan_results(priv,(void *)arg);
+			break;
+
+		case SIOCSIFHWADDR:    /* Set device MAC address */
+			ret = xradio_wl_set_mac_address(priv, (void *)arg);
+	        break;
+
+		case SIOCSIWENCODEEXT: //set password
+			ret = xradio_wl_set_encode_ext(priv,(void *)arg);
+			break;
+
+		case SIOCSIWESSID: /* Set ESSID (network name) */
+			ret = xradio_wl_set_ssid(priv,(void *)arg);
+			break;
+
+		case SIOCSIWMODE:
+			ret = xradio_wl_set_mode(priv,(void *)arg);
+			break;
+		case SIOCGIWFREQ:     /* Get channel/frequency (Hz) */
+		case SIOCGIWMODE:     /* Get operation mode */
+		case SIOCGIWAP:       /* Get access point MAC addresses */
+		case SIOCSIWAP:
+		case SIOCGIWESSID:    /* Get ESSID */
+		case SIOCSIWRATE:     /* Set default bit rate (bps) */
+		case SIOCGIWRATE:     /* Get default bit rate (bps) */
+		case SIOCSIWTXPOW:    /* Set transmit power (dBm) */
+		case SIOCGIWTXPOW:    /* Get transmit power (dBm) */
+		default:
+		nerr("ERROR: Unrecognized IOCTL command: %d\n", cmd);
+		ret = -ENOTTY;  /* Special return value for this case */
+		break;
+	}
+	return ret;
 }
 #endif
 
@@ -635,23 +671,17 @@ static void xradio_mac_random(uint8_t mac_addr[6])
 
 static void xradio_drv_if_up_work(FAR void *arg)
 {
-	FAR struct xradio_drv_s *priv = (struct xradio_drv_s *)arg;
+	FAR struct xradio_dev_s *priv = (struct xradio_dev_s *)arg;
 	xradio_drv_ifup(&priv->xr_dev);
 }
-int xradio_drv_init(void)
+
+int xradio_netdev_register(FAR struct xradio_dev_s *priv)
 {
-	FAR struct xradio_drv_s *priv;
-
-	priv = kmm_zalloc(sizeof(*priv));
-
 	if(priv == NULL) {
 		return -ENOMEM;
 	}
 
-	memset(priv,0,sizeof(struct xradio_drv_s));
-
 	g_xradio_priv = priv;
-
 
 	xradio_mac_random(xradio_mac_addr);
 

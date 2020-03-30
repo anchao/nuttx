@@ -365,16 +365,20 @@ void net_config(struct netif *nif, uint8_t bring_up)
 struct netif *net_open(enum wlan_mode mode, wlan_event_cb_func cb)
 {
 	struct netif *nif;
-#ifndef CONFIG_NUTTX_TCPIP
+
 #ifdef CONFIG_OS_NUTTX
-	//ethernetif_set_mac_addr();
+	ethernetif_set_mac_addr();
 #endif
+
 	NET_DBG("%s(), mode %d\n", __func__, mode);
+
 	wlan_attach(cb);
+
 	nif = wlan_netif_create(mode);
 	if (nif == NULL) {
 		return NULL;
 	}
+
 #ifndef CONFIG_NUTTX_TCPIP
 #if LWIP_NETIF_LINK_CALLBACK
 	netif_set_link_callback(nif, netif_link_callback);
@@ -403,11 +407,6 @@ struct netif *net_open(enum wlan_mode mode, wlan_event_cb_func cb)
 #endif /* __CONFIG_LWIP_V1 */
 #endif
 
-#else
-
-	wlan_set_event_callback(cb);
-	nif = wlan_get_netif();
-#endif
 	wlan_start(nif);
 
 	struct sysinfo *sysinfo = sysinfo_get();
