@@ -91,8 +91,6 @@ struct netif {
   /** pointer to next in linked list */
   struct netif *next;
 
-  struct net_driver_s *net_dev;
-
   /** This function is called by the network device driver
    *  to pass a packet up the TCP/IP stack. */
   //netif_input_fn input;
@@ -146,7 +144,6 @@ void net_hex_dump(char *pref, int width, unsigned char *buf, int len);
 
 int xradio_wlan_init(enum wlan_mode mode, struct net_driver_s *dev);
 void xradio_wlan_deinit(void);
-
 #endif/*CONFIG_OS_NUTTX*/
 
 #endif

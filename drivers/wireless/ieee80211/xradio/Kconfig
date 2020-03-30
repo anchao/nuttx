@@ -1,4 +1,4 @@
-config IEEE80211_XR829
-	bool "xr829 chip support"
+config IEEE80211_XRADIO
+	bool "Xradio chip support"
 	default n
 

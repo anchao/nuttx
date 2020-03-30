@@ -84,7 +84,7 @@ OS_Status OS_QueueCreate(OS_Queue_t *queue_hd, uint32_t queueLen, uint32_t itemS
 OS_Status OS_QueueDelete(OS_Queue_t *queue_hd)
 {
 	OS_QUE_DBG("[%s,%d] -+-+-%p-%s\n",__func__,__LINE__,queue_hd->queue,queue_hd->mqname);
-	mq_close(queue_hd->queue);
+//	mq_close(queue_hd->queue);
 	mq_unlink(queue_hd->mqname);
 	queue_hd->queue = NULL;
 	return OS_OK;

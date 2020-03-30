@@ -176,18 +176,31 @@ int main(int argc,FAR char  *argv[])
 
 	aw_wifi_init(&attr);
 
-	if(aw_wifi_on() != 0) {
-		printf("wifi on failed.\n");
-		return -1;
-	}
-
-	while((c = getopt(argc,argv,"c:s")) != -1) {
+	while((c = getopt(argc,argv,"o:c:s")) != -1) {
 		switch(c) {
+			case 'o':
+				if(argc != 3) {
+					goto help;
+				}
+				i = atoi(argv[2]);
+				if(i == 0) {
+					aw_wifi_on(WIFI_MODE_STA);
+				}else if(i == 1) {
+					aw_wifi_on(WIFI_MODE_HOSTAP);
+				} else
+					goto help;
+				break;
 			case 'c':
 				if(argc < 4 || argc > 6){
 					goto help;
 				}
-				aw_wifi_connect(argv[2],argv[3]);
+				if(aw_wifi_get_current_mode() == WIFI_MODE_STA) {
+					aw_wifi_connect(argv[2],argv[3]);
+				}else if(aw_wifi_get_current_mode() == WIFI_MODE_HOSTAP)
+					aw_wifi_ap_start(argv[2],argv[3]);
+				else {
+					printf("Not init.\n");
+				}
 				break;
 			case 's':
 				ret = aw_wifi_scan(scan_result,MAX_SCAN_RESULTS_NUM);
@@ -207,6 +220,8 @@ int main(int argc,FAR char  *argv[])
 	}
 	return 0;
 help:
+	printf("-o wifi on,AP:-o 1,STATION:-o 0\n");
+	printf("-s scan AP\n");
 	printf("-c connect AP, -c <ssid> <passwd>\n");
 	return 0;
 }

@@ -26,6 +26,7 @@ static uint16_t connect_status;
 
 extern void aw_wifi_indicate_event_handle(aw_wifi_state_t event_cmd);
 
+extern void xradio_msg_indicate(uint32_t event,uint32_t data,void *arg);
 void wifi_msg_process(uint32_t event, uint32_t data, void *arg)
 {
 	uint16_t type = EVENT_SUBTYPE(event);
@@ -67,6 +68,7 @@ void wifi_msg_process(uint32_t event, uint32_t data, void *arg)
 		break;
 	}
 	aw_wifi_indicate_event_handle(state);
+	xradio_msg_indicate(type,data,arg);
 }
 
 int wifi_event_init(void)
@@ -610,7 +612,7 @@ int wifi_get_select_network(GLWifiConfig_t *netcfg,int netcfg_num)
 	return -1;
 }
 #endif
-int wifi_disconnect()
+int wifi_disconnect(void)
 {
 	return wlan_sta_disable();
 }
@@ -748,59 +750,106 @@ int wifi_set_promisc(int enable)
 }
 #endif
 #endif
+#if 0
+#define TIME_OUT_MS 120000
+int wifi_set_promisc(xr_promisc_t enable)
+{
+	sc_assistant_fun_t sca_fun;
+	sc_assistant_time_config_t config;
+	int ret = -1;
+
+	/*the sc assistant switch channel time param is no use for tuya*/
+	config.time_total = TIME_OUT_MS;
+	config.time_sw_ch_long = 0;
+	config.time_sw_ch_short = 0;
+
+	if (enable == XR_PROMISC_ENABLE) {
+		sc_assistant_get_fun(&sca_fun);
+		sc_assistant_init(g_wlan_netif, &sca_fun, &config);
+
+		ret = sc_assistant_monitor_register_rx_cb(g_wlan_netif, recv_rawframe);
+		if (ret != 0) {
+			WIFI_DEBUG("%s monitor set rx cb fail\n", __func__);
+			return ret;
+		}
+		ret = sc_assistant_monitor_register_sw_ch_cb(g_wlan_netif, wlan_sw_ch_cb);
+		if (ret != 0) {
+			WIFI_DEBUG("%s monitor sw ch cb fail\n", __func__);
+			return ret;
+		}
+
+		return 0;
+	}else {
+		if (sc_assistant_monitor_unregister_rx_cb(g_wlan_netif, recv_rawframe)) {
+			WIFI_DEBUG("%s,%d cancel rx cb fail\n", __func__, __LINE__);
+		}
+		if (sc_assistant_monitor_unregister_sw_ch_cb(g_wlan_netif, wlan_sw_ch_cb)) {
+			WIFI_DEBUG("%s,%d cancel sw ch cb fail\n", __func__, __LINE__);
+		}
+		sc_assistant_deinit(g_wlan_netif);
+	}
+	return 0;
+}
+#endif
 int wifi_on(int mode)
 {
 	enum wlan_mode current_mode = wlan_if_get_mode(g_wlan_netif);
 	int ret = 0;
 
-	ret = sys_ctrl_create();
-	if(ret) {
-		WIFI_ERROR("sys create failed.\n");
-		goto end;
-	}
+	static bool wifi_init = false;
 
-	ret = sysinfo_init();
-	if(ret) {
-		WIFI_ERROR("sys info init failed.\n");
-		goto end;
-	}
-	ret = wifi_event_init();
-	if(ret) {
-		WIFI_ERROR("wifi event init failed.\n");
-		goto end;
-	}
-	struct sysinfo *sysinfo = sysinfo_get();
-	ret = net_sys_start(sysinfo->wlan_mode);
-	if(ret) {
-		WIFI_ERROR("net start failed.\n");
-		goto end;
-	}
+	if(wifi_init == false) {
+
+		ret = sys_ctrl_create();
+		if(ret) {
+			WIFI_ERROR("sys create failed.\n");
+			goto end;
+		}
+
+		ret = sysinfo_init();
+		if(ret) {
+			WIFI_ERROR("sys info init failed.\n");
+			goto end;
+		}
+		ret = wifi_event_init();
+		if(ret) {
+			WIFI_ERROR("wifi event init failed.\n");
+			goto end;
+		}
 #if 0
+		struct sysinfo *sysinfo = sysinfo_get();
+		ret = net_sys_start(sysinfo->wlan_mode);
+		if(ret) {
+			WIFI_ERROR("net start failed.\n");
+			goto end;
+		}
+#endif
+		wifi_init = true;
+	}
     switch(mode) {
         case WLAN_MODE_STA :
-#if 0
 			if (current_mode == WLAN_MODE_MONITOR) {
-				//wifi_set_promisc(0);
+				;//wifi_set_promisc(0);
 			}
-#endif
+			WIFI_DEBUG("starting Station mode.\n");
 			net_switch_mode(WLAN_MODE_STA);
 			break;
 		case WLAN_MODE_HOSTAP :
-			WIFI_DEBUG("ap mode is not support\n");
-			return -1;
+			if (current_mode == WLAN_MODE_MONITOR) {
+				;//wifi_set_promisc(0);
+			}
+			WIFI_DEBUG("starting AP mode.\n");
+			net_switch_mode(WLAN_MODE_HOSTAP);
         	break;
 		case WLAN_MODE_MONITOR :
 			//wlan_monitor_set_rx_cb(g_wlan_netif, monitor_rx_cb);
 			net_switch_mode(WLAN_MODE_MONITOR);
-#if 0
-			if(wifi_set_promisc(1))
+			//if(wifi_set_promisc(1))
 				WIFI_DEBUG("set promisc sc_assisant failed\n");
-#endif
 			break;
 		default:
 			WIFI_DEBUG("the wlan mode is not support\n");
     }
-#endif
 end:
 	return ret;
 }
@@ -809,6 +858,54 @@ int wifi_off()
 {
 	return 0;
 }
+
+int wifi_ap_start(char *ssid,char *pwd)//(CONST WF_AP_CFG_IF_S *cfg)
+{
+	uint8_t ssid_len = strlen(ssid);
+	uint8_t psk_len = strlen(pwd);
+
+	if (!psk_len) {
+		pwd = NULL;
+	}
+
+	if (ssid_len > WLAN_SSID_MAX_LEN)
+		ssid_len = WLAN_SSID_MAX_LEN;
+
+	net_switch_mode(WLAN_MODE_HOSTAP);
+
+	wlan_ap_disable();
+	if (wlan_ap_set(ssid, ssid_len , pwd)) {
+		goto err;
+	}
+
+	if (wlan_ap_enable()) {
+		goto err;
+	};
+
+	return 0;
+
+err:
+	WIFI_DEBUG("ap start failed\n");
+
+    return -1;
+}
+
+int wifi_ap_stop(void)
+{
+	uint32_t link_dowm_timeout = 1000;
+	uint32_t timeout = OS_GetTicks() + OS_TicksToMSecs(link_dowm_timeout);
+
+	wlan_ap_disable();
+#if 0
+	while ((netif_is_link_up(g_wlan_netif)) &&
+	       OS_TimeBeforeEqual(OS_GetTicks(), timeout)) {
+		OS_MSleep(20);
+	}
+#endif
+	//printf("wait time %d\n", (OS_GetTicks()-(timeout-OS_TicksToMSecs(link_dowm_timeout))));
+	return 0;
+}
+
 
 #define IP_ADDR_LEN 16
 int wifi_get_ip_address(char *ipaddr)

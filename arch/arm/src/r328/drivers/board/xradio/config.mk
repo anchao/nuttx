@@ -81,7 +81,7 @@ __CONFIG_WLAN ?= y
 __CONFIG_WLAN_STA ?= y
 
 # wlan hostap mode
-__CONFIG_WLAN_AP ?= n
+__CONFIG_WLAN_AP ?= y
 
 # wlan monitor mode
 __CONFIG_WLAN_MONITOR ?= y

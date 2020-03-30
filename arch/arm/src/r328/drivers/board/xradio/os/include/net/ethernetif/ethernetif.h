@@ -49,14 +49,24 @@ enum wlan_mode {
 struct netif *ethernetif_create(enum wlan_mode mode);
 void ethernetif_delete(struct netif *nif);
 #ifdef CONFIG_OS_NUTTX
+#if 0
 //void ethernetif_set_mac_addr(void);
 typedef void (*wlan_event_cb_func)(uint32_t param0, uint32_t param1);
+
 void wlan_set_event_callback(wlan_event_cb_func cb);
+#endif
 struct netif* wlan_get_netif(void);
+
+void ethernetif_set_mac_addr(void);
 #endif
 #ifndef CONFIG_OS_NUTTX
 err_t ethernetif_input(struct netif *nif, struct pbuf *p);
 #endif
+
+#ifndef __CONFIG_MBUF_IMPL_MODE
+#define __CONFIG_MBUF_IMPL_MODE 0
+#endif
+
 #if (__CONFIG_MBUF_IMPL_MODE == 0)
 err_t ethernetif_raw_input(struct netif *nif, uint8_t *data, u16_t len);
 #endif

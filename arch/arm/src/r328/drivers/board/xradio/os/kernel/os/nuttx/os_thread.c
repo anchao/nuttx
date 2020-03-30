@@ -136,9 +136,9 @@ int OS_ThreadIsValid(OS_Thread_t *thread)
 {
 	OS_TH_DBG("[%s,%d] -+-=\n",__func__,__LINE__);
 	if(thread->handle < 0)
-		return 1;
-	else
 		return 0;
+	else
+		return 1;
 }
 
 void OS_ThreadSetInvalid(OS_Thread_t *thread)

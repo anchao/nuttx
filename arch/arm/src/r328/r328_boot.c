@@ -407,7 +407,7 @@ extern int sunxi_soundcard_init(void);
     }
 #endif
 
-#ifdef CONFIG_IEEE80211_XR829
+#ifdef CONFIG_IEEE80211_XRADIO
 extern int xradio_drv_init(void);
 	xradio_drv_init();
 #endif
