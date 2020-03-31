@@ -1,6 +1,6 @@
 ############################################################################
 #
-#   Copyright (C) 2015 Gregory Nutt. All rights reserved.
+#   Copyright (C) 2008, 2010-2013 Gregory Nutt. All rights reserved.
 #   Author: Gregory Nutt <gnutt@nuttx.org>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,10 +32,15 @@
 #
 ############################################################################
 
-ifeq ($(CONFIG_EXAMPLES_AWC_WATHCPOINT),y)
-include $(wildcard $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/debug/watchpoint/Make.defs)
-endif
+-include $(TOPDIR)/Make.defs
 
-ifeq ($(CONFIG_EXAMPLES_AWC_BREAKPOINT),y)
-include $(wildcard $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/debug/breakpoint/Make.defs)
-endif
+PROGNAME  = breakpoint
+PRIORITY  = 100
+STACKSIZE = 8192
+MODULE    = watchpoint
+
+AW_SRCDIR=$(TOPDIR)/arch/arm/src/r328
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)include}
+MAINSRC = breakpoint_main.c
+
+include $(APPDIR)/Application.mk

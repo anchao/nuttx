@@ -1,0 +1,18 @@
+
+menu "Debug Commands"
+
+config EXAMPLES_AWC_WATCHPOINT
+	bool "AW watchpoint command"
+	depends on DEBUG_WATCHPOINT
+	default y
+	help
+	  command to set hardware watchpoint for debug.
+
+config EXAMPLES_AWC_BREAKPOINT
+	bool "AW breakpoint command"
+	depends on DEBUG_WATCHPOINT
+	default y
+	help
+	  command to set hardware breakpoint for debug.
+
+endmenu

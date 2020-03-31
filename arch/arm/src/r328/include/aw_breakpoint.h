@@ -44,6 +44,9 @@ struct gdb_arch
 
 extern struct gdb_arch arch_gdb_ops;
 
+int gdb_set_hw_break(unsigned long addr);
+int gdb_remove_hw_break(unsigned long addr);
+
 int gdb_set_hw_watch(unsigned long addr, enum gdb_bptype type);
 int gdb_remove_hw_watch(unsigned long addr);
 int gdb_isremoved_hw_watch(unsigned long addr);

@@ -2,6 +2,8 @@
 #include "gdb_stub.h"
 #include <stdio.h>
 
+int create_hw_break_watch(unsigned int hw_break, unsigned int hw_watch);
+
 int arm_arch_set_hw_watchpoint(enum gdb_bptype type, int i, unsigned long addr)
 {
     return arm_install_hw_watchpoint(type, i, addr);
@@ -13,10 +15,23 @@ int arm_arch_remove_hw_watchpoint(enum gdb_bptype type, int i, unsigned long add
     return 0;
 }
 
+int arm_arch_set_hw_breakpoint(int i, unsigned long addr)
+{
+    return arm_install_hw_breakpoint(i, addr);
+}
+
+int arm_arch_remove_hw_breakpoint(int i, unsigned long addr)
+{
+    arm_uninstall_hw_breakpoint(i);
+    return 0;
+}
+
 struct gdb_arch arch_gdb_ops =
 {
     .set_hw_watchpoint = arm_arch_set_hw_watchpoint,
     .remove_hw_watchpoint = arm_arch_remove_hw_watchpoint,
+    .set_hw_breakpoint = arm_arch_set_hw_breakpoint,
+    .remove_hw_breakpoint = arm_arch_remove_hw_breakpoint,
 };
 
 int kgdb_arch_init(void)
