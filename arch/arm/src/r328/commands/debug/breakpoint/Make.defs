@@ -32,10 +32,5 @@
 #
 ############################################################################
 
-ifeq ($(CONFIG_EXAMPLES_AWC_WATHCPOINT),y)
-include $(wildcard $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/debug/watchpoint/Make.defs)
-endif
+CONFIGURED_APPS += $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/debug/breakpoint
 
-ifeq ($(CONFIG_EXAMPLES_AWC_BREAKPOINT),y)
-include $(wildcard $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/debug/breakpoint/Make.defs)
-endif

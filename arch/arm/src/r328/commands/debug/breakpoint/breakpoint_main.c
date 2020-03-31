@@ -9,7 +9,7 @@
 static void show_help(void)
 {
     debug_dump_all_breaks_info();
-    printf("Usage: watchpoint [write | read | access | remove] addr\n");
+    printf("Usage: breakpoint [set | remove] addr\n");
 }
 
 int main(int argc, FAR char *argv[])
@@ -30,21 +30,13 @@ int main(int argc, FAR char *argv[])
         return -1;
     }
 
-    if (!strcmp(argv[1], "write"))
+    if (!strcmp(argv[1], "set"))
     {
-        return gdb_set_hw_watch(addr, BP_WRITE_WATCHPOINT);
-    }
-    else if (!strcmp(argv[1], "read"))
-    {
-        return gdb_set_hw_watch(addr, BP_READ_WATCHPOINT);
-    }
-    else if (!strcmp(argv[1], "access"))
-    {
-        return gdb_set_hw_watch(addr, BP_ACCESS_WATCHPOINT);
+        return gdb_set_hw_break(addr);
     }
     else if (!strcmp(argv[1], "remove"))
     {
-        return gdb_remove_hw_watch(addr);
+        return gdb_remove_hw_break(addr);
     }
     else
     {

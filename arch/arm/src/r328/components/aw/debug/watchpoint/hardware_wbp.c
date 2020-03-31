@@ -369,6 +369,8 @@ int arm_install_hw_watchpoint(enum gdb_bptype type, int i, uint32_t addr)
         case BP_ACCESS_WATCHPOINT:
             ctrl = 0x1FF;
             break;
+        default:
+            break;
     }
 
     addr &= ~(0x4UL - 1);

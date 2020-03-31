@@ -3,7 +3,7 @@
 #include <string.h>
 #include "gdb_stub.h"
 
-/* static int gdb_hw_break_max; */
+static int gdb_hw_break_max;
 static int gdb_hw_watch_max;
 
 static struct gdb_bkpt *gdb_hw_break = NULL;
@@ -41,28 +41,36 @@ int create_hw_break_watch(unsigned int hw_break, unsigned int hw_watch)
 {
     int i;
 
-    (void)hw_break;
-
     if (hw_watch)
     {
-        gdb_hw_watch = calloc(hw_break, sizeof(struct gdb_bkpt));
+        gdb_hw_watch = calloc(hw_watch, sizeof(struct gdb_bkpt));
         if (gdb_hw_watch)
         {
             gdb_hw_watch_max = hw_watch;
             struct gdb_bkpt *bkpt = gdb_hw_watch;
+            for (i = 0; i < hw_watch; i++)
+            {
+                bkpt->state = BP_UNDEFINED;
+                bkpt++;
+            }
+        }
+    }
+
+    if (hw_break)
+    {
+        gdb_hw_break = calloc(hw_break, sizeof(struct gdb_bkpt));
+        if (gdb_hw_break)
+        {
+            gdb_hw_break_max = hw_break;
+            struct gdb_bkpt *bkpt = gdb_hw_break;
             for (i = 0; i < hw_break; i++)
             {
                 bkpt->state = BP_UNDEFINED;
                 bkpt++;
             }
         }
-        else
-        {
-            free(gdb_hw_break);
-            gdb_hw_break = NULL;
-            return -1;
-        }
     }
+
     return 0;
 }
 
@@ -73,6 +81,13 @@ int destory_hw_break_watch(void)
         free(gdb_hw_watch);
         gdb_hw_watch = NULL;
     }
+
+    if (gdb_hw_break)
+    {
+        free(gdb_hw_break);
+        gdb_hw_break = NULL;
+    }
+
     return 0;
 }
 
@@ -90,6 +105,24 @@ static int gdb_arch_remove_hw_watchpoint(enum gdb_bptype type, unsigned int no, 
     if (arch_gdb_ops.set_hw_watchpoint)
     {
         return arch_gdb_ops.set_hw_watchpoint(type, no, addr);
+    }
+    return -1;
+}
+
+static int gdb_arch_set_hw_breakpoint(unsigned int no, unsigned long addr)
+{
+    if (arch_gdb_ops.set_hw_breakpoint)
+    {
+        return arch_gdb_ops.set_hw_breakpoint(no, addr);
+    }
+    return -1;
+}
+
+static int gdb_arch_remove_hw_breakpoint(unsigned int no, unsigned long addr)
+{
+    if (arch_gdb_ops.remove_hw_breakpoint)
+    {
+        return arch_gdb_ops.remove_hw_breakpoint(no, addr);
     }
     return -1;
 }
@@ -150,7 +183,8 @@ int gdb_set_hw_watch(unsigned long addr, enum gdb_bptype type)
     gdb_hw_watch[breakno].type = type;
     gdb_hw_watch[breakno].bpt_addr = addr;
 
-    ret = gdb_arch_set_hw_watchpoint(gdb_hw_watch[breakno].type, breakno, gdb_hw_watch[breakno].bpt_addr);
+    ret = gdb_arch_set_hw_watchpoint(gdb_hw_watch[breakno].type,
+                                     breakno, gdb_hw_watch[breakno].bpt_addr);
     if (ret)
     {
         printf("set hw watchpoint 0x%08x failed!\n", gdb_hw_watch[breakno].bpt_addr);
@@ -194,6 +228,106 @@ int gdb_isremoved_hw_watch(unsigned long addr)
     return 0;
 }
 
+/*
+ * HW breakpoint management:
+ */
+int gdb_set_hw_break(unsigned long addr)
+{
+    int i;
+    int breakno = -1;
+    int ret = -1;
+
+    if (init_flag == 0)
+    {
+        if (debug_watchpoint_init())
+        {
+            return -1;
+        }
+        init_flag = 1;
+    }
+
+    for (i = 0; i < gdb_hw_break_max; i++)
+    {
+        if ((gdb_hw_break[i].state == BP_SET) &&
+            (gdb_hw_break[i].bpt_addr == addr))
+        {
+            return 0;
+        }
+    }
+    for (i = 0; i < gdb_hw_break_max; i++)
+    {
+        if (gdb_hw_break[i].state == BP_REMOVED)
+        {
+            breakno = i;
+            break;
+        }
+    }
+
+    if (breakno == -1)
+    {
+        for (i = 0; i < gdb_hw_break_max; i++)
+        {
+            if (gdb_hw_break[i].state == BP_UNDEFINED)
+            {
+                breakno = i;
+                break;
+            }
+        }
+    }
+
+    if (breakno == -1)
+    {
+        return -1;
+    }
+
+    gdb_hw_break[breakno].state = BP_SET;
+    gdb_hw_break[breakno].type = BP_HARDWARE_BREAKPOINT;
+    gdb_hw_break[breakno].bpt_addr = addr;
+
+    ret = gdb_arch_set_hw_breakpoint(breakno, gdb_hw_break[breakno].bpt_addr);
+    if (ret)
+    {
+        printf("set hw breakpoint 0x%08x failed!\n", gdb_hw_break[breakno].bpt_addr);
+    }
+    return ret;
+}
+
+int gdb_remove_hw_break(unsigned long addr)
+{
+    int i;
+
+    for (i = 0; i < gdb_hw_break_max; i++)
+    {
+        if ((gdb_hw_break[i].state == BP_SET) &&
+            (gdb_hw_break[i].bpt_addr == addr))
+        {
+            if (gdb_arch_remove_hw_breakpoint(i, addr))
+            {
+                printf("remove hw breakpoint 0x%08x failed!\n", addr);
+                return -1;
+            }
+            gdb_hw_break[i].state = BP_REMOVED;
+            return 0;
+        }
+    }
+    return -1;
+}
+
+int gdb_isremoved_hw_break(unsigned long addr)
+{
+    int i;
+
+    for (i = 0; i < gdb_hw_break_max; i++)
+    {
+        if ((gdb_hw_break[i].state == BP_REMOVED) &&
+            (gdb_hw_break[i].bpt_addr == addr))
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int remove_all_break_watch_points(void)
 {
     unsigned long addr;
@@ -216,9 +350,24 @@ hw_watch_setundefined:
         gdb_hw_watch[i].state = BP_UNDEFINED;
     }
 
+    for (i = 0; i < gdb_hw_break_max; i++)
+    {
+        if (gdb_hw_break[i].state != BP_ACTIVE)
+        {
+            goto hw_break_setundefined;
+        }
+        addr = gdb_hw_break[i].bpt_addr;
+        error = gdb_arch_remove_hw_breakpoint(i, addr);
+        if (error)
+        {
+            printf("GDB: breakpoint remove failed: %lx\n", addr);
+        }
+hw_break_setundefined:
+        gdb_hw_break[i].state = BP_UNDEFINED;
+    }
+
     return 0;
 }
-
 
 static char *get_bp_type_str(enum gdb_bptype type)
 {
@@ -257,6 +406,17 @@ void debug_dump_all_breaks_info(void)
                gdb_hw_watch[i].bpt_addr,
                get_bp_state_str(gdb_hw_watch[i].state),
                get_bp_type_str(gdb_hw_watch[i].type));
+    }
+
+    printf("\nbreakpoint num = %d:\n", gdb_hw_break_max);
+    printf("Id    Addr    State      Type\n");
+
+    for (i = 0; i < gdb_hw_break_max; i++)
+    {
+        printf("%d  0x%08x  %s      %s\n", i,
+               gdb_hw_break[i].bpt_addr,
+               get_bp_state_str(gdb_hw_break[i].state),
+               get_bp_type_str(gdb_hw_break[i].type));
     }
 }
 

@@ -1,3 +1,3 @@
-CHIP_CSRCS += components/aw/debug/watchpoint/breakpoint.o
-CHIP_CSRCS += components/aw/debug/watchpoint/hardware_wbp.o
-CHIP_CSRCS += components/aw/debug/watchpoint/arm_stub.o
+CHIP_CSRCS += components/aw/debug/watchpoint/breakpoint.c
+CHIP_CSRCS += components/aw/debug/watchpoint/hardware_wbp.c
+CHIP_CSRCS += components/aw/debug/watchpoint/arm_stub.c
