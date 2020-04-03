@@ -29,6 +29,7 @@ extern "C"
 //#include <sunxi_drv_gpio.h>
 #include <semaphore.h>
 #include "hal_dma.h"
+#include "hal_clk.h"
 
 /**************************SPI LIST, Will Delete Later*************************/
 //#include <aw_common.h>
@@ -634,33 +635,27 @@ typedef unsigned char u8;
 #define SUNXI_SPI_REG_SIZE    0x1000 /* controler reg sized */
 
 
-#define SUNXI_SPI0_PBASE         0X05010000 /* 4K */
-#define SUNXI_SPI1_PBASE         0X05011000 /* 4K */
-#define SUNXI_SPI2_PBASE         0X05012000 /* 4K */
-#define SUNXI_IRQ_SPI0                 86
+#define SUNXI_SPI0_PBASE	0X05010000 /* 4K */
+#define SUNXI_SPI1_PBASE	0X05011000 /* 4K */
+#define SUNXI_SPI2_PBASE	0X05012000 /* 4K */
+#define SUNXI_IRQ_SPI0		113
 
 #define SPI_MUXSEL 4
 #define SPI_DRVSEL 2
 
 #define SPI0_NUM 6
-#define SPI0_CLK    DRV_GPIO_PC0
-#define SPI0_MOSI   DRV_GPIO_PC2
-#define SPI0_MISO   DRV_GPIO_PC3
-#define SPI0_CS0    DRV_GPIO_PC1
-#define SPI0_WP     DRV_GPIO_PC4
-#define SPI0_HOLD   DRV_GPIO_PC5
+#define SPI0_CLK    GPIOC(0)
+#define SPI0_MOSI   GPIOC(2)
+#define SPI0_CS0    GPIOC(3)
+#define SPI0_MISO   GPIOC(4)
+#define SPI0_WP     GPIOC(15)
+#define SPI0_HOLD   GPIOC(16)
 
 #define SPI1_NUM 4
-#define SPI1_CLK    DRV_GPIO_PH0
-#define SPI1_MOSI   DRV_GPIO_PH1
-#define SPI1_MISO   DRV_GPIO_PH2
-#define SPI1_CS0    DRV_GPIO_PH3
-
-#define SPI2_NUM 4
-#define SPI2_CLK    DRV_GPIO_PE18
-#define SPI2_MOSI   DRV_GPIO_PE19
-#define SPI2_MISO   DRV_GPIO_PE20
-#define SPI2_CS0    DRV_GPIO_PE21
+#define SPI1_CS0    GPIOH(4)
+#define SPI1_CLK    GPIOH(45)
+#define SPI1_MOSI   GPIOH(46)
+#define SPI1_MISO   GPIOH(47)
 
 #define HEXADECIMAL (0x10)
 #define REG_INTERVAL (0x04)
@@ -1007,8 +1002,8 @@ typedef struct sunxi_spi
     uint32_t base;
     spi_mode_type_t mode_type;
 
-    //TODO  hal_clk_id_t pclk; /* PLL clock */
-    //  hal_clk_id_t mclk; /* spi module clock */
+    hal_clk_id_t pclk; /* PLL clock */
+    hal_clk_id_t mclk; /* spi module clock */
     uint32_t *pin;
     uint8_t pin_num : 3;
     uint8_t pin_mux : 3;
@@ -1025,7 +1020,10 @@ typedef struct sunxi_spi
     FAR struct work_s *work;
     struct list_head queue;
     sem_t complete;
+    uint32_t queue_num;
+#define QUEUE_FFLUSH_NUM 30
 
+    hal_spinlock_t lock;
     hal_spi_master_port_t port;
     hal_spi_master_transfer_t *transfer;
 } sunxi_spi_t;
