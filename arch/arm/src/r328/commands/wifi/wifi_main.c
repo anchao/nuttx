@@ -176,7 +176,7 @@ int main(int argc,FAR char  *argv[])
 
 	aw_wifi_init(&attr);
 
-	while((c = getopt(argc,argv,"o:c:s")) != -1) {
+	while((c = getopt(argc,argv,"o:c:sh")) != -1) {
 		switch(c) {
 			case 'o':
 				if(argc != 3) {
@@ -213,6 +213,8 @@ int main(int argc,FAR char  *argv[])
 							scan_result[i].key);
 				}
 				break;
+			case 'h':
+				goto help;
 			default:
 				printf("invaild.\n");
 				break;

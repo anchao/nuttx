@@ -226,6 +226,11 @@ void aw_wifi_off(void)
 }
 int aw_wifi_scan(aw_wifi_scan_results_t *scan_result,int max_num)
 {
+	if(p_wifi_handle->wifi_is_on == false ||
+			p_wifi_handle->current_mode != WIFI_MODE_STA)
+	{
+		aw_wifi_on(WIFI_MODE_STA);
+	}
 	return wifi_scan(scan_result,max_num);
 }
 
