@@ -73,4 +73,23 @@
 - Fixed smp stability issues
 - Support bluetooth mesh stack
 - Support audio enc/dec framework
-- Support more thirdparty components
+- Support more thirdparty component
+
+
+### Nuttx-8.2-r328-0.8 - April 03 2020
+**System**
+- Added io tools rwcheck and rwspeed
+- Added breakpoint support
+- Updated wifi driver support softap mode
+- Updated dma driver fix transport issue
+- Updated sdmmc driver set io driving level to 3
+
+**Known Issues**
+- ostest run under SMP mode hang at sched/irq/irq_csection.c
+- bluetooth avrcp/a2dpsink not work well
+- wifi softap mode failed under nuttx-8.2
+
+**TODO**
+- Fixed smp stability issues
+- Updated BTmesh function
+- Support audio player
