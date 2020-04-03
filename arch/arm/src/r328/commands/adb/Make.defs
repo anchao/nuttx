@@ -32,8 +32,10 @@
 #
 ############################################################################
 
-ifneq (CONFIG_COMPONENTS_USB_GADGET_ADBD,)
+ifeq ($(CONFIG_EXAMPLES_AWC_ADBD),y)
 include $(wildcard $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/adb/adbd/Make.defs)
-include $(wildcard $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/adb/af/Make.defs)
 endif
 
+ifeq ($(CONFIG_EXAMPLES_AWC_ADB_FORWARD),y)
+include $(wildcard $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/adb/af/Make.defs)
+endif

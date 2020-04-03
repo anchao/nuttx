@@ -1,0 +1,18 @@
+
+menu "ADB Commands"
+
+config EXAMPLES_AWC_ADBD
+	bool "AW adbd service"
+	depends on COMPONENTS_USB_GADGET_ADBD
+	default n
+	help
+	  adbd service for Allwinner RTOS.
+
+config EXAMPLES_AWC_ADB_FORWARD
+	bool "AW adb forward command"
+	depends on COMPONENTS_USB_GADGET_ADB_FORWARD
+	default n
+	help
+	  support af(adb forward) command, used to forward data via adb protocol.
+
+endmenu

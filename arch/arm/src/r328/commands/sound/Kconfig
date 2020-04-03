@@ -1,0 +1,31 @@
+
+menu "Audio Commands"
+
+config EXAMPLES_AWC_APLAY
+	bool "AW alsa utils aplay"
+	depends on COMPONENTS_AW_ALSA_UTILS
+	default n
+	help
+	  aplay command can be used on the command line. It can play music with wav files.
+
+config EXAMPLES_AWC_ARECORD
+	bool "AW alsa utils arecord"
+	depends on COMPONENTS_AW_ALSA_UTILS
+	default n
+	help
+	  arecord command can be used on the command line. It is a record demo.
+
+config EXAMPLES_AWC_AMIXER
+	bool "AW alsa utils amixer"
+	depends on COMPONENTS_AW_ALSA_UTILS
+	default n
+	help
+	  amixer command can be used on the command line.
+
+config EXAMPLES_AWC_SOUNDCARD
+	bool "AW alsa utils soundcard"
+	depends on COMPONENTS_AW_ALSA_UTILS
+	default n
+	help
+	  soundcard command can be used on the command line.
+endmenu
