@@ -32,10 +32,15 @@
 #
 ############################################################################
 
-ifneq ($(CONFIG_COMPONENTS_AW_ALSA_UTILS),)
+ifneq ($(CONFIG_EXAMPLES_AWC_APLAY),)
 include $(wildcard $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/sound/aplay/Make.defs)
+endif
+ifneq ($(CONFIG_EXAMPLES_AWC_ARECORD),)
 include $(wildcard $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/sound/arecord/Make.defs)
+endif
+ifneq ($(CONFIG_EXAMPLES_AWC_AMIXER),)
 include $(wildcard $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/sound/amixer/Make.defs)
+endif
+ifneq ($(CONFIG_EXAMPLES_AWC_SOUNDCARD),)
 include $(wildcard $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/sound/soundcard/Make.defs)
 endif
-

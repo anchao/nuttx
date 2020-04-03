@@ -1,0 +1,4 @@
+
+config EXAMPLES_AWC_TEST
+	bool "AW test command"
+	default n

@@ -32,5 +32,6 @@
 #
 ############################################################################
 
+ifneq ($(CONFIG_EXAMPLES_AWC_TEST),)
 CONFIGURED_APPS += $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/test
-
+endif
