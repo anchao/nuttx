@@ -114,6 +114,8 @@ typedef enum {
 #define XR_BLE_LINK_KEY_MASK   (1 << 3)            /* relate to BTM_BLE_LINK_KEY_MASK in stack/btm_api.h */
 typedef uint8_t t_xr_ble_key_mask;            /* the key mask type */
 
+#define AW_BD_ADDR_STR         "%02x:%02x:%02x:%02x:%02x:%02x"
+#define AW_BD_ADDR_HEX(addr)   addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]
 
 #ifdef __cplusplus
 }

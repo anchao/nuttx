@@ -58,8 +58,8 @@
 
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "chip.h"
 #include "hardware/r328_uart.h"
@@ -379,19 +379,19 @@ static uart_dev_t g_uart3port =
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_serialin
+ * Name: arm_serialin
  ****************************************************************************/
 
-static inline uint32_t up_serialin(struct up_dev_s *priv, int offset)
+static inline uint32_t arm_serialin(struct up_dev_s *priv, int offset)
 {
   return getreg32(priv->uartbase + offset);
 }
 
 /****************************************************************************
- * Name: up_serialout
+ * Name: arm_serialout
  ****************************************************************************/
 
-static inline void up_serialout(struct up_dev_s *priv, int offset, uint32_t value)
+static inline void arm_serialout(struct up_dev_s *priv, int offset, uint32_t value)
 {
   putreg32(value, priv->uartbase + offset);
 }
@@ -408,7 +408,7 @@ static inline void up_disableuartint(struct up_dev_s *priv, uint32_t *ier)
     }
 
   priv->ier &= ~UART_IER_ALLIE;
-  up_serialout(priv, R328_UART_IER_OFFSET, priv->ier);
+  arm_serialout(priv, R328_UART_IER_OFFSET, priv->ier);
 }
 
 /****************************************************************************
@@ -418,7 +418,7 @@ static inline void up_disableuartint(struct up_dev_s *priv, uint32_t *ier)
 static inline void up_restoreuartint(struct up_dev_s *priv, uint32_t ier)
 {
   priv->ier |= ier & UART_IER_ALLIE;
-  up_serialout(priv, R328_UART_IER_OFFSET, priv->ier);
+  arm_serialout(priv, R328_UART_IER_OFFSET, priv->ier);
 }
 
 /****************************************************************************
@@ -427,7 +427,7 @@ static inline void up_restoreuartint(struct up_dev_s *priv, uint32_t ier)
 
 static inline void up_enablebreaks(struct up_dev_s *priv, bool enable)
 {
-  uint32_t lcr = up_serialin(priv, R328_UART_LCR_OFFSET);
+  uint32_t lcr = arm_serialin(priv, R328_UART_LCR_OFFSET);
 
   if (enable)
     {
@@ -438,7 +438,7 @@ static inline void up_enablebreaks(struct up_dev_s *priv, bool enable)
       lcr &= ~UART_LCR_BC;
     }
 
-  up_serialout(priv, R328_UART_LCR_OFFSET, lcr);
+  arm_serialout(priv, R328_UART_LCR_OFFSET, lcr);
 }
 
 /************************************************************************************
@@ -573,15 +573,15 @@ static int up_setup(struct uart_dev_s *dev)
 
   /* Clear fifos */
 
-  up_serialout(priv, R328_UART_FCR_OFFSET, (UART_FCR_RFIFOR | UART_FCR_XFIFOR));
+  arm_serialout(priv, R328_UART_FCR_OFFSET, (UART_FCR_RFIFOR | UART_FCR_XFIFOR));
 
   /* Set trigger */
 
-  up_serialout(priv, R328_UART_FCR_OFFSET, (UART_FCR_FIFOE | UART_FCR_RT_HALF));
+  arm_serialout(priv, R328_UART_FCR_OFFSET, (UART_FCR_FIFOE | UART_FCR_RT_HALF));
 
   /* Set up the IER */
 
-  priv->ier = up_serialin(priv, R328_UART_IER_OFFSET);
+  priv->ier = arm_serialin(priv, R328_UART_IER_OFFSET);
 
   /* Set up the LCR */
 
@@ -623,21 +623,21 @@ static int up_setup(struct uart_dev_s *dev)
 
   /* Enter DLAB=1 */
 
-  up_serialout(priv, R328_UART_LCR_OFFSET, (lcr | UART_LCR_DLAB));
+  arm_serialout(priv, R328_UART_LCR_OFFSET, (lcr | UART_LCR_DLAB));
 
   /* Set the BAUD divisor */
 
   dl = r328_uartdl(priv->baud);
-  up_serialout(priv, R328_UART_DLH_OFFSET, dl >> 8);
-  up_serialout(priv, R328_UART_DLL_OFFSET, dl & 0xff);
+  arm_serialout(priv, R328_UART_DLH_OFFSET, dl >> 8);
+  arm_serialout(priv, R328_UART_DLL_OFFSET, dl & 0xff);
 
   /* Clear DLAB */
 
-  up_serialout(priv, R328_UART_LCR_OFFSET, lcr);
+  arm_serialout(priv, R328_UART_LCR_OFFSET, lcr);
 
   /* Configure the FIFOs */
 
-  up_serialout(priv, R328_UART_FCR_OFFSET,
+  arm_serialout(priv, R328_UART_FCR_OFFSET,
                (UART_FCR_RT_HALF | UART_FCR_XFIFOR | UART_FCR_RFIFOR |
                 UART_FCR_FIFOE));
 
@@ -748,7 +748,7 @@ static int uart_interrupt(int irq, void *context, void *arg)
     {
       /* Get the current UART status */
 
-      status = up_serialin(priv, R328_UART_IIR_OFFSET);
+      status = arm_serialin(priv, R328_UART_IIR_OFFSET);
 
       /* Handle the interrupt by its interrupt ID field */
 
@@ -777,7 +777,7 @@ static int uart_interrupt(int irq, void *context, void *arg)
             {
               /* Read the modem status register (MSR) to clear */
 
-              status = up_serialin(priv, R328_UART_MSR_OFFSET);
+              status = arm_serialin(priv, R328_UART_MSR_OFFSET);
               _info("MSR: %02x\n", status);
               break;
             }
@@ -788,7 +788,7 @@ static int uart_interrupt(int irq, void *context, void *arg)
             {
               /* Read the line status register (LSR) to clear */
 
-              status = up_serialin(priv, R328_UART_LSR_OFFSET);
+              status = arm_serialin(priv, R328_UART_LSR_OFFSET);
               _info("LSR: %02x\n", status);
               break;
             }
@@ -799,7 +799,7 @@ static int uart_interrupt(int irq, void *context, void *arg)
             {
               /* Read from the UART status register to clear the BUSY condition */
 
-              status = up_serialin(priv, R328_UART_USR_OFFSET);
+              status = arm_serialin(priv, R328_UART_USR_OFFSET);
               break;
             }
 
@@ -923,17 +923,17 @@ static int up_ioctl(struct file *filep, int cmd, unsigned long arg)
         /* REVISIT:  Shouldn't we just call up_setup() to do all of the following? */
 
         lcr = getreg32(priv->uartbase + R328_UART_LCR_OFFSET);
-        up_serialout(priv, R328_UART_LCR_OFFSET, (lcr | UART_LCR_DLAB));
+        arm_serialout(priv, R328_UART_LCR_OFFSET, (lcr | UART_LCR_DLAB));
 
         /* Set the BAUD divisor */
 
         dl = r328_uartdl(priv->baud);
-        up_serialout(priv, R328_UART_DLH_OFFSET, dl >> 8);
-        up_serialout(priv, R328_UART_DLL_OFFSET, dl & 0xff);
+        arm_serialout(priv, R328_UART_DLH_OFFSET, dl >> 8);
+        arm_serialout(priv, R328_UART_DLL_OFFSET, dl & 0xff);
 
         /* Clear DLAB */
 
-        up_serialout(priv, R328_UART_LCR_OFFSET, lcr);
+        arm_serialout(priv, R328_UART_LCR_OFFSET, lcr);
       }
       break;
 #endif
@@ -961,8 +961,8 @@ static int up_receive(struct uart_dev_s *dev, uint32_t *status)
   struct up_dev_s *priv = (struct up_dev_s *)dev->priv;
   uint32_t rbr;
 
-  *status = up_serialin(priv, R328_UART_LSR_OFFSET);
-  rbr     = up_serialin(priv, R328_UART_RBR_OFFSET);
+  *status = arm_serialin(priv, R328_UART_LSR_OFFSET);
+  rbr     = arm_serialin(priv, R328_UART_RBR_OFFSET);
   return rbr;
 }
 
@@ -988,7 +988,7 @@ static void up_rxint(struct uart_dev_s *dev, bool enable)
       priv->ier &= ~UART_IER_ERBFI;
     }
 
-  up_serialout(priv, R328_UART_IER_OFFSET, priv->ier);
+  arm_serialout(priv, R328_UART_IER_OFFSET, priv->ier);
 }
 
 /****************************************************************************
@@ -1002,7 +1002,7 @@ static void up_rxint(struct uart_dev_s *dev, bool enable)
 static bool up_rxavailable(struct uart_dev_s *dev)
 {
   struct up_dev_s *priv = (struct up_dev_s *)dev->priv;
-  return ((up_serialin(priv, R328_UART_LSR_OFFSET) & UART_LSR_DR) != 0);
+  return ((arm_serialin(priv, R328_UART_LSR_OFFSET) & UART_LSR_DR) != 0);
 }
 
 /****************************************************************************
@@ -1018,9 +1018,9 @@ static void up_send(struct uart_dev_s *dev, int ch)
   struct up_dev_s *priv = (struct up_dev_s *)dev->priv;
   if(ch == '\n')
   {
-      up_serialout(priv, R328_UART_THR_OFFSET, '\r');
+      arm_serialout(priv, R328_UART_THR_OFFSET, '\r');
   }
-  up_serialout(priv, R328_UART_THR_OFFSET, (uint32_t)ch);
+  arm_serialout(priv, R328_UART_THR_OFFSET, (uint32_t)ch);
 }
 
 /****************************************************************************
@@ -1043,7 +1043,7 @@ static void up_txint(struct uart_dev_s *dev, bool enable)
         //asm volatile("nop");
 //#ifndef CONFIG_SUPPRESS_SERIAL_INTS
       priv->ier |= UART_IER_ETBEI;
-      up_serialout(priv, R328_UART_IER_OFFSET, priv->ier);
+      arm_serialout(priv, R328_UART_IER_OFFSET, priv->ier);
 
       /* Fake a TX interrupt here by just calling uart_xmitchars() with
        * interrupts disabled (note this may recurse).
@@ -1057,7 +1057,7 @@ static void up_txint(struct uart_dev_s *dev, bool enable)
         //asm volatile("b .");
         //asm volatile("nop");
       priv->ier &= ~UART_IER_ETBEI;
-      up_serialout(priv, R328_UART_IER_OFFSET, priv->ier);
+      arm_serialout(priv, R328_UART_IER_OFFSET, priv->ier);
     }
 
   leave_critical_section(flags);
@@ -1074,7 +1074,7 @@ static void up_txint(struct uart_dev_s *dev, bool enable)
 static bool up_txready(struct uart_dev_s *dev)
 {
   struct up_dev_s *priv = (struct up_dev_s *)dev->priv;
-  return ((up_serialin(priv, R328_UART_LSR_OFFSET) & UART_LSR_THRE) != 0);
+  return ((arm_serialin(priv, R328_UART_LSR_OFFSET) & UART_LSR_THRE) != 0);
 }
 
 /****************************************************************************
@@ -1088,7 +1088,7 @@ static bool up_txready(struct uart_dev_s *dev)
 static bool up_txempty(struct uart_dev_s *dev)
 {
   struct up_dev_s *priv = (struct up_dev_s *)dev->priv;
-  return ((up_serialin(priv, R328_UART_LSR_OFFSET) & UART_LSR_THRE) != 0);
+  return ((arm_serialin(priv, R328_UART_LSR_OFFSET) & UART_LSR_THRE) != 0);
 }
 
 /****************************************************************************
@@ -1096,12 +1096,12 @@ static bool up_txempty(struct uart_dev_s *dev)
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_serialinit
+ * Name: arm_serialinit
  *
  * Description:
  *   Performs the low level UART initialization early in debug so that the
  *   serial console will be available during bootup.  This must be called
- *   before up_serialinit.
+ *   before arm_serialinit.
  *
  *   NOTE: Configuration of the CONSOLE UART was performed by up_lowsetup()
  *   very early in the boot sequence.
@@ -1148,7 +1148,7 @@ void up_earlyserialinit(void)
 }
 
 /****************************************************************************
- * Name: up_serialinit
+ * Name: arm_serialinit
  *
  * Description:
  *   Register serial console and serial ports.  This assumes that
@@ -1156,7 +1156,7 @@ void up_earlyserialinit(void)
  *
  ****************************************************************************/
 
-void up_serialinit(void)
+void arm_serialinit(void)
 {
 #ifdef CONSOLE_DEV
   (void)uart_register("/dev/console", &CONSOLE_DEV);

@@ -32,7 +32,7 @@
 #
 ############################################################################
 
-ifeq ($(CONFIG_EXAMPLES_AWC_WATHCPOINT),y)
+ifeq ($(CONFIG_EXAMPLES_AWC_WATCHPOINT),y)
 include $(wildcard $(TOPDIR)/arch/$(CONFIG_ARCH)/src/r328/commands/debug/watchpoint/Make.defs)
 endif
 

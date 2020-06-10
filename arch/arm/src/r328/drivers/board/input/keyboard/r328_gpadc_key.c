@@ -65,7 +65,7 @@ struct sunxi_gpadc_key{
 	unsigned char key_cnt;
 };
 struct sunxi_gpadc_key *key_data  = NULL;
-
+uint32_t button_status = 0;
 static void sunxi_report_key_down_event(struct sunxi_gpadc_key *key_data)
 {
 	if (key_data->last_key_code == INITIAL_VALUE) {
@@ -98,7 +98,7 @@ static void sunxi_report_key_down_event(struct sunxi_gpadc_key *key_data)
 	}
 }
 
-void gpadc_irq_callback(unsigned int channel, int irq_status, unsigned int key_vol)
+int gpadc_irq_callback(unsigned int channel, int irq_status, unsigned int key_vol)
 {
 	sunxikbd_info("Key Interrupt\n");
 	sunxikbd_info("=======key_vol %d=========\n", key_vol);
@@ -111,6 +111,7 @@ void gpadc_irq_callback(unsigned int channel, int irq_status, unsigned int key_v
 			key_data->compare_later = key_data->compare_before;
 			key_data->key_code = keypad_mapindex[key_data->compare_before];
 			sunxi_report_key_down_event(key_data);
+			button_status |= (1 << key_data->key_code);
 			key_data->key_cnt = 0;
 		}
 		if (key_data->key_cnt == 5) {
@@ -127,7 +128,9 @@ void gpadc_irq_callback(unsigned int channel, int irq_status, unsigned int key_v
 		key_data->compare_later = 0;
 		key_data->key_cnt = 0;
 		key_data->last_key_code = INITIAL_VALUE;
+		button_status &= ~(1 << key_data->key_code);
 	}
+	return button_status;
 }
 
 static int sunxikbd_data_init(struct sunxi_gpadc_key *key_data, struct sunxikbd_config *sunxikbd_config)

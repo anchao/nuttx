@@ -32,5 +32,10 @@
 #
 ############################################################################
 
+ifeq ($(CONFIG_COMPONENTS_OPUS),y)
+include r328$(DELIM)components$(DELIM)thirdparty$(DELIM)opus$(DELIM)Make.defs
+endif
 
-
+ifeq ($(CONFIG_COMPONENTS_ENV),y)
+include r328$(DELIM)components$(DELIM)thirdparty$(DELIM)env$(DELIM)Make.defs
+endif

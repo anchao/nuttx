@@ -48,7 +48,7 @@
 #include <arch/irq.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "hardware/r328_timer.h"
 
 #include "debug.h"
@@ -195,7 +195,7 @@ void platform_tick(void)
     nxsched_process_timer();
 }
 
-void arm_timer_initialize(void)
+void up_timer_initialize(void)
 {
     unsigned int cntfrq;
     int ret;

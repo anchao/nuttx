@@ -6,6 +6,7 @@
 
 #include <sunxi_hal_spinor.h>
 
+#define SUPPORT_4B_ADDR
 #define BIT(x) (1 << x)
 
 #ifdef SUPPORT_4B_ADDR
@@ -43,7 +44,7 @@
 #ifdef SUPPORT_4B_ADDR
 #define NOR_CMD_EN4B 0xB7
 #define NOR_CMD_EX4B 0xE9
-
+#define NOR_CMD_MXC_EX4B 0x29
 #define NOR_CMD_READ4B 0x13
 #define NOR_CMD_FAST_READ4B 0x0C
 #define NOR_CMD_DUAL_READ4B 0x3C
@@ -77,6 +78,7 @@
 #define NOR_MXIC_CMD_WRDPB 0xE1
 #define NOR_MXIC_WPSEL_BIT BIT(7)
 #define NOR_MXIC_QE_BIT BIT(6)
+#define NOR_XMC_QE_BIT BIT(6)
 #define NOR_MXIC_PT_MASK (BIT(3) | BIT(2) | BIT(1) | BIT(0))
 #define NOR_MXIC_PT_TB BIT(3)
 #define NOR_MXIC_DPB_LOCK (0xFF)
@@ -105,7 +107,6 @@
 #define NOR_WINBOND_RCV_BIT BIT(3)
 #define NOR_WINBOND_PT_MASK (BIT(2) | BIT(1) | BIT(0))
 
-#define NOR_BUSY_MASK (1 << 0)
 #define NOR_WEL_BIT (1 << 1)
 
 /* XTX */
@@ -117,9 +118,24 @@
 #define MIN(a, b) (a > b ? b : a)
 #endif
 
-#define SZ_64K (64 * 1024)
+#define SZ_4K       (4 * 1024)
 #define SZ_32K (32 * 1024)
-#define SZ_4K (4 * 1024)
+#define SZ_64K      (64 * 1024)
+#define SZ_128K     (128 * 1024)
+#define SZ_256K     (256 * 1024)
+#define SZ_512K     (512 * 1024)
+#define SZ_1M       (1 * 1024 * 1024)
+#define SZ_2M       (2 * 1024 * 1024)
+#define SZ_4M       (4 * 1024 * 1024)
+#define SZ_8M       (8 * 1024 * 1024)
+#define SZ_12M      (12 * 1024 * 1024)
+#define SZ_14M      (14 * 1024 * 1024)
+#define SZ_15M      (15 * 1024 * 1024)
+#define SZ_15872K   (15872 * 1024)
+#define SZ_16128K   (16128 * 1024)
+#define SZ_16M      (16 * 1024 * 1024)
+#define SZ_32M      (32 * 1024 * 1024)
+#define SZ_64M      (64 * 1024 * 1024)
 
 #define MAX_WAIT_LOOP ((unsigned int)(-1))
 #ifndef ARRAY_SIZE
@@ -182,6 +198,40 @@ extern const sunxi_hal_driver_spi_t sunxi_hal_spi_driver;
 const sunxi_hal_driver_spi_t *hal_spi_driver = &sunxi_hal_spi_driver;
 
 static int nor_xtx_quad_mode(void);
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
+static struct nor_protection gd_protection[] =
+{
+    { .boundary = 1, .bp = 0, .flag = 0 },
+    { .boundary = SZ_256K, .bp = BIT(3) | BIT(0), .flag = 0 },
+    { .boundary = SZ_512K, .bp = BIT(3) | BIT(1), .flag = 0 },
+    { .boundary = SZ_1M, .bp = BIT(3) | BIT(1) | BIT(0), .flag = 0 },
+    { .boundary = SZ_2M, .bp = BIT(3) | BIT(2), .flag = 0 },
+    { .boundary = SZ_4M, .bp = BIT(3) | BIT(2) | BIT(0), .flag = 0 },
+    { .boundary = SZ_8M, .bp = BIT(3) | BIT(2) | BIT(1), .flag = 0 },
+    { .boundary = SZ_12M, .bp = BIT(2) | BIT(0), .flag = SET_CMP },
+    { .boundary = SZ_14M, .bp = BIT(2), .flag = SET_CMP },
+    { .boundary = SZ_15M, .bp = BIT(1) | BIT(0), .flag = SET_CMP },
+    { .boundary = SZ_15872K, .bp = BIT(1), .flag = SET_CMP },
+    { .boundary = SZ_16128K, .bp = BIT(0), .flag = SET_CMP },
+    { .boundary = SZ_16M, .bp = BIT(2) | BIT(1) | BIT(0), .flag = 0},
+};
+static struct nor_protection esmt_protection[] =
+{
+    { .boundary = 1, .bp = 0, .flag = 0 },
+    { .boundary = SZ_256K, .bp = BIT(3) | BIT(0), .flag = 0 },
+    { .boundary = SZ_512K, .bp = BIT(3) | BIT(1), .flag = 0 },
+    { .boundary = SZ_1M, .bp = BIT(3) | BIT(1) | BIT(0), .flag = 0 },
+    { .boundary = SZ_2M, .bp = BIT(3) | BIT(2), .flag = 0 },
+    { .boundary = SZ_4M, .bp = BIT(3) | BIT(2) | BIT(0), .flag = 0 },
+    { .boundary = SZ_8M, .bp = BIT(3) | BIT(2) | BIT(1), .flag = 0 },
+    { .boundary = SZ_12M, .bp = BIT(2) | BIT(0), .flag = SET_TB },
+    { .boundary = SZ_14M, .bp = BIT(2), .flag = SET_TB },
+    { .boundary = SZ_15M, .bp = BIT(1) | BIT(0), .flag = SET_TB },
+    { .boundary = SZ_15872K, .bp = BIT(1), .flag = SET_TB },
+    { .boundary = SZ_16128K, .bp = BIT(0), .flag = SET_TB },
+    { .boundary = SZ_16M, .bp = BIT(3) | BIT(2) | BIT(1) | BIT(0), .flag = 0 },
+};
+#endif
 
 struct nor_info nor_ids[] =
 {
@@ -191,15 +241,32 @@ struct nor_info nor_ids[] =
         .id = {0xc2, 0x20, 0x17},
         .blk_size = 4 * 1024,
         .blk_cnt = 2048,
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
+        .flag = EN_IO_PROG_X4 | EN_INDIVIDUAL_PROTECT_MODE,
+#else
         .flag = EN_IO_PROG_X4,
+#endif
     },
     {
         .name = "mx25l12833f",
         .id = {0xc2, 0x20, 0x18},
         .blk_size = 4 * 1024,
         .blk_cnt = 4096,
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
         .flag = EN_IO_PROG_X4 | EN_INDIVIDUAL_PROTECT_MODE,
+#else
+        .flag = EN_IO_PROG_X4,
+#endif
     },
+#ifdef SUPPORT_4B_ADDR
+    {
+        .name = "mx25l51234g",
+        .id = {0xc2, 0x20, 0x1a},
+        .blk_size = 4 * 1024,
+        .blk_cnt = 16384,
+        .flag = EN_IO_PROG_X4,
+    },
+#endif
     /* Winbond */
     {
         .name = "w25q64jv",
@@ -213,7 +280,11 @@ struct nor_info nor_ids[] =
         .id = {0xef, 0x40, 0x18},
         .blk_size = 4 * 1024,
         .blk_cnt = 4096,
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
+        .flag = EN_INDIVIDUAL_PROTECT_MODE,
+#else
         .flag = 0,
+#endif
     },
     /* FM */
     {
@@ -229,6 +300,21 @@ struct nor_info nor_ids[] =
         .id = {0x1c, 0x70, 0x18},
         .blk_size = 4 * 1024,
         .blk_cnt = 4096,
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
+        .pt = esmt_protection,
+        .pt_len = ARRAY_SIZE(esmt_protection),
+        /**
+         * T/B bit is OTP. If we protect 12M, using T/B, we can not turn back
+         * to 8M/4M/... And, ESMT saied we can use 50h, which will not really
+         * write to OTP status register, however it do not work.
+         * So, we drop these codes until T/B is tested set/unset ok.
+         */
+#if 0
+        .pt_def = SZ_12M,
+#else
+        .pt_def = SZ_8M,
+#endif
+#endif
         .flag = 0,
     },
     /* GD */
@@ -237,6 +323,25 @@ struct nor_info nor_ids[] =
         .id = {0xc8, 0x40, 0x18},
         .blk_size = 4 * 1024,
         .blk_cnt = 4096,
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
+        .pt = gd_protection,
+        .pt_len = ARRAY_SIZE(gd_protection),
+        .pt_def = SZ_12M,
+#endif
+        .flag = 0,
+    },
+    {
+        .name = "GD25Q256",
+        .id = {0xc8, 0x40, 0x19},
+        .blk_size = 4 * 1024,
+        .blk_cnt = 4096,
+        .flag = 0,
+    },
+    {
+        .name = "XM25QH256B",
+        .id = {0x20, 0x60, 0x19},
+        .blk_size = 4 * 1024,
+        .blk_cnt = 8192,
         .flag = 0,
     },
     /* XTX */
@@ -245,7 +350,11 @@ struct nor_info nor_ids[] =
         .id = {0x0b, 0x40, 0x18},
         .blk_size = 4 * 1024,
         .blk_cnt = 4096,
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
+        .flag = EN_INDIVIDUAL_PROTECT_MODE,
+#else
         .flag = 0,
+#endif
     },
     /* Default */
     {
@@ -292,30 +401,31 @@ static int nor_unlock(void)
 
 static int cmd_bit(unsigned char cmd)
 {
-    switch (cmd) {
-    case NOR_CMD_DUAL_READ:
-    case NOR_CMD_DUAL_IO_READ:
+    switch (cmd)
+    {
+        case NOR_CMD_DUAL_READ:
+        case NOR_CMD_DUAL_IO_READ:
 #ifdef SUPPORT_4B_ADDR
-    case NOR_CMD_DUAL_READ4B:
-    case NOR_CMD_DUAL_IO_READ4B:
+        case NOR_CMD_DUAL_READ4B:
+        case NOR_CMD_DUAL_IO_READ4B:
 #endif
-        return 2;
-    case NOR_CMD_QUAD_READ:
-    case NOR_CMD_QUAD_IO_READ:
+            return 2;
+        case NOR_CMD_QUAD_READ:
+        case NOR_CMD_QUAD_IO_READ:
 #ifdef SUPPORT_4B_ADDR
-    case NOR_CMD_QUAD_READ4B:
-    case NOR_CMD_QUAD_IO_READ4B:
+        case NOR_CMD_QUAD_READ4B:
+        case NOR_CMD_QUAD_IO_READ4B:
 #endif
-        return 4;
-    case NOR_CMD_QUAD_PROG:
-    case NOR_CMD_QUAD_IO_PROG:
+            return 4;
+        case NOR_CMD_QUAD_PROG:
+        case NOR_CMD_QUAD_IO_PROG:
 #ifdef SUPPORT_4B_ADDR
-    case NOR_CMD_QUAD_PROG4B:
-    case NOR_CMD_QUAD_IO_PROG4B:
+        case NOR_CMD_QUAD_PROG4B:
+        case NOR_CMD_QUAD_IO_PROG4B:
 #endif
-        return 4;
-    default:
-        return 1;
+            return 4;
+        default:
+            return 1;
     }
 }
 
@@ -341,39 +451,40 @@ static int nor_read_write(int hlen, void *tbuf, int tlen, void *rbuf, int rlen)
     tr.dummy_byte = 0;
 
     tr.rx_nbits = tr.tx_nbits = SPI_NBITS_SINGLE;
-    switch (cmd) {
-    case NOR_CMD_FAST_READ:
+    switch (cmd)
+    {
+        case NOR_CMD_FAST_READ:
 #ifdef SUPPORT_4B_ADDR
-    case NOR_CMD_FAST_READ4B:
+        case NOR_CMD_FAST_READ4B:
 #endif
-        tr.dummy_byte = 1;
-        break;
-    case NOR_CMD_DUAL_READ:
-    case NOR_CMD_DUAL_IO_READ:
+            tr.dummy_byte = 1;
+            break;
+        case NOR_CMD_DUAL_READ:
+        case NOR_CMD_DUAL_IO_READ:
 #ifdef SUPPORT_4B_ADDR
-    case NOR_CMD_DUAL_READ4B:
-    case NOR_CMD_DUAL_IO_READ4B:
+        case NOR_CMD_DUAL_READ4B:
+        case NOR_CMD_DUAL_IO_READ4B:
 #endif
-        tr.rx_nbits = SPI_NBITS_DUAL;
-        tr.dummy_byte = 1;
-        break;
-    case NOR_CMD_QUAD_READ:
-    case NOR_CMD_QUAD_IO_READ:
+            tr.rx_nbits = SPI_NBITS_DUAL;
+            tr.dummy_byte = 1;
+            break;
+        case NOR_CMD_QUAD_READ:
+        case NOR_CMD_QUAD_IO_READ:
 #ifdef SUPPORT_4B_ADDR
-    case NOR_CMD_QUAD_READ4B:
-    case NOR_CMD_QUAD_IO_READ4B:
+        case NOR_CMD_QUAD_READ4B:
+        case NOR_CMD_QUAD_IO_READ4B:
 #endif
-        tr.rx_nbits = SPI_NBITS_QUAD;
-        tr.dummy_byte = 1;
-        break;
-    case NOR_CMD_QUAD_PROG:
-    case NOR_CMD_QUAD_IO_PROG:
+            tr.rx_nbits = SPI_NBITS_QUAD;
+            tr.dummy_byte = 1;
+            break;
+        case NOR_CMD_QUAD_PROG:
+        case NOR_CMD_QUAD_IO_PROG:
 #ifdef SUPPORT_4B_ADDR
-    case NOR_CMD_QUAD_PROG4B:
-    case NOR_CMD_QUAD_IO_PROG4B:
+        case NOR_CMD_QUAD_PROG4B:
+        case NOR_CMD_QUAD_IO_PROG4B:
 #endif
-        tr.tx_nbits = SPI_NBITS_QUAD;
-        break;
+            tr.tx_nbits = SPI_NBITS_QUAD;
+            break;
     }
 
     ret = hal_spi_driver->control(nor->spim.port, SPI_WRITE_READ, &tr);
@@ -440,9 +551,9 @@ static int nor_is_busy(void)
     }
 }
 
-static int nor_wait_ready_us(unsigned int ms, unsigned int times)
+static int nor_wait_ready_ms(unsigned int ms, unsigned int times)
 {
-    unsigned int _ms = ms / 10, _times = times;
+    unsigned int _ms = ms, _times = times;
 
     do
     {
@@ -483,9 +594,11 @@ static int nor_send_cmd(unsigned char cmd)
 
     ret = nor_read_write(1, &cmd, 1, NULL, 0);
     if (ret)
+    {
         return ret;
+    }
 
-    return nor_wait_ready_us(0, 500);
+    return nor_wait_ready_ms(0, 500);
 }
 
 #ifdef SUPPORT_4B_ADDR
@@ -495,8 +608,17 @@ static int nor_set_4byte(int enable)
     char cmd[1];
     cmd[0] = enable ? NOR_CMD_EN4B : NOR_CMD_EX4B;
 
+    switch (nor->info->id[0])
+    {
+        case FACTORY_XMC:
+            cmd[0] = enable ? NOR_CMD_EN4B : NOR_CMD_MXC_EX4B;
+            break;
+        default:
+            break;
+    }
     ret = nor_read_write(1, cmd, 1, NULL, 0);
-    if (ret) {
+    if (ret)
+    {
         pr_err("set 4byte %d fail\n", enable);
         return ret;
     }
@@ -511,7 +633,7 @@ static int nor_read_id(char *id, int len)
     int ret;
     char cmd[1] = {NOR_CMD_RDID};
 
-    if (nor_wait_ready_us(0, 500))
+    if (nor_wait_ready_ms(0, 500))
     {
         pr_err("nor is busy before read id\n");
         return -EBUSY;
@@ -544,7 +666,8 @@ static int nor_write_enable(void)
     unsigned char sr;
 
     ret = nor_send_cmd(NOR_CMD_WREN);
-    if (ret) {
+    if (ret)
+    {
         pr_err("send WREN failed - %d\n", ret);
         return ret;
     }
@@ -555,7 +678,8 @@ static int nor_write_enable(void)
         return ret;
     }
 
-    if (!(sr & NOR_SR_BIT_WEL)) {
+    if (!(sr & NOR_SR_BIT_WEL))
+    {
         pr_err("enable write failed\n");
         return -EINVAL;
     }
@@ -567,7 +691,8 @@ static int nor_write_disable(void)
     int ret;
 
     ret = nor_send_cmd(NOR_CMD_WRDI);
-    if (ret) {
+    if (ret)
+    {
         pr_err("send WRDI failed - %d\n", ret);
         return ret;
     }
@@ -603,24 +728,32 @@ static int nor_write_status(unsigned char *sr, unsigned int len)
 
     ret = nor_write_enable();
     if (ret)
+    {
         return ret;
+    }
 
     if (len > 5)
+    {
         return -EINVAL;
+    }
 
     tbuf[0] = NOR_CMD_WRITE_SR;
     for (i = 0; i < len; i++)
+    {
         tbuf[i + 1] = *(sr + i);
+    }
     i++;
     ret = nor_read_write(i, tbuf, i, NULL, 0);
-    if (ret) {
+    if (ret)
+    {
         pr_err("write status register fail\n");
         return ret;
     }
 
-    return nor_wait_ready_us(10, MAX_WAIT_LOOP);
+    return nor_wait_ready_ms(10, MAX_WAIT_LOOP);
 }
 
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
 static struct nor_protection *nor_match_pt(unsigned int addr)
 {
     struct nor_info *info = nor->info;
@@ -629,8 +762,10 @@ static struct nor_protection *nor_match_pt(unsigned int addr)
 
     /* in case over the max, we set the max default */
     pt = &info->pt[info->pt_len - 1];
-    for (i = 1; i < info->pt_len; i++) {
-        if (addr < info->pt[i].boundary) {
+    for (i = 1; i < info->pt_len; i++)
+    {
+        if (addr < info->pt[i].boundary)
+        {
             pt = &info->pt[i - 1];
             break;
         }
@@ -638,6 +773,7 @@ static struct nor_protection *nor_match_pt(unsigned int addr)
 
     return pt;
 }
+#endif
 
 /* mxic private function */
 #if 0
@@ -648,7 +784,8 @@ static int nor_mxic_read_conf_reg(unsigned char *cr)
     char reg[2] = {0};
 
     ret = nor_read_write(1, cmd, 1, reg, 2);
-    if (ret) {
+    if (ret)
+    {
         pr_err("read configure register fail\n");
         return ret;
     }
@@ -658,13 +795,12 @@ static int nor_mxic_read_conf_reg(unsigned char *cr)
 }
 #endif
 
-#define NOR_MXIC_QE_BIT (1 << 6)
 static int nor_mxic_quad_mode(void)
 {
     int ret;
-    unsigned char cmd[3], sr, cr;
+    unsigned char sr;
 
-    ret = nor_write_enable();
+    ret = nor_read_status(&sr);
     if (ret)
     {
         return ret;
@@ -676,34 +812,15 @@ static int nor_mxic_quad_mode(void)
      * are set, write status will go failed, which make QE bit set failed.
      */
     if (nor->info->flag & EN_INDIVIDUAL_PROTECT_MODE)
+    {
         sr &= ~(NOR_MXIC_PT_MASK << NOR_PROTECT_BP_SHIFT);
+    }
     ret = nor_write_status(&sr, 1);
     if (ret)
-        return ret;
-
-    ret = nor_read_status(&sr);
-    if (ret)
     {
         return ret;
     }
 
-    ret = nor_mxic_read_conf_reg(&cr);
-    if (ret)
-    {
-        return ret;
-    }
-
-    cmd[0] = NOR_CMD_WRITE_SR;
-    cmd[1] = sr | NOR_MXIC_QE_BIT;
-    cmd[2] = cr;
-    ret = nor_read_write(3, cmd, 3, NULL, 0);
-    if (ret)
-    {
-        pr_err("set status register fail\n");
-        return ret;
-    }
-
-    sr = 0;
     ret = nor_read_status(&sr);
     if (ret)
     {
@@ -711,12 +828,13 @@ static int nor_mxic_quad_mode(void)
     }
     if (!(sr & NOR_MXIC_QE_BIT))
     {
-        pr_err("set mxic QE failed\n");
+        pr_err("set mxic QE failed (0x%x)\n", sr);
         return -EINVAL;
     }
     return 0;
 }
 
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
 static int nor_mxic_set_wps(void)
 {
     int ret;
@@ -725,28 +843,40 @@ static int nor_mxic_set_wps(void)
     cmd = NOR_MXIC_CMD_RDSCUR;
     ret = nor_read_write(1, &cmd, 1, &sr, 1);
     if (ret)
+    {
         return ret;
+    }
 
     /* already set before, no need to set again */
     if (sr & NOR_MXIC_WPSEL_BIT)
+    {
         return 0;
+    }
 
     ret = nor_write_enable();
     if (ret)
+    {
         return ret;
+    }
 
     ret = nor_send_cmd(NOR_MXIC_CMD_WPSEL);
     if (ret)
+    {
         return ret;
+    }
 
-    ret = nor_wait_ready_us(10, 100 * 1000);
+    ret = nor_wait_ready_ms(10, 100 * 1000);
     if (ret)
+    {
         return ret;
+    }
 
     cmd = NOR_MXIC_CMD_RDSCUR;
     ret = nor_read_write(1, &cmd, 1, &sr, 1);
     if (ret)
+    {
         return ret;
+    }
     return !(sr & NOR_MXIC_WPSEL_BIT);
 }
 
@@ -757,43 +887,60 @@ static int nor_mxic_reset_spb(void)
 
     ret = nor_write_enable();
     if (ret)
+    {
         return ret;
+    }
 
     cmd = NOR_MXIC_CMD_ESSPB;
     ret = nor_read_write(1, &cmd, 1, NULL, 0);
     if (ret)
+    {
         return ret;
+    }
 
-    ret = nor_wait_ready_us(10, 500);
+    ret = nor_wait_ready_ms(10, 500);
     if (ret)
+    {
         return ret;
+    }
 
     return 0;
 }
+#endif
 
 static int nor_mxic_factory_init(void)
 {
     int ret;
 
-    if (nor_need_quad_mode()) {
+    if (nor_need_quad_mode())
+    {
         ret = nor_mxic_quad_mode();
         if (ret)
+        {
             return ret;
+        }
     }
-
-    if (nor->info->flag & EN_INDIVIDUAL_PROTECT_MODE) {
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
+    if (nor->info->flag & EN_INDIVIDUAL_PROTECT_MODE)
+    {
         ret = nor_mxic_set_wps();
         if (ret)
+        {
             return ret;
+        }
 
         ret = nor_mxic_reset_spb();
         if (ret)
+        {
             return ret;
+        }
     }
-
+#endif
     return 0;
 }
 
+#define NOR_GD_CMD_RDSR2 0x35
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
 static int nor_mxic_blk_islock(unsigned int addr)
 {
     int ret;
@@ -806,7 +953,9 @@ static int nor_mxic_blk_islock(unsigned int addr)
     tbuf[4] = addr & 0xFF;
     ret = nor_read_write(5, tbuf, 5, &st, 1);
     if (ret)
+    {
         return ret;
+    }
 
     return st == 0xFF ? 1 : 0;
 }
@@ -818,7 +967,9 @@ static int nor_mxic_blk_unlock(unsigned int addr)
 
     ret = nor_write_enable();
     if (ret)
+    {
         return ret;
+    }
 
     tbuf[0] = NOR_MXIC_CMD_WRDPB;
     tbuf[1] = addr >> 24;
@@ -827,12 +978,15 @@ static int nor_mxic_blk_unlock(unsigned int addr)
     tbuf[4] = addr & 0xFF;
     tbuf[5] = NOR_MXIC_DPB_UNLOCK;
     ret = nor_read_write(6, tbuf, 6, NULL, 0);
-    if (ret) {
+    if (ret)
+    {
         pr_err("mxic unlock 0x%x failed - %d\n", addr, ret);
         return ret;
     }
     if (nor_mxic_blk_islock(addr) == 1)
+    {
         return -EBUSY;
+    }
     return 0;
 }
 
@@ -843,7 +997,9 @@ static int nor_mxic_blk_lock(unsigned int addr)
 
     ret = nor_write_enable();
     if (ret)
+    {
         return ret;
+    }
 
     tbuf[0] = NOR_MXIC_CMD_WRDPB;
     tbuf[1] = addr >> 24;
@@ -852,14 +1008,18 @@ static int nor_mxic_blk_lock(unsigned int addr)
     tbuf[4] = addr & 0xFF;
     tbuf[5] = NOR_MXIC_DPB_LOCK;
     ret = nor_read_write(6, tbuf, 6, NULL, 0);
-    if (ret) {
+    if (ret)
+    {
         pr_err("mxic lock 0x%x failed - %d\n", addr, ret);
         return ret;
     }
     if (nor_mxic_blk_islock(addr) == false)
+    {
         return -EBUSY;
+    }
     return 0;
 }
+#endif
 
 #if 0 /* mxic can protect in sector/block unit, so, drop pt_mode */
 static int nor_mxic_bp_unprotect(struct nor_protection *pt)
@@ -868,31 +1028,49 @@ static int nor_mxic_bp_unprotect(struct nor_protection *pt)
     unsigned char sr[2], bp = 0;
 
     if (!pt)
+    {
         return -EINVAL;
+    }
     if (nor_wait_ready_us(0, 500))
+    {
         return -EBUSY;
+    }
     ret = nor_read_status(&sr[0]);
     if (ret)
+    {
         return ret;
+    }
     bp = (sr[0] >> NOR_PROTECT_BP_SHIFT) & NOR_MXIC_PT_MASK;
     ret = nor_mxic_read_conf_reg(&sr[1]);
     if (ret)
+    {
         return ret;
-    if (bp == (unsigned char)pt->bp) {
+    }
+    if (bp == (unsigned char)pt->bp)
+    {
         if (pt->flag & SET_TB && sr[1] & NOR_MXIC_PT_TB)
+        {
             return 0;
+        }
         else if (!(pt->flag & SET_TB) && !(sr[1] & NOR_MXIC_PT_TB))
+        {
             return 0;
+        }
     }
     sr[0] &= ~NOR_SR_BIT_SRP;
     sr[0] &= ~(NOR_MXIC_PT_MASK << NOR_PROTECT_BP_SHIFT);
     sr[0] |= pt->bp << NOR_PROTECT_BP_SHIFT;
     if (pt->flag & SET_TB)
+    {
         sr[1] |= NOR_MXIC_PT_TB;
+    }
     else
+    {
         sr[1] &= ~NOR_MXIC_PT_TB;
+    }
     ret = nor_write_status(sr, 2);
-    if (ret) {
+    if (ret)
+    {
         pr_err("mxic unprotect failed\n");
         return ret;
     }
@@ -906,22 +1084,24 @@ static int nor_esmt_enter_otp_mode(void)
     char cmd = NOR_ESMT_CMD_EN_OTP;
 
     ret = nor_read_write(1, &cmd, 1, NULL, 0);
-    if (ret) {
+    if (ret)
+    {
         pr_err("enter OTP mode failed - %d\n", ret);
         return ret;
     }
-    return nor_wait_ready_us(0, 500);
+    return nor_wait_ready_ms(0, 500);
 }
 static int nor_esmt_volatile_write_enable(void)
 {
     int ret;
     char cmd = NOR_ESMT_CMD_VOLATILE_WREN;
     ret = nor_read_write(1, &cmd, 1, NULL, 0);
-    if (ret) {
+    if (ret)
+    {
         pr_err("send volatile WREN failed - %d\n", ret);
         return ret;
     }
-    return nor_wait_ready_us(0, 500);
+    return nor_wait_ready_ms(0, 500);
 }
 static int nor_esmt_set_tb(int tb)
 {
@@ -930,103 +1110,145 @@ static int nor_esmt_set_tb(int tb)
     unsigned char buf[2];
     ret = nor_esmt_enter_otp_mode();
     if (ret)
+    {
         return ret;
+    }
 
     ret = nor_esmt_volatile_write_enable();
     if (ret)
+    {
         goto out;
+    }
     ret = nor_read_status(&sr);
     if (ret)
+    {
         goto out;
+    }
     ret = 0;
-    if (tb) {
+    if (tb)
+    {
         if (sr & NOR_ESMT_PT_TB)
+        {
             goto out;
+        }
         sr |= NOR_ESMT_PT_TB;
-    } else {
+    }
+    else
+    {
         if (!(sr & NOR_ESMT_PT_TB))
+        {
             goto out;
+        }
         sr &= ~NOR_ESMT_PT_TB;
     }
     buf[0] = NOR_CMD_WRITE_SR;
     buf[1] = sr;
     ret = nor_read_write(2, buf, 2, NULL, 0);
-    if (ret) {
+    if (ret)
+    {
         pr_err("write status register fail\n");
         goto out;
     }
-    ret = nor_wait_ready_us(10, 100 * 1000);
+    ret = nor_wait_ready_ms(10, 100 * 1000);
     if (ret)
+    {
         goto out;
+    }
     ret = 0;
 out:
     nor_write_disable();
     return ret;
 }
 #endif
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
 static int nor_esmt_bp_unprotect(struct nor_protection *pt)
 {
     int ret = -EBUSY;
     unsigned char sr, bp = 0;
     if (!pt)
+    {
         return -EINVAL;
-    if (nor_wait_ready_us(0, 500))
+    }
+    if (nor_wait_ready_ms(0, 500))
+    {
         return -EBUSY;
+    }
     ret = nor_read_status(&sr);
     if (ret)
+    {
         return ret;
+    }
     bp = (sr >> NOR_PROTECT_BP_SHIFT) & NOR_ESMT_PT_MASK;
     if (bp == (unsigned char)pt->bp)
+    {
         return 0;
+    }
     sr &= ~NOR_SR_BIT_SRP;
     sr &= ~(NOR_ESMT_PT_MASK << NOR_PROTECT_BP_SHIFT);
     sr |= pt->bp << NOR_PROTECT_BP_SHIFT;
     ret = nor_write_status(&sr, 1);
-    if (ret) {
+    if (ret)
+    {
         pr_err("esmt unprotect failed\n");
         return ret;
     }
 #if 0
     if (pt->flag & SET_TB)
+    {
         return nor_esmt_set_tb(true);
+    }
     else
+    {
         return nor_esmt_set_tb(false);
+    }
 #else
     return 0;
 #endif
 }
+#endif
 static int nor_gd_quad_mode(void)
 {
     int ret;
     unsigned char cmd[3];
     char reg[2] = {0};
+
     cmd[0] = NOR_GD_CMD_RDSR2;
     ret = nor_read_write(1, cmd, 1, reg, 2);
-    if (ret) {
+    if (ret)
+    {
         pr_err("read status register2 fail\n");
         return ret;
     }
+
     ret = nor_write_enable();
     if (ret)
+    {
         return ret;
+    }
     cmd[0] = NOR_GD_CMD_WRSR2;
     cmd[1] = reg[1] | NOR_GD_QE_BIT;
     ret = nor_read_write(2, cmd, 2, NULL, 0);
-    if (ret) {
+    if (ret)
+    {
         pr_err("set status register fail\n");
         return ret;
     }
-    if (nor_wait_ready_us(5, 1000 * 1000)) {
+
+    if (nor_wait_ready_ms(0, 500))
+    {
         pr_err("wait set qd mode failed\n");
         return -EBUSY;
     }
+
     cmd[0] = NOR_GD_CMD_RDSR2;
     ret = nor_read_write(1, cmd, 1, reg, 2);
-    if (ret) {
+    if (ret)
+    {
         pr_err("read status register2 fail\n");
         return ret;
     }
-    if (!(reg[1] & NOR_GD_QE_BIT)) {
+    if (!(reg[1] & NOR_GD_QE_BIT))
+    {
         pr_err("set gd QE failed\n");
         return -EINVAL;
     }
@@ -1035,7 +1257,9 @@ static int nor_gd_quad_mode(void)
 static int nor_gd_factory_init(void)
 {
     if (nor_need_quad_mode())
+    {
         return nor_gd_quad_mode();
+    }
     return 0;
 }
 static int nor_gd_set_cmp(int enable)
@@ -1044,92 +1268,139 @@ static int nor_gd_set_cmp(int enable)
     unsigned char tbuf[2], reg[2];
     tbuf[0] = NOR_GD_CMD_RDSR2;
     ret = nor_read_write(1, tbuf, 1, reg, 2);
-    if (ret) {
+    if (ret)
+    {
         pr_err("GD read status register-2 fail\n");
         return ret;
     }
-    if (enable) {
+    if (enable)
+    {
         if (reg[0] & NOR_GD_CMP_BIT)
+        {
             return 0;
+        }
         reg[0] |= NOR_GD_CMP_BIT;
-    } else {
+    }
+    else
+    {
         if (!(reg[0] & NOR_GD_CMP_BIT))
+        {
             return 0;
+        }
         reg[0] &= ~NOR_GD_CMP_BIT;
     }
     ret = nor_write_enable();
     if (ret)
+    {
         return ret;
+    }
     tbuf[0] = NOR_GD_CMD_WRSR2;
     tbuf[1] = reg[0];
     ret = nor_read_write(2, tbuf, 2, NULL, 0);
-    if (ret) {
+    if (ret)
+    {
         pr_err("set status register-2 fail\n");
         return ret;
     }
-    return nor_wait_ready_us(5, 1000 * 1000);
+    return nor_wait_ready_ms(5, 1000 * 1000);
 }
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
 static int nor_gd_bp_unprotect(struct nor_protection *pt)
 {
     int ret = -EBUSY;
     unsigned char sr, bp = 0;
     if (!pt)
+    {
         return -EINVAL;
-    if (nor_wait_ready_us(0, 500))
+    }
+    if (nor_wait_ready_ms(0, 500))
+    {
         return -EBUSY;
+    }
     ret = nor_read_status(&sr);
     if (ret)
+    {
         return ret;
+    }
     bp = (sr >> NOR_PROTECT_BP_SHIFT) & NOR_GD_PT_MASK;
-    if (bp != (unsigned char)pt->bp) {
+    if (bp != (unsigned char)pt->bp)
+    {
         sr &= ~(NOR_GD_PT_MASK << NOR_PROTECT_BP_SHIFT);
         sr |= pt->bp << NOR_PROTECT_BP_SHIFT;
         ret = nor_write_status(&sr, 1);
-        if (ret) {
+        if (ret)
+        {
             pr_err("esmt unprotect failed\n");
             return ret;
         }
     }
     return nor_gd_set_cmp(pt->flag & SET_CMP);
 }
+#endif
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
 static int nor_winbond_set_wps_rcv(int wps, int rcv)
 {
     int ret;
     unsigned char tbuf[2], reg[2], sr3;
     tbuf[0] = NOR_WINBOND_CMD_READ_SR3;
     ret = nor_read_write(1, tbuf, 1, reg, 2);
-    if (ret) {
+    if (ret)
+    {
         pr_err("winbond read status register-3 fail\n");
         return ret;
     }
     sr3 = reg[0];
     if (wps)
+    {
         sr3 |= NOR_WINBOND_WPS_MASK;
+    }
     else
+    {
         sr3 &= ~NOR_WINBOND_WPS_MASK;
+    }
     if (rcv)
+    {
         sr3 |= NOR_WINBOND_RCV_BIT;
+    }
     else
+    {
         sr3 &= ~NOR_WINBOND_RCV_BIT;
+    }
     if (sr3 == reg[0])
+    {
         return 0;
+    }
     ret = nor_write_enable();
     if (ret)
+    {
         return ret;
+    }
     tbuf[0] = NOR_WINBOND_CMD_WRITE_SR3;
     tbuf[1] = sr3;
     ret = nor_read_write(2, tbuf, 2, NULL, 0);
     if (ret)
+    {
         return ret;
-    return nor_wait_ready_us(10, 100 * 1000);
+    }
+    return nor_wait_ready_ms(10, 100 * 1000);
 }
+#endif
 static int nor_winbond_factory_init(void)
 {
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
     if (nor->info->flag & EN_INDIVIDUAL_PROTECT_MODE)
+    {
         return nor_winbond_set_wps_rcv(true, true);
+    }
     else
+    {
         return nor_winbond_set_wps_rcv(false, true);
+    }
+#else
+    return 0;
+#endif
 }
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
 static bool nor_winbond_blk_islock(unsigned int addr)
 {
     int ret;
@@ -1140,7 +1411,9 @@ static bool nor_winbond_blk_islock(unsigned int addr)
     tbuf[3] = addr & 0xFF;
     ret = nor_read_write(4, tbuf, 4, &st, 1);
     if (ret)
+    {
         return ret;
+    }
     return st & 0x1 ? true : false;
 }
 static int nor_winbond_blk_lock(unsigned int addr)
@@ -1149,16 +1422,22 @@ static int nor_winbond_blk_lock(unsigned int addr)
     unsigned char tbuf[4];
     ret = nor_write_enable();
     if (ret)
+    {
         return ret;
+    }
     tbuf[0] = NOR_WINBOND_CMD_BLK_LOCK;
     tbuf[1] = addr >> 16;
     tbuf[2] = addr >> 8;
     tbuf[3] = addr & 0xFF;
     ret = nor_read_write(4, tbuf, 4, NULL, 0);
     if (ret)
+    {
         return ret;
+    }
     if (nor_winbond_blk_islock(addr) == true)
+    {
         return 0;
+    }
     return -EBUSY;
 }
 static int nor_winbond_blk_unlock(unsigned int addr)
@@ -1167,25 +1446,33 @@ static int nor_winbond_blk_unlock(unsigned int addr)
     unsigned char tbuf[4];
     ret = nor_write_enable();
     if (ret)
+    {
         return ret;
+    }
     tbuf[0] = NOR_WINBOND_CMD_BLK_UNLOCK;
     tbuf[1] = addr >> 16;
     tbuf[2] = addr >> 8;
     tbuf[3] = addr & 0xFF;
     ret = nor_read_write(4, tbuf, 4, NULL, 0);
     if (ret)
+    {
         return ret;
+    }
     if (nor_winbond_blk_islock(addr) == true)
+    {
         return -EBUSY;
+    }
     return 0;
 }
+#endif
 static int nor_xtx_read_status1(unsigned char *sr1)
 {
     int ret;
     char cmd[1] = {NOR_XTX_CMD_READ_SR1};
     char reg[2] = {0};
     ret = nor_read_write(1, cmd, 1, reg, 2);
-    if (ret) {
+    if (ret)
+    {
         pr_err("read xtx status1 register fail\n");
         return ret;
     }
@@ -1193,6 +1480,43 @@ static int nor_xtx_read_status1(unsigned char *sr1)
     return 0;
 }
 
+static int nor_xtx_quad_mode(void)
+{
+    int ret;
+    unsigned char sr[2];
+    ret = nor_xtx_read_status1(&sr[1]);
+    if (ret)
+    {
+        return ret;
+    }
+    if (sr[1] & NOR_XTX_QE_BIT)
+    {
+        return 0;
+    }
+    sr[1] |= NOR_XTX_QE_BIT;
+    ret = nor_read_status(&sr[0]);
+    if (ret)
+    {
+        return ret;
+    }
+    ret = nor_write_status(sr, 2);
+    if (ret)
+    {
+        return ret;
+    }
+    ret = nor_xtx_read_status1(&sr[1]);
+    if (ret)
+    {
+        return ret;
+    }
+    if (!(sr[1] & NOR_XTX_QE_BIT))
+    {
+        pr_err("set xtx QE failed (0x%x)\n", sr[1]);
+        return -EINVAL;
+    }
+    return 0;
+}
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
 static int nor_xtx_set_wps(int wps)
 {
     int ret;
@@ -1200,51 +1524,78 @@ static int nor_xtx_set_wps(int wps)
     unsigned char sr1;
     ret = nor_xtx_read_status1(&sr1);
     if (ret)
+    {
         return ret;
+    }
     if (wps)
+    {
         sr[1] = sr1 | NOR_XTX_WPS_BIT;
+    }
     else
+    {
         sr[1] = sr1 & ~NOR_XTX_WPS_BIT;
+    }
     if (sr1 == sr[1])
+    {
         return 0;
+    }
     ret = nor_read_status(&sr[0]);
     if (ret)
+    {
         return ret;
+    }
     ret = nor_write_status(sr, 2);
     if (ret)
+    {
         return ret;
+    }
     ret = nor_xtx_read_status1(&sr1);
     if (ret)
+    {
         return ret;
-    if ((sr1 & NOR_XTX_WPS_BIT) != (sr[1] & NOR_XTX_WPS_BIT)) {
+    }
+    if ((sr1 & NOR_XTX_WPS_BIT) != (sr[1] & NOR_XTX_WPS_BIT))
+    {
         pr_err("set xtx wps %d failed (0x%x)\n", wps, sr1);
         return -EINVAL;
     }
     return 0;
 }
+#endif
 static int nor_xtx_factory_init(void)
 {
     int ret;
-    if (nor_need_quad_mode()) {
+    if (nor_need_quad_mode())
+    {
         ret = nor_xtx_quad_mode();
         if (ret)
+        {
             return ret;
+        }
     }
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
     if (nor->info->flag & EN_INDIVIDUAL_PROTECT_MODE)
+    {
         return nor_xtx_set_wps(true);
+    }
+#endif
     return 0;
 }
 
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
 static int nor_generic_blk_lock_all(void)
 {
     int ret;
 
     ret = nor_write_enable();
     if (ret)
+    {
         return ret;
+    }
 
     ret = nor_send_cmd(NOR_CMD_BLK_LOCK_ALL);
-    if (ret) {
+    if (ret)
+    {
         pr_err("lock all block failed - %d\n", ret);
         return ret;
     }
@@ -1257,10 +1608,13 @@ static int nor_generic_blk_unlock_all(void)
 
     ret = nor_write_enable();
     if (ret)
+    {
         return ret;
+    }
 
     ret = nor_send_cmd(NOR_CMD_BLK_UNLOCK_ALL);
-    if (ret) {
+    if (ret)
+    {
         pr_err("unlock all block failed - %d\n", ret);
         return ret;
     }
@@ -1271,13 +1625,14 @@ static int nor_blk_lock_all(void)
 {
     pr_debug("try to lock all individual blocks\n");
 
-    switch (nor->info->id[0]) {
-    case FACTORY_MXIC:
-    case FACTORY_WINBOND:
-    case FACTORY_XTX:
-        return nor_generic_blk_lock_all();
-    default:
-        return 0;
+    switch (nor->info->id[0])
+    {
+        case FACTORY_MXIC:
+        case FACTORY_WINBOND:
+        case FACTORY_XTX:
+            return nor_generic_blk_lock_all();
+        default:
+            return 0;
     }
 }
 
@@ -1285,13 +1640,14 @@ static int nor_blk_unlock_all(void)
 {
     pr_debug("try to unlock all individual blocks\n");
 
-    switch (nor->info->id[0]) {
-    case FACTORY_MXIC:
-    case FACTORY_WINBOND:
-    case FACTORY_XTX:
-        return nor_generic_blk_unlock_all();
-    default:
-        return 0;
+    switch (nor->info->id[0])
+    {
+        case FACTORY_MXIC:
+        case FACTORY_WINBOND:
+        case FACTORY_XTX:
+            return nor_generic_blk_unlock_all();
+        default:
+            return 0;
     }
 }
 
@@ -1299,16 +1655,16 @@ static int nor_blk_lock(unsigned int addr)
 {
     pr_debug("try to lock 0x%x\n", addr);
 
-    switch (nor->info->id[0]) {
-    case FACTORY_MXIC:
-        return nor_mxic_blk_lock(addr);
-    case FACTORY_XTX:
+    switch (nor->info->id[0])
+    {
+        case FACTORY_MXIC:
+            return nor_mxic_blk_lock(addr);
+        case FACTORY_XTX:
         /* the same as winbond */
-    case FACTORY_WINBOND:
-        /* return nor_winbond_blk_lock(addr); */
-        return 0;
-    default:
-        return 0;
+        case FACTORY_WINBOND:
+            return nor_winbond_blk_lock(addr);
+        default:
+            return 0;
     }
 }
 
@@ -1316,95 +1672,131 @@ static int nor_blk_unlock(unsigned int addr)
 {
     pr_debug("try to unlock 0x%x\n", addr);
 
-    switch (nor->info->id[0]) {
-    case FACTORY_MXIC:
-        return nor_mxic_blk_unlock(addr);
-    case FACTORY_XTX:
+    switch (nor->info->id[0])
+    {
+        case FACTORY_MXIC:
+            return nor_mxic_blk_unlock(addr);
+        case FACTORY_XTX:
         /* the same as winbond */
-    case FACTORY_WINBOND:
-        /* return nor_winbond_blk_unlock(addr); */
-        return 0;
-    default:
-        return 0;
+        case FACTORY_WINBOND:
+            return nor_winbond_blk_unlock(addr);
+        default:
+            return 0;
     }
 }
+#endif
 
 static int nor_factory_init(void)
 {
     int ret = 0;
 
-    switch (nor->info->id[0]) {
-    case FACTORY_GD: ret = nor_gd_factory_init(); break;
-    case FACTORY_MXIC: ret = nor_mxic_factory_init(); break;
-    case FACTORY_WINBOND: ret = nor_winbond_factory_init(); break;
-    case FACTORY_XTX: ret = nor_xtx_factory_init(); break;
+    switch (nor->info->id[0])
+    {
+        case FACTORY_GD:
+            ret = nor_gd_factory_init();
+            break;
+        case FACTORY_MXIC:
+            ret = nor_mxic_factory_init();
+            break;
+        case FACTORY_WINBOND:
+            ret = nor_winbond_factory_init();
+            break;
+        case FACTORY_XTX:
+            ret = nor_xtx_factory_init();
+            break;
     }
     if (ret)
+    {
         pr_err("factory init failed\n");
+    }
     return ret;
 }
 
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
 static int nor_bp_unprotect(unsigned int addr)
 {
     struct nor_info *info = nor->info;
     struct nor_protection *pt;
     int ret;
 
-    if (addr < nor->info->blk_size * nor->info->blk_cnt) {
+    if (addr < nor->total_size)
+    {
         /* the addr is not under protection */
         if (addr >= nor->pt_now)
+        {
             return 0;
-    } else {
+        }
+    }
+    else
+    {
         /*
          * if NOR_FLAG_PT_NOT_EXPAND is set, we should not expand protected
          * area. By this way, OTA worker can unlock a large area and
          * nor_write()/nor_erase() can not turn back to default.
          */
         if (nor->flag & NOR_FLAG_PT_NOT_EXPAND)
+        {
             return 0;
+        }
         if (addr == NOR_PROTECT_ALL)
-            addr = (nor->info->blk_size * nor->info->blk_cnt);
+        {
+            addr = (nor->total_size);
+        }
         else if (addr == NOR_PROTECT_HALF)
-            addr = (nor->info->blk_size * nor->info->blk_cnt) / 2;
+        {
+            addr = (nor->total_size) / 2;
+        }
         else if (addr == NOR_PROTECT_DEFAULT)
+        {
             addr = info->pt_def;
+        }
         else if (addr == NOR_PROTECT_NONE)
+        {
             addr = 0;
+        }
         /*
          * the addr is not under protection
          * addr should not check > pt_now, as we may want to enlarge area.
          */
         if (addr == nor->pt_now)
+        {
             return 0;
+        }
     }
 
     pt = nor_match_pt(addr);
-    if (!pt) {
+    if (!pt)
+    {
         pr_err("no match protection mode for addr 0x%x\n", addr);
         return -EINVAL;
     }
 
     pr_debug("try to write/erase 0x%x, unprotect [0x%x-Max]\n", addr, pt->boundary);
 
-    switch (nor->info->id[0]) {
+    switch (nor->info->id[0])
+    {
 #if 0 /* mxic can protect in sector/block unit, so, drop pt_mode */
-    case FACTORY_MXIC:
-        ret = nor_mxic_bp_unprotect(pt);
-        break;
+        case FACTORY_MXIC:
+            ret = nor_mxic_bp_unprotect(pt);
+            break;
 #endif
-    case FACTORY_ESMT:
-        ret = nor_esmt_bp_unprotect(pt);
-        break;
-    case FACTORY_GD:
-        ret = nor_gd_bp_unprotect(pt);
-        break;
-    default:
-        return 0;
+        case FACTORY_ESMT:
+            ret = nor_esmt_bp_unprotect(pt);
+            break;
+        case FACTORY_GD:
+            ret = nor_gd_bp_unprotect(pt);
+            break;
+        default:
+            return 0;
     }
     if (ret)
+    {
         pr_err("addr 0x%x bp unportect failed\n", addr);
+    }
     else
+    {
         nor->pt_now = pt->boundary;
+    }
     return ret;
 }
 
@@ -1412,33 +1804,49 @@ static int nor_blk_unprotect(unsigned int addr)
 {
     int ret = 0;
 
-    switch (addr) {
-#if 0
-    case NOR_PROTECT_HALF:
-    case NOR_PROTECT_ALL: ret = nor_blk_lock_all(); break;
-    case NOR_PROTECT_NONE: ret = nor_blk_unlock_all(); break;
-    case NOR_PROTECT_DEFAULT:
-        if (nor->pt_now < nor->info->blk_size * nor->info->blk_cnt)
-            ret = nor_blk_lock(nor->pt_now);
-        else
+    switch (addr)
+    {
+        case NOR_PROTECT_HALF:
+        case NOR_PROTECT_ALL:
             ret = nor_blk_lock_all();
-        break;
-#endif
-    default:
-        /* the first and the last block (64K) is lock on sector (4K) unit */
-        if (addr > nor->info->blk_size * nor->info->blk_cnt - SZ_64K || addr < SZ_64K)
-            addr = ALIGN_DOWN(addr, SZ_4K);
-        else
-            addr = ALIGN_DOWN(addr, SZ_64K);
-        ret = nor_blk_unlock(addr);
-        break;
+            break;
+        case NOR_PROTECT_NONE:
+            ret = nor_blk_unlock_all();
+            break;
+        case NOR_PROTECT_DEFAULT:
+            if (nor->pt_now < nor->total_size)
+            {
+                ret = nor_blk_lock(nor->pt_now);
+            }
+            else
+            {
+                ret = nor_blk_lock_all();
+            }
+            break;
+        default:
+            /* the first and the last block (64K) is lock on sector (4K) unit */
+            if (addr > nor->total_size - SZ_64K || addr < SZ_64K)
+            {
+                addr = ALIGN_DOWN(addr, SZ_4K);
+            }
+            else
+            {
+                addr = ALIGN_DOWN(addr, SZ_64K);
+            }
+            ret = nor_blk_unlock(addr);
+            break;
     }
 
-    if (ret) {
+    if (ret)
+    {
         pr_err("addr 0x%x blk unprotect failed\n", addr);
-    } else {
-        if (addr < nor->info->blk_size * nor->info->blk_cnt && nor->pt_now < nor->info->blk_size * nor->info->blk_cnt)
+    }
+    else
+    {
+        if (addr < nor->total_size && nor->pt_now < nor->total_size)
+        {
             pr_warn("last lock addr 0x%x may has not unlocked\n", nor->pt_now);
+        }
         nor->pt_now = addr;
     }
     return ret;
@@ -1449,52 +1857,54 @@ static int nor_unprotect_do(unsigned int addr)
     struct nor_info *info = nor->info;
 
 #if defined(CONFIG_DRIVERS_NOR_FLASH_TEST)
-extern int test_protect;
+    extern int test_protect;
     if (!test_protect)
+    {
         return 0;
+    }
 #endif
 
     if (info->flag & EN_INDIVIDUAL_PROTECT_MODE)
+    {
         return nor_blk_unprotect(addr);
+    }
     else if (info->pt)
     {
-        /* return nor_bp_unprotect(addr); */
+        return nor_bp_unprotect(addr);
     }
     return 0;
 }
+#endif
 
-
-#define NOR_GD_QE_BIT (1 << 1)
 #define NOR_CMD_GD_RDSR2 0x35
 #define NOR_CMD_GD_WRSR2 0x31
 
-static int nor_xtx_quad_mode(void)
+static int nor_xmc_quad_mode(void)
 {
     int ret;
-    unsigned char sr[2];
+    unsigned char sr;
 
-    ret = nor_xtx_read_status1(&sr[1]);
+    ret = nor_read_status(&sr);
     if (ret)
+    {
         return ret;
+    }
 
-    if (sr[1] & NOR_XTX_QE_BIT)
-        return 0;
-
-    sr[1] |= NOR_XTX_QE_BIT;
-
-    ret = nor_read_status(&sr[0]);
+    sr |= NOR_XMC_QE_BIT;
+    ret = nor_write_status(&sr, 1);
     if (ret)
+    {
         return ret;
+    }
 
-    ret = nor_write_status(sr, 2);
+    ret = nor_read_status(&sr);
     if (ret)
+    {
         return ret;
-
-    ret = nor_xtx_read_status1(&sr[1]);
-    if (ret)
-        return ret;
-    if (!(sr[1] & NOR_XTX_QE_BIT)) {
-        pr_err("set xtx QE failed (0x%x)\n", sr[1]);
+    }
+    if (!(sr & NOR_XMC_QE_BIT))
+    {
+        pr_err("set xmc QE failed (0x%x)\n", sr);
         return -EINVAL;
     }
     return 0;
@@ -1508,6 +1918,8 @@ static int nor_set_quad_mode(void)
             return nor_mxic_quad_mode();
         case FACTORY_GD:
             return nor_gd_quad_mode();
+        case FACTORY_XMC:
+            return nor_xmc_quad_mode();
         case FACTORY_XTX:
             return nor_xtx_quad_mode();
         default:
@@ -1527,6 +1939,15 @@ static int nor_scan(void)
     }
 
     nor->info = match_nor(id, MAX_ID_LEN);
+    nor->total_size = nor->info->blk_cnt * nor->info->blk_size;
+    nor->addr_width = 3;
+#ifdef SUPPORT_4B_ADDR
+    if (nor->total_size > (16 * 1024 * 1024))
+    {
+        nor->addr_width = 4;
+        nor_set_4byte(1);
+    }
+#endif
     nor->page_size = NOR_PAGE_SIZE;
 #if defined(CONFIG_DRIVERS_NOR_FLASH_4K_SECTORS)
     nor->blk_size = 4 * 1024;
@@ -1552,38 +1973,38 @@ static int nor_scan(void)
 #endif
 
     /* program property */
-    nor->w_cmd_slen = 4;
+    nor->w_cmd_slen = nor->addr_width == 4 ? 5 : 4;
 #if defined(CONFIG_DRIVERS_NOR_FLASH_PROG_QUAD)
-    nor->cmd_write = NOR_CMD_QUAD_PROG;
+    nor->cmd_write = FIX_4B_ADDR(NOR_CMD_QUAD_PROG);
     if (nor->info->flag & EN_IO_PROG_X4)
     {
-        nor->cmd_write = NOR_CMD_QUAD_IO_PROG;
+        nor->cmd_write = FIX_4B_ADDR(NOR_CMD_QUAD_IO_PROG);
         nor->w_cmd_slen = 1;
     }
 #else
-    nor->cmd_write = NOR_CMD_PROG;
+    nor->cmd_write = FIX_4B_ADDR(NOR_CMD_PROG);
 #endif
 
     /* read property */
-    nor->r_cmd_slen = 5;
+    nor->r_cmd_slen = nor->addr_width == 4 ? 6 : 5;
 #if defined(CONFIG_DRIVERS_NOR_FLASH_READ_FAST)
-    nor->cmd_read = NOR_CMD_FAST_READ;
+    nor->cmd_read = FIX_4B_ADDR(NOR_CMD_FAST_READ);
 #elif defined(CONFIG_DRIVERS_NOR_FLASH_READ_DUAL)
-    nor->cmd_read = NOR_CMD_DUAL_READ;
+    nor->cmd_read = FIX_4B_ADDR(NOR_CMD_DUAL_READ);
     if (nor->info->flag & EN_IO_READ_X2)
     {
-        nor->cmd_read = NOR_CMD_DUAL_IO_READ;
+        nor->cmd_read = FIX_4B_ADDR(NOR_CMD_DUAL_IO_READ);
         nor->r_cmd_slen = 1;
     }
 #elif defined(CONFIG_DRIVERS_NOR_FLASH_READ_QUAD)
-    nor->cmd_read = NOR_CMD_QUAD_READ;
+    nor->cmd_read = FIX_4B_ADDR(NOR_CMD_QUAD_READ);
     if (nor->info->flag & EN_IO_READ_X4)
     {
-        nor->cmd_read = NOR_CMD_QUAD_IO_READ;
+        nor->cmd_read = FIX_4B_ADDR(NOR_CMD_QUAD_IO_READ);
         nor->r_cmd_slen = 1;
     }
 #else
-    nor->cmd_read = NOR_CMD_READ;
+    nor->cmd_read = FIX_4B_ADDR(NOR_CMD_READ);
 #endif
 
     if (cmd_bit(nor->cmd_read) == 4 || cmd_bit(nor->cmd_write) == 4)
@@ -1630,7 +2051,8 @@ static int nor_spi_master_init(struct spi_master *spim)
 static int nor_erase_do(char cmd, unsigned int addr)
 {
     int ret = -EBUSY;
-    char tbuf[4] = {0};
+    char tbuf[5] = {0};
+    int cmdlen;
 
     if (!nor->info)
     {
@@ -1651,26 +2073,30 @@ static int nor_erase_do(char cmd, unsigned int addr)
     }
 
     tbuf[0] = cmd;
-    tbuf[1] = addr >> 16;
-    tbuf[2] = addr >> 8;
-    tbuf[3] = addr & 0xFF;
-
-    ret = nor_read_write(4, tbuf, 4, NULL, 0);
-    if (ret)
+#ifdef SUPPORT_4B_ADDR
+    if (nor->addr_width == 4)
     {
-        goto unlock;
-    }
-    if (cmd == NOR_CMD_ERASE_BLK64K)
-    {
-        ret = nor_wait_ready_us(150, 1000 * 1000);
-    }
-    else if (cmd == NOR_CMD_ERASE_BLK32K)
-    {
-        ret = nor_wait_ready_us(120, 1000 * 1000);
+        tbuf[1] = addr >> 24;
+        tbuf[2] = addr >> 16;
+        tbuf[3] = addr >> 8;
+        tbuf[4] = addr & 0xFF;
+        cmdlen = 5;
     }
     else
     {
-        ret = nor_wait_ready_us(40, 1000 * 1000);
+#endif
+        tbuf[1] = addr >> 16;
+        tbuf[2] = addr >> 8;
+        tbuf[3] = addr & 0xFF;
+        cmdlen = 4;
+#ifdef SUPPORT_4B_ADDR
+    }
+#endif
+
+    ret = nor_read_write(4, tbuf, cmdlen, NULL, 0);
+    if (ret)
+    {
+        goto unlock;
     }
 
 unlock:
@@ -1693,17 +2119,22 @@ static int nor_read_do(unsigned int addr, const char *buf, unsigned int len)
     int cmdlen;
 
     if (len > NOR_PAGE_SIZE)
+    {
         return -EINVAL;
+    }
 
     cmd[0] = nor->cmd_read;
 #ifdef SUPPORT_4B_ADDR
-    if (nor->addr_width == 4) {
+    if (nor->addr_width == 4)
+    {
         cmd[1] = addr >> 24;
         cmd[2] = addr >> 16;
         cmd[3] = addr >> 8;
         cmd[4] = addr & 0xFF;
         cmdlen = 5;
-    } else {
+    }
+    else
+    {
 #endif
         cmd[1] = addr >> 16;
         cmd[2] = addr >> 8;
@@ -1712,22 +2143,68 @@ static int nor_read_do(unsigned int addr, const char *buf, unsigned int len)
 #ifdef SUPPORT_4B_ADDR
     }
 #endif
-    return nor_read_write(nor->r_cmd_slen, cmd, cmdlen, buf, len);
+    return nor_read_write(nor->r_cmd_slen, cmd, cmdlen, (void *)buf, len);
 }
 
 static inline int nor_erase_4k(unsigned int addr)
 {
-    return nor_erase_do((char)NOR_CMD_ERASE_BLK4K, addr);
+    int ret;
+    char cmd;
+#ifdef SUPPORT_4B_ADDR
+    if (nor->addr_width == 4)
+    {
+        cmd = (char)NOR_CMD_ERASE_BLK4K4B;
+    }
+    else
+#endif
+        cmd = (char)NOR_CMD_ERASE_BLK4K;
+    ret = nor_erase_do(cmd, addr);
+    if (ret)
+    {
+        return ret;
+    }
+    return nor_wait_ready_ms(30, MAX_WAIT_LOOP);
 }
 
 static inline int nor_erase_32k(unsigned int addr)
 {
-    return nor_erase_do((char)NOR_CMD_ERASE_BLK32K, addr);
+    int ret;
+    char cmd;
+#ifdef SUPPORT_4B_ADDR
+    if (nor->addr_width == 4)
+    {
+        cmd = (char)NOR_CMD_ERASE_BLK32K4B;
+    }
+    else
+#endif
+        cmd = (char)NOR_CMD_ERASE_BLK32K;
+    ret = nor_erase_do(cmd, addr);
+    if (ret)
+    {
+        return ret;
+    }
+    return nor_wait_ready_ms(120, MAX_WAIT_LOOP);
 }
 
 static inline int nor_erase_64k(unsigned int addr)
 {
-    return nor_erase_do((char)NOR_CMD_ERASE_BLK64K, addr);
+    int ret;
+    char cmd;
+#ifdef SUPPORT_4B_ADDR
+    if (nor->addr_width == 4)
+    {
+        cmd = (char)NOR_CMD_ERASE_BLK64K4B;
+    }
+    else
+#endif
+        cmd = (char)NOR_CMD_ERASE_BLK64K;
+
+    ret = nor_erase_do(cmd, addr);
+    if (ret)
+    {
+        return ret;
+    }
+    return nor_wait_ready_ms(150, MAX_WAIT_LOOP);
 }
 
 static inline int nor_erase_all(void)
@@ -1760,7 +2237,7 @@ static inline int nor_erase_all(void)
     {
         goto unlock;
     }
-    ret = nor_wait_ready_us(26 * 1000, 1000 * 1000);
+    ret = nor_wait_ready_ms(26 * 1000, MAX_WAIT_LOOP);
 
 unlock:
     if (nor_unlock())
@@ -1794,20 +2271,23 @@ static int nor_write_do(unsigned int addr, const char *buf, unsigned int len)
         return ret;
     }
 #ifdef SUPPORT_4B_ADDR
-    if (nor->addr_width == 4) {
+    if (nor->addr_width == 4)
+    {
         tbuf[0] = nor->cmd_write;
         tbuf[1] = addr >> 24;
         tbuf[2] = addr >> 16;
         tbuf[3] = addr >> 8;
         tbuf[4] = addr & 0xFF;
         cmdlen = 5;
-    } else {
+    }
+    else
+    {
 #endif
-    tbuf[0] = nor->cmd_write;
-    tbuf[1] = addr >> 16;
-    tbuf[2] = addr >> 8;
-    tbuf[3] = addr & 0xFF;
-    cmdlen = 4;
+        tbuf[0] = nor->cmd_write;
+        tbuf[1] = addr >> 16;
+        tbuf[2] = addr >> 8;
+        tbuf[3] = addr & 0xFF;
+        cmdlen = 4;
 #ifdef SUPPORT_4B_ADDR
     }
 #endif
@@ -1818,7 +2298,16 @@ static int nor_write_do(unsigned int addr, const char *buf, unsigned int len)
         return ret;
     }
 
-    return nor_wait_ready_us(0, 8 * 1000);
+    return nor_wait_ready_ms(0, 8 * 1000);
+}
+
+static unsigned int nor_total_size(void)
+{
+    if (!nor->info)
+    {
+        return 0;
+    }
+    return nor->total_size;
 }
 
 static sunxi_hal_version_t spinor_get_version(int32_t dev)
@@ -1880,11 +2369,24 @@ int32_t spinor_initialize(sunxi_hal_spinor_signal_event_t cb_event)
     }
 
     printf("Nor Flash %s size %uMB write %dbit read %dbit blk size %uKB\n",
-            nor->info->name, nor->info->blk_cnt * nor->info->blk_size / 1024 / 1024,
-            cmd_bit(nor->cmd_write), cmd_bit(nor->cmd_read), nor->blk_size / 1024);
+              nor->info->name, nor->total_size / 1024 / 1024,
+           cmd_bit(nor->cmd_write), cmd_bit(nor->cmd_read), nor->blk_size / 1024);
     printf("Nor Flash ID (hex): %02x %02x %02x\n", nor->info->id[0],
-            nor->info->id[1], nor->info->id[2]);
+           nor->info->id[1], nor->info->id[2]);
 
+    ret = nor_factory_init();
+    if (ret)
+    {
+        goto unlock;
+    }
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
+    nor->pt_now = NOR_PROTECT_ALL;
+    ret = nor_unprotect_do(NOR_PROTECT_DEFAULT);
+    if (ret)
+    {
+        goto unlock;
+    }
+#endif
 unlock:
     if (nor_unlock())
     {
@@ -1913,16 +2415,29 @@ static int32_t spinor_uninitialize(void)
 
     if (nor->info)
     {
+#ifdef SUPPORT_4B_ADDR
+        if (nor->addr_width == 4)
+        {
+            nor_set_4byte(0);
+        }
+#endif
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
+        if(nor_blk_unprotect(NOR_PROTECT_NONE))
+        {
+            pr_err("uninit: remove write protection!");
+        }
+#endif
         /* hal_spi_master_deinit(nor->spim.port); */
-        memset(nor, 0, sizeof(struct nor_flash));
     }
 
     if (nor_unlock())
     {
-        pr_err("erase: unlock nor failed\n");
+        pr_err("erase: unlock nor failed");
+        memset(nor, 0, sizeof(*nor));
         return -EBUSY;
     }
 
+    memset(nor, 0, sizeof(*nor));
     return SUNXI_HAL_OK;
 }
 
@@ -1950,7 +2465,7 @@ int32_t spinor_read_data(uint32_t addr, const void *buf, uint32_t cnt)
 
     pr_debug("try to read addr 0x%x with len %u\n", addr, cnt);
 
-    if (nor_wait_ready_us(0, 500))
+    if (nor_wait_ready_ms(0, 500))
     {
         goto unlock;
     }
@@ -2004,14 +2519,18 @@ int32_t spinor_program_data(uint32_t addr, const void *buf, uint32_t cnt)
 
     pr_debug("try to write addr 0x%x with len %u\n", addr, cnt);
 
-    if (nor_wait_ready_us(0, 500))
+    if (nor_wait_ready_ms(0, 500))
     {
         goto unlock;
     }
 
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
     ret = nor_unprotect_do(addr);
     if (ret)
+    {
         goto unlock;
+    }
+#endif
 
     while (cnt)
     {
@@ -2020,7 +2539,7 @@ int32_t spinor_program_data(uint32_t addr, const void *buf, uint32_t cnt)
         ret = nor_write_do(addr, (const char *)buf, wlen);
         if (ret)
         {
-            goto unlock;
+            goto unprotect;
         }
 
         addr += wlen;
@@ -2029,7 +2548,7 @@ int32_t spinor_program_data(uint32_t addr, const void *buf, uint32_t cnt)
     }
 
 unprotect:
-#if 0
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
     nor_unprotect_do(NOR_PROTECT_DEFAULT);
 #endif
 unlock:
@@ -2061,7 +2580,7 @@ int32_t spinor_erase_sector(uint32_t addr, uint32_t size)
         return -EINVAL;
     }
 
-    total_size = nor->info->blk_cnt * nor->info->blk_size;
+    total_size = nor->total_size;
     if (addr + size > total_size)
     {
         pr_err("addr 0x%x with size %u over total size %u\n",
@@ -2071,9 +2590,13 @@ int32_t spinor_erase_sector(uint32_t addr, uint32_t size)
 
     pr_debug("try to erase addr 0x%x with size %u\n", addr, size);
 
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
     ret = nor_unprotect_do(addr);
     if (ret)
+    {
         goto unlock;
+    }
+#endif
 
     if (addr == 0 && size == total_size)
     {
@@ -2139,16 +2662,17 @@ int32_t spinor_erase_sector(uint32_t addr, uint32_t size)
     if (size)
     {
         pr_err("erase fail as addr %u not align 64k/32k/4k\n", addr);
-        return -EINVAL;
+        ret = -EINVAL;
     }
 
 unprotect:
-#if 0
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
     nor_unprotect_do(NOR_PROTECT_DEFAULT);
 #endif
 
 unlock:
-    if (nor_unlock()) {
+    if (nor_unlock())
+    {
         ret = -EBUSY;
         pr_err("erase: unlock nor failed\n");
     }
@@ -2186,7 +2710,7 @@ static int32_t spinor_erase_chip(void)
     {
         goto unlock;
     }
-    ret = nor_wait_ready_us(26 * 1000, 1000 * 1000);
+    ret = nor_wait_ready_ms(26 * 1000, 1000 * 1000);
 
 unlock:
     if (nor_unlock())
@@ -2227,48 +2751,56 @@ out:
  * After write to @addr, you are support to call to turn back to default.
  *      nor_unprotect(NOR_PROTECT_DEFAULT);
  */
+#ifdef CONFIG_SUPPORT_WRITE_PROTECTION
 int nor_unprotect(unsigned int addr)
 {
     int ret;
 
     ret = nor_lock();
-    if (ret) {
+    if (ret)
+    {
         pr_err("erase: lock nor failed\n");
         return ret;
     }
 
     ret = -EBUSY;
     if (!nor->info)
+    {
         goto unlock;
+    }
 
     /*
      * no allow to control under individual protect, as nor driver will do
      * lock/unlock every time write/erase. This cause little time.
      */
-    if (nor->info->flag & EN_INDIVIDUAL_PROTECT_MODE) {
+    if (nor->info->flag & EN_INDIVIDUAL_PROTECT_MODE)
+    {
         ret = 0;
         goto unlock;
     }
 
-    switch (addr) {
-    case NOR_PROTECT_NONE:
-    case NOR_PROTECT_DEFAULT:
-        /* we should unset this flag to ensure it can turn back to default */
-        nor->flag &= ~NOR_FLAG_PT_NOT_EXPAND;
-        break;
-    default:
-        /* we set this flag to ensure no one can expand protected */
-        nor->flag |= NOR_FLAG_PT_NOT_EXPAND;
+    switch (addr)
+    {
+        case NOR_PROTECT_NONE:
+        case NOR_PROTECT_DEFAULT:
+            /* we should unset this flag to ensure it can turn back to default */
+            nor->flag &= ~NOR_FLAG_PT_NOT_EXPAND;
+            break;
+        default:
+            /* we set this flag to ensure no one can expand protected */
+            nor->flag |= NOR_FLAG_PT_NOT_EXPAND;
     }
 
     ret = nor_unprotect_do(addr);
 unlock:
-    if (nor_unlock()) {
+    if (nor_unlock())
+    {
         ret = -EBUSY;
         pr_err("erase: unlock nor failed\n");
     }
     return ret;
 }
+#endif
 
 static sunxi_hal_spinor_info *spinor_get_info(void)
 {

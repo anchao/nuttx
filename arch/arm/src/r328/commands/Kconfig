@@ -1,6 +1,8 @@
+
 source "$APPSDIR/../nuttx/arch/arm/src/chip/commands/adb/Kconfig"
 source "$APPSDIR/../nuttx/arch/arm/src/chip/commands/sound/Kconfig"
 source "$APPSDIR/../nuttx/arch/arm/src/chip/commands/test/Kconfig"
 source "$APPSDIR/../nuttx/arch/arm/src/chip/commands/i2c_test/Kconfig"
 source "$APPSDIR/../nuttx/arch/arm/src/chip/commands/iobox/Kconfig"
 source "$APPSDIR/../nuttx/arch/arm/src/chip/commands/debug/Kconfig"
+source "$APPSDIR/../nuttx/arch/arm/src/chip/commands/env_test/Kconfig"

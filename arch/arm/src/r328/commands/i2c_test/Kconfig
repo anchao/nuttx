@@ -1,5 +1,5 @@
 
-config I2C_TSET
+config I2C_TEST
 	bool "enable i2c test"
 	default n
 

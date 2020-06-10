@@ -61,9 +61,9 @@ typedef enum {
 
 typedef clock_t os_time_t;
 
-#define OSAL_GET_SYS_TICK() (clock_systimer())
+#define OSAL_GET_SYS_TICK() (clock())
 
-#define OS_GetTicks() ((uint32_t)(clock_systimer()))
+#define OS_GetTicks() ((uint32_t)(clock()))
 
 /* Parameters used to convert the time values */
 #ifndef OS_MSEC_PER_SEC

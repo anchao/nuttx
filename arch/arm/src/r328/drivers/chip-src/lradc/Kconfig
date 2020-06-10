@@ -2,6 +2,6 @@ menu "Lradc Devices"
 
 config DRIVERS_LRADC
     bool "enable  lradc device driver"
-        default n
+        default y
 
 endmenu

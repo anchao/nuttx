@@ -60,7 +60,7 @@ typedef clock_t xr_os_time_t;
 #ifndef OS_GetTicks
 /* The number of ticks since boot. */
 //#define OS_GetTicks()		((uint32_t)(krhino_sys_tick_get() / OS_MSEC_PER_SEC))
-#define OS_GetTicks()		((uint32_t)(clock_systimer()))
+#define OS_GetTicks()		((uint32_t)(clock()))
 #endif
 
 	/* Due to portTICK_TYPE_IS_ATOMIC is 1, call xTaskGetTickCount() in ISR is safe also */
@@ -76,7 +76,7 @@ typedef clock_t xr_os_time_t;
 	ret; \
  })
 #else
-#define OS_GetTime() (clock_systimer() / OS_HZ)
+#define OS_GetTime() (clock() / OS_HZ)
 #endif
 #endif
 

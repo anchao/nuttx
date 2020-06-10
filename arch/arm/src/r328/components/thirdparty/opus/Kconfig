@@ -1,0 +1,20 @@
+menuconfig COMPONENTS_OPUS
+    bool "opus audio codec"
+    default y
+    help
+      support Opus audio codec
+
+if COMPONENTS_OPUS
+
+    config COMPONENTS_OPUS_DECODE_TEST
+    bool "OPUS decoder test"
+    default n
+    help
+      An example tests the opus decoder interface.
+
+    config COMPONENTS_OPUS_ENCODE_TEST
+    bool "OPUS encoder test"
+    default n
+    help
+      An example tests the opus encoder interface.
+endif

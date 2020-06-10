@@ -37,21 +37,29 @@
  * Included Files
  ****************************************************************************/
 
-#include <nuttx/config.h>
-
 #include <stdint.h>
 #include <errno.h>
-
+#include <nuttx/config.h>
 #include <nuttx/arch.h>
 #include <nuttx/board.h>
 #include <nuttx/irq.h>
-
 #include <nuttx/irq.h>
 #include <arch/board/board.h>
-
 #include "perf1_r328.h"
+#include "hal_gpio.h"
+#include "r328_keyboard.h"
+#include "r328_gpadc_key.h"
+#include "gpio_key_polled.h"
+#include "gpio_key_irq.h"
 
 #ifdef CONFIG_ARCH_BUTTONS
+
+#ifdef  KEYBOARD_DEBUG
+#define BTN_INFO(fmt, arg...) printf("%s:%d "fmt, __func__,  __LINE__, ##arg)
+#else
+#define BTN_INFO(fmt, arg...)
+#endif
+#define BTN_ERR(fmt, arg...) printf("%s:%d "fmt, __func__, __LINE__, ##arg)
 
 /****************************************************************************
  * Public Functions
@@ -70,7 +78,21 @@
 
 void board_button_initialize(void)
 {
-# warning Missing logic
+#if defined(CONFIG_DRIVERS_LRADC) && defined(CONFIG_DRIVERS_R328_KEYBOARD)
+	sunxi_keyboard_init();
+	BTN_INFO("sunxi_keyboard_init is enable.\n");
+#elif defined(CONFIG_DRIVERS_GPADC) && defined(CONFIG_DRIVERS_R328_GPADC_KEY)
+	sunxi_gpadc_key_init();
+	BTN_INFO("sunxi_gpadc_key_init is enable.\n");
+#elif defined(CONFIG_DRIVERS_R328_GPIO_KEY)
+	gpio_key_polled_init();
+	BTN_INFO("gpio_key_polled_init is enable.\n");
+#elif defined(CONFIG_DRIVERS_R328_GPIO_KEY_IRQ)
+	gpio_key_irq_init();
+	BTN_INFO("gpio_key_irq_init is enable.\n");
+#else
+	BTN_ERR("Please select the key driver.\n");
+#endif
 }
 
 /****************************************************************************
@@ -87,7 +109,24 @@ void board_button_initialize(void)
 
 uint32_t board_buttons(void)
 {
-# warning Missing logic
+#if defined(CONFIG_DRIVERS_LRADC) && defined(CONFIG_DRIVERS_R328_KEYBOARD)
+	uint32_t irq_status;
+	uint32_t reg_val;
+	lradc_irq_status(&irq_status, &reg_val);
+	return lradc_irq_callback(irq_status, reg_val);
+#elif defined(CONFIG_DRIVERS_GPADC) && defined(CONFIG_DRIVERS_R328_GPADC_KEY)
+	uint32_t irq_status;
+	uint32_t reg_val;
+	uint32_t channel;
+	gpadc_irq_status(&channel, &irq_status, &reg_val);
+	return gpadc_irq_callback(channel, irq_status, reg_val);
+#elif defined(CONFIG_DRIVERS_R328_GPIO_KEY)
+	uint32_t ret = gpio_key_polled_poll();
+	return ret;
+#elif defined(CONFIG_DRIVERS_R328_GPIO_KEY_IRQ)
+	uint32_t ret = gpio_irq_status_func();
+	return ret;
+#endif
 }
 
 /****************************************************************************
@@ -107,29 +146,31 @@ uint32_t board_buttons(void)
 #ifdef CONFIG_ARCH_IRQBUTTONS
 int board_button_irq(int id, xcpt_t irqhandler, FAR void *arg)
 {
-  int ret = -EINVAL;
-
-  if (id < BOARD_NBUTTONS)
-    {
-      irqstate_t flags;
-
-      /* Disable interrupts until we are done.  This guarantees that the
-       * following operations are atomic.
-       */
-
-      flags = enter_critical_section();
-
-      /* Configure the interrupt */
-
-      r328_pioirq(xxx);
-      (void)irq_attach(xxx, irqhandler, arg);
-      r328_pioirqenable(xxx);
-      leave_critical_section(flags);
-
-      ret = OK;
-    }
-
-  return ret;
+	int ret = -EINVAL;
+#if defined(CONFIG_DRIVERS_LRADC) && defined(CONFIG_DRIVERS_R328_KEYBOARD)
+	if (id < NUM_BUTTONS) {
+		ret = irq_attach(R328_IRQ_LRADC, irqhandler, arg);
+		if (ret < 0)
+			BTN_ERR("lradc irq attach err.\n");
+		up_enable_irq(R328_IRQ_LRADC);
+	}
+#elif defined(CONFIG_DRIVERS_GPADC) && defined(CONFIG_DRIVERS_R328_GPADC_KEY)
+	if (id < NUM_BUTTONS) {
+		ret = irq_attach(R328_IRQ_GPADC, irqhandler, arg);
+		if (ret < 0)
+			BTN_ERR("gpadc irq attach err.\n");
+		up_enable_irq(R328_IRQ_GPADC);
+	}
+#elif defined(CONFIG_DRIVERS_R328_GPIO_KEY_IRQ)
+	ret = enable_gpio_key_irq(irqhandler, arg);
+	if (ret < 0)
+		BTN_ERR("enable_gpio_key_irq err.\n");
+#elif defined(CONFIG_DRIVERS_R328_GPIO_KEY)
+	return 0;
+#else
+	BTN_ERR("There are no key can enable irq.\n");:
+#endif
+	return ret;
 }
 #endif
 

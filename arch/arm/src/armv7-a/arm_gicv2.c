@@ -383,9 +383,6 @@ uint32_t *arm_decodeirq(uint32_t *regs)
 {
   uint32_t regval;
   int irq;
-  int cpu;
-
-  cpu = up_cpu_index();
 
   /* Read the interrupt acknowledge register and get the interrupt ID */
 

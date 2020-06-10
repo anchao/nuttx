@@ -60,11 +60,11 @@
  * Inline Functions
  ****************************************************************************/
 
-#ifndef __ASSEMBLY__
-
 /****************************************************************************
  * Public Data
  ****************************************************************************/
+
+#ifndef __ASSEMBLY__
 
 #undef EXTERN
 #if defined(__cplusplus)
@@ -99,5 +99,6 @@ EXTERN uintptr_t g_irqstack_top[CONFIG_SMP_NCPUS];
 }
 #endif
 
-#endif /* __ASSEMBLY__ */
+#endif /*  __ASSEMBLY__ */
+
 #endif /* __ARCH_ARM_SRC_R328_R328_IRQ_H */

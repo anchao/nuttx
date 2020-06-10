@@ -31,7 +31,7 @@ struct gpio_key_drvdata
 	struct sunxi_input_dev *input_dev;
 	struct gpio_button_data *bdata;
 };
-
+int gpio_key_polled_poll(void);
 int gpio_key_polled_init(void);
 
 

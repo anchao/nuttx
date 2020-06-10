@@ -33,7 +33,7 @@
 #include <sdmmc/osal_sdmmc.h>
 #include <sdmmc/sunxi-sdhost.h>
 #include <interrupt.h>
-#include <up_arch.h>
+#include <arm_arch.h>
 
 #define CONFIG_SDC_OS_USED
 #define __CONFIG_ARCH_APP_CORE

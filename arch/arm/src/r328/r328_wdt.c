@@ -156,7 +156,7 @@ static int r328_start(FAR struct watchdog_lowerhalf_s *lower)
           wdinfo("sunxi_wdt_start faile\n");
           return -1;
       }
-      priv->lastreset = clock_systimer();
+      priv->lastreset = clock();
       priv->started   = true;
   }
 
@@ -225,7 +225,7 @@ static int r328_keepalive(FAR struct watchdog_lowerhalf_s *lower)
        wdinfo("sunxi_wdt_ping faile\n");
        return -1;
   } else {
-       priv->lastreset = clock_systimer();
+       priv->lastreset = clock();
   }
 
   return OK;
@@ -270,7 +270,7 @@ static int r328_getstatus(FAR struct watchdog_lowerhalf_s *lower,
   status->timeout = priv->timeout;
 
   /* Get the elapsed time since the last ping */
-  ticks   = clock_systimer() - priv->lastreset;
+  ticks   = clock() - priv->lastreset;
   elapsed = (int32_t)TICK2MSEC(ticks);
 
   if (elapsed > priv->timeout)

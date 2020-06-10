@@ -85,6 +85,7 @@ done
 
 OUTFILE=$1
 
+VERSION=9.0.3fc8e55b
 if [ -z ${VERSION} ] ; then
         GIT_CUR_VERSION=`git --version | cut -d' ' -f3`
         GIT_REQ_VERSION="2.17.1"
@@ -93,7 +94,6 @@ if [ -z ${VERSION} ] ; then
         else
                 VERSION=`git for-each-ref --format="%(refname)" --sort=-taggerdate --count=1 refs/tags | tail -1 | cut -d'-' -f2`
         fi
-
 fi
 
 # Make sure we know what is going on

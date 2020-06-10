@@ -11,7 +11,7 @@ int nuttx_xr_drv_msgqueue_init(xr_drv_msgqueue_t *queue_hd,uint32_t queueLen)
 	char mqname[16];
 
 	/* Create a message queue for the worker thread */
-	snprintf(queue_hd->mqname, sizeof(mqname), "/tmp/%X", queue_hd);
+	snprintf(queue_hd->mqname, sizeof(mqname), "/tmp/%X", (unsigned int)queue_hd);
 	attr.mq_maxmsg  = queueLen;
 	attr.mq_msgsize = sizeof(void*);
 	attr.mq_curmsgs = 0;

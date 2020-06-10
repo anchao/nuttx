@@ -50,3 +50,5 @@ include $(TOPDIR)/boards/Board.mk
 
 AW_SRCDIR = $(TOPDIR)/arch/arm/src/r328
 CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)include$(DELIM)drivers}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)drivers$(DELIM)board$(DELIM)input$(DELIM)keyboard}

@@ -111,18 +111,18 @@ static int lradc_irq_handler(int dummy, void *context, void *priv_data)
 	return 0;
 }
 
+void lradc_irq_status(uint32_t *irq_status, uint32_t *reg_val)
+{
+	*irq_status = LRADC->LRADC_INTS;
+	*reg_val = LRADC->LRADC_DATA0;
+
+	LRADC->LRADC_INTS = *irq_status;
+}
+
 int32_t lradc_init_irq(void)
 {
 	uint32_t irqn = R328_IRQ_LRADC;
 
-/*	if (irq_attach(irqn, lradc_irq_handler, &lradc_priv) < 0) {
-		return -1;
-	}
-
-
-	if (up_enable_irq(irqn) < 0) {
-		return -1;
-	}*/
 	int ret = irq_attach(irqn, lradc_irq_handler, &lradc_priv);
 	if (ret == OK)
 	{
@@ -137,4 +137,3 @@ int32_t lradc_init_irq(void)
 	}
 	return 0;
 }
-

@@ -39,6 +39,7 @@ static int key_scan(int argc, char *argv[])
 	struct sunxi_input_event event;
 
 	sprintf(input_dev_name, "/dev/input/%s/", INPUT_DEV_NAME);
+#ifdef POLL_DEBUG
 	fd = open(input_dev_name, O_RDONLY);
 	if (fd < 0) {
 		printf("gpio key open err\n");
@@ -50,61 +51,57 @@ static int key_scan(int argc, char *argv[])
 		read(fd, &event, sizeof(struct sunxi_input_event));
 		printf("event type code val : %d  %d %d\n", event.type, event.code, event.value);
 	}
+#endif
+	return 0;
 
 }
 #endif
 
 
-static int gpio_key_polled_poll(int argc, char *argv[])
+int gpio_key_polled_poll(void)
 {
-	printf("===enter gpio key poll===\n");
-
-	while(1) {
-		//just for test.
-		printf("report key\n");
-		input_report_key(key_drvdata->input_dev, KEY_VOLUMEUP, 1);
-		input_report_key(key_drvdata->input_dev, KEY_VOLUMEDOWN, 1);
-		input_sync(key_drvdata->input_dev);
-		sleep(1);
-
-		//hal gpio api can't use now.
-#if 0
-		for (i = 0; i < key_drvdata->nbuttons; i++) {
+	int i;
+	char state;
+	uint32_t gpio_poll_status = 0;
+	for (i = 0; i < key_drvdata->nbuttons; i++) {
+		hal_gpio_get_input((hal_gpio_pin_t)key_drvdata->bdata[i].gpio, (hal_gpio_data_t *)&state);
+		if (state != key_drvdata->bdata[i].last_state) {
+			usleep(DEBOUNCE_INTERVAL * 1000);
 			hal_gpio_get_input((hal_gpio_pin_t)key_drvdata->bdata[i].gpio, (hal_gpio_data_t *)&state);
 			if (state != key_drvdata->bdata[i].last_state) {
+				input_report_key(key_drvdata->input_dev,
+						key_drvdata->bdata[i].code, !!(state ^ key_drvdata->bdata[i].active_low));
+				input_sync(key_drvdata->input_dev);
+#ifdef POLL_DEBUG
+				printf("===press: %d===\n", key_drvdata->bdata[i].code);
+#endif
+				if (!!(state ^ key_drvdata->bdata[i].active_low))
+					gpio_poll_status |= (1 << i);
+				else
+					gpio_poll_status &= ~(1 << i);
+				key_drvdata->bdata[i].last_state = state;
+			}
+		}
+#ifdef REPEAT
+		else {
+			if (state ^ key_drvdata->bdata[i].active_low) {
 				usleep(DEBOUNCE_INTERVAL * 1000);
 				hal_gpio_get_input((hal_gpio_pin_t)key_drvdata->bdata[i].gpio, (hal_gpio_data_t *)&state);
-				if (state != key_drvdata->bdata[i].last_state) {
+				if (state == key_drvdata->bdata[i].last_state) {
 					input_report_key(key_drvdata->input_dev,
 							key_drvdata->bdata[i].code, !!(state ^ key_drvdata->bdata[i].active_low));
 					input_sync(key_drvdata->input_dev);
-					printf("===press: %d===\n", key_drvdata->bdata[i].code);
-
+					if (!!(state ^ key_drvdata->bdata[i].active_low))
+						gpio_poll_status |= (1 << i);
 					key_drvdata->bdata[i].last_state = state;
+
 				}
 			}
-#ifdef REPEAT
-			else {
-				if (state ^ key_drvdata->bdata[i].active_low) {
-					usleep(DEBOUNCE_INTERVAL * 1000);
-					hal_gpio_get_input((hal_gpio_pin_t)key_drvdata->bdata[i].gpio, (hal_gpio_data_t *)&state);
-					if (state == key_drvdata->bdata[i].last_state) {
-						input_report_key(key_drvdata->input_dev,
-								key_drvdata->bdata[i].code, !!(state ^ key_drvdata->bdata[i].active_low));
-						input_sync(key_drvdata->input_dev);
-
-						key_drvdata->bdata[i].last_state = state;
-
-					}
-				}
-			}
-#endif
 		}
 #endif
-		usleep((POLL_INTERVAL-DEBOUNCE_INTERVAL) * 1000);
 	}
-
-	return 0;
+	usleep((POLL_INTERVAL-DEBOUNCE_INTERVAL) * 1000);
+	return gpio_poll_status;
 }
 
 
@@ -140,6 +137,7 @@ int gpio_key_polled_init(void)
 {
 	int i;
 	int ret;
+	char state;
 	struct sunxi_input_dev *input_dev;
 
 	key_drvdata = (struct gpio_key_drvdata *)malloc(sizeof(struct gpio_key_drvdata));
@@ -153,7 +151,7 @@ int gpio_key_polled_init(void)
 		goto err1;
 
 	for (i = 0; i < key_drvdata->nbuttons; i++) {
-#if 0
+#if 1
 		hal_gpio_set_direction((hal_gpio_pin_t)key_drvdata->bdata[i].gpio, HAL_GPIO_DIRECTION_INPUT);
 		hal_gpio_get_input((hal_gpio_pin_t)key_drvdata->bdata[i].gpio, (hal_gpio_data_t *)&state);
 		key_drvdata->bdata[i].last_state = state;

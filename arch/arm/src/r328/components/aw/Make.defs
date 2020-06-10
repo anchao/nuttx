@@ -36,6 +36,6 @@
 include r328$(DELIM)components$(DELIM)aw$(DELIM)sound$(DELIM)Make.defs
 include r328$(DELIM)components$(DELIM)aw$(DELIM)usb$(DELIM)Make.defs
 include r328$(DELIM)components$(DELIM)aw$(DELIM)wifi$(DELIM)Make.defs
-include r328$(DELIM)components$(DELIM)aw$(DELIM)bluetooth$(DELIM)Make.defs
 include r328$(DELIM)components$(DELIM)aw$(DELIM)debug$(DELIM)Make.defs
+include r328$(DELIM)components$(DELIM)aw$(DELIM)bluetooth$(DELIM)Make.defs
 

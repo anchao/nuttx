@@ -1,0 +1,2 @@
+source arch/arm/src/r328/components/thirdparty/opus/Kconfig
+source arch/arm/src/r328/components/thirdparty/env/Kconfig

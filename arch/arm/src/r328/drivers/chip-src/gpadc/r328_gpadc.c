@@ -232,17 +232,42 @@ static int gpadc_irq_handler(int dummy, void *context, void *priv_data)
 
 	return 0;
 }
+void gpadc_irq_status(unsigned int *channel, uint32_t *irq_status, uint32_t *reg_val)
+{
+	int i = 0;
+	uint32_t data;
+	uint32_t reg_enable_high;
+	uint32_t reg_irq_low, reg_irq_high;
+	reg_irq_low = gpadc_irq_low_status();
+	reg_irq_high = gpadc_irq_high_status();
+	reg_enable_high = GPADC->GP_DATAH_INTC;
+
+	for (i = 0; i < 4; i++) {
+		if (reg_irq_low & (1 << i)) {
+			GPADC->GP_DATAL_INTS = reg_irq_low;
+			data = gpadc_ch_data_get(i);
+			*channel = i;
+			*irq_status = GPADC_IRQ_LOW;
+			*reg_val = (VCC / 4096)*data;
+			GPADC->GP_DATAH_INTS = reg_irq_high;
+			gpadc_enable_highirq_ch(i);
+			reg_irq_low = 0;
+		}
+		if (reg_irq_high & (1 << i) & reg_enable_high) {
+			GPADC->GP_DATAH_INTS = reg_irq_high;
+			gpadc_disable_highirq_ch(i);
+			data = gpadc_ch_data_get(i);
+			*channel = i;
+			*irq_status = GPADC_IRQ_HIGH;
+			*reg_val = (VCC / 4096)*data;
+		}
+	}
+}
 
 int32_t gpadc_init_irq(void)
 {
 	uint32_t irqn = R328_IRQ_GPADC;
-	/*if (irq_request(irqn, gpadc_irq_handler, &gpadc_priv) < 0) {
-		return -1;
-	}
 
-	if (irq_enable(irqn) < 0) {
-		return -1;
-	}*/
 	int ret = irq_attach(irqn, gpadc_irq_handler, &gpadc_priv);
 	if (ret == OK) {
 		sunxikbd_info("gpadc irq_attach ok!=====\n");
