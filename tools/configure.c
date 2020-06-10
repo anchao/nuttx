@@ -79,14 +79,25 @@
 
 static void show_usage(const char *progname, int exitcode);
 static void debug(const char *fmt, ...);
-static int  find_archname(const char *boardname, const char *configname);
 static void parse_args(int argc, char **argv);
+static int run_make(const char *arg);
 static bool check_directory(const char *directory);
 static void verify_directory(const char *directory);
 static bool verify_optiondir(const char *directory);
 static bool verify_file(const char *path);
 static void find_topdir(void);
-static void config_search(const char *boarddir);
+typedef void (*config_callback)(const char *boarddir, const char *archname,
+                                const char *chipname, const char *boardname,
+                                const char *configname, void *data);
+static void config_search(const char *boarddir,
+                          config_callback callback, void *data);
+static void archname_callback(const char *boarddir, const char *archname,
+                              const char *chipname, const char *boardname,
+                              const char *configname, void *data);
+static void find_archname(void);
+static void enumerate_callback(const char *boarddir, const char *archname,
+                               const char *chipname, const char *boardname,
+                               const char *configname, void *data);
 static void enumerate_configs(void);
 static void check_configdir(void);
 static void check_configured(void);
@@ -96,7 +107,8 @@ static void get_verstring(void);
 static bool verify_appdir(const char *appdir);
 static void check_appdir(void);
 static void check_configuration(void);
-static void copy_file(const char *srcpath, const char *destpath, mode_t mode);
+static void copy_file(const char *srcpath,
+                      const char *destpath, mode_t mode);
 static void substitute(char *str, int ch1, int ch2);
 static char *double_appdir_backslashes(char *old_appdir);
 static void copy_optional(void);
@@ -118,7 +130,7 @@ static char        g_delim         = '/';   /* Delimiter to use when forming pat
 static bool        g_winpaths      = false; /* False: POSIX style paths */
 #endif
 static bool        g_debug         = false; /* Enable debug output */
-static bool        g_skip          = false; /* Skip .config/Make.defs existence check */
+static bool        g_enforce       = false; /* Enfore distclean */
 
 static const char *g_appdir        = NULL;  /* Relative path to the application directory */
 static const char *g_archdir       = NULL;  /* Name of architecture subdirectory */
@@ -136,6 +148,8 @@ static char       *g_verstring     = "0.0"; /* Version String */
 static char       *g_srcdefconfig  = NULL;  /* Source defconfig file */
 static char       *g_srcmakedefs   = NULL;  /* Source Make.defs file */
 
+static char      **g_makeargv      = NULL;  /* Arguments pass to make */
+
 static bool        g_winnative     = false; /* True: Windows native configuration */
 static bool        g_oldnative     = false; /* True: Was Windows native configuration */
 static bool        g_needapppath   = true;  /* Need to add app path to the .config file */
@@ -147,90 +161,6 @@ static char        g_buffer[BUFFER_SIZE];   /* Scratch buffer for forming full p
 
 static struct variable_s *g_configvars = NULL;
 static struct variable_s *g_versionvars = NULL;
-
-/* Recognized architectures */
-
-static const char *g_archnames[] =
-{
-  "arm",
-  "avr",
-  "hc",
-  "mips",
-  "misoc",
-  "or1k",
-  "renesas",
-  "risc-v",
-  "sim",
-  "x86",
-  "xtensa",
-  "z16",
-  "z80",
-  NULL
-};
-
-/* Recognized chip names */
-
-static const char *g_chipnames[] =
-{
-  "a1x",
-  "am335x",
-  "c5471",
-  "cxd56xx",
-  "dm320",
-  "efm32",
-  "imx6",
-  "imxrt",
-  "kinetis",
-  "kl",
-  "lc823450",
-  "lpc17xx_40xx",
-  "lpc214x",
-  "lpc2378",
-  "lpc31xx",
-  "lpc43xx",
-  "lpc54xx",
-  "max326xx",
-  "moxart",
-  "nrf52",
-  "nuc1xx",
-  "rx65n" 
-  "s32k1xx",
-  "sam34",
-  "sama5",
-  "samd2l2",
-  "samd5e5",
-  "samv7",
-  "stm32",
-  "stm32f0l0g0",
-  "stm32f7",
-  "stm32h7",
-  "stm32l4",
-  "str71x",
-  "tiva",
-  "tms570",
-  "xmc4",
-  "at32uc3",
-  "at90usb",
-  "atmega",
-  "mcs92s12ne64",
-  "pic32mx",
-  "pic32mz",
-  "lm32",
-  "mor1kx",
-  "m32262f8",
-  "sh7032",
-  "gap8",
-  "nr5m100",
-  "sim",
-  "qemu",
-  "esp32",
-  "z16f2811",
-  "ez80",
-  "z180",
-  "z8",
-  "z80",
-  NULL
-};
 
 /* Optional configuration files */
 
@@ -249,56 +179,68 @@ static const char *g_optfiles[] =
 
 static void show_usage(const char *progname, int exitcode)
 {
-  fprintf(stderr, "\nUSAGE: %s  [-d] [-b] [-f] [-l|m|c|u|g|n] [-a <app-dir>] <board-name>:<config-name>\n", progname);
+  fprintf(stderr, "\nUSAGE: %s  [-d] [-e] [-b|f] [-l|m|c|u|g|n] "
+          "[-a <app-dir>] <board-name>:<config-name> [make-opts]\n",
+          progname);
   fprintf(stderr, "\nUSAGE: %s  [-h]\n", progname);
   fprintf(stderr, "\nWhere:\n");
   fprintf(stderr, "  -d:\n");
   fprintf(stderr, "    Enables debug output\n");
+  fprintf(stderr, "  -e:\n");
+  fprintf(stderr, "    Enforce distclean if already configured\n");
   fprintf(stderr, "  -b:\n");
 #ifdef CONFIG_WINDOWS_NATIVE
-  fprintf(stderr, "    Informs the tool that it should use Windows style paths like C:\\Program Files\n");
-  fprintf(stderr, "    instead of POSIX style paths are used like /usr/local/bin.  Windows\n");
+  fprintf(stderr, "    Informs the tool that it should use Windows style\n");
+  fprintf(stderr, "    paths like C:\\Program Files instead of POSIX\n");
+  fprintf(stderr, "    style paths are used like /usr/local/bin. Windows\n");
   fprintf(stderr, "    style paths are used by default.\n");
 #else
-  fprintf(stderr, "    Informs the tool that it should use Windows style paths like C:\\Program Files.\n");
-  fprintf(stderr, "    By default, POSIX style paths like /usr/local/bin are used.\n");
+  fprintf(stderr, "    Informs the tool that it should use Windows style\n");
+  fprintf(stderr, "    paths like C:\\Program Files. By default, POSIX\n");
+  fprintf(stderr, "    style paths like /usr/local/bin are used.\n");
 #endif
   fprintf(stderr, "  -f:\n");
 #ifdef CONFIG_WINDOWS_NATIVE
-  fprintf(stderr, "    Informs the tool that it should use POSIX style paths like /usr/local/bin.\n");
-  fprintf(stderr, "    By default, Windows style paths like C:\\Program Files are used.\n");
+  fprintf(stderr, "    Informs the tool that it should use POSIX style\n");
+  fprintf(stderr, "    paths like /usr/local/bin. By default, Windows\n");
+  fprintf(stderr, "    style paths like C:\\Program Files are used.\n");
 #else
-  fprintf(stderr, "    Informs the tool that it should use POSIX style paths like /usr/local/bin\n");
-  fprintf(stderr, "    instead of Windows style paths like C:\\Program Files are used.  POSIX\n");
-  fprintf(stderr, "    style paths are used by default.\n");
+  fprintf(stderr, "    Informs the tool that it should use POSIX style\n");
+  fprintf(stderr, "    paths like /usr/local/bin instead of Windows\n");
+  fprintf(stderr, "    style paths like C:\\Program Files are used.\n");
+  fprintf(stderr, "    POSIX style paths are used by default.\n");
 #endif
-  fprintf(stderr, "  -s:\n");
-  fprintf(stderr, "    Skip the .config/Make.defs existence check\n");
   fprintf(stderr, "  [-l|m|c|u|g|n]\n");
   fprintf(stderr, "    Selects the host environment.\n");
   fprintf(stderr, "    -l Selects the Linux (l) host environment.\n");
   fprintf(stderr, "    -m Selects the macOS (m) host environment.\n");
-  fprintf(stderr, "  [-c|u|g|n] selects the Windows host and a Windows host environment:\n");
-  fprintf(stderr, "    -c Selects the Windows host and Cygwin (c) environment.\n");
-  fprintf(stderr, "    -u Selects the Windows host and Ubuntu under Windows 10 (u) environment.\n");
-  fprintf(stderr, "    -g Selects the Windows host and the MinGW/MSYS environment.\n");
-  fprintf(stderr, "    -n Selects the Windows host and Windows native (n) environment.\n");
+  fprintf(stderr, "    -c Selects the Windows Cygwin (c) environment.\n");
+  fprintf(stderr, "    -u Selects the Windows Ubuntu (u) environment.\n");
+  fprintf(stderr, "    -g Selects the Windows MinGW/MSYS environment.\n");
+  fprintf(stderr, "    -n Selects the Windows native (n) environment.\n");
   fprintf(stderr, "  Default: Use host setup in the defconfig file.\n");
   fprintf(stderr, "  Default Windows: Cygwin.\n");
   fprintf(stderr, "  -a <app-dir>:\n");
-  fprintf(stderr, "    Informs the configuration tool where the application build\n");
-  fprintf(stderr, "    directory.  This is a relative path from the top-level NuttX\n");
-  fprintf(stderr, "    build directory.  But default, this tool will look in the usual\n");
-  fprintf(stderr, "    places to try to locate the application directory:  ..%capps or\n", g_delim);
-  fprintf(stderr, "    ..%capps-xx.yy where xx.yy is the NuttX version number.\n", g_delim);
+  fprintf(stderr, "    Informs the configuration tool where the\n");
+  fprintf(stderr, "    application build directory.  This is a relative\n");
+  fprintf(stderr, "    path from the top-level NuttX build directory.\n");
+  fprintf(stderr, "    But default, this tool will look in the usual\n");
+  fprintf(stderr, "    places to locate the application directory:\n");
+  fprintf(stderr, "    ..%capps or\n", g_delim);
+  fprintf(stderr, "    ..%capps-xx.yy where xx.yy is the version number.\n",
+          g_delim);
   fprintf(stderr, "  <board-name>:\n");
-  fprintf(stderr, "    Identifies the board.  This must correspond to a board directory\n");
-  fprintf(stderr, "    under nuttx%cboards%c.\n", g_delim, g_delim);
+  fprintf(stderr, "    Identifies the board.  This must correspond to a\n");
+  fprintf(stderr, "    board directory under nuttx%cboards%c.\n",
+          g_delim, g_delim);
   fprintf(stderr, "  <config-name>:\n");
-  fprintf(stderr, "    Identifies the specific configuration for the selected <board-name>.\n");
-  fprintf(stderr, "    This must correspond to a sub-directory under the board directory at\n");
+  fprintf(stderr, "    Identifies the specific configuration for the\n");
+  fprintf(stderr, "    selected <board-name>. This must correspond to\n");
+  fprintf(stderr, "    a sub-directory under the board directory at\n");
   fprintf(stderr, "    under nuttx%cboards%c<board-name>%cconfigs%c.\n",
           g_delim, g_delim, g_delim, g_delim);
+  fprintf(stderr, "  [make-opts]:\n");
+  fprintf(stderr, "    Options directly pass to make\n");
   fprintf(stderr, "  -h:\n");
   fprintf(stderr, "    Prints this message and exits.\n");
   exit(exitcode);
@@ -311,60 +253,19 @@ static void debug(const char *fmt, ...)
   if (g_debug)
     {
       va_start(ap, fmt);
-      (void)vprintf(fmt, ap);
+      vprintf(fmt, ap);
       va_end(ap);
     }
-}
-
-static int find_archname(const char *boardname, const char *configname)
-{
-  const char **archname;
-  const char **chipname;
-  struct stat statbuf;
-  int ret;
-
-  /* Try each combination of board and chip names */
-
-  for (archname = g_archnames; *archname != NULL; archname++)
-    {
-      for (chipname = g_chipnames; *chipname != NULL; chipname++)
-        {
-          /* Get the architecture directory under boards.  Path format:
-           * board/<arch-name>/<chip-name>/<board-name>/configs/<config-name>
-           */
-
-          snprintf(g_buffer, BUFFER_SIZE, "boards%c%s%c%s%c%s%cconfigs%c%s",
-                   g_delim, *archname, g_delim, *chipname, g_delim, boardname,
-                   g_delim, g_delim, configname);
-
-          /* Check if there is a directory at this path */
-
-          ret = stat(g_buffer, &statbuf);
-          if (ret == 0 && S_ISDIR(statbuf.st_mode))
-            {
-              g_archdir = *archname;
-              g_chipdir = *chipname;
-              return 0;
-            }
-        }
-    }
-
-  g_archdir = "unknown";
-  g_chipdir = "unknown";
-  return -1;
 }
 
 static void parse_args(int argc, char **argv)
 {
   char *ptr;
   int ch;
-  int ret;
 
   /* Parse command line options */
 
-  g_debug = false;
-
-  while ((ch = getopt(argc, argv, "a:bcdfghlmnsu")) > 0)
+  while ((ch = getopt(argc, argv, "a:bcdefghlmnu")) > 0)
     {
       switch (ch)
         {
@@ -384,6 +285,10 @@ static void parse_args(int argc, char **argv)
 
           case 'd' :
             g_debug = true;
+            break;
+
+          case 'e' :
+            g_enforce = true;
             break;
 
           case 'f' :
@@ -412,10 +317,6 @@ static void parse_args(int argc, char **argv)
             g_windows = WINDOWS_NATIVE;
             break;
 
-          case 's' :
-            g_skip = true;
-            break;
-
           case 'u' :
             g_host    = HOST_WINDOWS;
             g_windows = WINDOWS_UBUNTU;
@@ -426,7 +327,8 @@ static void parse_args(int argc, char **argv)
             show_usage(argv[0], EXIT_FAILURE);
 
           case ':' :
-            fprintf(stderr, "ERROR: Missing option argument, option: %c\n", optopt);
+            fprintf(stderr, "ERROR: Missing option argument, option: %c\n",
+                    optopt);
             show_usage(argv[0], EXIT_FAILURE);
 
           default:
@@ -439,7 +341,7 @@ static void parse_args(int argc, char **argv)
 
   if (optind >= argc)
     {
-      fprintf(stderr, "ERROR: Missing <board-name>%c<config-name>\n", g_delim);
+      fprintf(stderr, "ERROR: Missing <board-name>:<config-name>\n");
       show_usage(argv[0], EXIT_FAILURE);
     }
 
@@ -470,18 +372,36 @@ static void parse_args(int argc, char **argv)
   *ptr++ = '\0';
   g_configdir = ptr;
 
-  if (optind < argc)
+  /* The left arguments will pass to make */
+
+  g_makeargv = &argv[optind];
+}
+
+static int run_make(const char *arg)
+{
+  char **argv;
+  bool v1 = false;
+
+  snprintf(g_buffer, BUFFER_SIZE, "make %s", arg);
+
+  for (argv = g_makeargv; *argv; argv++)
     {
-      fprintf(stderr, "ERROR: Unexpected garbage at the end of the line\n");
-      show_usage(argv[0], EXIT_FAILURE);
+      strncat(g_buffer, " ", BUFFER_SIZE - 1);
+      strncat(g_buffer, *argv, BUFFER_SIZE - 1);
+      if (strcmp(*argv, "V=1") == 0)
+        {
+          v1 = true;
+        }
     }
 
-  ret = find_archname(g_boarddir, g_configdir);
-  if (ret != 0)
+  if (!v1)
     {
-      fprintf(stderr, "ERROR: Architecture for board %s not found\n",
-              g_boarddir);
+#ifndef WIN32
+      strncat(g_buffer, " 1>/dev/null", BUFFER_SIZE - 1);
+#endif
     }
+
+  return system(g_buffer);
 }
 
 static bool check_directory(const char *directory)
@@ -509,13 +429,15 @@ static void verify_directory(const char *directory)
 
   if (stat(directory, &buf) < 0)
     {
-      fprintf(stderr, "ERROR: stat of %s failed: %s\n", directory, strerror(errno));
+      fprintf(stderr, "ERROR: stat of %s failed: %s\n",
+              directory, strerror(errno));
       exit(EXIT_FAILURE);
     }
 
   if (!S_ISDIR(buf.st_mode))
     {
-      fprintf(stderr, "ERROR: %s exists but is not a directory\n", directory);
+      fprintf(stderr, "ERROR: %s exists but is not a directory\n",
+              directory);
       exit(EXIT_FAILURE);
     }
 }
@@ -526,26 +448,29 @@ static bool verify_optiondir(const char *directory)
 
   if (stat(directory, &buf) < 0)
     {
-      /* It may be okay if the dirctory does not exist */
+      /* It may be okay if the directory does not exist */
 
       /* It may be okay if the file does not exist */
 
       int errcode = errno;
       if (errcode == ENOENT)
         {
-          debug("verify_optiondir: stat of %s failed: %s\n", directory, strerror(errno));
+          debug("verify_optiondir: stat of %s failed: %s\n",
+                directory, strerror(errno));
           return false;
         }
       else
         {
-          fprintf(stderr, "ERROR: stat of %s failed: %s\n", directory, strerror(errno));
+          fprintf(stderr, "ERROR: stat of %s failed: %s\n",
+                  directory, strerror(errno));
           exit(EXIT_FAILURE);
         }
     }
 
   if (!S_ISDIR(buf.st_mode))
     {
-      fprintf(stderr, "ERROR: %s exists but is not a directory\n", directory);
+      fprintf(stderr, "ERROR: %s exists but is not a directory\n",
+              directory);
       exit(EXIT_FAILURE);
     }
 
@@ -563,12 +488,14 @@ static bool verify_file(const char *path)
       int errcode = errno;
       if (errcode == ENOENT)
         {
-          debug("verify_file: stat of %s failed: %s\n", path, strerror(errno));
+          debug("verify_file: stat of %s failed: %s\n",
+                path, strerror(errno));
           return false;
         }
       else
         {
-          fprintf(stderr, "ERROR: stat of %s failed: %s\n", path, strerror(errno));
+          fprintf(stderr, "ERROR: stat of %s failed: %s\n",
+                  path, strerror(errno));
           exit(EXIT_FAILURE);
         }
     }
@@ -587,15 +514,16 @@ static void find_topdir(void)
   char *currdir;
 
   /* Get and verify the top-level NuttX directory */
+
   /* First get the current directory.  We expect this to be either
    * the nuttx root directory or the tools subdirectory.
    */
 
-   if (getcwd(g_buffer, BUFFER_SIZE) == NULL)
-     {
-       fprintf(stderr, "ERROR: getcwd failed: %s\n", strerror(errno));
-       exit(EXIT_FAILURE);
-     }
+  if (getcwd(g_buffer, BUFFER_SIZE) == NULL)
+    {
+      fprintf(stderr, "ERROR: getcwd failed: %s\n", strerror(errno));
+      exit(EXIT_FAILURE);
+    }
 
   /* Assume that we are in the tools sub-directory and the directory above
    * is the nuttx root directory.
@@ -628,10 +556,16 @@ static void find_topdir(void)
       /* Yes, we are probably in the tools/ sub-directory */
 
       free(currdir);
+      if (chdir(g_topdir) < 0)
+        {
+          fprintf(stderr, "ERROR: Failed to ch to %s\n", g_topdir);
+          exit(EXIT_FAILURE);
+        }
     }
 }
 
-static void config_search(const char *boarddir)
+static void config_search(const char *boarddir,
+                          config_callback callback, void *data)
 {
   DIR *dir;
   struct dirent *dp;
@@ -665,7 +599,7 @@ static void config_search(const char *boarddir)
 
   /* Visit each entry in the directory */
 
-  while ((dp = readdir (dir)) != NULL)
+  while ((dp = readdir(dir)) != NULL)
     {
       /* Ignore directory entries that start with '.' */
 
@@ -696,34 +630,38 @@ static void config_search(const char *boarddir)
       if (S_ISDIR(buf.st_mode))
         {
           char *tmppath;
-          snprintf(g_buffer, BUFFER_SIZE, "%s%c%s", boarddir, g_delim, child);
+          snprintf(g_buffer, BUFFER_SIZE, "%s%c%s",
+                   boarddir, g_delim, child);
           tmppath = strdup(g_buffer);
-          config_search(tmppath);
+          config_search(tmppath, callback, data);
           free(tmppath);
         }
 
       /* If it is a regular file named 'defconfig' then we have found a
-       * configuration directory.  We could terminate the serach in this case
+       * configuration directory.  We could terminate the search in this case
        * because we do not expect sub-directories within configuration
        * directories.
        */
 
       else if (S_ISREG(buf.st_mode) && strcmp("defconfig", child) == 0)
         {
+          char *archname;
+          char *chipname;
           char *boardname;
           char *configname;
           char *delim;
-          char *tmp;
 
-          /* Get the board directory near the beginning of the 'boarddir' path:
+          /* Get the board directory near the beginning of the 'boarddir':
            * <archdir>/<chipdir>/<boarddir>/configs/<configdir>
            */
 
           /* Make a modifiable copy */
 
-          strncpy(g_buffer, boarddir, BUFFER_SIZE);
+          strncpy(g_buffer, boarddir, BUFFER_SIZE - 1);
 
-          /* Skip over <archdir> */
+          /* Save the <archdir> */
+
+          archname = g_buffer;
 
           delim = strchr(g_buffer, g_delim);
           if (delim == NULL)
@@ -732,13 +670,16 @@ static void config_search(const char *boarddir)
             }
           else
             {
-              /* Skip over <chipdir> */
+              /* Save the <chipdir> */
 
-              tmp   = delim + 1;
-              delim = strchr(tmp, g_delim);
+              *delim   = '\0';
+              chipname = delim + 1;
+
+              delim = strchr(chipname, g_delim);
               if (delim == NULL)
                 {
-                  debug("ERROR: delimiter not found in path: %s\n", tmp);
+                  debug("ERROR: delimiter not found in path: %s\n",
+                        chipname);
                 }
               else
                 {
@@ -750,7 +691,8 @@ static void config_search(const char *boarddir)
                   delim = strchr(boardname, g_delim);
                   if (delim == NULL)
                     {
-                      debug("ERROR: delimiter not found in path: %s\n", boardname);
+                      debug("ERROR: delimiter not found in path: %s\n",
+                            boardname);
                     }
                   else
                     {
@@ -760,13 +702,14 @@ static void config_search(const char *boarddir)
                       delim  = strrchr(delim + 1, g_delim);
                       if (delim == NULL)
                         {
-                          debug("ERROR: Configuration directory not found in path: %s\n",
+                          debug("ERROR: directory not found in path: %s\n",
                                 boardname);
                         }
                       else
                         {
                           configname = delim + 1;
-                          fprintf(stderr, "  %s:%s\n", boardname, configname);
+                          callback(boarddir, archname, chipname,
+                                   boardname, configname, data);
                         }
                     }
                 }
@@ -780,10 +723,39 @@ static void config_search(const char *boarddir)
   closedir(dir);
 }
 
+static void archname_callback(const char *boarddir, const char *archname,
+                              const char *chipname, const char *boardname,
+                              const char *configname, void *data)
+{
+  if (strcmp(g_boarddir, boardname) == 0 &&
+      strcmp(g_configdir, configname) == 0)
+    {
+      g_archdir = strdup(archname);
+      g_chipdir = strdup(chipname);
+    }
+}
+
+static void find_archname(void)
+{
+  config_search("", archname_callback, NULL);
+  if (g_archdir == NULL || g_chipdir == NULL)
+    {
+      g_archdir = "unknown";
+      g_chipdir = "unknown";
+    }
+}
+
+static void enumerate_callback(const char *boarddir, const char *archname,
+                               const char *chipname, const char *boardname,
+                               const char *configname, void *data)
+{
+  fprintf(stderr, "  %s:%s\n", boardname, configname);
+}
+
 static void enumerate_configs(void)
 {
   fprintf(stderr, "Options for <board-name>:<config-name> include:\n\n");
-  config_search("");
+  config_search("", enumerate_callback, NULL);
 }
 
 static void check_configdir(void)
@@ -799,6 +771,8 @@ static void check_configdir(void)
   /* Get and verify the path to the selected configuration:
    * boards/<archdir>/<chipdir>/<boarddir>/configs/<configdir>
    */
+
+  find_archname();
 
   snprintf(g_buffer, BUFFER_SIZE, "%s%cboards%c%s%c%s%c%s%cconfigs%c%s",
            g_topdir, g_delim, g_delim, g_archdir, g_delim, g_chipdir,
@@ -832,35 +806,25 @@ static void check_configdir(void)
 
 static void check_configured(void)
 {
-  /* Skip to check .config/Make.defs? */
-
-  if (g_skip)
-    {
-      return;
-    }
-
-  /* If we are already configured then there will be a .config and a Make.defs
-   * file in the top-level directory.
+  /* If we are already configured then there will be a .config and
+   * a Make.defs file in the top-level directory.
    */
 
   snprintf(g_buffer, BUFFER_SIZE, "%s%c.config", g_topdir, g_delim);
   debug("check_configured: Checking %s\n", g_buffer);
   if (verify_file(g_buffer))
     {
-      fprintf(stderr, "ERROR: Found %s... Already configured\n", g_buffer);
-      fprintf(stderr, "       Please 'make distclean' and try again\n");
-      exit(EXIT_FAILURE);
-    }
-
-  /* Try the Make.defs file */
-
-  snprintf(g_buffer, BUFFER_SIZE, "%s%cMake.defs", g_topdir, g_delim);
-  debug("check_configuration: Checking %s\n", g_buffer);
-  if (verify_file(g_buffer))
-    {
-      fprintf(stderr, "ERROR: Found %s... Already configured\n", g_buffer);
-      fprintf(stderr, "       Please 'make distclean' and try again\n");
-      exit(EXIT_FAILURE);
+      if (g_enforce)
+        {
+          run_make("distclean");
+        }
+      else
+        {
+          fprintf(stderr, "ERROR: Found %s... Already configured\n",
+                  g_buffer);
+          fprintf(stderr, "       Please 'make distclean' and try again\n");
+          exit(EXIT_FAILURE);
+        }
     }
 }
 
@@ -941,6 +905,7 @@ static void check_appdir(void)
   char tmp[16];
 
   /* Get and verify the full path to the application directory */
+
   /* Was the appdir provided on the command line? */
 
   debug("check_appdir: Command line appdir=%s\n",
@@ -984,7 +949,7 @@ static void check_appdir(void)
 
       /* Try ../apps-xx.yy where xx.yy is the version string */
 
-      snprintf(tmp, 16, ".%capps-%s", g_delim, g_verstring);
+      snprintf(tmp, 16, "..%capps-%s", g_delim, g_verstring);
       debug("check_appdir: Try appdir=%s\n", tmp);
       if (verify_appdir(tmp))
         {
@@ -1002,16 +967,13 @@ static void check_appdir(void)
 
       /* Try ../apps-xx.yy where xx.yy are the NuttX version number */
 
-      fprintf(stderr, "ERROR: Could not find the path to the application directory\n");
+      fprintf(stderr, "ERROR: Could not find the path to the appdir\n");
       exit(EXIT_FAILURE);
     }
-  else
+  else if (!verify_appdir(g_appdir))
     {
-      if (!verify_appdir(g_appdir))
-        {
-          fprintf(stderr, "ERROR: Command line path to application directory does not exist\n");
-          exit(EXIT_FAILURE);
-        }
+      fprintf(stderr, "ERROR: Command line path to appdir does not exist\n");
+      exit(EXIT_FAILURE);
     }
 }
 
@@ -1028,7 +990,7 @@ static void check_configuration(void)
       g_oldnative = true;
     }
 
-  /* If we are going to some host other then windows native or to a windows
+  /* If we are going to some host other than windows native or to a windows
    * native host, then don't ignore what is in the defconfig file.
    */
 
@@ -1069,12 +1031,15 @@ static void check_configuration(void)
 
       if (g_scriptspath != NULL)
         {
-          snprintf(g_buffer, BUFFER_SIZE, "%s%cMake.defs", g_scriptspath, g_delim);
+          snprintf(g_buffer, BUFFER_SIZE, "%s%cMake.defs",
+                   g_scriptspath, g_delim);
           debug("check_configuration: Checking %s\n", g_buffer);
           if (!verify_file(g_buffer))
             {
-              fprintf(stderr, "ERROR: No Make.defs file in %s\n", g_configpath);
-              fprintf(stderr, "       No Make.defs file in %s\n", g_scriptspath);
+              fprintf(stderr, "ERROR: No Make.defs file in %s\n",
+                      g_configpath);
+              fprintf(stderr, "       No Make.defs file in %s\n",
+                      g_scriptspath);
               enumerate_configs();
               exit(EXIT_FAILURE);
             }
@@ -1090,7 +1055,8 @@ static void check_configuration(void)
   g_srcmakedefs = strdup(g_buffer);
 }
 
-static void copy_file(const char *srcpath, const char *destpath, mode_t mode)
+static void copy_file(const char *srcpath,
+                      const char *destpath, mode_t mode)
 {
   int nbytesread;
   int nbyteswritten;
@@ -1102,22 +1068,24 @@ static void copy_file(const char *srcpath, const char *destpath, mode_t mode)
   rdfd = open(srcpath, O_RDONLY);
   if (rdfd < 0)
     {
-      fprintf(stderr, "ERROR: Failed to open %s for reading: %s\n", srcpath, strerror(errno));
+      fprintf(stderr, "ERROR: Failed to open %s for reading: %s\n",
+              srcpath, strerror(errno));
       exit(EXIT_FAILURE);
     }
 
-  /* Now open the destination for writing*/
+  /* Now open the destination for writing */
 
-  wrfd = open(destpath, O_WRONLY|O_CREAT|O_TRUNC, mode);
+  wrfd = open(destpath, O_WRONLY | O_CREAT | O_TRUNC, mode);
   if (wrfd < 0)
     {
-      fprintf(stderr, "ERROR: Failed to open %s for writing: %s\n", destpath, strerror(errno));
+      fprintf(stderr, "ERROR: Failed to open %s for writing: %s\n",
+              destpath, strerror(errno));
       exit(EXIT_FAILURE);
     }
 
   /* Now copy the file */
 
-  for (;;)
+  for (; ; )
     {
       do
         {
@@ -1236,7 +1204,8 @@ static void copy_optional(void)
         {
           char *optsrc = strdup(g_buffer);
 
-          snprintf(g_buffer, BUFFER_SIZE, "%s%c.config", g_topdir, g_delim);
+          snprintf(g_buffer, BUFFER_SIZE, "%s%c%s",
+                   g_topdir, g_delim, g_optfiles[i]);
 
           debug("copy_optional: Copying from %s to %s\n", optsrc, g_buffer);
           copy_file(optsrc, g_buffer, 0644);
@@ -1317,7 +1286,7 @@ static void set_host(const char *destconfig)
 
       case HOST_MACOS:
         {
-          printf("  Select the Linux host\n");
+          printf("  Select the macOS host\n");
 
           disable_feature(destconfig, "CONFIG_HOST_LINUX");
           disable_feature(destconfig, "CONFIG_HOST_WINDOWS");
@@ -1340,7 +1309,6 @@ static void set_host(const char *destconfig)
           disable_feature(destconfig, "CONFIG_HOST_LINUX");
           disable_feature(destconfig, "CONFIG_HOST_MACOS");
 
-          disable_feature(destconfig, "CONFIG_WINDOWS_MSYS");
           disable_feature(destconfig, "CONFIG_WINDOWS_OTHER");
 
           enable_feature(destconfig, "CONFIG_SIM_X8664_MICROSOFT");
@@ -1357,7 +1325,7 @@ static void set_host(const char *destconfig)
                 break;
 
               case WINDOWS_MSYS:
-                printf("  Select Ubuntu for Windows 10 host\n");
+                printf("  Select Windows/MSYS host\n");
                 disable_feature(destconfig, "CONFIG_WINDOWS_CYGWIN");
                 enable_feature(destconfig, "CONFIG_WINDOWS_MSYS");
                 disable_feature(destconfig, "CONFIG_WINDOWS_UBUNTU");
@@ -1394,7 +1362,8 @@ static void set_host(const char *destconfig)
 
       default:
         {
-          fprintf(stderr, "ERROR: Unrecognized  host configuration: %d\n", g_host);
+          fprintf(stderr, "ERROR: Unrecognized  host configuration: %d\n",
+                  g_host);
           exit(EXIT_FAILURE);
         }
     }
@@ -1425,9 +1394,9 @@ static void configure(void)
 
   set_host(destconfig);
 
-  /* If we did not use the CONFIG_APPS_DIR that was in the defconfig config file,
-   * then append the correct application information to the tail of the .config
-   * file
+  /* If we did not use the CONFIG_APPS_DIR that was in the defconfig config
+   * file, then append the correct application information to the tail of the
+   * .config file
    */
 
   if (g_needapppath)
@@ -1435,8 +1404,8 @@ static void configure(void)
       FILE *stream;
       char *appdir = strdup(g_appdir);
 
-      /* One complexity is if we are using Windows paths, but the configuration
-       * needs POSIX paths (or vice versa).
+      /* One complexity is if we are using Windows paths, but the
+       * configuration needs POSIX paths (or vice versa).
        */
 
       if (g_winpaths != g_winnative)
@@ -1467,7 +1436,8 @@ static void configure(void)
           char *tmp_appdir = double_appdir_backslashes(appdir);
           if (NULL == tmp_appdir)
             {
-              fprintf(stderr, "ERROR: Failed to double appdir backslashes\n");
+              fprintf(stderr,
+                      "ERROR: Failed to double appdir backslashes\n");
               exit(EXIT_FAILURE);
             }
 
@@ -1480,7 +1450,8 @@ static void configure(void)
       stream = fopen(destconfig, "a");
       if (!stream)
         {
-          fprintf(stderr, "ERROR: Failed to open %s for append mode mode: %s\n",
+          fprintf(stderr,
+                  "ERROR: Failed to open %s for append mode mode: %s\n",
                   destconfig, strerror(errno));
           exit(EXIT_FAILURE);
         }
@@ -1498,21 +1469,10 @@ static void refresh(void)
 {
   int ret;
 
-  ret = chdir(g_topdir);
-  if (ret < 0)
-    {
-      fprintf(stderr, "ERROR: Failed to ch to %s\n", g_topdir);
-      exit(EXIT_FAILURE);
-    }
-
   printf("  Refreshing...\n");
   fflush(stdout);
 
-#ifdef WIN32
-  ret = system("make olddefconfig");
-#else
-  ret = system("make olddefconfig 1>/dev/null");
-#endif
+  ret = run_make("olddefconfig");
   putchar('\n');
 
 #ifdef WEXITSTATUS
@@ -1521,7 +1481,7 @@ static void refresh(void)
   if (ret < 0)
 #endif
     {
-      fprintf(stderr, "ERROR: Failed to refresh configuations\n");
+      fprintf(stderr, "ERROR: Failed to refresh configurations\n");
       fprintf(stderr, "       kconfig-conf --olddefconfig Kconfig\n");
     }
 }

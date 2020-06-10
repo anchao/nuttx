@@ -56,8 +56,8 @@
 #include <nuttx/irq.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "chip.h"
 #include "hardware/lpc17_40_usb.h"
@@ -75,7 +75,7 @@
 #  define CONFIG_LPC17_40_USBDEV_EP0_MAXSIZE 64
 #endif
 
-#ifndef  CONFIG_USBDEV_MAXPOWER
+#ifndef CONFIG_USBDEV_MAXPOWER
 #  define CONFIG_USBDEV_MAXPOWER 100  /* mA */
 #endif
 
@@ -220,7 +220,7 @@
 #define DEVSTATUS_RESET(s)      (((s)&CMD_STATUS_RESET)!=0)
 
 /* If this bit is set in the lpc17_40_epread response, it means that the
- * recevied packet was overwritten by a later setup packet (ep0 only).
+ * received packet was overwritten by a later setup packet (ep0 only).
  */
 
 #define LPC17_40_READOVERRUN_BIT (0x80000000)
@@ -255,7 +255,7 @@
 #define LPC17_40_EP0MAXPACKET         (64)          /* EP0 max packet size (1-64) */
 #define LPC17_40_BULKMAXPACKET        (64)          /* Bulk endpoint max packet (8/16/32/64) */
 #define LPC17_40_INTRMAXPACKET        (64)          /* Interrupt endpoint max packet (1 to 64) */
-#define LPC17_40_ISOCMAXPACKET        (512)         /* Acutally 1..1023 */
+#define LPC17_40_ISOCMAXPACKET        (512)         /* Actually 1..1023 */
 
 /* EP0 status.  EP0 transfers occur in a number of different contexts.  A
  * simple state machine is required to handle the various transfer complete
@@ -896,8 +896,8 @@ static void lpc17_40_epwrite(uint8_t epphy, const uint8_t *data, uint32_t nbytes
   /* Done */
 
   lpc17_40_putreg(0, LPC17_40_USBDEV_CTRL);
-  (void)lpc17_40_usbcmd(CMD_USBDEV_EPSELECT | epphy, 0);
-  (void)lpc17_40_usbcmd(CMD_USBDEV_EPVALIDATEBUFFER, 0);
+  lpc17_40_usbcmd(CMD_USBDEV_EPSELECT | epphy, 0);
+  lpc17_40_usbcmd(CMD_USBDEV_EPVALIDATEBUFFER, 0);
 }
 
 /****************************************************************************
@@ -969,11 +969,11 @@ static int lpc17_40_epread(uint8_t epphy, uint8_t *data, uint32_t nbytes)
   /* Done */
 
   lpc17_40_putreg(0, LPC17_40_USBDEV_CTRL);
-  (void)lpc17_40_usbcmd(CMD_USBDEV_EPSELECT | epphy, 0);
+  lpc17_40_usbcmd(CMD_USBDEV_EPSELECT | epphy, 0);
   result = lpc17_40_usbcmd(CMD_USBDEV_EPCLRBUFFER, 0);
 
   /* The packet overrun bit in the clear buffer response is applicable only
-   * on EP0 transfers.  If set it means that the recevied packet was overwritten
+   * on EP0 transfers.  If set it means that the received packet was overwritten
    * by a later setup packet.
    */
 
@@ -1719,7 +1719,7 @@ static inline void lpc17_40_ep0setup(struct lpc17_40_usbdev_s *priv)
                  (privep = lpc17_40_epfindbyaddr(priv, index)) != NULL)
           {
             privep->halted = 0;
-            (void)lpc17_40_epstall(&privep->ep, true);
+            lpc17_40_epstall(&privep->ep, true);
             lpc17_40_epwrite(LPC17_40_EP0_IN, NULL, 0);
             priv->ep0state = LPC17_40_EP0STATUSIN;
           }
@@ -2235,7 +2235,7 @@ static int lpc17_40_usbinterrupt(int irq, FAR void *context, FAR void *arg)
                 {
                   /* On the first time through the loop, pending will be
                    * the bitset of high priority pending interrupts; on the
-                   * second time throught it will be the bitset of low
+                   * second time through it will be the bitset of low
                    * priority interrupts.
                    */
 
@@ -2268,7 +2268,7 @@ static int lpc17_40_usbinterrupt(int irq, FAR void *context, FAR void *arg)
                       /* Clear the endpoint interrupt */
 
                       usbtrace(TRACE_INTDECODE(LPC17_40_TRACEINTID_EP0IN), priv->ep0state);
-                      (void)lpc17_40_epclrinterrupt(LPC17_40_CTRLEP_IN);
+                      lpc17_40_epclrinterrupt(LPC17_40_CTRLEP_IN);
                       lpc17_40_ep0dataininterrupt(priv);
                     }
                   pending >>= 2;
@@ -2283,9 +2283,9 @@ static int lpc17_40_usbinterrupt(int irq, FAR void *context, FAR void *arg)
                         {
                           /* Yes.. clear the endpoint interrupt */
 
-                          (void)lpc17_40_epclrinterrupt(epphy);
+                          lpc17_40_epclrinterrupt(epphy);
 
-                          /* Get the endpoint sructure corresponding to the physical
+                          /* Get the endpoint structure corresponding to the physical
                            * endpoint number.
                            */
 
@@ -2380,7 +2380,7 @@ static int lpc17_40_usbinterrupt(int irq, FAR void *context, FAR void *arg)
         {
           /* On the first time through the loop, pending will be
            * the bitset of high priority pending interrupts; on the
-           * second time throught it will be the bitset of low
+           * second time through it will be the bitset of low
            * priority interrupts. Note that EP0 IN and OUT are
            * omitted.
            */
@@ -2926,7 +2926,7 @@ static int lpc17_40_epstall(FAR struct usbdev_ep_s *ep, bool resume)
 
   if (resume)
     {
-      (void)lpc17_40_wrrequest(privep);
+      lpc17_40_wrrequest(privep);
     }
   leave_critical_section(flags);
   return OK;
@@ -3188,7 +3188,7 @@ static int lpc17_40_pullup(struct usbdev_s *dev, bool enable)
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_usbinitialize
+ * Name: arm_usbinitialize
  *
  * Description:
  *   Initialize USB hardware.
@@ -3199,7 +3199,7 @@ static int lpc17_40_pullup(struct usbdev_s *dev, bool enable)
  *
  ****************************************************************************/
 
-void up_usbinitialize(void)
+void arm_usbinitialize(void)
 {
   struct lpc17_40_usbdev_s *priv = &g_usbdev;
   uint32_t regval;
@@ -3359,14 +3359,14 @@ void up_usbinitialize(void)
   return;
 
 errout:
-  up_usbuninitialize();
+  arm_usbuninitialize();
 }
 
 /****************************************************************************
- * Name: up_usbuninitialize
+ * Name: arm_usbuninitialize
  ****************************************************************************/
 
-void up_usbuninitialize(void)
+void arm_usbuninitialize(void)
 {
   struct lpc17_40_usbdev_s *priv = &g_usbdev;
   uint32_t regval;

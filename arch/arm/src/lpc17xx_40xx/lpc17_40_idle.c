@@ -43,7 +43,7 @@
 #include <nuttx/arch.h>
 #include <nuttx/board.h>
 
-#include "up_internal.h"
+#include "arm_internal.h"
 #include "lpc17_40_gpdma.h"
 
 /****************************************************************************
@@ -118,4 +118,3 @@ void up_idle(void)
     }
 #endif
 }
-

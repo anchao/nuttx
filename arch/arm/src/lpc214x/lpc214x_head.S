@@ -46,8 +46,8 @@
 #include "lpc214x_pll.h"
 #include "lpc214x_apb.h"
 #include "lpc214x_pinsel.h"
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 
 /*****************************************************************************
  * Pre-processor Definitions
@@ -282,7 +282,7 @@
 	.macro	showprogress, code
 #ifdef CONFIG_DEBUG_FEATURES
 	mov	r0, #\code
-	bl	up_lowputc
+	bl	arm_lowputc
 #endif
 	.endm
 
@@ -473,27 +473,27 @@ _vector_table:
 	ldr	pc, .Lfiqhandler		/* 0x1c: FIQ */
 
 	.globl   __start
-	.globl	up_vectorundefinsn
-	.globl	up_vectorswi
-	.globl	up_vectorprefetch
-	.globl	up_vectordata
-	.globl	up_vectorirq
-	.globl	up_vectorfiq
+	.globl	arm_vectorundefinsn
+	.globl	arm_vectorswi
+	.globl	arm_vectorprefetch
+	.globl	arm_vectordata
+	.globl	arm_vectorirq
+	.globl	arm_vectorfiq
 
 .Lresethandler:
 	.long   __start
 .Lundefinedhandler:
-	.long	up_vectorundefinsn
+	.long	arm_vectorundefinsn
 .Lswihandler:
-	.long	up_vectorswi
+	.long	arm_vectorswi
 .Lprefetchaborthandler:
-	.long	up_vectorprefetch
+	.long	arm_vectorprefetch
 .Ldataaborthandler:
-	.long	up_vectordata
+	.long	arm_vectordata
 .Lirqhandler:
-	.long	up_vectorirq
+	.long	arm_vectorirq
 .Lfiqhandler:
-	.long	up_vectorfiq
+	.long	arm_vectorfiq
 	.size	_vector_table, . - _vector_table
 
 /*****************************************************************************
@@ -519,7 +519,7 @@ __start:
 
 	configpinsel2	r0, r1
 
-	/* Setup the External Memory Controllor (EMC) as configured */
+	/* Setup the External Memory Controller (EMC) as configured */
 
 	configemc	r0, r1
 
@@ -541,7 +541,7 @@ __start:
 	configmemmap	r0, r1
 
 	/* Configure the DAC and ADC */
-	
+
 	configdac	r0, r1
 
 	/* Configure Fast GPIO Port */
@@ -583,7 +583,7 @@ __start:
 
 	mov	fp, #0
 #ifdef USE_EARLYSERIALINIT
-	bl	up_earlyserialinit
+	bl	arm_earlyserialinit
 #endif
 
 	showprogress 'C'
@@ -601,7 +601,7 @@ __start:
 
 	/* Variables:
 	 * _sbss is the start of the BSS region (see ld.script)
-	 * _ebss is the end of the BSS regsion (see ld.script)
+	 * _ebss is the end of the BSS region (see ld.script)
 	 * The idle task stack starts at the end of BSS and is
 	 * of size CONFIG_IDLETHREAD_STACKSIZE.  The heap continues
 	 * from there until the end of memory.  See g_idle_topstack
@@ -631,4 +631,3 @@ g_idle_topstack:
 	.size	g_idle_topstack, .-g_idle_topstack
 
 	.end
-

@@ -47,7 +47,7 @@
 #include <arch/board/board.h>
 
 #include "chip.h"
-#include "up_arch.h"
+#include "arm_arch.h"
 
 #include "stm32_gpio.h"
 #include "stm32.h"
@@ -186,5 +186,3 @@ void stm32_selectlcd(void)
 }
 
 #endif /* CONFIG_STM32_FSMC */
-
-

@@ -50,9 +50,9 @@
 #include <nuttx/spinlock.h>
 #include <nuttx/sched_note.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "sched/sched.h"
-#include "up_internal.h"
+#include "arm_internal.h"
 #include "lc823450_intc.h"
 
 /****************************************************************************
@@ -85,7 +85,6 @@
 
 volatile spinlock_t g_cpu_wait[CONFIG_SMP_NCPUS];
 volatile spinlock_t g_cpu_paused[CONFIG_SMP_NCPUS];
-
 
 /****************************************************************************
  * Public Functions
@@ -144,7 +143,7 @@ int up_cpu_paused(int cpu)
 
   /* Update scheduler parameters */
 
-  sched_suspend_scheduler(tcb);
+  nxsched_suspend_scheduler(tcb);
 
 #ifdef CONFIG_SCHED_INSTRUMENTATION
   /* Notify that we are paused */
@@ -156,7 +155,7 @@ int up_cpu_paused(int cpu)
    * of the assigned task list for this CPU.
    */
 
-  up_savestate(tcb->xcp.regs);
+  arm_savestate(tcb->xcp.regs);
 
   /* Wait for the spinlock to be released */
 
@@ -177,13 +176,13 @@ int up_cpu_paused(int cpu)
 
   /* Reset scheduler parameters */
 
-  sched_resume_scheduler(tcb);
+  nxsched_resume_scheduler(tcb);
 
   /* Then switch contexts.  Any necessary address environment changes
    * will be made when the interrupt returns.
    */
 
-  up_restorestate(tcb->xcp.regs);
+  arm_restorestate(tcb->xcp.regs);
 
   spin_unlock(&g_cpu_wait[cpu]);
 
@@ -298,11 +297,11 @@ int up_cpu_pause(int cpu)
   spin_unlock(&g_cpu_paused[cpu]);
 
   /* On successful return g_cpu_wait will be locked, the other CPU will be
-   * spinninf on g_cpu_wait and will not continue until g_cpu_resume() is
+   * spinning on g_cpu_wait and will not continue until g_cpu_resume() is
    * called.  g_cpu_paused will be unlocked in any case.
    */
 
- return 0;
+  return 0;
 }
 
 /****************************************************************************

@@ -50,7 +50,7 @@
 #include <arch/board/board.h>
 
 #include "chip.h"
-#include "up_arch.h"
+#include "arm_arch.h"
 
 #include "lpc31_syscreg.h"
 #include "lpc31_cgudrvr.h"
@@ -257,7 +257,7 @@ static inline void lpc31_sdraminitialize(void)
    * 16bit mode
    */
 
-  (void)getreg32(LPC31_EXTSDRAM0_VSECTION | (0x23 << 12));
+  getreg32(LPC31_EXTSDRAM0_VSECTION | (0x23 << 12));
 
   /* Select normal operating mode */
 

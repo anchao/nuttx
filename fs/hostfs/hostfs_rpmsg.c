@@ -235,13 +235,19 @@ static int hostfs_rpmsg_stat_handler(FAR struct rpmsg_endpoint *ept,
   cookie->result = header->result;
   if (cookie->result >= 0)
     {
+      buf->st_dev     = rsp->buf.st_dev;
+      buf->st_ino     = rsp->buf.st_ino;
       buf->st_mode    = rsp->buf.st_mode;
+      buf->st_nlink   = rsp->buf.st_nlink;
+      buf->st_uid     = rsp->buf.st_uid;
+      buf->st_gid     = rsp->buf.st_gid;
+      buf->st_rdev    = rsp->buf.st_rdev;
       buf->st_size    = B2C(rsp->buf.st_size);
-      buf->st_blksize = B2C(rsp->buf.st_blksize);
-      buf->st_blocks  = rsp->buf.st_blocks;
       buf->st_atime   = rsp->buf.st_atime;
       buf->st_mtime   = rsp->buf.st_mtime;
       buf->st_ctime   = rsp->buf.st_ctime;
+      buf->st_blksize = B2C(rsp->buf.st_blksize);
+      buf->st_blocks  = rsp->buf.st_blocks;
     }
 
   nxsem_post(&cookie->sem);
@@ -274,8 +280,9 @@ static void hostfs_rpmsg_device_destroy(FAR struct rpmsg_device *rdev,
     }
 }
 
-static int hostfs_rpmsg_ept_cb(FAR struct rpmsg_endpoint *ept, FAR void *data,
-                               size_t len, uint32_t src, FAR void *priv)
+static int hostfs_rpmsg_ept_cb(FAR struct rpmsg_endpoint *ept,
+                               FAR void *data, size_t len, uint32_t src,
+                               FAR void *priv)
 {
   FAR struct hostfs_rpmsg_header_s *header = data;
   uint32_t command = header->command;
@@ -298,7 +305,7 @@ static int hostfs_rpmsg_send_recv(uint32_t command, bool copy,
 
   memset(&cookie, 0, sizeof(cookie));
   nxsem_init(&cookie.sem, 0, 0);
-  nxsem_setprotocol(&cookie.sem, SEM_PRIO_NONE);
+  nxsem_set_protocol(&cookie.sem, SEM_PRIO_NONE);
 
   if (data)
     {
@@ -327,18 +334,10 @@ static int hostfs_rpmsg_send_recv(uint32_t command, bool copy,
       goto fail;
     }
 
-  while (1)
+  ret = nxsem_wait_uninterruptible(&cookie.sem);
+  if (ret == 0)
     {
-      ret = nxsem_wait(&cookie.sem);
-      if (ret != -EINTR)
-        {
-          if (ret == 0)
-            {
-              ret = cookie.result;
-            }
-
-          break;
-        }
+      ret = cookie.result;
     }
 
 fail:
@@ -443,7 +442,8 @@ ssize_t host_write(int fd, FAR const void *buf, size_t count)
       memcpy(msg->buf, buf + written, space);
 
       ret = hostfs_rpmsg_send_recv(HOSTFS_RPMSG_WRITE, false,
-                (struct hostfs_rpmsg_header_s *)msg, sizeof(*msg) + space, NULL);
+                                   (FAR struct hostfs_rpmsg_header_s *)msg,
+                                   sizeof(*msg) + space, NULL);
       if (ret <= 0)
         {
           break;

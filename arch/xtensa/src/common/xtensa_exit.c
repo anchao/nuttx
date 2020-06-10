@@ -148,18 +148,18 @@ void _exit(int status)
    * The IRQ state will be restored when the next task is started.
    */
 
-  (void)enter_critical_section();
+  enter_critical_section();
 
   sinfo("TCB=%p exiting\n", tcb);
 
 #ifdef CONFIG_DUMP_ON_EXIT
   sinfo("Other tasks:\n");
-  sched_foreach(_xtensa_dumponexit, NULL);
+  nxsched_foreach(_xtensa_dumponexit, NULL);
 #endif
 
   /* Update scheduler parameters */
 
-  sched_suspend_scheduler(tcb);
+  nxsched_suspend_scheduler(tcb);
 
 #if XCHAL_CP_NUM > 0
   /* Disable co-processor support for the task that is exit-ing. */
@@ -169,7 +169,7 @@ void _exit(int status)
 
   /* Destroy the task at the head of the ready to run list. */
 
-  (void)nxtask_exit();
+  nxtask_exit();
 
   /* Now, perform the context switch to the new ready-to-run task at the
    * head of the list.
@@ -190,19 +190,19 @@ void _exit(int status)
    * the ready-to-run list.
    */
 
-  (void)group_addrenv(tcb);
+  group_addrenv(tcb);
 #endif
 
   /* Reset scheduler parameters */
 
-  sched_resume_scheduler(tcb);
+  nxsched_resume_scheduler(tcb);
 
   /* Then switch contexts */
 
   xtensa_context_restore(tcb->xcp.regs);
 
-  /* xtensa_full_context_restore() should not return but could if the software
-   * interrupts are disabled.
+  /* xtensa_full_context_restore() should not return but could if the
+   * software interrupts are disabled.
    */
 
   DEBUGPANIC();

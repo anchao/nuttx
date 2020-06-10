@@ -57,8 +57,8 @@
 #include <nuttx/fs/fs.h>
 #include <nuttx/drivers/drivers.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "sam_periphclks.h"
 #include "sam_trng.h"
@@ -144,7 +144,7 @@ static int sam_interrupt(int irq, void *context, FAR void *arg)
       odata = getreg32(SAM_TRNG_ODATA);
 
       /* Verify that sample data is available (DATARDY is cleared when the
-       * interrupt status regiser is read)
+       * interrupt status register is read)
        */
 
       if ((getreg32(SAM_TRNG_ISR) & TRNG_INT_DATRDY) == 0)
@@ -198,7 +198,7 @@ static int sam_interrupt(int irq, void *context, FAR void *arg)
           g_trngdev.first      = false;
         }
 
-      /* Yes.. the first sample has been dicarded */
+      /* Yes.. the first sample has been discarded */
 
       else
         {
@@ -277,7 +277,7 @@ static ssize_t sam_read(struct file *filep, char *buffer, size_t buflen)
    * register
    */
 
-  (void)getreg32(SAM_TRNG_ISR);
+  getreg32(SAM_TRNG_ISR);
 
   /* Enable TRNG interrupts */
 
@@ -363,7 +363,7 @@ static int sam_rng_initialize(void)
    * priority inheritance enabled.
    */
 
-  nxsem_setprotocol(&g_trngdev.waitsem, SEM_PRIO_NONE);
+  nxsem_set_protocol(&g_trngdev.waitsem, SEM_PRIO_NONE);
 
   /* Enable clocking to the TRNG */
 

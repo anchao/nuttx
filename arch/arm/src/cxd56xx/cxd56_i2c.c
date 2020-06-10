@@ -32,6 +32,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  ****************************************************************************/
+
 /****************************************************************************
  * Included Files
  ****************************************************************************/
@@ -54,8 +55,8 @@
 #include <arch/board/board.h>
 
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "cxd56_clock.h"
 #include "cxd56_i2c.h"
@@ -93,7 +94,7 @@ struct cxd56_i2cdev_s
   unsigned int     base;       /* Base address of registers */
   uint16_t         irqid;      /* IRQ for this device */
   int8_t           port;       /* Port number */
-  uint32_t         baseFreq;   /* branch frequency */
+  uint32_t         base_freq;  /* branch frequency */
 
   sem_t            mutex;      /* Only one thread can access at a time */
   sem_t            wait;       /* Place to wait for transfer completion */
@@ -147,9 +148,11 @@ static struct cxd56_i2cdev_s g_i2c2dev =
 
 static inline uint32_t i2c_reg_read(struct cxd56_i2cdev_s *priv,
                                     uint32_t offset);
-static inline void i2c_reg_write(struct cxd56_i2cdev_s *priv, uint32_t offset,
+static inline void i2c_reg_write(struct cxd56_i2cdev_s *priv,
+                                 uint32_t offset,
                                  uint32_t val);
-static inline void i2c_reg_rmw(struct cxd56_i2cdev_s *dev, uint32_t offset,
+static inline void i2c_reg_rmw(struct cxd56_i2cdev_s *dev,
+                               uint32_t offset,
                                uint32_t val, uint32_t mask);
 
 static int cxd56_i2c_disable(struct cxd56_i2cdev_s *priv);
@@ -266,37 +269,37 @@ static void cxd56_i2c_setfrequency(struct cxd56_i2cdev_s *priv,
   uint64_t lcnt64;
   uint64_t hcnt64;
   uint64_t speed;
-  uint64_t tLow;
-  uint64_t tHigh;
+  uint64_t t_low;
+  uint64_t t_high;
   uint32_t base = cxd56_get_i2c_baseclock(priv->port);
   uint32_t spklen;
 
   ASSERT(base);
 
-  if ((priv->frequency == frequency) && (priv->baseFreq == base))
+  if ((priv->frequency == frequency) && (priv->base_freq == base))
     {
       return;
     }
 
   priv->frequency = frequency;
-  priv->baseFreq = base;
+  priv->base_freq = base;
 
   base /= 1000;
 
   if (frequency <= 100000)
     {
-      tLow  = 4700000;
-      tHigh = 4000000;
+      t_low  = 4700000;
+      t_high = 4000000;
     }
   else if (frequency <= 400000)
     {
-      tLow  = 1300000;
-      tHigh = 600000;
+      t_low  = 1300000;
+      t_high = 600000;
     }
   else
     {
-      tLow  = 500000;
-      tHigh = 260000;
+      t_low  = 500000;
+      t_high = 260000;
     }
 
   if (frequency > 100000)
@@ -319,11 +322,11 @@ static void cxd56_i2c_setfrequency(struct cxd56_i2cdev_s *priv,
       spklen = 1;
     }
 
-  lcnt64 = (tLow + 6500ull / 20000ull) * base;
+  lcnt64 = (t_low + 6500ull / 20000ull) * base;
   lcnt   = ((lcnt64 + 999999999ull) / 1000000000ull) - 1; /* ceil */
   lcnt   = lcnt < 8 ? 8 : lcnt;
 
-  hcnt64 = (tHigh - 6500ull) * base;
+  hcnt64 = (t_high - 6500ull) * base;
   hcnt   = ((hcnt64 + 999999999ull) / 1000000000ull) - 6 - spklen; /* ceil */
   hcnt   = hcnt < 6 ? 6 : hcnt;
 
@@ -365,7 +368,7 @@ static void cxd56_i2c_timeout(int argc, uint32_t arg, ...)
   irqstate_t flags            = enter_critical_section();
 
   priv->error = -ENODEV;
-  sem_post(&priv->wait);
+  nxsem_post(&priv->wait);
   leave_critical_section(flags);
 }
 
@@ -465,14 +468,14 @@ static int cxd56_i2c_interrupt(int irq, FAR void *context, FAR void *arg)
   if ((priv->error) || (state & INTR_TX_EMPTY) || (state & INTR_RX_FULL))
     {
       /* Failure of wd_cancel() means that the timer expired.
-       * In this case, sem_post() has already been called.
-       * Therefore, call sem_post() only when wd_cancel() succeeds.
+       * In this case, nxsem_post() has already been called.
+       * Therefore, call nxsem_post() only when wd_cancel() succeeds.
        */
 
       ret = wd_cancel(priv->timeout);
       if (ret == OK)
         {
-          sem_post(&priv->wait);
+          nxsem_post(&priv->wait);
         }
     }
 
@@ -535,13 +538,13 @@ static int cxd56_i2c_receive(struct cxd56_i2cdev_s *priv, int last)
 
       i2c_reg_rmw(priv, CXD56_IC_INTR_MASK, INTR_RX_FULL, INTR_RX_FULL);
       leave_critical_section(flags);
-      sem_wait(&priv->wait);
+      nxsem_wait(&priv->wait);
 
       if (priv->error != OK)
         {
           break;
         }
-  }
+    }
 
   return 0;
 }
@@ -581,7 +584,7 @@ static int cxd56_i2c_send(struct cxd56_i2cdev_s *priv, int last)
   i2c_reg_rmw(priv, CXD56_IC_INTR_MASK, INTR_TX_EMPTY, INTR_TX_EMPTY);
   leave_critical_section(flags);
 
-  sem_wait(&priv->wait);
+  nxsem_wait(&priv->wait);
 
   return 0;
 }
@@ -610,13 +613,13 @@ static int cxd56_i2c_transfer(FAR struct i2c_master_s *dev,
 
   /* Get exclusive access to the I2C bus */
 
-  sem_wait(&priv->mutex);
+  nxsem_wait(&priv->mutex);
 
   /* Check wait semaphore value. If the value is not 0, the transfer can not
    * be performed normally.
    */
 
-  ret = sem_getvalue(&priv->wait, &semval);
+  ret = nxsem_get_value(&priv->wait, &semval);
   DEBUGASSERT(ret == OK && semval == 0);
 
   /* Disable clock gating (clock enable) */
@@ -688,7 +691,7 @@ static int cxd56_i2c_transfer(FAR struct i2c_master_s *dev,
 
   cxd56_i2c_clock_gate_enable(priv->port);
 
-  sem_post(&priv->mutex);
+  nxsem_post(&priv->mutex);
   return ret;
 }
 
@@ -723,7 +726,8 @@ static int cxd56_i2c_reset(FAR struct i2c_master_s *dev)
 
 #if defined(CONFIG_CXD56_I2C0_SCUSEQ) || defined(CONFIG_CXD56_I2C1_SCUSEQ)
 
-static int cxd56_i2c_scurecv(int port, int addr, uint8_t *buf, ssize_t buflen)
+static int cxd56_i2c_scurecv(int port, int addr,
+                             uint8_t *buf, ssize_t buflen)
 {
   uint16_t inst[2];
   int      instn;
@@ -739,45 +743,42 @@ static int cxd56_i2c_scurecv(int port, int addr, uint8_t *buf, ssize_t buflen)
       return OK;
     }
 
-  rem = buflen;
-  while (rem)
+  if (buflen > 16)
     {
-      len0 = rem > 8 ? 8 : rem;
-      rem -= len0;
-      len1 = rem > 8 ? 8 : rem;
-      rem -= len1;
+      return -EINVAL;
+    }
 
-      inst[0] = SCU_INST_RECV(len0);
-      if (len1)
-        {
-          inst[1] = SCU_INST_RECV(len1);
-          instn = 2;
-        }
-      else
-        {
-          instn = 1;
-        }
+  rem = buflen;
+  len0 = rem > 8 ? 8 : rem;
+  rem -= len0;
+  len1 = rem > 8 ? 8 : rem;
+  rem -= len1;
 
-      if (rem == 0)
-        {
-          inst[instn - 1] |= SCU_INST_LAST;
-        }
+  inst[0] = SCU_INST_RECV(len0);
+  if (len1)
+    {
+      inst[1] = SCU_INST_RECV(len1);
+      instn = 2;
+    }
+  else
+    {
+      instn = 1;
+    }
 
-      ret = scu_i2ctransfer(port, addr, inst, instn, buf, len0 + len1);
-      if (ret < 0)
-        {
-          syslog(LOG_ERR, "I2C receive failed. port %d addr %d\n",
-                 port, addr);
-          break;
-        }
+  inst[instn - 1] |= SCU_INST_LAST;
 
-      buf += len0 + len1;
+  ret = scu_i2ctransfer(port, addr, inst, instn, buf, buflen);
+  if (ret < 0)
+    {
+      syslog(LOG_ERR, "I2C receive failed. port %d addr %d\n",
+             port, addr);
     }
 
   return ret;
 }
 
-static int cxd56_i2c_scusend(int port, int addr, uint8_t *buf, ssize_t buflen)
+static int cxd56_i2c_scusend(int port, int addr,
+                             uint8_t *buf, ssize_t buflen)
 {
   uint16_t inst[12];
   ssize_t  rem;
@@ -828,7 +829,7 @@ static int cxd56_i2c_transfer_scu(FAR struct i2c_master_s *dev,
 
   /* Get exclusive access to the I2C bus */
 
-  sem_wait(&priv->mutex);
+  nxsem_wait(&priv->mutex);
 
   /* Apply frequency for request msgs */
 
@@ -865,7 +866,7 @@ static int cxd56_i2c_transfer_scu(FAR struct i2c_master_s *dev,
         }
     }
 
-  sem_post(&priv->mutex);
+  nxsem_post(&priv->mutex);
 
   return ret;
 }
@@ -877,8 +878,8 @@ static inline uint32_t i2c_reg_read(struct cxd56_i2cdev_s *priv,
   return getreg32(priv->base + offset);
 }
 
-static inline void i2c_reg_write(struct cxd56_i2cdev_s *priv, uint32_t offset,
-                                 uint32_t val)
+static inline void i2c_reg_write(struct cxd56_i2cdev_s *priv,
+                                 uint32_t offset, uint32_t val)
 {
   putreg32(val, priv->base + offset);
 }
@@ -1002,7 +1003,7 @@ struct i2c_master_s *cxd56_i2cbus_initialize(int port)
   priv->frequency = 0;
 
   cxd56_i2c_clock_enable(priv->port);
-  priv->baseFreq = cxd56_get_i2c_baseclock(priv->port);
+  priv->base_freq = cxd56_get_i2c_baseclock(priv->port);
 
   cxd56_i2c_disable(priv);
 
@@ -1028,8 +1029,8 @@ struct i2c_master_s *cxd56_i2cbus_initialize(int port)
 
   cxd56_i2c_pincontrol(port, true);
 
-  sem_init(&priv->mutex, 0, 1);
-  sem_init(&priv->wait, 0, 0);
+  nxsem_init(&priv->mutex, 0, 1);
+  nxsem_init(&priv->wait, 0, 0);
 
   priv->timeout = wd_create();
 
@@ -1096,8 +1097,8 @@ int cxd56_i2cbus_uninitialize(FAR struct i2c_master_s *dev)
 
   wd_delete(priv->timeout);
   priv->timeout = NULL;
-  sem_destroy(&priv->mutex);
-  sem_destroy(&priv->wait);
+  nxsem_destroy(&priv->mutex);
+  nxsem_destroy(&priv->wait);
 
   return OK;
 }

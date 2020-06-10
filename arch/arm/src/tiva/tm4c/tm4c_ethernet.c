@@ -1,35 +1,20 @@
 /****************************************************************************
  * arch/arm/src/tiva/tm4c/tm4c_ethernet.c
  *
- *   Copyright (C) 2014-2015, 2017-2018 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name NuttX nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  *
  ****************************************************************************/
 
@@ -66,7 +51,7 @@
 #  include <nuttx/net/pkt.h>
 #endif
 
-#include "up_internal.h"
+#include "arm_internal.h"
 
 #include "chip.h"
 #include "tiva_gpio.h"
@@ -1100,7 +1085,7 @@ static int tiva_transmit(FAR struct tiva_ethmac_s *priv)
 
               txdesc->tdes0 |= (EMAC_TDES0_LS | EMAC_TDES0_IC);
 
-              /* This segement is, most likely, of fractional buffersize */
+              /* This segment is, most likely, of fractional buffersize */
 
               txdesc->tdes1  = lastsize;
               buffer        += lastsize;
@@ -1211,7 +1196,7 @@ static int tiva_transmit(FAR struct tiva_ethmac_s *priv)
 
   /* Setup the TX timeout watchdog (perhaps restarting the timer) */
 
-  (void)wd_start(priv->txtimeout, TIVA_TXTIMEOUT, tiva_txtimeout_expiry, 1, (uint32_t)priv);
+  wd_start(priv->txtimeout, TIVA_TXTIMEOUT, tiva_txtimeout_expiry, 1, (uint32_t)priv);
   return OK;
 }
 
@@ -1375,7 +1360,7 @@ static void tiva_dopoll(FAR struct tiva_ethmac_s *priv)
 
       if (dev->d_buf)
         {
-          (void)devif_poll(dev, tiva_txpoll);
+          devif_poll(dev, tiva_txpoll);
 
           /* We will, most likely end up with a buffer to be freed.  But it
            * might not be the same one that we allocated above.
@@ -1492,7 +1477,7 @@ static void tiva_freesegment(FAR struct tiva_ethmac_s *priv,
       rxdesc = (struct emac_rxdesc_s *)rxdesc->rdes3;
     }
 
-  /* Reset the segment managment logic */
+  /* Reset the segment management logic */
 
   priv->rxcurr   = NULL;
   priv->segments = 0;
@@ -1637,7 +1622,7 @@ static int tiva_recvframe(FAR struct tiva_ethmac_s *priv)
               dev->d_buf    = (uint8_t *)rxcurr->rdes2;
               rxcurr->rdes2 = (uint32_t)buffer;
 
-              /* Return success, remebering where we should re-start scanning
+              /* Return success, remembering where we should re-start scanning
                * and resetting the segment scanning logic
                */
 
@@ -2152,7 +2137,7 @@ static int tiva_interrupt(int irq, FAR void *context, FAR void *arg)
 
       if (priv->handler != NULL)
         {
-          (void)priv->handler(irq, context, priv->arg);
+          priv->handler(irq, context, priv->arg);
         }
     }
 #endif
@@ -2283,7 +2268,7 @@ static void tiva_poll_work(FAR void *arg)
           /* Update TCP timing states and poll the network for new XMIT data.
            */
 
-          (void)devif_timer(dev, tiva_txpoll);
+          devif_timer(dev, TIVA_WDDELAY, tiva_txpoll);
 
           /* We will, most likely end up with a buffer to be freed.  But it
            * might not be the same one that we allocated above.
@@ -2300,8 +2285,8 @@ static void tiva_poll_work(FAR void *arg)
 
   /* Setup the watchdog poll timer again */
 
-  (void)wd_start(priv->txpoll, TIVA_WDDELAY, tiva_poll_expiry,
-                 1, (uint32_t)priv);
+  wd_start(priv->txpoll, TIVA_WDDELAY, tiva_poll_expiry,
+           1, (uint32_t)priv);
   net_unlock();
 }
 
@@ -2376,8 +2361,8 @@ static int tiva_ifup(struct net_driver_s *dev)
 
   /* Set and activate a timer process */
 
-  (void)wd_start(priv->txpoll, TIVA_WDDELAY, tiva_poll_expiry,
-                 1, (uint32_t)priv);
+  wd_start(priv->txpoll, TIVA_WDDELAY, tiva_poll_expiry,
+           1, (uint32_t)priv);
 
   /* Enable the Ethernet interrupt */
 
@@ -2999,7 +2984,7 @@ static void tiva_phy_intenable(bool enable)
           if (ret == OK)
             {
               phyval |= EPHY_SCR_INTEN;
-              (void)tiva_phywrite(CONFIG_TIVA_PHYADDR, TIVA_EPHY_SCR, phyval);
+              tiva_phywrite(CONFIG_TIVA_PHYADDR, TIVA_EPHY_SCR, phyval);
             }
         }
     }
@@ -3295,7 +3280,7 @@ static int tiva_phyinit(FAR struct tiva_ethmac_s *priv)
     }
 #endif
 
-#else /* Auto-negotion not selected */
+#else /* Auto-negotiation not selected */
 
   phyval = 0;
 #ifdef CONFIG_TIVA_ETHFD
@@ -3311,6 +3296,7 @@ static int tiva_phyinit(FAR struct tiva_ethmac_s *priv)
      nerr("ERROR: Failed to write the PHY MCR: %d\n", ret);
       return ret;
     }
+
   up_mdelay(PHY_CONFIG_DELAY);
 
   /* Remember the selected speed and duplex modes */
@@ -3830,7 +3816,7 @@ static void tiva_ipv6multicast(FAR struct tiva_ethmac_s *priv)
   ninfo("IPv6 Multicast: %02x:%02x:%02x:%02x:%02x:%02x\n",
         mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
-  (void)tiva_addmac(dev, mac);
+  tiva_addmac(dev, mac);
 
 #ifdef CONFIG_NET_ICMPv6_AUTOCONF
   /* Add the IPv6 all link-local nodes Ethernet address.  This is the
@@ -3838,7 +3824,7 @@ static void tiva_ipv6multicast(FAR struct tiva_ethmac_s *priv)
    * packets.
    */
 
-  (void)tiva_addmac(dev, g_ipv6_ethallnodes.ether_addr_octet);
+  tiva_addmac(dev, g_ipv6_ethallnodes.ether_addr_octet);
 
 #endif /* CONFIG_NET_ICMPv6_AUTOCONF */
 #ifdef CONFIG_NET_ICMPv6_ROUTER
@@ -3847,7 +3833,7 @@ static void tiva_ipv6multicast(FAR struct tiva_ethmac_s *priv)
    * packets.
    */
 
-  (void)tiva_addmac(dev, g_ipv6_ethallrouters.ether_addr_octet);
+  tiva_addmac(dev, g_ipv6_ethallrouters.ether_addr_octet);
 
 #endif /* CONFIG_NET_ICMPv6_ROUTER */
 }
@@ -4006,7 +3992,7 @@ static int tive_emac_configure(FAR struct tiva_ethmac_s *priv)
  * Description:
  *   Initialize the Ethernet driver for one interface.  If the Tiva chip
  *   supports multiple Ethernet controllers, then board specific logic
- *   must implement up_netinitialize() and call this function to initialize
+ *   must implement arm_netinitialize() and call this function to initialize
  *   the desired interfaces.
  *
  * Input Parameters:
@@ -4141,13 +4127,13 @@ int tiva_ethinitialize(int intf)
 }
 
 /****************************************************************************
- * Function: up_netinitialize
+ * Function: arm_netinitialize
  *
  * Description:
  *   This is the "standard" network initialization logic called from the
- *   low-level initialization logic in up_initialize.c.  If TIVA_NETHCONTROLLERS
+ *   low-level initialization logic in arm_initialize.c.  If TIVA_NETHCONTROLLERS
  *   greater than one, then board specific logic will have to supply a
- *   version of up_netinitialize() that calls tiva_ethinitialize() with
+ *   version of arm_netinitialize() that calls tiva_ethinitialize() with
  *   the appropriate interface number.
  *
  * Input Parameters:
@@ -4161,9 +4147,9 @@ int tiva_ethinitialize(int intf)
  ****************************************************************************/
 
 #if TIVA_NETHCONTROLLERS == 1 && !defined(CONFIG_NETDEV_LATEINIT)
-void up_netinitialize(void)
+void arm_netinitialize(void)
 {
-  (void)tiva_ethinitialize(0);
+  tiva_ethinitialize(0);
 }
 #endif
 
@@ -4220,7 +4206,7 @@ void up_netinitialize(void)
  *             signal tasks in user space.  A value of NULL can be passed
  *             in order to detach and disable the PHY interrupt.
  *   arg     - The argument that will accompany the interrupt
- *   enable  - A function pointer that be unsed to enable or disable the
+ *   enable  - A function pointer that be unused to enable or disable the
  *             PHY interrupt.
  *
  * Returned Value:

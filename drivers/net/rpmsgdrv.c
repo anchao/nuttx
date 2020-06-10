@@ -141,7 +141,9 @@
 #  define net_rpmsg_drv_dumppacket(m, b, l)
 #endif
 
-/* TX poll delay = 1 seconds. CLK_TCK is the number of clock ticks per second */
+/* TX poll delay = 1 seconds. CLK_TCK is the number of clock ticks per
+ * second.
+ */
 
 #define NET_RPMSG_DRV_WDDELAY      (1*CLK_TCK)
 
@@ -255,21 +257,7 @@ static const rpmsg_ept_cb g_net_rpmsg_drv_handler[] =
 
 static void net_rpmsg_drv_wait(FAR sem_t *sem)
 {
-  int ret;
-
-  do
-    {
-      /* Take the semaphore (perhaps waiting) */
-
-      ret = net_lockedwait(sem);
-
-      /* The only case that an error should occur here is if the wait was
-       * awakened by a signal.
-       */
-
-      DEBUGASSERT(ret == OK || ret == -EINTR);
-    }
-  while (ret == -EINTR);
+  net_lockedwait_uninterruptible(sem);
 }
 
 /****************************************************************************
@@ -393,8 +381,8 @@ static int net_rpmsg_drv_txpoll(FAR struct net_driver_s *dev)
 
           net_rpmsg_drv_transmit(dev, true);
 
-          /* Check if there is room in the device to hold another packet. If not,
-           * return a non-zero value to terminate the poll.
+          /* Check if there is room in the device to hold another packet. If
+           * not, return a non-zero value to terminate the poll.
            */
 
           dev->d_buf = rpmsg_get_tx_payload_buffer(&priv->ept, &size, false);
@@ -408,8 +396,8 @@ static int net_rpmsg_drv_txpoll(FAR struct net_driver_s *dev)
         }
     }
 
-  /* If zero is returned, the polling will continue until all connections have
-   * been examined.
+  /* If zero is returned, the polling will continue until all connections
+   * have been examined.
    */
 
   return 0;
@@ -503,11 +491,11 @@ static int net_rpmsg_drv_sockioctl_task(int argc, FAR char *argv[])
       protocol = IPPROTO_ICMP6;
     }
 
-  sock.s_crefs = 1; /* Initialize reference count manually */
   msg->header.result = psock_socket(domain, type, protocol, &sock);
   if (msg->header.result >= 0)
     {
-      msg->header.result = psock_ioctl(&sock, msg->code, (unsigned long)msg->arg);
+      msg->header.result = psock_ioctl(&sock, msg->code,
+                                       (unsigned long)msg->arg);
       psock_close(&sock); /* Close the temporary sock */
     }
 
@@ -551,7 +539,8 @@ static int net_rpmsg_drv_sockioctl_handler(FAR struct rpmsg_endpoint *ept,
 #ifdef CONFIG_NET_IPv4
 static bool net_rpmsg_drv_is_ipv4(FAR struct net_driver_s *dev)
 {
-  FAR struct ipv4_hdr_s *ip = (struct ipv4_hdr_s *)(dev->d_buf + dev->d_llhdrlen);
+  FAR struct ipv4_hdr_s *ip =
+    (struct ipv4_hdr_s *)(dev->d_buf + dev->d_llhdrlen);
   FAR struct eth_hdr_s *eth = (struct eth_hdr_s *)dev->d_buf;
 
   if (dev->d_lltype == NET_LL_ETHERNET || dev->d_lltype == NET_LL_IEEE80211)
@@ -568,7 +557,8 @@ static bool net_rpmsg_drv_is_ipv4(FAR struct net_driver_s *dev)
 #ifdef CONFIG_NET_IPv6
 static bool net_rpmsg_drv_is_ipv6(FAR struct net_driver_s *dev)
 {
-  FAR struct ipv6_hdr_s *ip = (struct ipv6_hdr_s *)(dev->d_buf + dev->d_llhdrlen);
+  FAR struct ipv6_hdr_s *ip =
+    (struct ipv6_hdr_s *)(dev->d_buf + dev->d_llhdrlen);
   FAR struct eth_hdr_s *eth = (struct eth_hdr_s *)dev->d_buf;
 
   if (dev->d_lltype == NET_LL_ETHERNET || dev->d_lltype == NET_LL_IEEE80211)
@@ -676,7 +666,7 @@ static int net_rpmsg_drv_transfer_handler(FAR struct rpmsg_endpoint *ept,
 #ifdef CONFIG_NET_IPv6
   if (net_rpmsg_drv_is_ipv6(dev))
     {
-      ninfo("Iv6 frame\n");
+      ninfo("IPv6 frame\n");
       NETDEV_RXIPV6(dev);
 
       /* Dispatch IPv6 packet to the network layer */
@@ -752,7 +742,8 @@ static int net_rpmsg_drv_ept_cb(FAR struct rpmsg_endpoint *ept, void *data,
   FAR struct net_rpmsg_header_s *header = data;
   uint32_t command = header->command;
 
-  if (command < sizeof(g_net_rpmsg_drv_handler) / sizeof(g_net_rpmsg_drv_handler[0]))
+  if (command < sizeof(g_net_rpmsg_drv_handler) /
+                sizeof(g_net_rpmsg_drv_handler[0]))
     {
       return g_net_rpmsg_drv_handler[command](ept, data, len, src, priv);
     }
@@ -770,7 +761,7 @@ static int net_rpmsg_drv_send_recv(FAR struct net_driver_s *dev,
   int ret;
 
   nxsem_init(&cookie.sem, 0, 0);
-  nxsem_setprotocol(&cookie.sem, SEM_PRIO_NONE);
+  nxsem_set_protocol(&cookie.sem, SEM_PRIO_NONE);
 
   cookie.header   = header;
   header->command = command;
@@ -842,12 +833,12 @@ static void net_rpmsg_drv_poll_work(FAR void *arg)
 
   if (dev->d_buf)
     {
-      /* If so, update TCP timing states and poll the network for new XMIT data.
-       * Hmmm.. might be bug here.  Does this mean if there is a transmit in
-       * progress, we will missing TCP time state updates?
+      /* If so, update TCP timing states and poll the network for new XMIT
+       * data.  Hmmm.. might be bug here.  Does this mean if there is a
+       * transmit in progress, we will missing TCP time state updates?
        */
 
-      devif_timer(dev, net_rpmsg_drv_txpoll);
+      devif_timer(dev, NET_RPMSG_DRV_WDDELAY, net_rpmsg_drv_txpoll);
     }
 
   /* Setup the watchdog poll timer again */
@@ -994,7 +985,8 @@ static int net_rpmsg_drv_ifup(FAR struct net_driver_s *dev)
       dnsaddr.sin_port   = htons(DNS_DEFAULT_PORT);
       memcpy(&dnsaddr.sin_addr, &msg.dnsaddr, sizeof(msg.dnsaddr));
 
-      dns_add_nameserver((FAR const struct sockaddr *)&dnsaddr, sizeof(dnsaddr));
+      dns_add_nameserver((FAR const struct sockaddr *)&dnsaddr,
+                         sizeof(dnsaddr));
     }
 #  endif
 
@@ -1009,7 +1001,8 @@ static int net_rpmsg_drv_ifup(FAR struct net_driver_s *dev)
       dnsaddr.sin6_port   = htons(DNS_DEFAULT_PORT);
       memcpy(&dnsaddr.sin6_addr, msg.ipv6dnsaddr, sizeof(msg.ipv6dnsaddr));
 
-      dns_add_nameserver((FAR const struct sockaddr *)&dnsaddr, sizeof(dnsaddr));
+      dns_add_nameserver((FAR const struct sockaddr *)&dnsaddr,
+                         sizeof(dnsaddr));
     }
 #  endif
 #endif
@@ -1052,8 +1045,8 @@ static int net_rpmsg_drv_ifdown(FAR struct net_driver_s *dev)
   leave_critical_section(flags);
 
   /* Put the EMAC in its reset, non-operational state.  This should be
-   * a known configuration that will guarantee the net_rpmsg_drv_ifup() always
-   * successfully brings the interface back up.
+   * a known configuration that will guarantee the net_rpmsg_drv_ifup()
+   * always successfully brings the interface back up.
    */
 
   return net_rpmsg_drv_send_recv(dev, &msg, NET_RPMSG_IFDOWN, sizeof(msg));
@@ -1106,7 +1099,9 @@ static void net_rpmsg_drv_txavail_work(FAR void *arg)
             }
         }
 
-      /* Check if there is room in the hardware to hold another outgoing packet. */
+      /* Check if there is room in the hardware to hold another outgoing
+       * packet.
+       */
 
       if (dev->d_buf)
         {
@@ -1151,7 +1146,8 @@ static int net_rpmsg_drv_txavail(FAR struct net_driver_s *dev)
     {
       /* Schedule to serialize the poll on the worker thread. */
 
-      work_queue(LPWORK, &priv->pollwork, net_rpmsg_drv_txavail_work, dev, 0);
+      work_queue(LPWORK, &priv->pollwork, net_rpmsg_drv_txavail_work,
+                 dev, 0);
     }
 
   return OK;
@@ -1191,8 +1187,8 @@ static int net_rpmsg_drv_addmac(FAR struct net_driver_s *dev,
  * Name: net_rpmsg_drv_rmmac
  *
  * Description:
- *   NuttX Callback: Remove the specified MAC address from the hardware multicast
- *   address filtering
+ *   NuttX Callback: Remove the specified MAC address from the hardware
+ *   multicast address filtering
  *
  * Parameters:
  *   dev  - Reference to the NuttX driver state structure

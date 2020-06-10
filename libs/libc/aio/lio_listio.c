@@ -181,13 +181,14 @@ static void lio_sighandler(int signo, siginfo_t *info, void *ucontext)
   if (ret != -EINPROGRESS)
     {
       /* All pending I/O has completed */
+
       /* Restore the signal handler */
 
-      (void)sigaction(SIGPOLL, &sighand->oact, NULL);
+      sigaction(SIGPOLL, &sighand->oact, NULL);
 
       /* Restore the sigprocmask */
 
-      (void)sigprocmask(SIG_SETMASK, &sighand->oprocmask, NULL);
+      sigprocmask(SIG_SETMASK, &sighand->oprocmask, NULL);
 
       /* Signal the client */
 
@@ -235,7 +236,7 @@ static int lio_sigsetup(FAR struct aiocb * const *list, int nent,
 
   /* Allocate a structure to pass data to the signal handler */
 
-  sighand = (FAR struct lio_sighand_s *)lib_zalloc(sizeof(struct lio_sighand_s));
+  sighand = lib_zalloc(sizeof(struct lio_sighand_s));
   if (!sighand)
     {
       ferr("ERROR: lib_zalloc failed\n");
@@ -273,8 +274,8 @@ static int lio_sigsetup(FAR struct aiocb * const *list, int nent,
 
   /* Make sure that SIGPOLL is not blocked */
 
-  (void)sigemptyset(&set);
-  (void)sigaddset(&set, SIGPOLL);
+  sigemptyset(&set);
+  sigaddset(&set, SIGPOLL);
   status = sigprocmask(SIG_UNBLOCK, &set, &sighand->oprocmask);
   if (status != OK)
     {
@@ -291,8 +292,8 @@ static int lio_sigsetup(FAR struct aiocb * const *list, int nent,
   act.sa_sigaction = lio_sighandler;
   act.sa_flags = SA_SIGINFO;
 
-  (void)sigfillset(&act.sa_mask);
-  (void)sigdelset(&act.sa_mask, SIGPOLL);
+  sigfillset(&act.sa_mask);
+  sigdelset(&act.sa_mask, SIGPOLL);
 
   status = sigaction(SIGPOLL, &act, &sighand->oact);
   if (status != OK)
@@ -494,12 +495,12 @@ static int lio_waitall(FAR struct aiocb * const *list, int nent)
  *   EIO, then some of the I/O specified by the list may have been initiated.
  *   If the lio_listio() function fails with an error code other than EAGAIN,
  *   EINTR, or EIO, no operations from the list will have been initiated. The
- *   I/O operation indicated by each list element can encounter errors specific
- *   to the individual read or write function being performed. In this event,
- *   the error status for each aiocb control block contains the associated
- *   error code. The error codes that can be set are the same as would be
- *   set by a read() or write() function, with the following additional
- *   error codes possible:
+ *   I/O operation indicated by each list element can encounter errors
+ *   specific to the individual read or write function being performed. In
+ *   this event, the error status for each aiocb control block contains the
+ *   associated error code. The error codes that can be set are the same as
+ *   would be set by a read() or write() function, with the following
+ *   additional error codes possible:
  *
  *     EAGAIN - The requested I/O operation was not queued due to resource
  *       limitations.
@@ -518,7 +519,7 @@ static int lio_waitall(FAR struct aiocb * const *list, int nent)
  *
  ****************************************************************************/
 
-int lio_listio(int mode, FAR struct aiocb *const list[], int nent,
+int lio_listio(int mode, FAR struct aiocb * const list[], int nent,
                FAR struct sigevent *sig)
 {
   FAR struct aiocb *aiocbp;
@@ -605,7 +606,8 @@ int lio_listio(int mode, FAR struct aiocb *const list[], int nent,
               {
                 /* Make the invalid operation complete with an error */
 
-                ferr("ERROR: Unrecognized opcode: %d\n", aiocbp->aio_lio_opcode);
+                ferr("ERROR: Unrecognized opcode: %d\n",
+                     aiocbp->aio_lio_opcode);
                 aiocbp->aio_result = -EINVAL;
                 ret = ERROR;
               }

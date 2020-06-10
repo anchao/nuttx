@@ -83,7 +83,7 @@ int stm32_bringup(void)
    * mounted.
    */
 
-  (void)ccm_procfs_register();
+  ccm_procfs_register();
 #endif
 
   /* Mount the procfs file system */
@@ -95,7 +95,6 @@ int stm32_bringup(void)
              "ERROR: Failed to mount the PROC filesystem: %d (%d)\n",
              ret, errno);
       return ret;
-
     }
 #endif
 
@@ -136,6 +135,22 @@ int stm32_bringup(void)
   if (ret < 0)
     {
       syslog(LOG_ERR, "ERROR: stm32_tsc_setup failed: %d\n", ret);
+    }
+#endif
+
+#ifdef CONFIG_MTD_N25QXXX
+  ret = stm32_n25qxxx_setup();
+  if (ret < 0)
+    {
+      syslog(LOG_ERR, "ERROR: stm32_n25qxxx_setup failed: %d\n", ret);
+    }
+#endif
+
+#ifdef HAVE_SDIO
+  ret = stm32_sdio_initialize();
+  if (ret < 0)
+    {
+      syslog(LOG_ERR, "ERROR: stm32_n25qxxx_setup failed: %d\n", ret);
     }
 #endif
 

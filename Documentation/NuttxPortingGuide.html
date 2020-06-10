@@ -240,7 +240,7 @@
       <h1><big><font color="#3c34ec">
         <i>NuttX RTOS Porting Guide</i>
       </font></big></h1>
-      <p>Last Updated: August 8, 2019</p>
+      <p>Last Updated: April 7, 2020</p>
     </td>
   </tr>
 </table>
@@ -737,15 +737,15 @@
     This port does not support interrupts or a real timer (and hence no
     round robin scheduler)  Otherwise, it is complete.
   </li>
-  <p>NOTE: In principle, this user mode port should run in any POSIX environement.
-    This target will probably not run &quot;out-of-the-box&quot; in unverified POSIX environments due to the many host environemnt dependencies.
+  <p>NOTE: In principle, this user mode port should run in any POSIX environment.
+    This target will probably not run &quot;out-of-the-box&quot; in unverified POSIX environments due to the many host environment dependencies.
   </p>
 
   <li><code>arch/arm</code>:
     This directory holds common ARM architectures.
   </li>
 
-  <li><code>arch/arm</code>:
+  <li><code>arch/avr</code>:
     This directory holds common AVR and AVR32 architectures.
   </li>
 
@@ -1358,7 +1358,7 @@ include/
 <p>
   Normally the logic in this file builds to a single library (<code>libc.a</code>).
   However, if NuttX is built as a separately compiled kernel (with <code>CONFIG_BUILD_PROTECTED=y</code> or <code>CONFIG_BUILD_KERNEL=y</code>), then the contents of this directory are built as two libraries:
-  One for use by user programs (<code>libuc.a</code>) and one for use only within the &lt;kernel&gt; space (<code>libkc.a</code>).
+  One for use by user programs (<code>libc.a</code>) and one for use only within the &lt;kernel&gt; space (<code>libkc.a</code>).
 </p>
 <p>
   These user/kernel space libraries (along with the sycalls of <a href="#DirStructSyscall"><code>nuttx/syscall</code></a>) are needed to support the two differing protection domains.
@@ -1505,7 +1505,6 @@ tools/
 |-- mkdeps.c
 |-- mkexport.sh
 |-- mkfsdata.pl
-|-- mkimage.sh
 |-- mknulldeps.sh
 |-- mkromfsimg.sh
 |-- mksymtab.c
@@ -1539,7 +1538,7 @@ tools/
 
 <h2>2.20 <a name="topmakefile">nuttx/Makefile</a></h2>
 <p>
-  The top-level <code>Makefile</code> in the <code>${TOPDIR}</code> directory contains all of the top-level control
+  The top-level <code>Makefile</code> in the <code>$(TOPDIR)</code> directory contains all of the top-level control
   logic to build NuttX.
   Use of this <code>Makefile</code> to build NuttX is described <a href="#buildingnuttx">below</a>.
 </p>
@@ -1556,12 +1555,12 @@ tools/
 <p>
   <b>Manual Configuration</b>.
   Configuring NuttX requires only copying the
-  <a href="#boardconfigsubdirs">board-specific configuration files</a> into the top level directory which appears in the make files as the make variable, <code>${TOPDIR}</code>.
+  <a href="#boardconfigsubdirs">board-specific configuration files</a> into the top level directory which appears in the make files as the make variable, <code>$(TOPDIR)</code>.
   This could be done manually as follows:
 </p>
 <ul>
-  <li>Copy <code>boards/</code><i>&lt;arch-name&gt;</i><code>/</code><i>&lt;chip-name&gt;</i><code>/</code><i>&lt;board-name&gt;</i><code>/configs/[</code><i>&lt;config-dir&gt;</i><code>/]Make.defs</code> to <code>${TOPDIR}/Make.defs</code> (see NOTE below),</li>
-  <li>Copy <code>boards/</code><i>&lt;arch-name&gt;</i><code>/</code><i>&lt;chip-name&gt;</i><code>/</code><i>&lt;board-name&gt;</i><code>/configs/[</code><i>&lt;config-dir&gt;</i><code>/]defconfig</code> to <code>${TOPDIR}/.config</code></li>
+  <li>Copy <code>boards/</code><i>&lt;arch-name&gt;</i><code>/</code><i>&lt;chip-name&gt;</i><code>/</code><i>&lt;board-name&gt;</i><code>/configs/[</code><i>&lt;config-dir&gt;</i><code>/]Make.defs</code> to <code>$(TOPDIR)/Make.defs</code> (see NOTE below),</li>
+  <li>Copy <code>boards/</code><i>&lt;arch-name&gt;</i><code>/</code><i>&lt;chip-name&gt;</i><code>/</code><i>&lt;board-name&gt;</i><code>/configs/[</code><i>&lt;config-dir&gt;</i><code>/]defconfig</code> to <code>$(TOPDIR)/.config</code></li>
 </ul>
 
 <p>
@@ -1680,7 +1679,7 @@ tools/version.h -v 6.1 .version
 
 <p>
   <b>Additional Configuration Steps</b>.
-  The remainder of configuration steps will be performed by <a href="#topmakefile"><code>${TOPDIR}/Makefile</code></a>
+  The remainder of configuration steps will be performed by <a href="#topmakefile"><code>$(TOPDIR)/Makefile</code></a>
   the first time the system is built as described below.
 </p>
 
@@ -1690,11 +1689,11 @@ tools/version.h -v 6.1 .version
    Once NuttX has been configured as described <a href="#configuringnuttx">above</a>, it may be built as follows:
 </p>
 <ul><pre>
-cd ${TOPDIR}
+cd $(TOPDIR)
 make
 </pre></ul>
 <p>
-  The <code>${TOPDIR}</code> directory holds:
+  The <code>$(TOPDIR)</code> directory holds:
 </p>
 <ul>
   <li>The top level <a href="#topmakefile"><code>Makefile</code></a> that controls the NuttX build.
@@ -1716,13 +1715,13 @@ The specific environmental definitions are unique for each board but should incl
   These additional steps include:
 </p>
 <ul>
-  <li>Auto-generating the file <code>include/nuttx/config.h</code> using the <code>${TOPDIR}/.config</code> file.</li>
-  <li>Auto-generating the file  <code>${TOPDIR}/.version</code> with version 0.0 if one does not exist.</li>
-  <li>Auto-generating the file <code>include/nuttx/version.h</code> using the <code>${TOPDIR}/.version</code> file.</li>
-  <li>Creating a link to <code>${TOPDIR}/arch/</code><i>&lt;arch-name&gt;</i><code>/include</code> at <code>${TOPDIR}/include/arch</code>.</li>
-  <li>Creating a link to <code>${TOPDIR}/boards/</code><i>&lt;arch-name&gt;</i><code>/</code><i>&lt;chip-name&gt;</i><code>/</code><i>&lt;board-name&gt;</i><code>/include</code> at <code>${TOPDIR}/include/arch/board</code>.</li>
-  <li>Creating a link to <code>${TOPDIR}/boards/</code><i>&lt;arch-name&gt;</i><code>/</code><i>&lt;chip-name&gt;</i><code>/</code><i>&lt;board-name&gt;</i><code>/src</code> at <code>${TOPDIR}/arch/</code><i>&lt;arch-name&gt;</i><code>/src/board</code></li>
-  <li>Creating a link to <code>${APPDIR}/include</code> at <code>${TOPDIR}/include/apps</code></li>
+  <li>Auto-generating the file <code>include/nuttx/config.h</code> using the <code>$(TOPDIR)/.config</code> file.</li>
+  <li>Auto-generating the file  <code>$(TOPDIR)/.version</code> with version 0.0 if one does not exist.</li>
+  <li>Auto-generating the file <code>include/nuttx/version.h</code> using the <code>$(TOPDIR)/.version</code> file.</li>
+  <li>Creating a link to <code>$(TOPDIR)/arch/</code><i>&lt;arch-name&gt;</i><code>/include</code> at <code>$(TOPDIR)/include/arch</code>.</li>
+  <li>Creating a link to <code>$(TOPDIR)/boards/</code><i>&lt;arch-name&gt;</i><code>/</code><i>&lt;chip-name&gt;</i><code>/</code><i>&lt;board-name&gt;</i><code>/include</code> at <code>$(TOPDIR)/include/arch/board</code>.</li>
+  <li>Creating a link to <code>$(TOPDIR)/boards/</code><i>&lt;arch-name&gt;</i><code>/</code><i>&lt;chip-name&gt;</i><code>/</code><i>&lt;board-name&gt;</i><code>/src</code> at <code>$(TOPDIR)/arch/</code><i>&lt;arch-name&gt;</i><code>/src/board</code></li>
+  <li>Creating a link to <code>${APPDIR}/include</code> at <code>$(TOPDIR)/include/apps</code></li>
   <li>Creating make dependencies.
 </ul>
 
@@ -1752,7 +1751,7 @@ The specific environmental definitions are unique for each board but should incl
       The definitions in that header file provide the common interface between NuttX and the architecture-specific implementation in <code>arch/</code>.
     </p>
     <blockquote><small>
-      <code>up_</code> is supposed to stand for microprocessor; the <code>u</code> is like the Greek letter micron: <i>µ</i>.    So it would be <code>µP</code> which is a common shortening of the word microprocessor.  I don't like that name very much.  I wish I would have used a more obvious prefix like <code>arch_</code> instead -- then I would not have to answer this question so often.
+      <code>up_</code> is supposed to stand for microprocessor; the <code>u</code> is like the Greek letter micron: <i>Ä¾</i>.    So it would be <code>Ä¾P</code> which is a common shortening of the word microprocessor.  I don't like that name very much.  I wish I would have used a more obvious prefix like <code>arch_</code> instead -- then I would not have to answer this question so often.
     </small></blockquote>
   </li>
   <li>
@@ -1920,7 +1919,7 @@ The specific environmental definitions are unique for each board but should incl
 
 <p><b>Description</b>.
   Setup up stack-related information in the TCB using pre-allocated stack memory.
-  This function is called only from <code>task_init()</code> when a task or kernel thread is started (never for pthreads).
+  This function is called only from <code>nxtask_init()</code> when a task or kernel thread is started (never for pthreads).
 </p>
 <p>
   The following TCB fields must be initialized:
@@ -2070,11 +2069,10 @@ The specific environmental definitions are unique for each board but should incl
 <p><b>Input Parameters:</b></p>
 <ul>
   <li><code>tcb</code>: Refers to a task in the ready-to-run list (normally
-    the task at the head of the list).  It most be
-    stopped, its context saved and moved into one of the
-    waiting task lists.  It it was the task at the head
-    of the ready-to-run list, then a context to the new
-    ready to run task must be performed.
+    the task at the head of the list).  It must be stopped, its context saved
+    and moved into one of the waiting task lists.  If it was the task at the
+    head of the ready-to-run list, then a context switch to the new ready to
+    run task must be performed.
   </li>
   <li><code>task_state</code>: Specifies which waiting task list should be
     hold the blocked task TCB.
@@ -2297,7 +2295,7 @@ The specific environmental definitions are unique for each board but should incl
   There are many interfaces exported from board- to architecture-specific logic.
   But there are only a few exported from board-specific logic to common NuttX logic.
   Those few of those related to initialization will be discussed in this paragraph.
-  There are others, like those used by <a href="#boardctl"><code>boardctl()</code></a> that will be dicussed in other paragraphs.
+  There are others, like those used by <a href="#boardctl"><code>boardctl()</code></a> that will be discussed in other paragraphs.
 </p>
 <p>
   All of the board-specific interfaces used by the NuttX OS logic are for controlled board initialization.
@@ -2340,7 +2338,7 @@ The specific environmental definitions are unique for each board but should incl
   This additional initialization phase may be used, for example, to initialize more complex, board-specific device drivers.
 </p>
 <p>
-  Waiting for events, use of I2C, SPI, etc are permissable in the context of board_late_initialize().
+  Waiting for events, use of I2C, SPI, etc are permissible in the context of board_late_initialize().
   That is because <code>board_late_initialize()</code> will run on a temporary, internal kernel thread.
 </p>
 
@@ -2574,7 +2572,7 @@ config ARCH_SIM
    bool "Simulation"
    select ARCH_HAVE_TICKLESS
    ---help---
-       Linux/Cywgin user-mode simulation.
+       Linux/Cygwin user-mode simulation.
 </pre></ul>
     <p>
       When the simulation platform is selected, <code>ARCH_HAVE_TICKLESS</code> is automatically selected, informing the configuration system that <i>Tickless OS</i> options can be selected.
@@ -2599,7 +2597,7 @@ config ARCH_SIM
     <p>
       <b><code>CONFIG_USEC_PER_TICK</code></b>:
       This option is not unique to <i>Tickless OS</i> operation, but changes its relevance when the <i>Tickless OS</i> is selected.
-      In the default configuration where system time is provided by a periodic timer interrupt, the default system timer is configure the timer for 100Hz or <code>CONFIG_USEC_PER_TICK=10000</code>. If <code>CONFIG_SCHED_TICKLESS</code> is selected, then there are no system timer interrupt. In this case, <code>CONFIG_USEC_PER_TICK</code> does not control any timer rates. Rather, it only determines the resolution of time reported by <code>clock_systimer()</code> and the resolution of times that can be set for certain delays including watchdog timers and delayed work.
+      In the default configuration where system time is provided by a periodic timer interrupt, the default system timer is configure the timer for 100Hz or <code>CONFIG_USEC_PER_TICK=10000</code>. If <code>CONFIG_SCHED_TICKLESS</code> is selected, then there are no system timer interrupt. In this case, <code>CONFIG_USEC_PER_TICK</code> does not control any timer rates. Rather, it only determines the resolution of time reported by <code>clock_systime_ticks()</code> and the resolution of times that can be set for certain delays including watchdog timers and delayed work.
     </p>
     <p>
       In this case there is still a trade-off: It is better to have the <code>CONFIG_USEC_PER_TICK</code> as low as possible for higher timing resolution. However, the time is currently held in <code>unsigned int</code>. On some systems, this may be 16-bits in width but on most contemporary systems it will be 32-bits. In either case, smaller values of <code>CONFIG_USEC_PER_TICK</code> will reduce the range of values that delays that can be represented. So the trade-off is between range and resolution (you could also modify the code to use a 64-bit value if you really want both).
@@ -2950,6 +2948,10 @@ wd_start() on a given watchdog ID has any effect.
 <li><code>wdentry</code>. Function to call on timeout
 <li><code>argc</code>.  The number of uint32_t parameters to pass to wdentry.
 <li><code>...</code>. uint32_t size parameters to pass to wdentry
+
+<p>
+<b>NOTE</b>:  All parameters must be of type <code>wdparm_t</code>.
+</p>
 </ul>
 
 <p>
@@ -4056,7 +4058,7 @@ void nxsched_timer_expiration(void);
     </p>
   <li>
     <p><b>Cancellation Points</b>:
-      Many of the application OS interfaces are <i>cancellation points</i>, i.e., when the task is operating in <i>defferred cancellation</i> state, it cannot be deleted or cancelled until it calls an application OS interface that is a cancellation point.
+      Many of the application OS interfaces are <i>cancellation points</i>, i.e., when the task is operating in <i>deferred cancellation</i> state, it cannot be deleted or cancelled until it calls an application OS interface that is a cancellation point.
     </p>
     <p>
       The POSIX specification is very specific about this, specific both in identifying which application OS interfaces are cancellation points and specific in the fact that it is prohibited for any OS operation other than those listed in the specification to generate cancellation points.
@@ -4601,7 +4603,7 @@ This objectives of this feature are:
   <dt><code>CONFIG_IOB_NBUFFERS</code>
   <dd>Number of pre-allocated I/O buffers.  Each packet is represented by a series of small I/O buffers in a chain.  This setting determines the number of preallocated I/O buffers available for packet data.
 
-  The default value is setup for network support.  The default is 8 buffers if neither TCP read-ahead or TCP write buffering is enabled (neither <code>CONFIG_NET_TCP_WRITE_BUFFERS</code> nor <code>CONFIG_NET_TCP_READAHEAD</code>), 24 if only write buffering is enabled, and 36 if both read-ahead and write buffering are enabled.
+  The default value is setup for network support.  The default is 8 buffers if neither TCP/UDP or write buffering is enabled (neither <code>CONFIG_NET_TCP_WRITE_BUFFERS</code> nor <code>CONFIG_NET_TCP</code>), 24 if only TCP/UDP is enabled, and 36 if both TCP/UDP and write buffering are enabled.
 
   <dt><code>CONFIG_IOB_BUFSIZE</code>
   <dd>Payload size of one I/O buffer.  Each packet is represented by a series of small I/O buffers in a chain.  This setting determines the data payload each preallocated I/O buffer.  The default value is 196 bytes.
@@ -4611,7 +4613,7 @@ This objectives of this feature are:
 
   <dd>These generic I/O buffer chain containers are not currently used by any logic in NuttX.  That is because their other other specialized I/O buffer chain containers that also carry a payload of usage specific information.
 
-  The default value is zero if nether TCP nor UDP read-ahead buffering is enabled (i.e., neither <code>CONFIG_NET_TCP_READAHEAD</code> && !<code>CONFIG_NET_UDP_READAHEAD</code> or eight if either is enabled.
+  The default value is zero if nether TCP nor UDP is enabled (i.e., neither <code>CONFIG_NET_TCP</code> && !<code>CONFIG_NET_UDP</code> or eight if either is enabled.
 
   <dt><code>CONFIG_IOB_THROTTLE</code>
   <dd>I/O buffer throttle value.  TCP write buffering and read-ahead buffer use the same pool of free I/O buffers.  In order to prevent uncontrolled incoming TCP packets from hogging all of the available, pre-allocated I/O buffers, a throttling value is required.  This throttle value assures that I/O buffers will be denied to the read-ahead logic before TCP writes are halted.
@@ -5866,7 +5868,7 @@ int kbd_decode(FAR struct lib_instream_s *stream, FAR struct kbd_getstate_s *sta
      <code>void setmode(FAR struct spi_dev_s *dev, enum spi_mode_e mode);</code><br>
      <code>void setbits(FAR struct spi_dev_s *dev, int nbits);</code><br>
      <code>uint8_t status(FAR struct spi_dev_s *dev, uint32_t devid);</code><br>
-     <code>uint16_t send(FAR struct spi_dev_s *dev, uint16_t wd);</code><br>
+     <code>uint32_t send(FAR struct spi_dev_s *dev, uint32_t wd);</code><br>
      <code>void exchange(FAR struct spi_dev_s *dev, FAR const void *txbuffer, FAR void *rxbuffer, size_t nwords);</code><br>
      <p><code>int registercallback(FAR struct spi_dev_s *dev, mediachange_t callback, void *arg);</code></p>
     </ul>
@@ -6222,13 +6224,13 @@ int kbd_decode(FAR struct lib_instream_s *stream, FAR struct kbd_getstate_s *sta
      <code>int (*sendsetup)(FAR struct sdio_dev_s *dev, FAR const uint8_t *buffer, size_t nbytes);</code><br>
      <code>int (*cancel)(FAR struct sdio_dev_s *dev);</code><br>
      <code>int (*waitresponse)(FAR struct sdio_dev_s *dev, uint32_t cmd);</code><br>
-     <code>int (*recvR1)(FAR struct sdio_dev_s *dev, uint32_t cmd, uint32_t *R1);</code><br>
-     <code>int (*recvR2)(FAR struct sdio_dev_s *dev, uint32_t cmd, uint32_t R2[4]);</code><br>
-     <code>int (*recvR3)(FAR struct sdio_dev_s *dev, uint32_t cmd, uint32_t *R3);</code><br>
-     <code>int (*recvR4)(FAR struct sdio_dev_s *dev, uint32_t cmd, uint32_t *R4);</code><br>
-     <code>int (*recvR5)(FAR struct sdio_dev_s *dev, uint32_t cmd, uint32_t *R5);</code><br>
-     <code>int (*recvR6)(FAR struct sdio_dev_s *dev, uint32_t cmd, uint32_t *R6);</code><br>
-     <code>int (*recvR7)(FAR struct sdio_dev_s *dev, uint32_t cmd, uint32_t *R7);</code></p>
+     <code>int (*recv_r1)(FAR struct sdio_dev_s *dev, uint32_t cmd, uint32_t *R1);</code><br>
+     <code>int (*recv_r2)(FAR struct sdio_dev_s *dev, uint32_t cmd, uint32_t R2[4]);</code><br>
+     <code>int (*recv_r3)(FAR struct sdio_dev_s *dev, uint32_t cmd, uint32_t *R3);</code><br>
+     <code>int (*recv_r4)(FAR struct sdio_dev_s *dev, uint32_t cmd, uint32_t *R4);</code><br>
+     <code>int (*recv_r5)(FAR struct sdio_dev_s *dev, uint32_t cmd, uint32_t *R5);</code><br>
+     <code>int (*recv_r6)(FAR struct sdio_dev_s *dev, uint32_t cmd, uint32_t *R6);</code><br>
+     <code>int (*recv_r7)(FAR struct sdio_dev_s *dev, uint32_t cmd, uint32_t *R7);</code></p>
     </ul>
     <p>
       Event/Callback support:
@@ -6669,9 +6671,9 @@ int syslog_channel(FAR const struct syslog_channel_s *channel);
 <ul><pre>
 #include &lt;nuttx/syslog/syslog.h&gt;
 #ifndef CONFIG_ARCH_SYSLOG
-int syslog_initialize(enum syslog_init_e phase);
+int syslog_initialize(void);
 #else
-#  define syslog_initialize(phase)
+#  define syslog_initialize()
 #endif
 </ul></pre>
 <p><b>Description:</b>
@@ -6694,13 +6696,6 @@ int syslog_initialize(enum syslog_init_e phase);
       If <code>CONFIG_ARCH_SYSLOG</code> is selected, then the architecture-specific logic will provide its own SYSLOG device initialize which must include as a minimum a call to <code>syslog_channel()</code> to use the device.
   </li>
 </ul>
-<p><b>Input Parameters:</b>
-<ul>
-  <li>
-    <p>
-      <code>phase</code>: One of {<code>SYSLOG_INIT_EARLY</code>, <code>SYSLOG_INIT_LATE</code>}
-  </li>
-</ul>
 <p><b>Returned Value:</b>
   Zero (<code>OK</code>) is returned on success; a negated <code>errno</code> value is returned on any failure.
 </p>
@@ -6708,19 +6703,8 @@ int syslog_initialize(enum syslog_init_e phase);
   Different types of SYSLOG devices have different OS initialization
   requirements.  Some are available immediately at reset, some are available
   after some basic OS initialization, and some only after OS is fully
-  initialized.  In order to satisfy these different initialization
-  requirements, <code>syslog_initialize()</code> is called twice from the boot-up logic:
+  initialized.
 </p>
-<ul>
-  <li>
-    <p>
-      <code>syslog_initialize()</code> is called from the architecture-specific <code>up_initialize()</code> function as some as basic hardware resources have been initialized: Timers, interrupts, etc.  In this case, <code>syslog_initialize()</code> is called with the argument <code>SYSLOG_INIT_EARLY</code>.
-  </li>
-  <li>
-    <p>
-      <code>syslog_initialize()</code> is called again from <code>nx_start()</code> when the full OS initialization has completed, just before the application main entry point is spawned.  In this case, <code>syslog_initialize()</code> is called with the argument <code>SYSLOG_INIT_LATE</code>.
-  </li>
-</ul>
 <p>
   There are other types of SYSLOG channel devices that may require even further initialization.  For example, the file SYSLOG channel (described below) cannot be initialized until the necessary file systems have been mounted.
 </p>
@@ -6735,7 +6719,7 @@ int syslog_initialize(enum syslog_init_e phase);
 <ol>
   <li>
     <p><b>Low-Level Serial Output</b>.
-      If you are using a SYSLOG console channel (<code>CONFIG_SYSLOG_CONSOLE</code>) with a serial console (<code>CONFIG_SYSLOG_SERIAL_CONSOLE</code>) and if the underlying architecture supports the low-level <code>up_putc()</code> interface(<code>CONFIG_ARCH_LOWPUTC</code>), then the SYLOG logic will direct the output to <code>up_putc()</code> which is capable of generating the serial output within the context of an interrupt handler.
+      If you are using a SYSLOG console channel (<code>CONFIG_SYSLOG_CONSOLE</code>) and if the underlying architecture supports the low-level <code>up_putc()</code> interface(<code>CONFIG_ARCH_LOWPUTC</code>), then the SYSLOG logic will direct the output to <code>up_putc()</code> which is capable of generating the serial output within the context of an interrupt handler.
     </p>
     <p>
       There are a few issues in doing this however:
@@ -6761,7 +6745,7 @@ int syslog_initialize(enum syslog_init_e phase);
 </li>
 <li>
   <p><b>Serialization Buffer</b>.
-    A final option is the use the an <i>interrupt buffer</i> to buffer the interrupt level SYSLOG output.  In this case:
+    A final option is the use of an <i>interrupt buffer</i> to buffer the interrupt level SYSLOG output.  In this case:
   </p>
   <ul>
     <li>
@@ -6771,7 +6755,7 @@ int syslog_initialize(enum syslog_init_e phase);
     </li>
     <li>
       <p>
-        Later, when the next normal syslog output is generated, it will first empty the content of the interrupt buffer to the SYSLOG device in the proper context.  It will then be followed by the normal syslog output.  In this case, the interrupt level SYSLOG output will interrupt the normal output stream and the interrupt level SYSLOG output will be inserted into the correct position in the SYSLOG output when the next normal SYLOG output is generated.
+        Later, when the next normal syslog output is generated, it will first empty the content of the interrupt buffer to the SYSLOG device in the proper context.  It will then be followed by the normal syslog output.  In this case, the interrupt level SYSLOG output will interrupt the normal output stream and the interrupt level SYSLOG output will be inserted into the correct position in the SYSLOG output when the next normal SYSLOG output is generated.
       </p>
     </li>
   </ul>
@@ -6800,15 +6784,11 @@ int syslog_initialize(enum syslog_init_e phase);
   </li>
   <li>
     <p>
-      <code>CONFIG_SYSLOG_CONSOLE</code>.  This configuration option is manually selected from the SYSLOG menu.  This is the option that actually enables the SYSLOG console device.  It depends on <code>CONFIG_DEV_CONSOLE</code> and it will automatically select <code>CONFIG_SYSLOG_SERIAL_CONSOLE</code> if <code>CONFIG_SERIAL_CONSOLE</code> is selected.
+      <code>CONFIG_SYSLOG_CONSOLE</code>.  This configuration option is manually selected from the SYSLOG menu.  This is the option that actually enables the SYSLOG console device.  It depends on <code>CONFIG_DEV_CONSOLE</code>.
   </li>
   <li>
     <p>
       <code>CONFIG_ARCH_LOWPUTC</code>.  This is an indication from the architecture configuration that the platform supports the <code>up_putc()</code> interface.  <code>up_putc()</code> is a very low level UART interface that can even be used from interrupt handling.
-  </li>
-  <li>
-    <p>
-      <code>CONFIG_SYSLOG_SERIAL_CONSOLE</code>.  This enables certain features of the SYSLOG operation that depend on a serial console.  If <code>CONFIG_ARCH_LOWPUTC</code> is also selected, for example, then <code>up_putc()</code> will be used for the forced SYSLOG output.
   </li>
 </ul>
 <p>
@@ -6932,10 +6912,6 @@ int syslog_file_channel(FAR const char *devpath);
   </li>
   <li>
     <p>
-      <code>CONFIG_RAMLOG_CONSOLE</code>: Use the RAM logging device as a system console. If this feature is enabled (along with <code>CONFIG_DEV_CONSOLE</code>), then all console output will be re-directed to a circular buffer in RAM.  This might be useful, for example, if the only console is a Telnet console.  Then in that case, console output from non-Telnet threads will go to the circular buffer and can be viewed using the NSH <code>dmesg</code> command.  This optional is not useful in other scenarios.
-  </li>
-  <li>
-    <p>
       <code>CONFIG_RAMLOG_SYSLOG</code>: Use the RAM logging device for the SYSLOG interface.  If this feature is enabled, then all debug output will be re-directed to the circular  buffer in RAM.  This RAM log can be viewed from NSH using the <code>dmesg</code>  command.  NOTE:  Unlike the limited, generic character driver SYSLOG device, the RAMLOG <i>can</i> be used to capture debug output from
       interrupt level handlers.
   </li>
@@ -6944,9 +6920,6 @@ int syslog_file_channel(FAR const char *devpath);
       <code>CONFIG_RAMLOG_NPOLLWAITERS</code>: The number of threads than can be waiting for this driver on <code>poll()</code>.  Default: 4
   </li>
 </ul>
-<p>
-  If <code>CONFIG_RAMLOG_CONSOLE</code> or <code>CONFIG_RAMLOG_SYSLOG</code> is selected, then the following must also be provided:
-</p>
 <ul>
   <li>
     <p>
@@ -7324,5 +7297,3 @@ void (*notify)(FAR struct pm_callback_s *cb, int domain, enum pm_state_e pmstate
 
 </body>
 </html>
-
-

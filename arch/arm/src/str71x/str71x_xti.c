@@ -49,8 +49,8 @@
 #include <arch/board/board.h>
 
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 #include "str71x.h"
 
 #ifdef CONFIG_STR71X_XTI
@@ -205,7 +205,7 @@ int str71x_xticonfig(int irq, bool rising)
 
       str71x_disable_xtiirq(irq);
 
-      /* Decide if we use the lower or upper regiser */
+      /* Decide if we use the lower or upper register */
 
       bit = irq - STR71X_IRQ_FIRSTXTI;
       ndx = 0;
@@ -255,7 +255,7 @@ void str71x_enable_xtiirq(int irq)
 
   if (irq >= STR71X_IRQ_FIRSTXTI && irq <= NR_IRQS)
     {
-      /* Decide if we use the lower or upper regiser */
+      /* Decide if we use the lower or upper register */
 
       bit = irq - STR71X_IRQ_FIRSTXTI;
       ndx = 0;
@@ -295,7 +295,7 @@ void str71x_disable_xtiirq(int irq)
 
   if (irq >= STR71X_IRQ_FIRSTXTI && irq <= NR_IRQS)
     {
-      /* Decide if we use the lower or upper regiser */
+      /* Decide if we use the lower or upper register */
 
       bit = irq - STR71X_IRQ_FIRSTXTI;
       ndx = 0;

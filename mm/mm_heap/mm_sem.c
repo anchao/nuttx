@@ -41,9 +41,9 @@
 #include <nuttx/config.h>
 
 #include <unistd.h>
-#include <semaphore.h>
 #include <errno.h>
 #include <assert.h>
+#include <debug.h>
 
 #include <nuttx/semaphore.h>
 #include <nuttx/mm/mm.h>
@@ -87,20 +87,13 @@
 /* Define MONITOR_MM_SEMAPHORE to enable semaphore state monitoring */
 
 #ifdef MONITOR_MM_SEMAPHORE
-#  include <debug.h>
 #  define msemerr  _err
 #  define msemwarn _warn
 #  define mseminfo _info
 #else
-#  ifdef CONFIG_CPP_HAVE_VARARGS
-#    define msemerr(x...)
-#    define msemwarn(x...)
-#    define mseminfo(x...)
-#  else
-#    define msemerr  (void)
-#    define msemwarn (void)
-#    define mseminfo (void)
-#  endif
+#  define msemerr  _none
+#  define msemwarn _none
+#  define mseminfo _none
 #endif
 
 /****************************************************************************
@@ -121,7 +114,7 @@ void mm_seminitialize(FAR struct mm_heap_s *heap)
    * private data sets).
    */
 
-  (void)nxsem_init(&heap->mm_semaphore, 0, 1);
+  nxsem_init(&heap->mm_semaphore, 0, 1);
 
   heap->mm_holder      = NO_HOLDER;
   heap->mm_counts_held = 0;
@@ -175,6 +168,12 @@ int mm_trysemaphore(FAR struct mm_heap_s *heap)
    * 'else', albeit with a nonsensical PID value.
    */
 
+  if (my_pid < 0)
+    {
+      ret = my_pid;
+      goto errout;
+    }
+
   /* Does the current task already hold the semaphore?  Is the current
    * task actually running?
    */
@@ -194,10 +193,10 @@ int mm_trysemaphore(FAR struct mm_heap_s *heap)
 
       ret = _SEM_TRYWAIT(&heap->mm_semaphore);
       if (ret < 0)
-       {
-         _SEM_GETERROR(ret);
-         goto errout;
-       }
+        {
+          _SEM_GETERROR(ret);
+          goto errout;
+        }
 
       /* We have it.  Claim the heap for the current task and return */
 

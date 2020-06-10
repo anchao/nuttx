@@ -58,6 +58,12 @@
 #  endif
 #endif
 
+#ifdef CONFIG_STM32F7_SDMMC
+#define HAVE_SDIO
+#else
+#undef HAVE_SDIO
+#endif
+
 /* STM32F736G Discovery GPIOs ***********************************************/
 
 /* The STM32F746G-DISCO board has numerous LEDs but only one,
@@ -78,9 +84,9 @@
  * Note that the EXTI interrupt is configured.
  */
 
-#define MIN_IRQBUTTON   BUTTON_USER
-#define MAX_IRQBUTTON   BUTTON_USER
-#define NUM_IRQBUTTONS  1
+#define MIN_IRQBUTTON      BUTTON_USER
+#define MAX_IRQBUTTON      BUTTON_USER
+#define NUM_IRQBUTTONS     1
 
 #define GPIO_BTN_USER      (GPIO_INPUT | GPIO_FLOAT | GPIO_EXTI | GPIO_PORTI | GPIO_PIN11)
 
@@ -101,11 +107,19 @@
 #define GPIO_SCHED_RUNNING (GPIO_OUTPUT | GPIO_PUSHPULL | GPIO_SPEED_50MHz | GPIO_OUTPUT_CLEAR | \
                             GPIO_PORTG | GPIO_PIN7)
 
-#define GPIO_LCD_DISP     (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|\
-                           GPIO_OUTPUT_SET|GPIO_PORTI|GPIO_PIN12)
+#define GPIO_LCD_DISP      (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|\
+                            GPIO_OUTPUT_SET|GPIO_PORTI|GPIO_PIN12)
 
-#define GPIO_LCD_BL       (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|\
-                           GPIO_OUTPUT_SET|GPIO_PORTK|GPIO_PIN3)
+#define GPIO_LCD_BL        (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|\
+                            GPIO_OUTPUT_SET|GPIO_PORTK|GPIO_PIN3)
+
+/* SD/TF Card'detected pin */
+
+#define GPIO_SDIO_NCD      (GPIO_INPUT|GPIO_FLOAT|GPIO_EXTI|GPIO_PORTC|GPIO_PIN13)
+
+#define SDIO_SLOTNO        0
+#define SDIO_MINOR         0
+
 /****************************************************************************
  * Public data
  ****************************************************************************/
@@ -210,6 +224,14 @@ void stm32_disablefmc(void);
 
 #ifdef CONFIG_INPUT_FT5X06
 int stm32_tsc_setup(int minor);
+#endif
+
+#ifdef CONFIG_MTD_N25QXXX
+int stm32_n25qxxx_setup(void);
+#endif
+
+#ifdef HAVE_SDIO
+int stm32_sdio_initialize(void);
 #endif
 
 #endif /* __ASSEMBLY__ */

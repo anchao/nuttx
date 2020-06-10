@@ -41,7 +41,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/statfs.h>
+#include <sys/statvfs.h>
 #include <sys/ioctl.h>
 
 #include <dirent.h>
@@ -97,12 +97,30 @@ static void host_stat_convert(struct stat *hostbuf, struct nuttx_stat_s *buf)
       buf->st_mode |= NUTTX_S_IFSOCK;
     }
 
-  buf->st_size    = hostbuf->st_size;
-  buf->st_blksize = hostbuf->st_blksize;
-  buf->st_blocks  = hostbuf->st_blocks;
-  buf->st_atim    = hostbuf->st_atime;
-  buf->st_mtim    = hostbuf->st_mtime;
-  buf->st_ctim    = hostbuf->st_ctime;
+  buf->st_dev          = hostbuf->st_dev;
+  buf->st_ino          = hostbuf->st_ino;
+  buf->st_nlink        = hostbuf->st_nlink;
+  buf->st_uid          = hostbuf->st_uid;
+  buf->st_gid          = hostbuf->st_gid;
+  buf->st_rdev         = hostbuf->st_rdev;
+  buf->st_size         = hostbuf->st_size;
+#if defined(__APPLE__)
+  buf->st_atim.tv_sec  = hostbuf->st_atimespec.tv_sec;
+  buf->st_atim.tv_nsec = hostbuf->st_atimespec.tv_nsec;
+  buf->st_mtim.tv_sec  = hostbuf->st_mtimespec.tv_sec;
+  buf->st_mtim.tv_nsec = hostbuf->st_mtimespec.tv_nsec;
+  buf->st_ctim.tv_sec  = hostbuf->st_ctimespec.tv_sec;
+  buf->st_ctim.tv_nsec = hostbuf->st_ctimespec.tv_nsec;
+#else
+  buf->st_atim.tv_sec  = hostbuf->st_atim.tv_sec;
+  buf->st_atim.tv_nsec = hostbuf->st_atim.tv_nsec;
+  buf->st_mtim.tv_sec  = hostbuf->st_mtim.tv_sec;
+  buf->st_mtim.tv_nsec = hostbuf->st_mtim.tv_nsec;
+  buf->st_ctim.tv_sec  = hostbuf->st_ctim.tv_sec;
+  buf->st_ctim.tv_nsec = hostbuf->st_ctim.tv_nsec;
+#endif
+  buf->st_blksize      = hostbuf->st_blksize;
+  buf->st_blocks       = hostbuf->st_blocks;
 }
 
 /****************************************************************************
@@ -162,10 +180,12 @@ int host_open(const char *pathname, int flags, int mode)
       mapflags |= O_SYNC;
     }
 
+#ifdef O_DIRECT
   if (flags & NUTTX_O_DIRECT)
     {
       mapflags |= O_DIRECT;
     }
+#endif
 
   return open(pathname, mapflags, mode);
 }
@@ -185,7 +205,7 @@ int host_close(int fd)
  * Name: host_read
  ****************************************************************************/
 
-ssize_t host_read(int fd, void* buf, size_t count)
+ssize_t host_read(int fd, void *buf, size_t count)
 {
   /* Just call the read routine */
 
@@ -288,7 +308,7 @@ void *host_opendir(const char *name)
  * Name: host_readdir
  ****************************************************************************/
 
-int host_readdir(void* dirp, struct nuttx_dirent_s* entry)
+int host_readdir(void *dirp, struct nuttx_dirent_s *entry)
 {
   struct dirent *ent;
 
@@ -312,7 +332,8 @@ int host_readdir(void* dirp, struct nuttx_dirent_s* entry)
 
       /* Copy the entry name */
 
-      strncpy(entry->d_name, ent->d_name, sizeof(entry->d_name));
+      strncpy(entry->d_name, ent->d_name, sizeof(entry->d_name) - 1);
+      entry->d_name[sizeof(entry->d_name) - 1] = 0;
 
       /* Map the type */
 
@@ -370,17 +391,17 @@ int host_closedir(void *dirp)
 
 int host_statfs(const char *path, struct nuttx_statfs_s *buf)
 {
-  int           ret;
-  struct statfs hostbuf;
+  int            ret;
+  struct statvfs hostbuf;
 
   /* Call the host's statfs routine */
 
-  ret = statfs(path, &hostbuf);
+  ret = statvfs(path, &hostbuf);
 
   /* Map the struct statfs value */
 
-  buf->f_type    = hostbuf.f_type;
-  buf->f_namelen = hostbuf.f_namelen;
+  buf->f_type    = 0; /* hostfs overwrites f_type anyway */
+  buf->f_namelen = hostbuf.f_namemax;
   buf->f_bsize   = hostbuf.f_bsize;
   buf->f_blocks  = hostbuf.f_blocks;
   buf->f_bfree   = hostbuf.f_bfree;

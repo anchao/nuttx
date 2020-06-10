@@ -43,7 +43,7 @@
 
 #include <nuttx/arch.h>
 
-#include "up_internal.h"
+#include "arm_internal.h"
 #include "sctlr.h"
 #include "gic.h"
 #include "imx_irq.h"
@@ -183,6 +183,6 @@ void up_irqinitialize(void)
 
   /* And finally, enable interrupts */
 
-  (void)up_irq_enable();
+  up_irq_enable();
 #endif
 }

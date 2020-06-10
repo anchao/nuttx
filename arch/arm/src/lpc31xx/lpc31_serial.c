@@ -43,7 +43,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <semaphore.h>
 #include <string.h>
 #include <errno.h>
 #include <debug.h>
@@ -53,8 +52,8 @@
 #include <nuttx/fs/ioctl.h>
 #include <nuttx/serial/serial.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "lpc31_cgudrvr.h"
 #include "lpc31_uart.h"
@@ -751,17 +750,19 @@ static bool up_txempty(struct uart_dev_s *dev)
  * Public Functions
  ****************************************************************************/
 
+#ifdef USE_EARLYSERIALINIT
+
 /****************************************************************************
- * Name: up_earlyserialinit
+ * Name: arm_earlyserialinit
  *
  * Description:
  *   Performs the low level UART initialization early in debug so that the
  *   serial console will be available during bootup (via up_putc).  This must
- *   be called before up_serialinit.
+ *   be called before arm_serialinit.
  *
  ****************************************************************************/
 
-void up_earlyserialinit(void)
+void arm_earlyserialinit(void)
 {
   /* Enable UART system clock */
 
@@ -779,22 +780,23 @@ void up_earlyserialinit(void)
   up_setup(&g_uartport);
 #endif
 }
+#endif
 
 /****************************************************************************
- * Name: up_serialinit
+ * Name: arm_serialinit
  *
  * Description:
  *   Register serial console and serial ports.  This assumes that
- *   up_earlyserialinit was called previously.
+ *   arm_earlyserialinit was called previously.
  *
  ****************************************************************************/
 
-void up_serialinit(void)
+void arm_serialinit(void)
 {
 #if defined(CONFIG_UART_SERIAL_CONSOLE)
-  (void)uart_register("/dev/console", &g_uartport);
+  uart_register("/dev/console", &g_uartport);
 #endif
-  (void)uart_register("/dev/ttyS0", &g_uartport);
+  uart_register("/dev/ttyS0", &g_uartport);
 }
 
 /****************************************************************************
@@ -822,12 +824,12 @@ int up_putc(int ch)
     {
       /* Add CR */
 
-      up_lowputc('\r');
+      arm_lowputc('\r');
     }
 
   /* Output the character */
 
-  up_lowputc(ch);
+  arm_lowputc(ch);
   up_restoreuartint(priv, ier);
   return ch;
 }
@@ -850,12 +852,12 @@ int up_putc(int ch)
     {
       /* Add CR */
 
-      up_lowputc('\r');
+      arm_lowputc('\r');
     }
 
   /* Output the character */
 
-  up_lowputc(ch);
+  arm_lowputc(ch);
   return ch;
 }
 

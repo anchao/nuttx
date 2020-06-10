@@ -48,8 +48,10 @@
 #include <arch/irq.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "hardware/am335x_timer.h"
+
+#include "am335x_sysclk.h"
 
 #define USE_TIMER1MS
 
@@ -57,9 +59,9 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-/* Timer clock selects system clock CLK_M_OSC (24MHz) */
+/* Timer clock selects system clock CLK_M_OSC */
 
-#  define TMR_CLOCK             (24000000ll)
+#  define TMR_CLOCK             ((int64_t)am335x_get_sysclk())
 
 /* The desired timer interrupt frequency is provided by the definition
  * CLK_TCK (see include/time.h).  CLK_TCK defines the desired number of
@@ -115,7 +117,7 @@ static int am335x_timerisr(int irq, uint32_t *regs, void *arg)
  ****************************************************************************/
 
 /****************************************************************************
- * Function:  arm_timer_initialize
+ * Function:  up_timer_initialize
  *
  * Description:
  *   This function is called during start-up to initialize
@@ -123,7 +125,7 @@ static int am335x_timerisr(int irq, uint32_t *regs, void *arg)
  *
  ****************************************************************************/
 
-void arm_timer_initialize(void)
+void up_timer_initialize(void)
 {
   uint32_t regval;
 
@@ -152,11 +154,11 @@ void arm_timer_initialize(void)
 
   /* Attach the timer interrupt vector */
 
-  (void)irq_attach(AM335X_IRQ_TIMER1_1MS, (xcpt_t)am335x_timerisr, NULL);
+  irq_attach(AM335X_IRQ_TIMER1_1MS, (xcpt_t)am335x_timerisr, NULL);
 
   /* Clear interrupt status */
 
-  regval = TMR1MS_IRQ_FlAG_MAT | TMR1MS_IRQ_FLAG_OVF |
+  regval = TMR1MS_IRQ_FLAG_MAT | TMR1MS_IRQ_FLAG_OVF |
            TMR1MS_IRQ_FLAG_TCAR;
   putreg32(regval, AM335X_TMR1MS_TISR);
 
@@ -191,7 +193,7 @@ void arm_timer_initialize(void)
 
   /* Attach the timer interrupt vector */
 
-  (void)irq_attach(AM335X_IRQ_TIMER2, (xcpt_t)am335x_timerisr, NULL);
+  irq_attach(AM335X_IRQ_TIMER2, (xcpt_t)am335x_timerisr, NULL);
 
   /* Enable overflow interrupt */
 

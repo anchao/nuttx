@@ -47,7 +47,7 @@
 #include <nuttx/arch.h>
 #include <nuttx/timers/rtc.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 
 #include "chip.h"
 #include "max326_rtc.h"
@@ -603,9 +603,9 @@ static int max326_rdalarm(FAR struct rtc_lowerhalf_s *lower,
            /* Convert to struct rtc_time (aka struct tm) */
 
 #ifdef CONFIG_LIBC_LOCALTIME
-          (void)localtime_r(&sec, (FAR struct tm *)alarminfo->time);
+          localtime_r(&sec, (FAR struct tm *)alarminfo->time);
 #else
-          (void)gmtime_r(&sec, (FAR struct tm *)alarminfo->time);
+          gmtime_r(&sec, (FAR struct tm *)alarminfo->time);
 #endif
           ret = OK;
         }

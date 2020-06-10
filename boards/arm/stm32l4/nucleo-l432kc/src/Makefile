@@ -33,9 +33,8 @@
 #
 ############################################################################
 
--include $(TOPDIR)/Make.defs
+include $(TOPDIR)/Make.defs
 
-ASRCS =
 CSRCS = stm32_boot.c stm32_spi.c
 
 ifeq ($(CONFIG_ARCH_LEDS),y)
@@ -90,6 +89,10 @@ endif
 
 ifeq ($(CONFIG_LIB_BOARDCTL),y)
 CSRCS += stm32_appinit.c
+endif
+
+ifeq ($(CONFIG_NUCLEOL432KC_SPWM),y)
+CSRCS += stm32_spwm.c
 endif
 
 include $(TOPDIR)/boards/Board.mk

@@ -33,9 +33,8 @@
 #
 ############################################################################
 
--include $(TOPDIR)/Make.defs
+include $(TOPDIR)/Make.defs
 
-ASRCS =
 CSRCS = stm32_boot.c stm32_bringup.c
 
 ifeq ($(CONFIG_ADC),y)
@@ -94,6 +93,10 @@ endif
 
 ifeq ($(CONFIG_DEV_GPIO),y)
 CSRCS += stm32_gpio.c
+endif
+
+ifeq ($(CONFIG_PWM),y)
+CSRCS += stm32_pwm.c
 endif
 
 include $(TOPDIR)/boards/Board.mk

@@ -178,7 +178,7 @@ void weak_function sam_netinitialize(void)
  *             signal tasks in user space.  A value of NULL can be passed
  *             in order to detach and disable the PHY interrupt.
  *   arg     - The argument that will accompany the interrupt
- *   enable  - A function pointer that be unsed to enable or disable the
+ *   enable  - A function pointer that be unused to enable or disable the
  *             PHY interrupt.
  *
  * Returned Value:
@@ -228,12 +228,12 @@ int arch_phy_irq(FAR const char *intf, xcpt_t handler, void *arg,
       sam_gpioirq(pinset);
 
       phyinfo("Attach IRQ%d\n", irq);
-      (void)irq_attach(irq, handler, arg);
+      irq_attach(irq, handler, arg);
     }
   else
     {
       phyinfo("Detach IRQ%d\n", irq);
-      (void)irq_detach(irq);
+      irq_detach(irq);
       enabler = NULL;
     }
 

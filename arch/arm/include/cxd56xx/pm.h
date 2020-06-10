@@ -36,9 +36,9 @@
 #ifndef __ARCH_ARM_INCLUDE_CXD56XX_PM_H
 #define __ARCH_ARM_INCLUDE_CXD56XX_PM_H
 
-/*-----------------------------------------------------------------------------
- * include files
- *---------------------------------------------------------------------------*/
+/****************************************************************************
+ * Included Files
+ ****************************************************************************/
 
 #include <queue.h>
 
@@ -279,8 +279,8 @@ int up_pm_count_acquire_wakelock(void);
  *
  * Description:
  *   Get the system boot cause. This boot cause indicates the cause why the
- *   system is launched from the state of power-off, deep sleep or cold sleep.
- *   Each boot cause is defined as PM_BOOT_XXX.
+ *   system is launched from the state of power-off, deep sleep or cold
+ *   sleep. Each boot cause is defined as PM_BOOT_XXX.
  *
  * Return:
  *   Boot cause
@@ -311,7 +311,7 @@ uint32_t up_pm_get_bootmask(void);
  *   Enable the boot cause of the specified bit.
  *
  * Parameter:
- *   mask - OR of Boot mask definied as PM_BOOT_XXX
+ *   mask - OR of Boot mask defined as PM_BOOT_XXX
  *
  * Return:
  *   Updated boot mask
@@ -327,7 +327,7 @@ uint32_t up_pm_set_bootmask(uint32_t mask);
  *   Disable the boot cause of the specified bit.
  *
  * Parameter:
- *   mask - OR of Boot mask definied as PM_BOOT_XXX
+ *   mask - OR of Boot mask defined as PM_BOOT_XXX
  *
  * Return:
  *   Updated boot mask

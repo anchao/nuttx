@@ -44,7 +44,7 @@
 #include <nuttx/arch.h>
 #include <nuttx/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -79,4 +79,3 @@ void up_systemreset(void)
 
   for (; ; );
 }
-

@@ -45,7 +45,7 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-/* Clocking *************************************************************************/
+/* Clocking *****************************************************************/
 
 /* RCC settings */
 
@@ -65,7 +65,12 @@
  */
 
 #define TIVA_SYSDIV          4
+
+#ifdef CONFIG_TIVA_WITH_QEMU
+#define SYSCLK_FREQUENCY     12500000  /* 12.5MHz */
+#else
 #define SYSCLK_FREQUENCY     50000000  /* 50MHz */
+#endif
 
 /* Peripheral Clock (PCLK)
  *
@@ -117,4 +122,4 @@
 #define LED_ASSERTION     6     /* ON   OFF */
 #define LED_PANIC         7     /* ON   OFF */
 
-#endif  /* __BOARDS_ARM_TIVA_LM3S6965_EK_INCLUDE_BOARD_H */
+#endif /* __BOARDS_ARM_TIVA_LM3S6965_EK_INCLUDE_BOARD_H */

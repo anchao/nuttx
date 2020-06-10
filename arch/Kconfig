@@ -10,7 +10,6 @@ choice
 config ARCH_ARM
 	bool "ARM"
 	select ARCH_HAVE_INTERRUPTSTACK
-	select ARCH_HAVE_TLS
 	select ARCH_HAVE_VFORK
 	select ARCH_HAVE_STACKCHECK
 	select ARCH_HAVE_CUSTOMOPT
@@ -58,6 +57,7 @@ config ARCH_RENESAS
 config ARCH_RISCV
 	bool "RISC-V"
 	select ARCH_HAVE_INTERRUPTSTACK
+	select ARCH_HAVE_STACKCHECK
 	select ARCH_HAVE_CUSTOMOPT
 	select ARCH_HAVE_STDARG_H
 	---help---
@@ -66,19 +66,26 @@ config ARCH_RISCV
 config ARCH_SIM
 	bool "Simulation"
 	select ARCH_HAVE_MULTICPU
-	select ARCH_HAVE_TLS
+	select ARCH_HAVE_RTC_SUBSECONDS
 	select ARCH_HAVE_TICKLESS
 	select ARCH_HAVE_POWEROFF
 	select ARCH_HAVE_TESTSET
 	select ARCH_NOINTC
+	select ALARM_ARCH
+	select ONESHOT
 	select SERIAL_CONSOLE
 	---help---
-		Linux/Cywgin user-mode simulation.
+		Linux/Cygwin user-mode simulation.
 
 config ARCH_X86
 	bool "x86"
 	---help---
 		Intel x86 architectures.
+
+config ARCH_X86_64
+	bool "x86_64"
+	---help---
+		x86-64 architectures.
 
 config ARCH_XTENSA
 	bool "Xtensa"
@@ -132,6 +139,7 @@ source arch/renesas/Kconfig
 source arch/risc-v/Kconfig
 source arch/sim/Kconfig
 source arch/x86/Kconfig
+source arch/x86_64/Kconfig
 source arch/xtensa/Kconfig
 source arch/z16/Kconfig
 source arch/z80/Kconfig
@@ -151,6 +159,14 @@ config ARCH_GNU_NO_WEAKFUNCTIONS
 	default n
 	---help---
 		Disable support for weak functions.
+
+config ARCH_SIZET_LONG
+	bool "size_t is type long"
+	default n
+	---help---
+		size_t may be type long or type int.  This matters for some
+		C++ library routines because the NuttX size_t might not have
+		the same underlying type as your toolchain's size_t.
 
 comment "Architecture Options"
 
@@ -193,6 +209,10 @@ config ARCH_HAVE_ADDRENV
 
 config ARCH_NEED_ADDRENV_MAPPING
 	bool
+	default n
+
+config ARCH_HAVE_MODULE_TEXT
+	bool "Special memory region for dynamic code loading"
 	default n
 
 config ARCH_HAVE_MULTICPU
@@ -254,10 +274,6 @@ config ARCH_HAVE_RTC_SUBSECONDS
 	bool
 	default n
 
-config ARCH_HAVE_GARBAGE
-	bool
-	default n
-
 config ARCH_GLOBAL_IRQDISABLE
 	bool
 	default n
@@ -302,6 +318,16 @@ config ARCH_USE_MPU
 		order to enable use of the MPU.  For most architectures, this option
 		is enabled by other, platform-specific logic.  In those cases, this
 		selection will always be forced.
+
+config ARCH_USE_MODULE_TEXT
+	bool "Enable module text allocator"
+	default n
+	depends on ARCH_HAVE_MODULE_TEXT
+	---help---
+		This option enable architecture-sepecific memory allocator
+		for dynamic code loading. For example, ESP32 has a separate memory
+		regions for instruction and data and the memory region used for
+		usual malloc doesn't work for instruction.
 
 menuconfig ARCH_ADDRENV
 	bool "Address environments"
@@ -450,7 +476,7 @@ config ARCH_KERNEL_STACKSIZE
 	int "Kernel stack size"
 	default 1568
 	---help---
-		The common size of each process' kernel stack
+		The common size of each process's kernel stack
 
 endif # ARCH_KERNEL_STACK
 

@@ -44,7 +44,6 @@
 #include <sys/types.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <semaphore.h>
 #include <errno.h>
 #include <debug.h>
 
@@ -52,8 +51,8 @@
 #include <nuttx/irq.h>
 #include <nuttx/analog/dac.h>
 
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 
 #include "chip.h"
 #include "stm32l4.h"
@@ -747,7 +746,7 @@ static int dac_send(FAR struct dac_dev_s *dev, FAR struct dac_msg_s *msg)
   if (chan->hasdma)
     {
       /* Copy the value to circular buffer. Since dmabuffer is initialized to zero,
-       * writing e.g. monotonously increasing values creates a continuosly repeating
+       * writing e.g. monotonously increasing values creates a continuously repeating
        * ramp-effect, alternating with periods of zero output.
        *
        * In real use it the dmabuffer should be initialized with a desired pattern

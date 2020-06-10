@@ -42,7 +42,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
-#include <semaphore.h>
 #include <sched.h>
 #include <assert.h>
 #include <errno.h>
@@ -53,14 +52,15 @@
 #include <nuttx/wqueue.h>
 #include <nuttx/fs/fs.h>
 #include <nuttx/input/touchscreen.h>
+#include <nuttx/semaphore.h>
 
 #include <arch/board/board.h>
-#include "up_arch.h"
-#include "up_internal.h"
+#include "mips_arch.h"
+#include "mips_internal.h"
 
 #include "pic32mx.h"
-#include "pic32mx-adc.h"
-#include "pic32mx-ioport.h"
+#include "pic32mx_adc.h"
+#include "pic32mx_ioport.h"
 #include "pic32mx7mmb.h"
 
 #ifdef CONFIG_INPUT
@@ -135,7 +135,9 @@
 #define LCD_YMINUS_BIT (1 << LCD_YMINUS_PIN)
 #define LCD_ALL_BITS   (LCD_XPLUS_BIT | LCD_YPLUS_BIT | LCD_XMINUS_BIT | LCD_YMINUS_BIT)
 
-/* Conversions are performed as 10-bit samples represented as 16-bit unsigned integers: */
+/* Conversions are performed as 10-bit samples represented as 16-bit
+ * unsigned integers:
+ */
 
 #define MAX_ADC        (1023)
 
@@ -282,7 +284,7 @@ static struct tc_dev_s g_touchscreen;
  *
  * Description:
  *   Perform A/D sampling.
- *   Time must be allowed betwen the start of sampling
+ *   Time must be allowed between the start of sampling
  *   and conversion (approx. 100Ms).
  *
  ****************************************************************************/
@@ -333,12 +335,12 @@ static void tc_adc_sample(int pin)
  *
  * Description:
  *   Begin A/D conversion.
- *   Time must be allowed betwen the start of sampling
+ *   Time must be allowed between the start of sampling
  *   and conversion (approx. 100Ms).
  *
  * Assumptions:
  * 1) All output pins configured as outputs:
- * 2) Approprite pins are driven high and low
+ * 2) Appropriate pins are driven high and low
  *
  ****************************************************************************/
 
@@ -495,8 +497,8 @@ static void tc_notify(FAR struct tc_dev_s *priv)
 
   if (priv->nwaiters > 0)
     {
-      /* After posting this semaphore, we need to exit because the touchscreen
-       * is no longer available.
+      /* After posting this semaphore, we need to exit because the
+       * touchscreen is no longer available.
        */
 
       nxsem_post(&priv->waitsem);
@@ -592,7 +594,7 @@ static int tc_waitsample(FAR struct tc_dev_s *priv,
   nxsem_post(&priv->devsem);
 
   /* Try to get the a sample... if we cannot, then wait on the semaphore
-   * that is posted when new sample data is availble.
+   * that is posted when new sample data is available.
    */
 
   while (tc_sample(priv, sample) < 0)
@@ -605,17 +607,12 @@ static int tc_waitsample(FAR struct tc_dev_s *priv,
 
       if (ret < 0)
         {
-          /* If we are awakened by a signal, then we need to return
-           * the failure now.
-           */
-
-          DEBUGASSERT(ret == -EINTR || ret == -ECANCELED);
           goto errout;
         }
     }
 
   /* Re-acquire the semaphore that manages mutually exclusive access to
-   * the device structure.  We may have to wait here.  But we have our sample.
+   * the device structure. We may have to wait here. But we have our sample.
    * Interrupts and pre-emption will be re-enabled while we wait.
    */
 
@@ -1010,9 +1007,6 @@ static int tc_open(FAR struct file *filep)
   ret = nxsem_wait(&priv->devsem);
   if (ret < 0)
     {
-      /* This should only happen if the wait was canceled by an signal */
-
-      DEBUGASSERT(ret == -EINTR || ret == -ECANCELED);
       return ret;
     }
 
@@ -1065,9 +1059,6 @@ static int tc_close(FAR struct file *filep)
   ret = nxsem_wait(&priv->devsem);
   if (ret < 0)
     {
-      /* This should only happen if the wait was canceled by an signal */
-
-      DEBUGASSERT(ret == -EINTR || ret == -ECANCELED);
       return ret;
     }
 
@@ -1122,9 +1113,6 @@ static ssize_t tc_read(FAR struct file *filep, FAR char *buffer, size_t len)
   ret = nxsem_wait(&priv->devsem);
   if (ret < 0)
     {
-      /* This should only happen if the wait was canceled by an signal */
-
-      DEBUGASSERT(ret == -EINTR || ret == -ECANCELED);
       return ret;
     }
 
@@ -1236,9 +1224,6 @@ static int tc_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
   ret = nxsem_wait(&priv->devsem);
   if (ret < 0)
     {
-      /* This should only happen if the wait was canceled by an signal */
-
-      DEBUGASSERT(ret == -EINTR || ret == -ECANCELED);
       return ret;
     }
 
@@ -1282,9 +1267,6 @@ static int tc_poll(FAR struct file *filep, FAR struct pollfd *fds,
   ret = nxsem_wait(&priv->devsem);
   if (ret < 0)
     {
-      /* This should only happen if the wait was canceled by an signal */
-
-      DEBUGASSERT(ret == -EINTR || ret == -ECANCELED);
       return ret;
     }
 
@@ -1412,7 +1394,7 @@ int pic32mx_tsc_setup(int minor)
 
   /* Register the device as an input device */
 
-  (void)snprintf(devname, DEV_NAMELEN, DEV_FORMAT, minor);
+  snprintf(devname, DEV_NAMELEN, DEV_FORMAT, minor);
   iinfo("Registering %s\n", devname);
 
   ret = register_driver(devname, &tc_fops, 0666, priv);

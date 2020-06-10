@@ -56,14 +56,14 @@ NUTTXLIBS += staging$(DELIM)libboards$(LIBEXT)
 
 NUTTXLIBS += staging$(DELIM)libstubs$(LIBEXT) staging$(DELIM)libkc$(LIBEXT)
 NUTTXLIBS += staging$(DELIM)libkmm$(LIBEXT) staging$(DELIM)libkarch$(LIBEXT)
-USERLIBS  += staging$(DELIM)libproxies$(LIBEXT) staging$(DELIM)libuc$(LIBEXT)
-USERLIBS  += staging$(DELIM)libumm$(LIBEXT) staging$(DELIM)libuarch$(LIBEXT)
+USERLIBS  += staging$(DELIM)libproxies$(LIBEXT) staging$(DELIM)libc$(LIBEXT)
+USERLIBS  += staging$(DELIM)libmm$(LIBEXT) staging$(DELIM)libarch$(LIBEXT)
 
 # Add libraries for C++ support.  CXX, CXXFLAGS, and COMPILEXX must
 # be defined in Make.defs for this to work!
 
 ifeq ($(CONFIG_HAVE_CXX),y)
-USERLIBS += staging$(DELIM)$(LIBXX)$(LIBEXT)
+USERLIBS += staging$(DELIM)libxx$(LIBEXT)
 endif
 
 # Add libraries for network support
@@ -87,10 +87,10 @@ NUTTXLIBS += staging$(DELIM)libfs$(LIBEXT) staging$(DELIM)libbinfmt$(LIBEXT)
 ifeq ($(CONFIG_NX),y)
 NUTTXLIBS += staging$(DELIM)libgraphics$(LIBEXT)
 NUTTXLIBS += staging$(DELIM)libknx$(LIBEXT)
-USERLIBS  += staging$(DELIM)libunx$(LIBEXT)
+USERLIBS  += staging$(DELIM)libnx$(LIBEXT)
 else ifeq ($(CONFIG_NXFONTS),y)
 NUTTXLIBS += staging$(DELIM)libknx$(LIBEXT)
-USERLIBS  += staging$(DELIM)libunx$(LIBEXT)
+USERLIBS  += staging$(DELIM)libnx$(LIBEXT)
 endif
 
 # Add libraries for the Audio sub-system

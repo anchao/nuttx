@@ -53,7 +53,7 @@
 #include <nuttx/binfmt/binfmt.h>
 #include <nuttx/lib/builtin.h>
 
-#ifdef HAVE_BUILTIN_CONTEXT
+#ifdef CONFIG_FS_BINFS
 
 /****************************************************************************
  * Private Function Prototypes
@@ -188,8 +188,7 @@ int builtin_initialize(void)
 
 void builtin_uninitialize(void)
 {
-  (void)unregister_binfmt(&g_builtin_binfmt);
+  unregister_binfmt(&g_builtin_binfmt);
 }
 
-#endif /* HAVE_BUILTIN_CONTEXT */
-
+#endif /* CONFIG_FS_BINFS */

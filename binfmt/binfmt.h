@@ -61,9 +61,10 @@ extern "C"
 #define EXTERN extern
 #endif
 
-/* This is a list of registered handlers for different binary formats.  This
- * list should only be accessed by normal user programs.  It should be sufficient
- * protection to simply disable pre-emption when accessing this list.
+/* This is a list of registered handlers for different binary formats.
+ * This list should only be accessed by normal user programs.  It should be
+ * sufficient protection to simply disable pre-emption when accessing this
+ * list.
  */
 
 EXTERN FAR struct binfmt_s *g_binfmts;
@@ -97,7 +98,7 @@ int dump_module(FAR const struct binary_s *bin);
  *
  * Description:
  *   In the kernel build, the argv list will likely lie in the caller's
- *   address environment and, hence, by inaccessible when we swith to the
+ *   address environment and, hence, by inaccessible when we switch to the
  *   address environment of the new process address environment.  So we
  *   do not have any real option other than to copy the callers argv[] list.
  *
@@ -146,7 +147,7 @@ void binfmt_freeargv(FAR struct binary_s *bin);
  *
  ****************************************************************************/
 
-#if defined(CONFIG_FS_BINFS) && defined(HAVE_BUILTIN_CONTEXT)
+#ifdef CONFIG_FS_BINFS
 int builtin_initialize(void);
 #endif
 
@@ -161,7 +162,7 @@ int builtin_initialize(void);
  *
  ****************************************************************************/
 
-#if defined(CONFIG_FS_BINFS) && defined(HAVE_BUILTIN_CONTEXT)
+#ifdef CONFIG_FS_BINFS
 void builtin_uninitialize(void);
 #endif
 
@@ -171,4 +172,3 @@ void builtin_uninitialize(void);
 #endif
 
 #endif /* __BINFMT_BINFMT_H */
-

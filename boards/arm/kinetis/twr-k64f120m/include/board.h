@@ -64,7 +64,7 @@
  *
  *   PLL Input frequency:   PLLIN  = REFCLK/PRDIV = 50MHz/20 = 2.5 MHz
  *   PLL Output frequency:  PLLOUT = PLLIN*VDIV   = 2.5Mhz*48 = 120MHz
- *   MCG Frequency:         PLLOUT = 120 Mhz
+ *   MCG Frequency:         PLLOUT = 120 MHz
  */
 
 #define BOARD_PRDIV          20  /* PLL External Reference Divider */
@@ -138,7 +138,7 @@
  * 3. D7 / Orange LED   PTE8
  * 4  D9 / Blue LED     PTE9
  *
- * LED4 is reservered for user.
+ * LED4 is reserved for user.
  * The 3 first LEDs are encoded as follows:
  */
 
@@ -162,4 +162,4 @@
 #  define CONFIG_KINETIS_NENET 1
 #endif
 
-#endif  /* __BOARDS_ARM_KINETIS_TWR_K64F120M_INCLUDE_BOARCH_H */
+#endif /* __BOARDS_ARM_KINETIS_TWR_K64F120M_INCLUDE_BOARCH_H */

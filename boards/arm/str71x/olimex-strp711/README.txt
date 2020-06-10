@@ -36,7 +36,7 @@ Olimex STR-P711
  - Trimpot connected to ADC
  - Two status LEDs
  - Buzzer
- - UEXT - 10 pin extension connector for Olimex addon peripherials like MP3,
+ - UEXT - 10 pin extension connector for Olimex addon peripherals like MP3,
    RF2.4Ghz, RFID etc. modules
  - 2x SPI connectors
  - I2C connector
@@ -46,7 +46,7 @@ Olimex STR-P711
  - Power supply filtering capacitor
  - RESET circuit
  - RESET button
- - 4 Mhz crystal oscillator
+ - 4 MHz crystal oscillator
  - 32768 Hz crystal and RTC
 
  Power Supply
@@ -116,9 +116,9 @@ GNU Toolchain Options
   The NuttX make system has been modified to support the following different
   toolchain options.
 
-  1. The NuttX buildroot Toolchain (see below).
-  2. The CodeSourcery GNU toolchain,
-  3. The devkitARM GNU toolchain, or
+  1. The NuttX buildroot Toolchain (see below),
+  2. The ARM EABI GNU toolchain, or
+  3. The devkitARM GNU toolchain.
 
   All testing has been conducted using the NuttX buildroot toolchain.  To use
   the CodeSourcery or devkitARM GNU toolchain, you simply need to build the
@@ -126,7 +126,7 @@ GNU Toolchain Options
 
      make                         # Will build for the NuttX buildroot toolchain
      make CROSSDEV=arm-eabi-      # Will build for the devkitARM toolchain
-     make CROSSDEV=arm-none-eabi- # Will build for the CodeSourcery toolchain
+     make CROSSDEV=arm-none-eabi- # Will build for the ARM EABI GCC toolchain
      make CROSSDEV=arm-nuttx-elf- # Will build for the NuttX buildroot toolchain
 
   Of course, hard coding this CROSS_COMPILE value in Make.defs file will save
@@ -222,7 +222,7 @@ GENERAL STEPS:
   Install OpenOCD.  Since we used the default configuration the code will be
   installed at /usr/local/bin/openocd. Other files will be installed at
   /usr/local/lib/openocd (configuration files, scripts, etc.) and /usr/local/share/info
-  (online documentation accessable via 'info openocd').  You need root priviledges
+  (online documentation accessible via 'info openocd').  You need root privileges
   to do the following:
 
     make install.
@@ -272,7 +272,7 @@ Windows OpenOCD will Olimex JTAG
 
     - possibly the value of OPENOCD_PATH
     - If you are working under Linux you will need to change any
-      occurances of `cygpath -w blablabla` to just blablabla
+      occurrences of `cygpath -w blablabla` to just blablabla
 
   If you have $PATH and other environment variables set up, then you should
   be able to start the OpenOCD daemon like:

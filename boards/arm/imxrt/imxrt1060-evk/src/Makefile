@@ -33,9 +33,8 @@
 #
 ############################################################################
 
--include $(TOPDIR)/Make.defs
+include $(TOPDIR)/Make.defs
 
-ASRCS =
 CSRCS = imxrt_boot.c imxrt_flexspi_nor_boot.c imxrt_flexspi_nor_flash.c
 
 ifeq ($(CONFIG_IMXRT_SDRAMC),y)
@@ -80,6 +79,10 @@ endif
 
 ifeq ($(CONFIG_IMXRT_LCD),y)
 CSRCS += imxrt_lcd.c
+endif
+
+ifeq ($(CONFIG_IMXRT_USBOTG),y)
+CSRCS += imxrt_usbhost.c
 endif
 
 include $(TOPDIR)/boards/Board.mk

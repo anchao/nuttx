@@ -33,13 +33,9 @@
 #
 ############################################################################
 
--include $(TOPDIR)/Make.defs
+include $(TOPDIR)/Make.defs
 
-ASRCS =
-CSRCS =
-
-VPATH := $(SRCDIR)
-DEPPATH = --dep-path .
+VERSION ?= 2020.04.0
 
 include libmetal.defs
 include open-amp.defs
@@ -73,7 +69,6 @@ dirlinks::
 depend: .depend
 
 clean:
-	$(foreach obj,$(OBJS),$(call DELFILE, $(obj)))
 	$(call DELFILE, $(BIN))
 	$(call CLEAN)
 

@@ -50,7 +50,7 @@
 
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "hardware/tiva_sysctrl.h"
 #include "hardware/tiva_timer.h"
 
@@ -1611,7 +1611,7 @@ static int tiva_pwm_mode16(struct tiva_gptmstate_s *priv,
   tiva_modifyreg(priv, regoffset, 0, TIMER_TnMR_TnPWMIE);
 
   /* 6. Set PWM period: This is a 24-bit value. Put the high byte (bits 16
-   *    thru 23) in the prescaler register (TIVA_TIMER_TnPR_OFFSET). Put the
+   *    through 23) in the prescaler register (TIVA_TIMER_TnPR_OFFSET). Put the
    *    low word (bits 0 through 15) in the interval load register
    *    (TIVA_TIMER_TnILR_OFFSET).
    *
@@ -1639,8 +1639,8 @@ static int tiva_pwm_mode16(struct tiva_gptmstate_s *priv,
    */
 
   /* 7. Set PWM duty cycle: This is a 24-bit value. Put the high byte (bits
-   *    16 thru 23) in the prescale match register (TIVA_TIMER_TnPMR_OFFSET).
-   *    Put the low word (bits 0 thru 16) in the match register
+   *    16 through 23) in the prescale match register (TIVA_TIMER_TnPMR_OFFSET).
+   *    Put the low word (bits 0 through 16) in the match register
    *    (TIVA_TIMER_TnMATCHR_OFFSET).
    *
    *    NOTE: This is done when tiva_timer16pwm_setperiodduty() is called.
@@ -1854,8 +1854,8 @@ TIMER_HANDLE tiva_gptm_configure(const struct tiva_gptmconfig_s *config)
   up_disable_irq(attr->irq[TIMER16A]);
   up_disable_irq(attr->irq[TIMER16B]);
 
-  (void)irq_detach(attr->irq[TIMER16A]);
-  (void)irq_detach(attr->irq[TIMER16B]);
+  irq_detach(attr->irq[TIMER16A]);
+  irq_detach(attr->irq[TIMER16B]);
 
   /* Enable power and clocking to the GPTM module
    *
@@ -2030,8 +2030,8 @@ void tiva_gptm_release(TIMER_HANDLE handle)
   up_disable_irq(attr->irq[TIMER16A]);
   up_disable_irq(attr->irq[TIMER16B]);
 
-  (void)irq_detach(attr->irq[TIMER16A]);
-  (void)irq_detach(attr->irq[TIMER16B]);
+  irq_detach(attr->irq[TIMER16A]);
+  irq_detach(attr->irq[TIMER16B]);
 
   /* Reset the time to be certain that it is in the disabled state */
 

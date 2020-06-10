@@ -50,6 +50,10 @@
 
 #include "cxd56_i2c.h"
 
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
+
 #ifdef CONFIG_SENSORS_APDS9930_SCU
 int board_apds9930_initialize(int bus)
 {
@@ -58,7 +62,7 @@ int board_apds9930_initialize(int bus)
 
   sninfo("Initializing APDS9930...\n");
 
-  /* Initialize i2c deivce */
+  /* Initialize i2c device */
 
   i2c = cxd56_i2cbus_initialize(bus);
   if (!i2c)

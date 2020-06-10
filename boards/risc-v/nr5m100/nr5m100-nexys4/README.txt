@@ -60,20 +60,20 @@ Development Environment
 
   The reason NR5M100 is "low performance" is that it is a state machine based core (like the
   picorv32) and not a multi-stage pipeline core.  This means that it requires an average of
-  4.5 clock cycles to execute each instruction.  On a multi-stage pipeline architecure, this
+  4.5 clock cycles to execute each instruction.  On a multi-stage pipeline architecture, this
   average would be closer to 1 clock cycle per instruction (though a bit higher due to
   pipeline branch misses).  The tradeoff for lower performance is a simpler design.  There
   is a single memory bus interface for both instructions and data.  Multi-stage pipeline
   cores require a separate I and D bus with cache SRAM and an external memory cache controller,
   etc.  This in addition to the pipeline registers adds additional gate count.
 
-  The nr5m100-nexys4 core runs at 83.333 Mhz which provides about 18 Mhz effective operating
+  The nr5m100-nexys4 core runs at 83.333 MHz which provides about 18 MHz effective operating
   speed with the multi-clock per instruction architecture.  If you are looking for a higher
   performance platform, you should check out the PULP Platform ( http://www.pulp-platform.org ).
   That is an FPGA design with a 4-stage pipeline RISC-V core, though not currently supported
   by NuttX.  The NR5M100 project will likely pull in the RISC-V core from that design next,
   though this will probably not be available soon.  With a bit of work, it is possible to
-  run the nr5m100-nexys4 core at 170 Mhz with a 6.5 clocks-per-instruction state machine.
+  run the nr5m100-nexys4 core at 170 MHz with a 6.5 clocks-per-instruction state machine.
   This would give an effective performance of about 26Mhz.
 
 Development Environment
@@ -140,7 +140,7 @@ Debugger
      git clone --recursive https://github.com/sifive/openocd.git
 
   3. Configure and build OpenOCD.  The x86_64 GCC compilers will give errors because of
-     shadowed variable warnings, so diable the -Werror flag also:
+     shadowed variable warnings, so disable the -Werror flag also:
 
      cd openocd
      sed -i 's/ -Werror//g' configure.ac
@@ -182,7 +182,7 @@ IDEs
   2) Start the NuttX build at least one time from the Cygwin command line
      before trying to create your project.  This is necessary to create
      certain auto-generated files and directories that will be needed.
-  3) Set up include pathes:  You will need include/, arch/risc-v/src/rv32im,
+  3) Set up include paths:  You will need include/, arch/risc-v/src/rv32im,
      arch/risc-v/src/common, arch/risc-v/src/nr5m100, and sched/.
   4) All assembly files need to have the definition option -D __ASSEMBLY__
      on the command line.
@@ -240,4 +240,3 @@ Where <subdir> is one of the following:
   ---
   This is an NSH example that uses UART1 as the console.  UART1 is connected
   to the USB UART bridge on the FPGA board.
-

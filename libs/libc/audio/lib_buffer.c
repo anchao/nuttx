@@ -45,11 +45,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <semaphore.h>
 #include <errno.h>
 #include <debug.h>
 
-#include <nuttx/semaphore.h>
 #include <nuttx/audio/audio.h>
 #include <nuttx/usb/audio.h>
 
@@ -106,17 +104,17 @@ int apb_alloc(FAR struct audio_buf_desc_s *bufdesc)
   int                 ret;
   struct ap_buffer_s  *apb;
 
-  DEBUGASSERT(bufdesc->u.ppBuffer != NULL);
+  DEBUGASSERT(bufdesc->u.pbuffer != NULL);
 
   /* Perform a user mode allocation */
 
   bufsize = sizeof(struct ap_buffer_s) + bufdesc->numbytes;
   apb = lib_umalloc(bufsize);
-  *bufdesc->u.ppBuffer = apb;
+  *bufdesc->u.pbuffer = apb;
 
   /* Test if the allocation was successful or not */
 
-  if (*bufdesc->u.ppBuffer == NULL)
+  if (*bufdesc->u.pbuffer == NULL)
     {
       ret = -ENOMEM;
     }
@@ -135,7 +133,7 @@ int apb_alloc(FAR struct audio_buf_desc_s *bufdesc)
       apb->session    = bufdesc->session;
 #endif
 
-      nxsem_init(&apb->sem, 0, 1);
+      _SEM_INIT(&apb->sem, 0, 1);
       ret = sizeof(struct audio_buf_desc_s);
     }
 
@@ -162,7 +160,7 @@ void apb_free(FAR struct ap_buffer_s *apb)
   if (refcount <= 1)
     {
       audinfo("Freeing %p\n", apb);
-      nxsem_destroy(&apb->sem);
+      _SEM_DESTROY(&apb->sem);
       lib_ufree(apb);
     }
 }

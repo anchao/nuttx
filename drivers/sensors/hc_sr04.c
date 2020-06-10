@@ -63,7 +63,7 @@
 
 /****************************************************************************
  * Private Function Prototypes
- *****************************************************************************/
+ ****************************************************************************/
 
 static int hcsr04_open(FAR struct file *filep);
 static int hcsr04_close(FAR struct file *filep);
@@ -91,8 +91,8 @@ struct hcsr04_dev_s
 };
 
 /****************************************************************************
-* Private Data
-****************************************************************************/
+ * Private Data
+ ****************************************************************************/
 
 static const struct file_operations g_hcsr04ops =
 {
@@ -116,7 +116,7 @@ static int hcsr04_read_distance(FAR struct hcsr04_dev_s *priv)
 {
   int done;
 
-  nxsem_getvalue(&priv->conv_donesem, &done);
+  nxsem_get_value(&priv->conv_donesem, &done);
 
   if (done == 0)
     {
@@ -151,19 +151,11 @@ static int hcsr04_open(FAR struct file *filep)
   FAR struct hcsr04_dev_s *priv = inode->i_private;
   int ret;
 
-  /* Get exclusive access */
-
-  do
+  ret = nxsem_wait_uninterruptible(&priv->devsem);
+  if (ret < 0)
     {
-      ret = nxsem_wait(&priv->devsem);
-
-      /* The only case that an error should occur here is if the wait was
-       * awakened by a signal.
-       */
-
-      DEBUGASSERT(ret == OK || ret == -EINTR);
+      return ret;
     }
-  while (ret == -EINTR);
 
   nxsem_post(&priv->devsem);
   hcsr04_dbg("OPENED\n");
@@ -176,23 +168,15 @@ static int hcsr04_close(FAR struct file *filep)
   FAR struct hcsr04_dev_s *priv = inode->i_private;
   int ret;
 
-  /* Get exclusive access */
-
-  do
+  ret = nxsem_wait_uninterruptible(&priv->devsem);
+  if (ret < 0)
     {
-      ret = nxsem_wait(&priv->devsem);
-
-      /* The only case that an error should occur here is if the wait was
-       * awakened by a signal.
-       */
-
-      DEBUGASSERT(ret == OK || ret == -EINTR);
+      return ret;
     }
-  while (ret == -EINTR);
 
   nxsem_post(&priv->devsem);
   hcsr04_dbg("CLOSED\n");
-  return ret;
+  return OK;
 }
 
 static ssize_t hcsr04_read(FAR struct file *filep, FAR char *buffer,
@@ -206,37 +190,25 @@ static ssize_t hcsr04_read(FAR struct file *filep, FAR char *buffer,
 
   /* Get exclusive access */
 
-  do
+  ret = nxsem_wait_uninterruptible(&priv->devsem);
+  if (ret < 0)
     {
-      ret = nxsem_wait(&priv->devsem);
-
-      /* The only case that an error should occur here is if the wait was
-       * awakened by a signal.
-       */
-
-      DEBUGASSERT(ret == OK || ret == -EINTR);
+      return (ssize_t)ret;
     }
-  while (ret == -EINTR);
 
   /* Setup and send a pulse to start measuring */
 
-  (void)hcsr04_start_measuring(priv);
+  hcsr04_start_measuring(priv);
 
-  /* Wait the convertion to finish */
+  /* Wait the conversion to finish */
 
   /* Get exclusive access */
 
-  do
+  ret = nxsem_wait_uninterruptible(&priv->conv_donesem);
+  if (ret < 0)
     {
-      ret = nxsem_wait(&priv->conv_donesem);
-
-      /* The only case that an error should occur here is if the wait was
-       * awakened by a signal.
-       */
-
-      DEBUGASSERT(ret == OK || ret == -EINTR);
+      return (ssize_t)ret;
     }
-  while (ret == -EINTR);
 
   distance = hcsr04_read_distance(priv);
   if (distance < 0)
@@ -269,21 +241,15 @@ static int hcsr04_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
 {
   FAR struct inode *inode = filep->f_inode;
   FAR struct hcsr04_dev_s *priv = inode->i_private;
-  int ret;
+  int ret = OK;
 
   /* Get exclusive access */
 
-  do
+  ret = nxsem_wait_uninterruptible(&priv->devsem);
+  if (ret < 0)
     {
-      ret = nxsem_wait(&priv->devsem);
-
-      /* The only case that an error should occur here is if the wait was
-       * awakened by a signal.
-       */
-
-      DEBUGASSERT(ret == OK || ret == -EINTR);
+      return ret;
     }
-  while (ret == -EINTR);
 
   switch (cmd)
     {
@@ -292,7 +258,6 @@ static int hcsr04_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
       break;
 
     case SNIOC_READ_RAW_DATA:
-      //ret = hcsr04_read_raw_data(priv, (FAR hcsr04_raw_data_t *) arg);
       break;
 
 #ifdef CONFIG_HCSR04_DEBUG
@@ -314,7 +279,7 @@ static bool hcsr04_sample(FAR struct hcsr04_dev_s *priv)
 {
   int done;
 
-  nxsem_getvalue(&priv->conv_donesem, &done);
+  nxsem_get_value(&priv->conv_donesem, &done);
 
   return (done == 0);
 }
@@ -327,8 +292,8 @@ static void hcsr04_notify(FAR struct hcsr04_dev_s *priv)
 
   /* If there are threads waiting on poll() for data to become available,
    * then wake them up now.  NOTE: we wake up all waiting threads because we
-   * do not know that they are going to do.  If they all try to read the data,
-   * then some make end up blocking after all.
+   * do not know that they are going to do.  If they all try to read the
+   * data, then some make end up blocking after all.
    */
 
   for (i = 0; i < CONFIG_HCSR04_NPOLLWAITERS; i++)
@@ -349,7 +314,7 @@ static int hcsr04_poll(FAR struct file *filep, FAR struct pollfd *fds,
   FAR struct inode *inode;
   FAR struct hcsr04_dev_s *priv;
   uint32_t flags;
-  int ret;
+  int ret = OK;
   int i;
 
   DEBUGASSERT(filep && fds);
@@ -360,17 +325,11 @@ static int hcsr04_poll(FAR struct file *filep, FAR struct pollfd *fds,
 
   /* Get exclusive access */
 
-  do
+  ret = nxsem_wait_uninterruptible(&priv->devsem);
+  if (ret < 0)
     {
-      ret = nxsem_wait(&priv->devsem);
-
-      /* The only case that an error should occur here is if the wait was
-       * awakened by a signal.
-       */
-
-      DEBUGASSERT(ret == OK || ret == -EINTR);
+      return ret;
     }
-  while (ret == -EINTR);
 
   if (setup)
     {
@@ -463,7 +422,7 @@ static int hcsr04_int_handler(int irq, FAR void *context, FAR void *arg)
 
       priv->config->irq_enable(priv->config, false);
 
-      /* Convertion is done */
+      /* Conversion is done */
 
       nxsem_post(&priv->conv_donesem);
     }

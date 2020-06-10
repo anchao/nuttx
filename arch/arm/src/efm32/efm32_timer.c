@@ -48,8 +48,8 @@
 #include <nuttx/arch.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "hardware/efm32_timer.h"
 #include "efm32_config.h"
@@ -194,11 +194,11 @@ void efm32_timer_reset(uintptr_t base)
  *
  * Input Parameters:
  *   base       - A base address of timer
- *   clk_freq   - Clock soure of timer.
- *   freq       - Wanted freqency.
+ *   clk_freq   - Clock source of timer.
+ *   freq       - Wanted frequency.
  *
  * Returned Value:
- *   prescaler setted, -1 in case of error.
+ *   prescaler set, -1 in case of error.
  *
  ****************************************************************************/
 

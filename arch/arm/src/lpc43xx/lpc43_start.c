@@ -45,7 +45,7 @@
  * and the Cortex-M4 starts the boot loader. By default the JTAG access to the
  * chip is disabled at reset.  The boot ROM determines the boot mode based on
  * the OTP BOOT_SRC value or reset state pins.  For flash-based parts, the part
- * boots from internal flash by default.  Otherwse, the boot ROM copies the
+ * boots from internal flash by default.  Otherwise, the boot ROM copies the
  * image to internal SRAM at location 0x1000:0000, sets the ARM's shadow
  * pointer to 0x1000:0000, and jumps to that location.
  *
@@ -62,8 +62,8 @@
 #include <nuttx/init.h>
 #include <arch/irq.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 #include "nvic.h"
 
 #include "hardware/lpc43_creg.h"
@@ -88,7 +88,7 @@
  ****************************************************************************/
 
 #ifdef CONFIG_DEBUG_FEATURES
-#  define showprogress(c) up_lowputc(c)
+#  define showprogress(c) arm_lowputc(c)
 #else
 #  define showprogress(c)
 #endif
@@ -102,7 +102,7 @@
  *
  * Description:
  *   Set the shadow register to 0x1040:0000 and the VTOR to 0x0000:0000 so
- *   that any exceptions (particulary things like hard faults) that occur
+ *   that any exceptions (particularly things like hard faults) that occur
  *   before we are initialized are caught by the BOOT ROM.
  *
  ****************************************************************************/
@@ -328,7 +328,7 @@ void __start(void)
   /* Perform early serial initialization */
 
 #ifdef USE_EARLYSERIALINIT
-  up_earlyserialinit();
+  arm_earlyserialinit();
 #endif
   showprogress('E');
 

@@ -72,14 +72,14 @@ static bool pthread_notifywaiters(FAR struct join_s *pjoin)
 
   /* Are any tasks waiting for our exit value? */
 
-  status = nxsem_getvalue(&pjoin->exit_sem, &ntasks_waiting);
+  status = nxsem_get_value(&pjoin->exit_sem, &ntasks_waiting);
   if (status == OK && ntasks_waiting < 0)
     {
       /* Set the data semaphore so that this thread will be
        * awakened when all waiting tasks receive the data
        */
 
-      (void)nxsem_init(&pjoin->data_sem, 0, (ntasks_waiting + 1));
+      nxsem_init(&pjoin->data_sem, 0, (ntasks_waiting + 1));
 
       /* Post the semaphore to restart each thread that is waiting
        * on the semaphore
@@ -90,7 +90,7 @@ static bool pthread_notifywaiters(FAR struct join_s *pjoin)
           status = pthread_sem_give(&pjoin->exit_sem);
           if (status == OK)
             {
-              status = nxsem_getvalue(&pjoin->exit_sem, &ntasks_waiting);
+              status = nxsem_get_value(&pjoin->exit_sem, &ntasks_waiting);
             }
         }
       while (ntasks_waiting < 0 && status == OK);
@@ -99,7 +99,7 @@ static bool pthread_notifywaiters(FAR struct join_s *pjoin)
        * value.
        */
 
-      (void)pthread_sem_take(&pjoin->data_sem, NULL, false);
+      pthread_sem_take(&pjoin->data_sem, NULL, false);
       return true;
     }
 
@@ -210,12 +210,12 @@ int pthread_completejoin(pid_t pid, FAR void *exit_value)
 
   /* First, find thread's structure in the private data set. */
 
-  (void)pthread_sem_take(&group->tg_joinsem, NULL, false);
+  pthread_sem_take(&group->tg_joinsem, NULL, false);
   pjoin = pthread_findjoininfo(group, pid);
   if (!pjoin)
     {
       serr("ERROR: Could not find join info, pid=%d\n", pid);
-      (void)pthread_sem_give(&group->tg_joinsem);
+      pthread_sem_give(&group->tg_joinsem);
       return ERROR;
     }
   else
@@ -246,7 +246,7 @@ int pthread_completejoin(pid_t pid, FAR void *exit_value)
        * to call pthread_destroyjoin.
        */
 
-      (void)pthread_sem_give(&group->tg_joinsem);
+      pthread_sem_give(&group->tg_joinsem);
     }
 
   return OK;
@@ -279,11 +279,10 @@ void pthread_destroyjoin(FAR struct task_group_s *group,
 
   /* Destroy its semaphores */
 
-  (void)nxsem_destroy(&pjoin->data_sem);
-  (void)nxsem_destroy(&pjoin->exit_sem);
+  nxsem_destroy(&pjoin->data_sem);
+  nxsem_destroy(&pjoin->exit_sem);
 
   /* And deallocate the pjoin structure */
 
-  sched_kfree(pjoin);
+  kmm_free(pjoin);
 }
-

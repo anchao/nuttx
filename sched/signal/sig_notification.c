@@ -53,6 +53,10 @@
 #include "sched/sched.h"
 #include "signal/signal.h"
 
+/****************************************************************************
+ * Pre-processor Definitions
+ ****************************************************************************/
+
 #ifdef CONFIG_SIG_EVTHREAD_HPWORK
 #  define SIG_EVTHREAD_WORK HPWORK
 #else
@@ -82,11 +86,7 @@ static void nxsig_notification_worker(FAR void *arg)
 
   /* Perform the callback */
 
-#ifdef CONFIG_CAN_PASS_STRUCTS
   work->func(work->value);
-#else
-  work->func(work->value.sival_ptr);
-#endif
 }
 
 #endif /* CONFIG_SIG_EVTHREAD */
@@ -163,12 +163,8 @@ int nxsig_notification(pid_t pid, FAR struct sigevent *event,
     {
       /* Initialize the work information */
 
-#ifdef CONFIG_CAN_PASS_STRUCTS
       work->value = event->sigev_value;
-#else
-      work->value.sival_ptr = event->sigev_value.sival_ptr;
-#endif
-      work->func = event->sigev_notify_function;
+      work->func  = event->sigev_notify_function;
 
       /* Then queue the work */
 

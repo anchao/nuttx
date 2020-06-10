@@ -232,7 +232,9 @@ static int audio_i2s_configure(FAR struct audio_lowerhalf_s *dev,
 {
   FAR struct audio_i2s_s *audio_i2s = (struct audio_i2s_s *)dev;
   FAR struct i2s_dev_s *i2s;
-  int samprate, nchannels, bpsamp;
+  int samprate;
+  int nchannels;
+  int bpsamp;
   int ret = OK;
 
   DEBUGASSERT(audio_i2s != NULL && caps != NULL);
@@ -313,7 +315,7 @@ static int audio_i2s_stop(FAR struct audio_lowerhalf_s *dev)
 
 #ifndef CONFIG_AUDIO_EXCLUDE_PAUSE_RESUME
 #ifdef CONFIG_AUDIO_MULTI_SESSION
-static int audio_i2s_pause(FAR struct audio_lowerhalf_s *dev, 
+static int audio_i2s_pause(FAR struct audio_lowerhalf_s *dev,
                            FAR void *session)
 #else
 static int audio_i2s_pause(FAR struct audio_lowerhalf_s *dev)

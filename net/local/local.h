@@ -46,13 +46,13 @@
 #include <sys/un.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <semaphore.h>
 #include <queue.h>
 #include <stdint.h>
 #include <poll.h>
 
 #include <nuttx/fs/fs.h>
 #include <nuttx/net/net.h>
+#include <nuttx/semaphore.h>
 
 #ifdef CONFIG_NET_LOCAL
 
@@ -61,7 +61,7 @@
  ****************************************************************************/
 
 #define HAVE_LOCAL_POLL 1
-#define LOCAL_ACCEPT_NPOLLWAITERS 2
+#define LOCAL_NPOLLWAITERS 2
 
 /* Packet format in FIFO:
  *
@@ -72,7 +72,7 @@
  */
 
 #define LOCAL_SYNC_BYTE   0x42     /* Byte in sync sequence */
-#define LOCAL_END_BYTE    0xbd     /* End of sync seqence */
+#define LOCAL_END_BYTE    0xbd     /* End of sync sequence */
 
 /****************************************************************************
  * Public Type Definitions
@@ -168,10 +168,11 @@ struct local_conn_s
 
 #ifdef HAVE_LOCAL_POLL
   /* The following is a list if poll structures of threads waiting for
-   * socket accept events.
+   * socket events.
    */
 
-  struct pollfd *lc_accept_fds[LOCAL_ACCEPT_NPOLLWAITERS];
+  struct pollfd *lc_accept_fds[LOCAL_NPOLLWAITERS];
+  struct pollfd lc_inout_fds[2*LOCAL_NPOLLWAITERS];
 #endif
 
   /* Union of fields unique to SOCK_STREAM client, server, and connected
@@ -512,7 +513,7 @@ int local_fifo_read(FAR struct file *filep, FAR uint8_t *buf, size_t *len);
  * Input Parameters:
  *   conn - The connection
  *   addr - The location to return the address
- *   addrlen - The size of the memory allocat by the caller to receive the
+ *   addrlen - The size of the memory allocate by the caller to receive the
  *             address.
  *
  * Returned Value:

@@ -45,7 +45,7 @@
 #include <nuttx/spi/spi.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "chip.h"
 #include "imxrt_lpspi.h"
 
@@ -55,7 +55,7 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-#ifndef CONFIG_IMXRT_LPSPI1 
+#ifndef CONFIG_IMXRT_LPSPI1
 #  error "SD driver requires CONFIG_IMXRT_LPSPI1 to be enabled"
 #endif
 

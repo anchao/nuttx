@@ -53,7 +53,7 @@
 #include <nuttx/usb/usbhost.h>
 #include <nuttx/usb/usbdev_trace.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "sam_pio.h"
 #include "sam_usbhost.h"
 #include "hardware/sam_ohci.h"
@@ -108,7 +108,7 @@ static xcpt_t g_ochandler;
  *
  ****************************************************************************/
 
-#if HAVE_USBHOST
+#ifdef HAVE_USBHOST
 #ifdef CONFIG_DEBUG_USB
 static int usbhost_waiter(struct usbhost_connection_s *dev,
                           const char *hcistr)
@@ -132,7 +132,7 @@ static int usbhost_waiter(struct usbhost_connection_s *dev)
         {
           /* Yes.. enumerate the newly connected device */
 
-          (void)CONN_ENUMERATE(dev, hport);
+          CONN_ENUMERATE(dev, hport);
         }
     }
 
@@ -296,7 +296,7 @@ void weak_function sam_usbinitialize(void)
  *
  ****************************************************************************/
 
-#if HAVE_USBHOST
+#ifdef HAVE_USBHOST
 int sam_usbhost_initialize(void)
 {
   pid_t pid;
@@ -414,7 +414,7 @@ int sam_usbhost_initialize(void)
  *
  ****************************************************************************/
 
-#if HAVE_USBHOST
+#ifdef HAVE_USBHOST
 void sam_usbhost_vbusdrive(int rhport, bool enable)
 {
   pio_pinset_t pinset = 0;
@@ -493,7 +493,7 @@ void sam_usbhost_vbusdrive(int rhport, bool enable)
  *
  ****************************************************************************/
 
-#if HAVE_USBHOST
+#ifdef HAVE_USBHOST
 xcpt_t sam_setup_overcurrent(xcpt_t handler)
 {
 #if defined(CONFIG_SAMA5_PIOD_IRQ) && (defined(CONFIG_SAMA5_UHPHS_RHPORT2) || \
@@ -516,7 +516,7 @@ xcpt_t sam_setup_overcurrent(xcpt_t handler)
   /* Configure the interrupt */
 
   sam_pioirq(PIO_USBBC_VBUS_OVERCURRENT);
-  (void)irq_attach(IRQ_USBBC_VBUS_OVERCURRENT, handler, NULL);
+  irq_attach(IRQ_USBBC_VBUS_OVERCURRENT, handler, NULL);
   sam_pioirqenable(IRQ_USBBC_VBUS_OVERCURRENT);
 
   /* Return the old handler (so that it can be restored) */

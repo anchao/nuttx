@@ -1,7 +1,7 @@
 /****************************************************************************
  * binfmt/nxflat.c
  *
- *   Copyright (C) 2009, 2019 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2009, 2019-2020 Gregory Nutt. All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,8 +58,8 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-/* CONFIG_DEBUG_FEATURES, CONFIG_DEBUG_INFO, and CONFIG_DEBUG_BINFMT have to be
- * defined or CONFIG_NXFLAT_DUMPBUFFER does nothing.
+/* CONFIG_DEBUG_FEATURES, CONFIG_DEBUG_INFO, and CONFIG_DEBUG_BINFMT
+ * have to be defined or CONFIG_NXFLAT_DUMPBUFFER does nothing.
  */
 
 #if !defined(CONFIG_DEBUG_INFO) || !defined (CONFIG_DEBUG_BINFMT)
@@ -119,11 +119,13 @@ static void nxflat_dumploadinfo(FAR struct nxflat_loadinfo_s *loadinfo)
 
   binfo("  DSPACE:\n");
   binfo("    dspace:       %08lx\n", loadinfo->dspace);
+
   if (loadinfo->dspace != NULL)
     {
       binfo("      crefs:      %d\n",    loadinfo->dspace->crefs);
       binfo("      region:     %08lx\n", loadinfo->dspace->region);
     }
+
   binfo("    datasize:     %08lx\n", loadinfo->datasize);
   binfo("    bsssize:      %08lx\n", loadinfo->bsssize);
   binfo("      (pad):      %08lx\n", loadinfo->dsize - dsize);
@@ -196,7 +198,7 @@ static int nxflat_loadbinary(FAR struct binary_s *binp)
   binp->stacksize = loadinfo.stacksize;
 
   /* Add the ELF allocation to the alloc[] only if there is no address
-   * enironment.  If there is an address environment, it will automatically
+   * environment.  If there is an address environment, it will automatically
    * be freed when the function exits
    *
    * REVISIT:  If the module is loaded then unloaded, wouldn't this cause
@@ -261,11 +263,11 @@ static int nxflat_unloadbinary(FAR struct binary_s *binp)
       binp->alloc[0] = NULL;
 
       /* The reference count will be decremented to zero and the dspace
-       * container will be freed in sched/sched_releasetcb.c
+       * container will be freed in sched/nxsched_release_tcb.c
        */
     }
 
- return OK;
+  return OK;
 }
 
 /****************************************************************************
@@ -299,6 +301,7 @@ int nxflat_initialize(void)
     {
       berr("Failed to register binfmt: %d\n", ret);
     }
+
   return ret;
 }
 
@@ -315,8 +318,7 @@ int nxflat_initialize(void)
 
 void nxflat_uninitialize(void)
 {
-  (void)unregister_binfmt(&g_nxflatbinfmt);
+  unregister_binfmt(&g_nxflatbinfmt);
 }
 
 #endif /* CONFIG_NXFLAT */
-

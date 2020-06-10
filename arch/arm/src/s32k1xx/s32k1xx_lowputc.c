@@ -44,7 +44,7 @@
 #include <assert.h>
 #include <errno.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 
 #include "hardware/s32k1xx_pinmux.h"
 #include "hardware/s32k1xx_lpuart.h"
@@ -54,7 +54,7 @@
 #include "s32k1xx_lowputc.h"
 #include "s32k1xx_periphclocks.h"
 
-#include "up_internal.h"
+#include "arm_internal.h"
 
 #include <arch/board/board.h> /* Include last:  has dependencies */
 
@@ -132,14 +132,14 @@ void s32k1xx_lowsetup(void)
    * control is enabled.
    */
 
-  (void)s32k1xx_pinconfig(PIN_LPUART0_RX);
-  (void)s32k1xx_pinconfig(PIN_LPUART0_TX);
+  s32k1xx_pinconfig(PIN_LPUART0_RX);
+  s32k1xx_pinconfig(PIN_LPUART0_TX);
 #ifdef CONFIG_LPUART0_OFLOWCONTROL
-  (void)s32k1xx_pinconfig(PIN_LPUART0_CTS);
+  s32k1xx_pinconfig(PIN_LPUART0_CTS);
 #endif
 #if ((defined(CONFIG_SERIAL_RS485CONTROL) && defined(CONFIG_LPUART0_RS485RTSCONTROL)) || \
      (defined(CONFIG_SERIAL_IFLOWCONTROL) && defined(CONFIG_LPUART0_IFLOWCONTROL)))
-  (void)s32k1xx_pinconfig(PIN_LPUART0_RTS);
+  s32k1xx_pinconfig(PIN_LPUART0_RTS);
 #endif
 #endif
 
@@ -149,14 +149,14 @@ void s32k1xx_lowsetup(void)
    * control is enabled.
    */
 
-  (void)s32k1xx_pinconfig(PIN_LPUART1_RX);
-  (void)s32k1xx_pinconfig(PIN_LPUART1_TX);
+  s32k1xx_pinconfig(PIN_LPUART1_RX);
+  s32k1xx_pinconfig(PIN_LPUART1_TX);
 #ifdef CONFIG_LPUART1_OFLOWCONTROL
-  (void)s32k1xx_pinconfig(PIN_LPUART1_CTS);
+  s32k1xx_pinconfig(PIN_LPUART1_CTS);
 #endif
 #if ((defined(CONFIG_SERIAL_RS485CONTROL) && defined(CONFIG_LPUART1_RS485RTSCONTROL)) || \
      (defined(CONFIG_SERIAL_IFLOWCONTROL) && defined(CONFIG_LPUART1_IFLOWCONTROL)))
-  (void)s32k1xx_pinconfig(PIN_LPUART1_RTS);
+  s32k1xx_pinconfig(PIN_LPUART1_RTS);
 #endif
 #endif
 
@@ -166,21 +166,21 @@ void s32k1xx_lowsetup(void)
    * control is enabled.
    */
 
-  (void)s32k1xx_pinconfig(PIN_LPUART2_RX);
-  (void)s32k1xx_pinconfig(PIN_LPUART2_TX);
+  s32k1xx_pinconfig(PIN_LPUART2_RX);
+  s32k1xx_pinconfig(PIN_LPUART2_TX);
 #ifdef CONFIG_LPUART2_OFLOWCONTROL
-  (void)s32k1xx_pinconfig(PIN_LPUART2_CTS);
+  s32k1xx_pinconfig(PIN_LPUART2_CTS);
 #endif
 #if ((defined(CONFIG_SERIAL_RS485CONTROL) && defined(CONFIG_LPUART2_RS485RTSCONTROL)) || \
      (defined(CONFIG_SERIAL_IFLOWCONTROL) && defined(CONFIG_LPUART2_IFLOWCONTROL)))
-  (void)s32k1xx_pinconfig(PIN_LPUART2_RTS);
+  s32k1xx_pinconfig(PIN_LPUART2_RTS);
 #endif
 #endif
 
 #ifdef HAVE_LPUART_CONSOLE
   /* Configure the serial console for initial, non-interrupt driver mode */
 
-  (void)s32k1xx_lpuart_configure(S32K1XX_CONSOLE_BASE, &g_console_config);
+  s32k1xx_lpuart_configure(S32K1XX_CONSOLE_BASE, &g_console_config);
 #endif
 #endif /* HAVE_LPUART_DEVICE */
 #endif /* CONFIG_SUPPRESS_LPUART_CONFIG */
@@ -325,7 +325,7 @@ int s32k1xx_lpuart_configure(uint32_t base,
   else if (config->users485)
     {
       /* Both TX and RX side can't control RTS, so this gives
-       * the RX side precidence. This should have been filtered
+       * the RX side precedence. This should have been filtered
        * in layers above anyway, but it's just a precaution.
        */
 

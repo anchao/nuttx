@@ -66,8 +66,8 @@
 #include <arch/board/board.h>
 
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "chip.h"
 #include "hardware/lpc17_40_syscon.h"
@@ -179,7 +179,7 @@ static void lpc17_40_i2c_setfrequency(struct lpc17_40_i2cdev_s *priv,
     {
       if (frequency > 100000)
         {
-          /* Asymetric per 400Khz I2C spec */
+          /* Asymmetric per 400Khz I2C spec */
 
           putreg32(LPC17_40_CCLK / (83 + 47) * 47 / frequency,
                    priv->base + LPC17_40_I2C_SCLH_OFFSET);
@@ -232,17 +232,15 @@ static int lpc17_40_i2c_start(struct lpc17_40_i2cdev_s *priv)
 
   /* Calculate the approximate timeout */
 
-  timeout = ((total_len * (8000000 / CONFIG_USEC_PER_TICK)) / freq) + 1;
+  timeout = ((total_len * (9000000 / CONFIG_USEC_PER_TICK)) / freq) + 1;
 
   /* Initializes the I2C state machine to a known value */
 
   priv->state = 0x00;
 
-  (void)wd_start(priv->timeout, timeout, lpc17_40_i2c_timeout, 1,
-                 (uint32_t)priv);
+  wd_start(priv->timeout, timeout, lpc17_40_i2c_timeout, 1,
+           (uint32_t)priv);
   nxsem_wait(&priv->wait);
-
-  wd_cancel(priv->timeout);
 
   return priv->nmsg;
 }
@@ -263,6 +261,7 @@ static void lpc17_40_i2c_stop(struct lpc17_40_i2cdev_s *priv)
                priv->base + LPC17_40_I2C_CONSET_OFFSET);
     }
 
+  wd_cancel(priv->timeout);
   nxsem_post(&priv->wait);
 }
 
@@ -628,7 +627,7 @@ struct i2c_master_s *lpc17_40_i2cbus_initialize(int port)
    * priority inheritance enabled.
    */
 
-  nxsem_setprotocol(&priv->wait, SEM_PRIO_NONE);
+  nxsem_set_protocol(&priv->wait, SEM_PRIO_NONE);
 
   /* Allocate a watchdog timer */
 

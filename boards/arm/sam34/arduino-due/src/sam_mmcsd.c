@@ -47,7 +47,7 @@
 #include <nuttx/spi/spi.h>
 #include <nuttx/spi/spi_bitbang.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "sam_gpio.h"
 #include "hardware/sam3u_pio.h"
 
@@ -280,7 +280,7 @@ int sam_sdinitialize(int minor)
       return ret;
     }
 
-  finfo("Successfuly bound  bit bang SPI device to MMC/SD slot %d\n",
+  finfo("Successfully bound  bit bang SPI device to MMC/SD slot %d\n",
         SAM34_MMCSDSLOTNO);
 
   return OK;

@@ -44,8 +44,8 @@
 #include <nuttx/board.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "lpc17_40_emc.h"
 
@@ -68,7 +68,7 @@
  *
  * Description:
  *   All LPC17xx/LPC40xx architectures must provide the following entry point.
- *   This entry point is called early in the intitialization -- after all
+ *   This entry point is called early in the initialization -- after all
  *   memory has been configured and mapped but before any devices have been
  *   initialized.
  *
@@ -128,6 +128,6 @@ void board_late_initialize(void)
 {
   /* Perform board-specific initialization */
 
-  (void)lpc4088_quickstart_bringup();
+  lpc4088_quickstart_bringup();
 }
 #endif

@@ -41,8 +41,8 @@
 #include <nuttx/config.h>
 
 #include "chip.h"
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 
 /**************************************************************************
  * Pre-processor Definitions
@@ -73,7 +73,7 @@
  **************************************************************************/
 
 /**************************************************************************
- * Name: up_lowputc
+ * Name: arm_lowputc
  **************************************************************************/
 
 /* This assembly language version has the advantage that it can does not
@@ -82,9 +82,9 @@
  */
 
 	.text
-	.global	up_lowputc
-	.type	up_lowputc, function
-up_lowputc:
+	.global	arm_lowputc
+	.type	arm_lowputc, function
+arm_lowputc:
 	/* On entry, r0 holds the character to be printed */
 
 #ifdef CONFIG_UART1_SERIAL_CONSOLE
@@ -115,7 +115,7 @@ up_lowputc:
 	moveq   r0, #'\r'
 	beq     1b
 
-	/* Wait for the tranmsit regiser to be emptied. When the bit is
+	/* Wait for the tranmsit register to be emptied. When the bit is
 	 * non-zero, the TX Buffer FIFO is empty.
 	 */
 
@@ -127,4 +127,3 @@ up_lowputc:
 
 	mov     pc, lr
 	.end
-

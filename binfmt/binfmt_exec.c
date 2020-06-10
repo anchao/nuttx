@@ -1,7 +1,7 @@
 /****************************************************************************
  * binfmt/binfmt_exec.c
  *
- *   Copyright (C) 2009, 2013-2014, 2017-2018 Gregory Nutt. All rights
+ *   Copyright (C) 2009, 2013-2014, 2017-2018, 2020 Gregory Nutt. All rights
  *     reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
  *
@@ -57,6 +57,146 @@
  ****************************************************************************/
 
 /****************************************************************************
+ * Name: exec_spawn
+ *
+ * Description:
+ *   exec() configurable version, delivery the spawn attribute if this
+ *   process has special customization.
+ *
+ * Input Parameters:
+ *   filename - The path to the program to be executed. If
+ *              CONFIG_LIB_ENVPATH is defined in the configuration, then
+ *              this may be a relative path from the current working
+ *              directory. Otherwise, path must be the absolute path to the
+ *              program.
+ *   argv     - A pointer to an array of string arguments. The end of the
+ *              array is indicated with a NULL entry.
+ *   exports  - The address of the start of the caller-provided symbol
+ *              table. This symbol table contains the addresses of symbols
+ *              exported by the caller and made available for linking the
+ *              module into the system.
+ *   nexports - The number of symbols in the exports table.
+ *   attr     - The spawn attributes.
+ *
+ * Returned Value:
+ *   It returns the PID of the exec'ed module.  On failure, it returns
+ *   the negative errno value appropriately.
+ *
+ ****************************************************************************/
+
+int exec_spawn(FAR const char *filename, FAR char * const *argv,
+               FAR const struct symtab_s *exports, int nexports,
+               FAR const posix_spawnattr_t *attr)
+{
+  FAR struct binary_s *bin;
+  int pid;
+  int ret;
+
+  /* Allocate the load information */
+
+  bin = (FAR struct binary_s *)kmm_zalloc(sizeof(struct binary_s));
+  if (!bin)
+    {
+      berr("ERROR: Failed to allocate binary_s\n");
+      ret = -ENOMEM;
+      goto errout;
+    }
+
+  /* Initialize the binary structure */
+
+  bin->filename = filename;
+  bin->exports  = exports;
+  bin->nexports = nexports;
+
+  /* Copy the argv[] list */
+
+  ret = binfmt_copyargv(bin, argv);
+  if (ret < 0)
+    {
+      berr("ERROR: Failed to copy argv[]: %d\n", ret);
+      goto errout_with_bin;
+    }
+
+  /* Load the module into memory */
+
+  ret = load_module(bin);
+  if (ret < 0)
+    {
+      berr("ERROR: Failed to load program '%s': %d\n", filename, ret);
+      goto errout_with_argv;
+    }
+
+  /* Update the spawn attribute */
+
+  if (attr)
+    {
+      if (attr->priority > 0)
+        {
+          bin->priority = attr->priority;
+        }
+
+#ifndef CONFIG_BUILD_KERNEL
+      if (attr->stacksize > 0)
+        {
+          bin->stacksize = attr->stacksize;
+        }
+#endif
+    }
+
+  /* Disable pre-emption so that the executed module does
+   * not return until we get a chance to connect the on_exit
+   * handler.
+   */
+
+  sched_lock();
+
+  /* Then start the module */
+
+  pid = exec_module(bin);
+  if (pid < 0)
+    {
+      ret = pid;
+      berr("ERROR: Failed to execute program '%s': %d\n",
+           filename, ret);
+      goto errout_with_lock;
+    }
+
+#ifdef CONFIG_BINFMT_LOADABLE
+  /* Set up to unload the module (and free the binary_s structure)
+   * when the task exists.
+   */
+
+  ret = group_exitinfo(pid, bin);
+  if (ret < 0)
+    {
+      berr("ERROR: Failed to schedule unload '%s': %d\n", filename, ret);
+    }
+
+#else
+  /* Free the binary_s structure here */
+
+  binfmt_freeargv(bin);
+  kmm_free(bin);
+
+  /* TODO: How does the module get unloaded in this case? */
+
+#endif
+
+  sched_unlock();
+  return pid;
+
+errout_with_lock:
+  sched_unlock();
+  unload_module(bin);
+errout_with_argv:
+  binfmt_freeargv(bin);
+errout_with_bin:
+  kmm_free(bin);
+errout:
+  return ret;
+}
+
+/****************************************************************************
  * Name: exec
  *
  * Description:
@@ -75,7 +215,7 @@
  *
  *   This non-standard interface is included as a official NuttX API only
  *   because it is needed in certain build modes: exec() is probably the
- *   only want to load programs in the PROTECTED mode. Other file execution
+ *   only way to load programs in the PROTECTED mode. Other file execution
  *   APIs rely on a symbol table provided by the OS. In the PROTECTED build
  *   mode, the OS cannot provide any meaningful symbolic information for
  *   execution of code in the user-space blob so that is the exec() function
@@ -84,12 +224,12 @@
  *   The interface is available in the FLAT build mode although it is not
  *   really necessary in that case. It is currently used by some example
  *   code under the apps/ that that generate their own symbol tables for
- *   linking test programs. So althought it is not necessary, it can still
+ *   linking test programs. So although it is not necessary, it can still
  *   be useful.
  *
  *   The interface would be completely useless and will not be supported in
  *   in the KERNEL build mode where the contrary is true: An application
- *   process cannot provide any meaning symbolic information for use in
+ *   process cannot provide any meaningful symbolic information for use in
  *   linking a different process.
  *
  *   NOTE: This function is flawed and useless without CONFIG_BINFMT_LOADABLE
@@ -120,99 +260,16 @@
 int exec(FAR const char *filename, FAR char * const *argv,
          FAR const struct symtab_s *exports, int nexports)
 {
-  FAR struct binary_s *bin;
-  int pid;
-  int errcode;
   int ret;
 
-  /* Allocate the load information */
-
-  bin = (FAR struct binary_s *)kmm_zalloc(sizeof(struct binary_s));
-  if (!bin)
-    {
-      berr("ERROR: Failed to allocate binary_s\n");
-      errcode = ENOMEM;
-      goto errout;
-    }
-
-  /* Initialize the binary structure */
-
-  bin->filename = filename;
-  bin->exports  = exports;
-  bin->nexports = nexports;
-
-  /* Copy the argv[] list */
-
-  ret = binfmt_copyargv(bin, argv);
+  ret = exec_spawn(filename, argv, exports, nexports, NULL);
   if (ret < 0)
     {
-      errcode = -ret;
-      berr("ERROR: Failed to copy argv[]: %d\n", errcode);
-      goto errout_with_bin;
+      set_errno(-ret);
+      ret = ERROR;
     }
 
-  /* Load the module into memory */
-
-  ret = load_module(bin);
-  if (ret < 0)
-    {
-      errcode = -ret;
-      berr("ERROR: Failed to load program '%s': %d\n", filename, errcode);
-      goto errout_with_argv;
-    }
-
-  /* Disable pre-emption so that the executed module does
-   * not return until we get a chance to connect the on_exit
-   * handler.
-   */
-
-  sched_lock();
-
-  /* Then start the module */
-
-  pid = exec_module(bin);
-  if (pid < 0)
-    {
-      errcode = -pid;
-      berr("ERROR: Failed to execute program '%s': %d\n",
-           filename, errcode);
-      goto errout_with_lock;
-    }
-
-#ifdef CONFIG_BINFMT_LOADABLE
-  /* Set up to unload the module (and free the binary_s structure)
-   * when the task exists.
-   */
-
-  ret = group_exitinfo(pid, bin);
-  if (ret < 0)
-    {
-      berr("ERROR: Failed to schedule unload '%s': %d\n", filename, ret);
-    }
-
-#else
-  /* Free the binary_s structure here */
-
-  binfmt_freeargv(bin);
-  kmm_free(bin);
-
-  /* TODO: How does the module get unloaded in this case? */
-#endif
-
-  sched_unlock();
-  return pid;
-
-errout_with_lock:
-  sched_unlock();
-  (void)unload_module(bin);
-errout_with_argv:
-  binfmt_freeargv(bin);
-errout_with_bin:
-  kmm_free(bin);
-errout:
-  set_errno(errcode);
-  return ERROR;
-
+  return ret;
 }
 
 #endif /* !CONFIG_BINFMT_DISABLE */

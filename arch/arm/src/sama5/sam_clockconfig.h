@@ -41,7 +41,7 @@
  ****************************************************************************/
 
 #include <nuttx/config.h>
-#include "up_internal.h"
+#include "arm_internal.h"
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -98,7 +98,7 @@ void __ramfunc__ sam_clockconfig(void);
  *      allows execution of the code contained into the memory connected to
  *      Chip Select 0 of the External Bus Interface.
  *
- *     "To achieve that, the following sequence is preformed by the ROM
+ *     "To achieve that, the following sequence is performed by the ROM
  *      Code:
  *
  *        - The main clock is the on-chip 12 MHz RC oscillator,

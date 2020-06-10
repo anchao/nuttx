@@ -47,7 +47,7 @@
 #include <nuttx/spi/spi.h>
 #include <arch/board/board.h>
 
-#include <up_arch.h>
+#include <arm_arch.h>
 #include "chip.h"
 #include <stm32l4.h>
 
@@ -98,7 +98,7 @@ void stm32l4_spiinitialize(void)
   /* Setup CS, EN & IRQ line IOs */
 
 #ifdef CONFIG_MTD_AT45DB
-  (void)stm32l4_configgpio(AT45DB_SPI1_CS);      /* FLASH chip select */
+  stm32l4_configgpio(AT45DB_SPI1_CS);      /* FLASH chip select */
 #endif
 #endif
 

@@ -43,13 +43,14 @@
 #include <debug.h>
 
 #include <nuttx/arch.h>
-#include <nuttx/board.h>
 #include <nuttx/spi/spi.h>
 
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "nucleo-f4x1re.h"
+
+#include <nuttx/board.h>
 
 /****************************************************************************
  * Public Functions
@@ -109,6 +110,6 @@ void board_late_initialize(void)
 {
   /* Perform board initialization here instead of from the board_app_initialize(). */
 
-  (void)stm32_bringup();
+  stm32_bringup();
 }
 #endif

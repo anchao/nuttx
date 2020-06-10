@@ -44,11 +44,10 @@
 #include <nuttx/spi/spi.h>
 #include <pthread.h>
 #include <sched.h>
-#include <semaphore.h>
 #include <time.h>
 #include <unistd.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "chip.h"
 #include "stm32.h"
 

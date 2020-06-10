@@ -42,20 +42,16 @@
 
 #include <sys/mount.h>
 #include <sys/types.h>
+#include <syslog.h>
 #include <debug.h>
 
-#include <syslog.h>
 #include <nuttx/i2c/i2c_master.h>
-#include <imxrt_lpi2c.h>
-#include <imxrt_flexspi_nor_boot.h>
 #include <nuttx/wireless/bluetooth/bt_uart.h>
 #include <nuttx/wireless/bluetooth/bt_uart_shim.h>
+
+#include "imxrt_lpi2c.h"
+#include "imxrt_flexspi_nor_boot.h"
 #include "imxrt1020-evk.h"
-
-#ifdef CONFIG_USBHOST
-int imxrt_usbhost_initialize(void);
-
-#endif
 
 #ifdef CONFIG_IMXRT_USDHC
 #  include "imxrt_usdhc.h"
@@ -168,7 +164,7 @@ int imxrt_bringup(void)
    * capabilities.
    */
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "hardware/imxrt_pinmux.h"
 #include "hardware/imxrt_ccm.h"
 #include "imxrt_periphclks.h"
@@ -250,4 +246,3 @@ int imxrt_bringup(void)
 
   return ret;
 }
-

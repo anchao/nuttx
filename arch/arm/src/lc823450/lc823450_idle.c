@@ -46,8 +46,8 @@
 #include <arch/board/board.h>
 
 #include "nvic.h"
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 
 #ifdef CONFIG_DVFS
 #  include "lc823450_dvfs2.h"
@@ -115,4 +115,3 @@ void up_idle(void)
 
 #endif
 }
-

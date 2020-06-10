@@ -1,9 +1,18 @@
-README
-^^^^^^
+APACHE NUTTX (INCUBATING)
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
+  o Introduction
+    - Incubation Status
+  o Community
+    - Getting Help
+    - Mailing Lists
+    - Issue Tracker
+    - Source Code
+    - Website Source Code
   o Environments
     - Installing Cygwin
     - Ubuntu Bash under Windows 10
+    - Using macOS
   o Installation
     - Download and Unpack
     - Semi-Optional apps/ Package
@@ -36,6 +45,132 @@ README
     - Strange Path Problems
     - Window Native Toolchain Issues
   o Documentation
+
+INTRODUCTION
+^^^^^^^^^^^^
+
+  Apache NuttX (Incubating) is a real-time operating system (RTOS) with an
+  emphasis on standards compliance and small footprint.  Scalable from 8-bit
+  to 32-bit microcontroller environments, the primary governing standards in
+  NuttX are POSIX and ANSI standards. Additional standard APIs from Unix and
+  other common RTOSs (such as VxWorks) are adopted for functionality not
+  available under these standards, or for functionality that is not
+  appropriate for deeply-embedded environments (such as fork()).
+
+  Extensive documentation can be found on the project wiki:
+
+    https://cwiki.apache.org/NUTTX/Nuttx
+
+Incubation Status
+-----------------
+
+  Apache NuttX (Incubating) is an effort undergoing Incubation at The Apache
+  Software Foundation (ASF), sponsored by the Incubator.  For more on our
+  incubation effort, please see the file DISCLAIMER-WIP, in the same
+  directory as this README.
+
+  For brevity, the rest of this file will refer to it as Apache NuttX or
+  simply NuttX.
+
+COMMUNITY
+^^^^^^^^^
+
+  Every volunteer project obtains its strength from the people involved in
+  it.  We invite you to participate as much or as little as you choose.
+
+  We encourage you to:
+
+  - Use our project and provide feedback.
+  - Provide us with use-cases.
+  - Report bugs and submit patches.
+  - Contribute code or documentation.
+
+Getting Help
+------------
+
+  The best place to get help is the developer's mailing list.  Please see
+  the following section:
+
+Mailing Lists
+-------------
+
+  Get help using NuttX or contribute to the project on our mailing lists:
+
+  dev@nuttx.apache.org is for people who want to contribute code to NuttX.
+
+  - To subscribe, send an email to dev-subscribe@nuttx.apache.org.
+  - To unsubscribe, send an email to dev-unsubscribe@nuttx.apache.org.
+  - View the archives at:
+
+      https://www.mail-archive.com/dev@nuttx.apache.org/
+
+  commits@nuttx.apache.org is a read-only list that notifies subscribers
+  about commit messages and patches to NuttX.
+
+  - To subscribe, send an email to commits-subscribe@nuttx.apache.org.
+  - To unsubscribe, send an email to commits-unsubscribe@nuttx.apache.org.
+  - View the archives at:
+
+      https://www.mail-archive.com/commits@nuttx.apache.org/
+
+Issue Tracker
+-------------
+
+  Bug Reports:
+
+  Found bug? Send an email to the dev list dev@nuttx.apache.org.
+
+  Before submitting an issue, please:
+
+  - Verify that the bug does in fact exist.
+  - Search the mailing list archives to verify there is no existing issue
+    reporting the bug you've found.
+  - Consider tracking down the bug yourself in the NuttX source code and
+    submitting a patch along with your bug report.  This is a great time
+    saver for the NuttX developers and helps ensure the bug will be fixed
+    quickly.
+
+  Feature Requests:
+
+  Enhancement requests for new features are also welcome. The more concrete
+  and rational the request is, the greater the chance it will incorporated
+  into future releases.
+
+Source Code
+-----------
+
+  The project sources are in two Git repositories.  The core OS is in
+  incubator-nuttx and the apps repository is in incubator-nuttx-apps.  These
+  are housed in GitBox on ASF servers and also mirrored at GitHub.  These
+  are kept in sync, so you can use whichever option you prefer.
+
+  - NuttX core OS repository:
+
+      Primary:
+      https://gitbox.apache.org/repos/asf?p=incubator-nuttx.git
+
+      GitHub Mirror:
+      https://github.com/apache/incubator-nuttx
+
+  - Apps repository:
+
+      Primary:
+      https://gitbox.apache.org/repos/asf?p=incubator-nuttx-apps.git
+
+      GitHub Mirror:
+      https://github.com/apache/incubator-nuttx-apps
+
+Website Source Code
+-------------------
+
+  The project website sources are accessible via the website source code
+  repository which is also mirrored in GitHub:
+
+      Primary:
+      https://gitbox.apache.org/repos/asf?p=incubator-nuttx-website.git
+
+      GitHub Mirror:
+      https://github.com/apache/incubator-nuttx-website
 
 ENVIRONMENTS
 ^^^^^^^^^^^^
@@ -232,7 +367,7 @@ Using MSYS
     4. mklink /j programfiles86 "C:/Program\ Files\ \(x86\)"
 
   They then show up as /programfiles and /programfiles86 with the MSYS2
-  sandbox.  Thos paths can then be used with the PATH variable.  I had
+  sandbox.  Those paths can then be used with the PATH variable.  I had
   to do something similar for the path to the GNU Tools "ARM Embedded
   Toolchain" which also has spaces in the path name.
 
@@ -387,13 +522,33 @@ Ubuntu Bash under Windows 10
   Many Linux graphics programs would, however, also require a graphics
   framework like GTK or Qt.  So this might be a trip down the rabbit hole.
 
+Using macOS
+-----------
+
+  You need to install at least the following tools specific to macOS.
+
+  * flock (used by APPDIR build logic)
+
+    A macOS port is available at: https://github.com/discoteq/flock
+
+      brew tap discoteq/discoteq
+      brew install flock
+
+  If you want to build the sim:
+
+    * Xcode (the native compiler and the rest of the toolchain)
+
+    * ELF toolchain (if you want to build modules for CONFIG_LIBC_MODLIB)
+
+        brew install x86_64-elf-gc
+
 INSTALLATION
 ^^^^^^^^^^^^
 
   There are two ways to get NuttX:  You may download released, stable
-  tarballs from either the Bitbucket or Sourceforge download locations.
-  Or you may get NuttX by cloning the Bitbucket GIT repositories.  Let's
-  consider the released tarballs first:
+  tarballs from either the project website.  Or you may get NuttX by
+  cloning the GIT repositories.  Let's consider the released tarballs
+  first:
 
 Download and Unpack
 -------------------
@@ -405,7 +560,11 @@ Download and Unpack
   match the various instructions in the documentation and some scripts
   in the source tree.
 
-  Download locations:
+  Download location:
+
+    https://nuttx.apache.org/download/
+
+  Legacy download locations:
 
     https://bitbucket.org/nuttx/nuttx/downloads
     https://sourceforge.net/projects/nuttx/files/nuttx/
@@ -480,13 +639,17 @@ Downloading from Repositories
 
     The current NuttX du jour is available in from a GIT repository.  Here are
     instructions for cloning the core NuttX RTOS (corresponding to the nuttx
-    tarball discussed above)::
+    tarball discussed above):
 
-      git clone https://bitbucket.org/nuttx/nuttx.git nuttx
+      git clone https://gitbox.apache.org/repos/asf/incubator-nuttx.git nuttx
+      -or-
+      git clone https://github.com/apache/incubator-nuttx.git nuttx
 
     And the semi-optional apps/ application directory and be cloned like:
 
-      git clone https://bitbucket.org/nuttx/apps.git apps
+      git clone https://gitbox.apache.org/repos/asf/incubator-nuttx-apps.git apps
+      -or-
+      git clone https://github.com/apache/incubator-nuttx-apps.git apps
 
     That will give you the same directory structure like this:
 
@@ -529,7 +692,9 @@ Related Repositories
 
   These are standalone repositories:
 
-  * https://bitbucket.org/nuttx/apps
+  * https://gitbox.apache.org/repos/asf/incubator-nuttx-apps
+    or
+    https://github.com/apache/incubator-nuttx-apps.git
 
     This directory holds an optional package of applications and libraries
     can be used with the NuttX RTOS.  There is a README.txt file there that
@@ -554,11 +719,6 @@ Related Repositories
 
     There are snapshots of some tools here that you will need to work with
     NuttX:  kconfig-frontends, genromfs, and others.
-
-  * https://bitbucket.org/nuttx/pascal
-
-    Yes, this really is a Pascal compiler.  The Pascal p-code run-time and
-    pcode debugger can be built as a part of NuttX.
 
 Notes about Header Files
 ------------------------
@@ -800,9 +960,10 @@ NuttX Configuration Tool
   An automated tool has been incorporated to support re-configuration
   of NuttX.  This tool is based on the kconfig-frontends application available
   at https://bitbucket.org/nuttx/tools/src/master/kconfig-frontends/.  (This
-  is a snapshot of http://ymorin.is-a-geek.org/projects/kconfig-frontends.)
-  This application provides a tool called 'kconfig-mconf' that is used by the
-  NuttX top-level Makefile. The following make target is provided:
+  is a snapshot of the old http://ymorin.is-a-geek.org/projects/kconfig-frontends
+  which is no longer available.)  This application provides a tool called
+  'kconfig-mconf' that is used by the NuttX top-level Makefile. The following
+  make target is provided:
 
     make menuconfig
 
@@ -845,9 +1006,11 @@ NuttX Configuration Tool
 
      The kconfig-frontends tools will not build in a native Windows
      environment directly "out-of-the-box".  For the Windows native
-     case, you should use the modified version of kconfig-frontends
+     case, you can use the modified version of kconfig-frontends
      that can be found at
-     http://uvc.de/posts/linux-kernel-configuration-tool-mconf-under-windows.html
+     http://uvc.de/posts/linux-kernel-configuration-tool-kconfig-under-windows.html
+     or a more recent port that can be found at
+     http://reclonelabs.com/more-kconfig-awesomeness-for-windows/.
 
   The basic configuration order is "bottom-up":
 
@@ -968,7 +1131,7 @@ Make Sure that You are on the Right Platform
 
   For a Linux host or for a Windows/Cygwin host:
 
-    tools/configure.sh -h board:configuration
+    tools/configure.sh -c board:configuration
 
   Other options are available from the help option built into the
   script.  You can see all options with:
@@ -1161,11 +1324,11 @@ NuttX Configuration Tool under DOS
   Recent versions of NuttX support building NuttX from a native Windows
   console window (see "Native Windows Build" below).  But kconfig-frontends
   is a Linux tool.  At one time this was a problem for Windows users, but
-  now there is a specially modified version of the kconfig-frontends tools
-  that can be used:
-  http://uvc.de/posts/linux-kernel-configuration-tool-mconf-under-windows.html
+  now there are two specially modified versions of the kconfig-frontends
+  tools that can be used.  One can be found here:
+  http://uvc.de/posts/linux-kernel-configuration-tool-kconfig-under-windows.html
 
-  The configuration steps most recent versions of NuttX require the
+  The configuration steps of the most recent versions of NuttX require the
   kconfig-tweak tool that is not not available in the the above.  However,
   there has been an update to this Kconfig Windows tools that does include
   kconfig-tweak:  http://reclonelabs.com/more-kconfig-awesomeness-for-windows/
@@ -1471,9 +1634,18 @@ Native Windows Build
   instead if you know what you are doing and want a faster download (No, I
   can't tell you which packages you should or should not download).
 
+  NOTE:  It should be possible to use Cygwin or MSYS2 in place of the GNUWin32
+  tools.  There are, however, complexities in doing that because those tools
+  depend on the shell environment and use DLLs that are not found (at least
+  not without the correct setup).
+
   Host Compiler:  I use the MingGW GCC compiler which can be downloaded from
   http://www.mingw.org/.  If you are using GNUWin32, then it is recommended
   the you not install the optional MSYS components as there may be conflicts.
+
+  Kconfig-frontends:  See the section entitled "NuttX Configuration Tool
+  under DOS" for information about installing the kconfig-frontend tools to
+  run natively under Windows.
 
   This capability should still be considered a work in progress because:
 
@@ -1546,6 +1718,17 @@ Installing GNUWin32
   more than you will ever need.  If disc space is a problem for you, you might
   need to perform a manual installation of the individual ZIP files that you
   will find in the <this directory>/GetGNUWin32/packages directory.
+
+  9. Make sure that you add the GNUWin32 tools to your path variable:
+
+    set PATH=C:\gnuwin32\bin;%PATH%
+
+  WARNING:  Make sure you have C:\MinGW\bin in your path before any other
+  directory that contains libiconv-2.dll. Apparently the as.exe in some
+  MinGW distributions are dependent on that DLL, and having an old
+  version of it in the path somewhere (for example GnuWin32 tools) will
+  cause as.exe to pick up the older version that doesn't have the entry
+  point it's looking for.
 
 CYGWIN BUILD PROBLEMS
 ^^^^^^^^^^^^^^^^^^^^^
@@ -1753,9 +1936,6 @@ nuttx/
  |   `- README.txt
  |- audio/
  |   `-README.txt
- |- binfmt/
- |   `-libpcode/
- |       `-README.txt
  |- boards/
  |   |- arm/
  |   |   |- a1x/
@@ -2108,7 +2288,7 @@ nuttx/
  |   |       `- moteino-mega/
  |   |           `- README.txt
  |   |- hc/
- |   |   `- mcs92s12ne64/
+ |   |   `- m9s12/
  |   |       |- demo9s12ne64/
  |   |       |   `- README.txt
  |   |       `- ne64badge/
@@ -2139,10 +2319,10 @@ nuttx/
  |   |       `- or1k/
  |   |           `- README.txt
  |   |- renesas/
- |   |   |- m32262f8/
+ |   |   |- m16c/
  |   |   |   `- skp16c26/
  |   |   |       `- README.txt
- |   |   `-sh7032/
+ |   |   `-sh1/
  |   |       `- us7032evb1/
  |   |           `- README.txt
  |   |- risc-v/
@@ -2166,7 +2346,7 @@ nuttx/
  |   |       `- esp32-core/
  |   |           `- README.txt
  |   |- z16/
- |   |   `- z16f2811/
+ |   |   `- z16f/
  |   |       `- z16f2800100zcog/
  |   |           |- configs/nsh/README.txt
  |   |           |- configs/ostest/README.txt
@@ -2184,7 +2364,12 @@ nuttx/
  |   |   |   |   |- configs/nsh/README.txt
  |   |   |   |   |- configs/poll/README.txt
  |   |   |   |   `- README.txt
- |   |   |   `- makerlisp/
+ |   |   |   |- makerlisp/
+ |   |   |   |   |- configs/nsh_flash/README.txt
+ |   |   |   |   |- configs/nsh_ram/README.txt
+ |   |   |   |   |- configs/sdboot/README.txt
+ |   |   |   |   `- README.txt
+ |   |   |   `- z80x/
  |   |   |       |- configs/nsh_flash/README.txt
  |   |   |       |- configs/nsh_ram/README.txt
  |   |   |       |- configs/sdboot/README.txt
@@ -2349,7 +2534,4 @@ tools/
  `- README.txt
 
 uClibc++/
- `- README.txt
-
-pascal/
  `- README.txt

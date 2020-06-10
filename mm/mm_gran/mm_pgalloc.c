@@ -51,7 +51,9 @@
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
+
 /* Configuration ************************************************************/
+
 /* CONFIG_MM_PGALLOC - Enable page allocator support
  * CONFIG_MM_PGSIZE - The page size.  Must be one of {1024, 2048,
  *   4096, 8192, or 16384}.  This is easily extensible, but only those
@@ -64,26 +66,14 @@
 
 /* Debug */
 
-#ifdef CONFIG_CPP_HAVE_VARARGS
-#  ifdef CONFIG_DEBUG_PGALLOC
-#    define pgaerr(format, ...)       _err(format, ##__VA_ARGS__)
-#    define pgawarn(format, ...)      _warn(format, ##__VA_ARGS__)
-#    define pgainfo(format, ...)      _info(format, ##__VA_ARGS__)
-#  else
-#    define pgaerr(format, ...)       merr(format, ##__VA_ARGS__)
-#    define pgawarn(format, ...)      mwarn(format, ##__VA_ARGS__)
-#    define pgainfo(format, ...)      minfo(format, ##__VA_ARGS__)
-#  endif
+#ifdef CONFIG_DEBUG_PGALLOC
+#  define pgaerr                    _err
+#  define pgawarn                   _warn
+#  define pgainfo                   _info
 #else
-#  ifdef CONFIG_DEBUG_PGALLOC
-#    define pgaerr                    _err
-#    define pgawarn                   _warn
-#    define pgainfo                   _info
-#  else
-#    define pgaerr                    merr
-#    define pgawarn                   mwarn
-#    define pgainfo                   minfo
-#  endif
+#  define pgaerr                    merr
+#  define pgawarn                   mwarn
+#  define pgainfo                   minfo
 #endif
 
 /****************************************************************************
@@ -223,4 +213,3 @@ void mm_pginfo(FAR struct pginfo_s *info)
 }
 
 #endif /* CONFIG_MM_PGALLOC */
-

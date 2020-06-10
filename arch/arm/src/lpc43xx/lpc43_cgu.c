@@ -42,14 +42,14 @@
 #include <nuttx/arch.h>
 #include <errno.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "lpc43_cgu.h"
 #include <arch/board/board.h>
 
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
-/* Maximum/Threashold Frequencies *******************************************/
+/* Maximum/Threshold Frequencies ********************************************/
 
 #define LOW_XTAL_FREQUENCY     15000000
 #define MAX_XTAL_FREQUENCY     25000000

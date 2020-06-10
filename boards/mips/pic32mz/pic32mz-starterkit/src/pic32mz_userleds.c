@@ -46,10 +46,10 @@
 #include <arch/board/board.h>
 
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "mips_arch.h"
+#include "mips_internal.h"
 
-#include "pic32mz-gpio.h"
+#include "pic32mz_gpio.h"
 #include "pic32mz-starterkit.h"
 
 #ifndef CONFIG_ARCH_LEDS
@@ -76,7 +76,7 @@
  * to the correct LED pin configuration.
  */
 
-static const uint16_t g_ledpincfg[PIC32MZ_STARTERKIT_NLEDS] =
+static const pinset_t g_ledpincfg[PIC32MZ_STARTERKIT_NLEDS] =
 {
   GPIO_LED_1, GPIO_LED_2, GPIO_LED_3
 };

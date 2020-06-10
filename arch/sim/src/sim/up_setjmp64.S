@@ -57,7 +57,7 @@
 #  define REGS %rcx
 
 /* The calling convention of the System V AMD64 ABI is followed on Solaris,
- * Linux, FreeBSD, Mac OS X, and other UNIX-like or POSIX-compliant operating
+ * Linux, FreeBSD, macOS, and other UNIX-like or POSIX-compliant operating
  * systems. The first six integer or pointer arguments are passed in registers
  * RDI, RSI, RDX, RCX, R8, and R9, while XMM0, XMM1, XMM2, XMM3, XMM4, XMM5,
  * XMM6 and XMM7 are used for floating point arguments. For system calls, R10
@@ -81,7 +81,11 @@
 //# define SYMBOL(s) _##s
 # define SYMBOL(s) s
 #else
+#ifdef __ELF__
 # define SYMBOL(s) s
+#else
+# define SYMBOL(s) _##s
+#endif
 #endif
 
 /**************************************************************************
@@ -91,7 +95,7 @@
 	.text
 	.align	4
 	.globl	SYMBOL(up_setjmp)
-#ifndef __CYGWIN__
+#ifdef __ELF__
 	.type	SYMBOL(up_setjmp), @function
 #endif
 SYMBOL(up_setjmp):
@@ -128,13 +132,13 @@ SYMBOL(up_setjmp):
 
 	ret
 
-#ifndef __CYGWIN__
+#ifdef __ELF__
 	.size	SYMBOL(up_setjmp), . - SYMBOL(up_setjmp)
 #endif
 
 	.align	4
 	.globl	SYMBOL(up_longjmp)
-#ifndef __CYGWIN__
+#ifdef __ELF__
 	.type	SYMBOL(up_longjmp), @function
 #endif
 SYMBOL(up_longjmp):
@@ -157,7 +161,6 @@ SYMBOL(up_longjmp):
 
 	jmp		*JB_RSI(REGS)	/* Save 8: rsi */
 
-#ifndef __CYGWIN__
+#ifdef __ELF__
 	.size SYMBOL(up_longjmp), . - SYMBOL(up_longjmp)
 #endif
-

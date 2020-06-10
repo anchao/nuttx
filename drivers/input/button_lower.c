@@ -57,7 +57,8 @@
  * Private Function Prototypes
  ****************************************************************************/
 
-static btn_buttonset_t btn_supported(FAR const struct btn_lowerhalf_s *lower);
+static btn_buttonset_t
+btn_supported(FAR const struct btn_lowerhalf_s *lower);
 static btn_buttonset_t btn_buttons(FAR const struct btn_lowerhalf_s *lower);
 static void btn_enable(FAR const struct btn_lowerhalf_s *lower,
                        btn_buttonset_t press, btn_buttonset_t release,
@@ -159,7 +160,7 @@ static void btn_enable(FAR const struct btn_lowerhalf_s *lower,
           mask = (1 << id);
           if ((either & mask) != 0)
             {
-              (void)board_button_irq(id, btn_interrupt, NULL);
+              board_button_irq(id, btn_interrupt, NULL);
             }
         }
     }
@@ -185,7 +186,7 @@ static void btn_disable(void)
   flags = enter_critical_section();
   for (id = 0; id < NUM_BUTTONS; id++)
     {
-      (void)board_button_irq(id, NULL, NULL);
+      board_button_irq(id, NULL, NULL);
     }
 
   /* Nullify the handler and argument */

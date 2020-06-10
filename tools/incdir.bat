@@ -98,11 +98,6 @@ if "%1" == "" (
   goto :End
 )
 
-if not exist %1 (
-  echo ERROR: Path %1 does not exist
-  goto :Usage
-)
-
 if "%fmt%"=="zds" goto :GenerateZdsPath
 if "%response%"=="" goto :FirstStdPath
 if "%pathtype%"=="system" goto :NextStdSystemPath
@@ -151,15 +146,15 @@ echo %progname% is a tool for flexible generation of include path arguments for 
 echo variety of different compilers in a variety of compilation environments
 echo USAGE: %progname% [-w] [-d] [-s] [-h] ^<compiler-path^> ^<dir1^> [^<dir2^> [^<dir3^> ...]]
 echo Where:
-echo   ^<compiler-path^>
-echo       The full path to your compiler
-echo   ^<dir1^> [^<dir2^> [^<dir3^> ...]]
-echo       A list of include directories
-echo   -w, -d
-echo       For compatibility with incdir.sh (ignored)
-echo   -s
-echo       Generate standard, system header file paths instead of normal user
-echo       header file paths.
-echo   -h
-echo       Shows this help text and exits.
+echo  ^<compiler-path^>
+echo    The full path to your compiler
+echo  ^<dir1^> [^<dir2^> [^<dir3^> ...]]
+echo    A list of include directories
+echo  -w, -d
+echo    For compatibility with incdir.sh (ignored)
+echo  -s
+echo    Generate standard, system header file paths instead of normal user
+echo    header file paths.
+echo  -h
+echo    Shows this help text and exits.
 :End

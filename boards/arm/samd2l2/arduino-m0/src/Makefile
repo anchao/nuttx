@@ -33,10 +33,9 @@
 #
 ############################################################################
 
--include $(TOPDIR)/Make.defs
+include $(TOPDIR)/Make.defs
 
-ASRCS =
-CSRCS = sam_boot.c
+CSRCS = sam_boot.c sam_bringup.c
 
 ifeq ($(CONFIG_SAMD2L2_SERCOM0),y)
 CSRCS += sam_spi.c
@@ -50,6 +49,10 @@ endif
 
 ifeq ($(CONFIG_ARCH_BUTTONS),y)
 CSRCS += sam_buttons.c
+endif
+
+ifeq ($(CONFIG_SAMD2L2_ADC),y)
+CSRCS += sam_adc.c
 endif
 
 ifeq ($(CONFIG_LIB_BOARDCTL),y)

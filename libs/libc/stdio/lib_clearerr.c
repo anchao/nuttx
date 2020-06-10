@@ -61,9 +61,8 @@
  *
  ****************************************************************************/
 
-void clearerr(FILE *stream)
+void clearerr(FAR FILE *stream)
 {
   stream->fs_flags = 0;
 }
 #endif /* CONFIG_NFILE_STREAMS */
-

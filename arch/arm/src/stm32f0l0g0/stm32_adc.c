@@ -45,7 +45,6 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
-#include <semaphore.h>
 #include <errno.h>
 #include <assert.h>
 #include <debug.h>
@@ -56,9 +55,10 @@
 #include <nuttx/arch.h>
 #include <nuttx/analog/adc.h>
 #include <nuttx/analog/ioctl.h>
+#include <nuttx/semaphore.h>
 
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 
 #include "chip.h"
 #include "stm32.h"
@@ -88,12 +88,14 @@
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
+
 /* RCC reset ****************************************************************/
 
 #define STM32_RCC_RSTR      STM32_RCC_APB2RSTR
 #define RCC_RSTR_ADC1RST    RCC_APB2RSTR_ADC1RST
 
-/* ADC Channels/DMA ********************************************************/
+/* ADC Channels/DMA *********************************************************/
+
 /* The maximum number of channels that can be sampled.  If DMA support is
  * not enabled, then only a single channel can be sampled.  Otherwise,
  * data overruns would occur.
@@ -108,7 +110,7 @@
 #  define ADC_MAX_SAMPLES ADC_MAX_CHANNELS_NODMA
 #endif
 
-/* DMA channels and interface values differs according to STM32 DMA IP core version */
+/* DMA values differs according to STM32 DMA IP core version */
 
 #if  defined(HAVE_IP_DMA_V1)
 #  define ADC_DMA_CONTROL_WORD (DMA_CCR_MSIZE_16BITS | \
@@ -140,9 +142,10 @@
 #endif
 
 /* Number of channels per ADC:
- *   - F0, L0, G0 - 19, but singe SMP for all channels
+ *   - F0, L0, G0 - 19, but single SMP for all channels
  *
- * NOTE: this value can be obtained from SMPRx register description (ST manual)
+ * NOTE: this value can be obtained from SMPRx register description
+ *       (ST manual)
  */
 
 #if defined(CONFIG_STM32F0L0G0_STM32F0) || defined(CONFIG_STM32F0L0G0_STM32L0)
@@ -298,7 +301,7 @@ static void adc_rccreset(FAR struct stm32_dev_s *priv, bool reset);
 #ifndef CONFIG_STM32F0L0G0_ADC_NOIRQ
 static int  adc_interrupt(FAR struct adc_dev_s *dev);
 static int  adc1_interrupt(int irq, FAR void *context, FAR void *arg);
-#endif  /* CONFIG_STM32F0L0G0_ADC_NOIRQ */
+#endif /* CONFIG_STM32F0L0G0_ADC_NOIRQ */
 
 /* ADC Driver Methods */
 
@@ -350,12 +353,16 @@ static int adc_extcfg_set(FAR struct adc_dev_s *dev, uint32_t extcfg);
 static void adc_dumpregs(FAR struct stm32_dev_s *priv);
 
 #ifdef CONFIG_STM32F0L0G0_ADC_LL_OPS
-static void adc_llops_intack(FAR struct stm32_adc_dev_s *dev, uint32_t source);
-static void adc_llops_inten(FAR struct stm32_adc_dev_s *dev, uint32_t source);
-static void adc_llops_intdis(FAR struct stm32_adc_dev_s *dev, uint32_t source);
+static void adc_llops_intack(FAR struct stm32_adc_dev_s *dev,
+                             uint32_t source);
+static void adc_llops_inten(FAR struct stm32_adc_dev_s *dev,
+                            uint32_t source);
+static void adc_llops_intdis(FAR struct stm32_adc_dev_s *dev,
+                             uint32_t source);
 static uint32_t adc_llops_intget(FAR struct stm32_adc_dev_s *dev);
 static uint32_t adc_llops_regget(FAR struct stm32_adc_dev_s *dev);
-static void adc_llops_reg_startconv(FAR struct stm32_adc_dev_s *dev, bool enable);
+static void adc_llops_reg_startconv(FAR struct stm32_adc_dev_s *dev,
+                                    bool enable);
 #  ifdef ADC_HAVE_DMA
 static int adc_llops_regbufregister(FAR struct stm32_adc_dev_s *dev,
                                     uint16_t *buffer, uint8_t len);
@@ -417,7 +424,7 @@ static struct stm32_dev_s g_adcpriv1 =
 #ifndef CONFIG_STM32F0L0G0_ADC_NOIRQ
   .irq         = STM32_IRQ_ADC,
   .isr         = adc1_interrupt,
-#endif  /* CONFIG_STM32F0L0G0_ADC_NOIRQ */
+#endif /* CONFIG_STM32F0L0G0_ADC_NOIRQ */
 #ifdef HAVE_ADC_CMN_DATA
   .cmn         = &ADC1CMN_DATA,
 #endif
@@ -593,10 +600,10 @@ static uint32_t adccmn_getreg(FAR struct stm32_dev_s *priv, uint32_t offset)
 
   /* Return register value */
 
-  return getreg32(base+offset);
+  return getreg32(base + offset);
 }
 #  endif
-#endif  /* HAVE_ADC_CMN_REGS */
+#endif /* HAVE_ADC_CMN_REGS */
 
 /****************************************************************************
  * Name: tim_getreg
@@ -821,7 +828,8 @@ static void adc_reg_startconv(FAR struct stm32_dev_s *priv, bool enable)
 
           /* Wait for the conversion to stop */
 
-          while ((adc_getreg(priv, STM32_ADC_CR_OFFSET) & ADC_CR_ADSTP) != 0);
+          while ((adc_getreg(priv, STM32_ADC_CR_OFFSET) &
+                  ADC_CR_ADSTP) != 0);
         }
     }
 }
@@ -837,24 +845,11 @@ static int adccmn_lock(FAR struct stm32_dev_s *priv, bool lock)
 
   if (lock)
     {
-      /* Take the semaphore (perhaps waiting) */
-
-      do
-        {
-          ret = nxsem_wait(&priv->cmn->lock);
-
-          /* The only case that an error should occur here is if the wait
-           * was awakened by a signal.
-           */
-
-          DEBUGASSERT(ret == OK || ret == -EINTR);
-        }
-      while (ret == -EINTR);
+      ret = nxsem_wait_uninterruptible(&priv->cmn->lock);
     }
   else
     {
-      (void)nxsem_post(&priv->cmn->lock);
-      ret = OK;
+      ret = nxsem_post(&priv->cmn->lock);
     }
 
   return ret;
@@ -881,7 +876,8 @@ static void adc_rccreset(FAR struct stm32_dev_s *priv, bool reset)
   uint32_t adcbit;
 
   /* Pick the appropriate bit in the RCC reset register.
-   * For the STM32 ADC IPv2, there is an individual bit to reset each ADC block.
+   * For the STM32 ADC IPv2, there is an individual bit to reset each ADC
+   * block.
    */
 
   switch (priv->intf)
@@ -892,6 +888,7 @@ static void adc_rccreset(FAR struct stm32_dev_s *priv, bool reset)
           adcbit = RCC_RSTR_ADC1RST;
           break;
         }
+
 #endif
       default:
         {
@@ -983,7 +980,8 @@ static void adc_enable(FAR struct stm32_dev_s *priv, bool enable)
  ****************************************************************************/
 
 #if defined(ADC_HAVE_DMA)
-static void adc_dmaconvcallback(DMA_HANDLE handle, uint8_t isr, FAR void *arg)
+static void adc_dmaconvcallback(DMA_HANDLE handle, uint8_t isr,
+                                FAR void *arg)
 {
   FAR struct adc_dev_s   *dev  = (FAR struct adc_dev_s *)arg;
   FAR struct stm32_dev_s *priv = (FAR struct stm32_dev_s *)dev->ad_priv;
@@ -1249,7 +1247,7 @@ static void adc_dma_start(FAR struct adc_dev_s *dev)
 
   stm32_dmastart(priv->dma, adc_dmaconvcallback, dev, false);
 }
-#endif  /* ADC_HAVE_DMA */
+#endif /* ADC_HAVE_DMA */
 
 /****************************************************************************
  * Name: adc_configure
@@ -1267,7 +1265,7 @@ static void adc_configure(FAR struct adc_dev_s *dev)
 
   adc_voltreg_cfg(priv);
 
-  /* Calibrate ADC - doesnt work for now */
+  /* Calibrate ADC - doesn't work for now */
 
   adc_calibrate(priv);
 
@@ -1312,7 +1310,7 @@ static void adc_configure(FAR struct adc_dev_s *dev)
 #ifdef HAVE_ADC_RESOLUTION
   /* Configure ADC resolution */
 
-  (void)adc_resolution_set(dev, priv->resolution);
+  adc_resolution_set(dev, priv->resolution);
 #endif
 
 #ifdef ADC_HAVE_EXTCFG
@@ -1360,7 +1358,10 @@ static void adc_reset(FAR struct adc_dev_s *dev)
   /* Only if this is the first initialzied ADC instance in the ADC block */
 
 #ifdef HAVE_ADC_CMN_DATA
-  adccmn_lock(priv, true);
+  if (adccmn_lock(priv, true) < 0)
+    {
+      return;
+    }
 
   if (priv->cmn->initialized == 0)
 #endif
@@ -1461,7 +1462,12 @@ static int adc_setup(FAR struct adc_dev_s *dev)
 #ifdef HAVE_ADC_CMN_DATA
   /* Increase instances counter */
 
-  adccmn_lock(priv, true);
+  ret = adccmn_lock(priv, true);
+  if (ret < 0)
+    {
+      return;
+    }
+
   priv->cmn->initialized += 1;
   adccmn_lock(priv, false);
 #endif
@@ -1498,7 +1504,10 @@ static void adc_shutdown(FAR struct adc_dev_s *dev)
 #endif
 
 #ifdef HAVE_ADC_CMN_DATA
-  adccmn_lock(priv, true);
+  if (adccmn_lock(priv, true) < 0)
+    {
+      return;
+    }
 
   if (priv->cmn->initialized <= 1)
 #endif
@@ -1507,8 +1516,9 @@ static void adc_shutdown(FAR struct adc_dev_s *dev)
        *
        * NOTE: The ADC block will be reset to its reset state only if all
        *       ADC block instances are closed. This means that the closed ADC
-       *       may not be reset which in turn may affect low-power applications.
-       *       (But ADC is turned off here, is not that enough?)
+       *       may not be reset which in turn may affect low-power
+       *       applications. (But ADC is turned off here, is not that
+       *       enough?)
        */
 
       adc_rccreset(priv, true);
@@ -1696,7 +1706,8 @@ static void adc_enable_vbat_channel(FAR struct adc_dev_s *dev, bool enable)
       adccmn_modifyreg(priv, STM32_ADC_CCR_OFFSET, ADC_CCR_VBATEN, 0);
     }
 
-  ainfo("STM32_ADC_CCR value: 0x%08x\n", adccmn_getreg(priv, STM32_ADC_CCR_OFFSET));
+  ainfo("STM32_ADC_CCR value: 0x%08x\n",
+        adccmn_getreg(priv, STM32_ADC_CCR_OFFSET));
 }
 #endif
 
@@ -1907,7 +1918,8 @@ static int adc_set_ch(FAR struct adc_dev_s *dev, uint8_t ch)
     }
   else
     {
-      for (i = 0; i < priv->cr_channels && priv->r_chanlist[i] != ch - 1; i++);
+      for (i = 0; i < priv->cr_channels && priv->r_chanlist[i] != ch - 1;
+           i++);
 
       if (i >= priv->cr_channels)
         {
@@ -1918,8 +1930,7 @@ static int adc_set_ch(FAR struct adc_dev_s *dev, uint8_t ch)
       priv->rnchannels = 1;
     }
 
-
-  for (i = 0; i < priv->rnchannels; i+=1)
+  for (i = 0; i < priv->rnchannels; i += 1)
     {
       bits |= ADC_CHSELR_CHSEL(priv->r_chanlist[i]);
     }
@@ -2166,7 +2177,8 @@ static int adc1_interrupt(int irq, FAR void *context, FAR void *arg)
  * Name: adc_llops_intack
  ****************************************************************************/
 
-static void adc_llops_intack(FAR struct stm32_adc_dev_s *dev, uint32_t source)
+static void adc_llops_intack(FAR struct stm32_adc_dev_s *dev,
+                             uint32_t source)
 {
   FAR struct stm32_dev_s *priv = (FAR struct stm32_dev_s *)dev;
 
@@ -2200,7 +2212,8 @@ static void adc_llops_inten(FAR struct stm32_adc_dev_s *dev, uint32_t source)
  * Name: adc_llops_intdis
  ****************************************************************************/
 
-static void adc_llops_intdis(FAR struct stm32_adc_dev_s *dev, uint32_t source)
+static void adc_llops_intdis(FAR struct stm32_adc_dev_s *dev,
+                             uint32_t source)
 {
   FAR struct stm32_dev_s *priv = (FAR struct stm32_dev_s *)dev;
 
@@ -2240,7 +2253,8 @@ static uint32_t adc_llops_regget(FAR struct stm32_adc_dev_s *dev)
  * Name: adc_llops_reg_startconv
  ****************************************************************************/
 
-static void adc_llops_reg_startconv(FAR struct stm32_adc_dev_s *dev, bool enable)
+static void adc_llops_reg_startconv(FAR struct stm32_adc_dev_s *dev,
+                                    bool enable)
 {
   FAR struct stm32_dev_s *priv = (FAR struct stm32_dev_s *)dev;
 
@@ -2269,7 +2283,7 @@ static int adc_llops_regbufregister(FAR struct stm32_adc_dev_s *dev,
 
   return OK;
 }
-#endif  /* ADC_HAVE_DMA */
+#endif /* ADC_HAVE_DMA */
 
 /****************************************************************************
  * Name: adc_sampletime_write
@@ -2315,7 +2329,7 @@ void adc_sampletime_set(FAR struct stm32_adc_dev_s *dev,
 {
   #error TODO adc_sampletime_write
 }
-#endif  /* CONFIG_STM32F0L0G0_ADC_CHANGE_SAMPLETIME */
+#endif /* CONFIG_STM32F0L0G0_ADC_CHANGE_SAMPLETIME */
 
 /****************************************************************************
  * Name: adc_llops_dumpregs
@@ -2328,7 +2342,7 @@ static void adc_llops_dumpregs(FAR struct stm32_adc_dev_s *dev)
   adc_dumpregs(priv);
 }
 
-#endif  /* CONFIG_STM32F0L0G0_ADC_LL_OPS */
+#endif /* CONFIG_STM32F0L0G0_ADC_LL_OPS */
 
 /****************************************************************************
  * Public Functions
@@ -2367,6 +2381,7 @@ struct adc_dev_s *stm32_adcinitialize(int intf, FAR const uint8_t *chanlist,
           dev = &g_adcdev1;
           break;
         }
+
 #endif
       default:
         {

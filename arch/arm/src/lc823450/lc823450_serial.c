@@ -44,7 +44,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <semaphore.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -53,13 +52,14 @@
 #include <nuttx/irq.h>
 #include <nuttx/arch.h>
 #include <nuttx/fs/ioctl.h>
+#include <nuttx/semaphore.h>
 #include <nuttx/serial/serial.h>
 
 #include <arch/board/board.h>
 
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "lc823450_dma.h"
 #include "lc823450_serial.h"
@@ -661,7 +661,7 @@ static void up_detach(struct uart_dev_s *dev)
  *   when an interrupt received on the 'irq'  It should call
  *   uart_transmitchars or uart_receivechar to perform the
  *   appropriate data transfers.  The interrupt handling logic\
- *   must be able to map the 'irq' number into the approprite
+ *   must be able to map the 'irq' number into the appropriate
  *   uart_dev_s structure in order to call these functions.
  *
  ****************************************************************************/
@@ -864,7 +864,7 @@ static int up_receive(struct uart_dev_s *dev, uint32_t *status)
   rxd     = up_serialin(priv, UART_USRF);
   *status = rxd;
 
-  /* The lower 8bits of the Rx data is the actual recevied byte */
+  /* The lower 8bits of the Rx data is the actual received byte */
 
   return rxd & 0xff;
 }
@@ -1250,17 +1250,19 @@ retry:
  * Public Functions
  ****************************************************************************/
 
+#ifdef USE_EARLYSERIALINIT
+
 /****************************************************************************
- * Name: up_serialinit
+ * Name: arm_earlyserialinit
  *
  * Description:
  *   Performs the low level UART initialization early in
  *   debug so that the serial console will be available
- *   during bootup.  This must be called before up_serialinit.
+ *   during bootup.  This must be called before arm_serialinit.
  *
  ****************************************************************************/
 
-void up_earlyserialinit(void)
+void arm_earlyserialinit(void)
 {
   /* NOTE:  All GPIO configuration for the UARTs was performed in
    * up_lowsetup
@@ -1296,29 +1298,30 @@ void up_earlyserialinit(void)
   CONSOLE_DEV.isconsole = true;
   up_setup(&CONSOLE_DEV);
 }
+#endif
 
 /****************************************************************************
- * Name: up_serialinit
+ * Name: arm_serialinit
  *
  * Description:
  *   Register serial console and serial ports.  This assumes
- *   that up_earlyserialinit was called previously.
+ *   that arm_earlyserialinit was called previously.
  *
  ****************************************************************************/
 
 int hsuart_register(const char *path, uart_dev_t *dev);
 
-void up_serialinit(void)
+void arm_serialinit(void)
 {
   /* Register the console */
 
-  (void)uart_register("/dev/console", &CONSOLE_DEV);
+  uart_register("/dev/console", &CONSOLE_DEV);
 
   /* Register all UARTs */
 
-  (void)uart_register("/dev/ttyS0", &TTYS0_DEV);
+  uart_register("/dev/ttyS0", &TTYS0_DEV);
 #ifdef TTYS1_DEV
-  (void)uart_register("/dev/ttyS1", &TTYS1_DEV);
+  uart_register("/dev/ttyS1", &TTYS1_DEV);
 #ifdef CONFIG_HSUART
   nxsem_init(&g_uart1priv.txdma_wait, 0, 1);
   g_uart1priv.htxdma = lc823450_dmachannel(DMA_CHANNEL_UART1TX);
@@ -1330,11 +1333,11 @@ void up_serialinit(void)
   lc823450_dmarequest(g_uart1priv.hrxdma, DMA_REQUEST_UART1RX);
 
   up_serialout(&g_uart1priv, UART_UDMA, UART_UDMA_RREQ_EN | UART_UDMA_TREQ_EN);
-  (void)hsuart_register("/dev/ttyHS1", &TTYS1_DEV);
+  hsuart_register("/dev/ttyHS1", &TTYS1_DEV);
 #endif /* CONFIG_HSUART */
 #endif
 #ifdef TTYS2_DEV
-  (void)uart_register("/dev/ttyS2", &TTYS2_DEV);
+  uart_register("/dev/ttyS2", &TTYS2_DEV);
 #endif
 }
 
@@ -1393,10 +1396,10 @@ int up_putc(int ch)
     {
       /* Add CR */
 
-      up_lowputc('\r');
+      arm_lowputc('\r');
     }
 
-  up_lowputc(ch);
+  arm_lowputc(ch);
   return ch;
 }
 

@@ -108,10 +108,10 @@ static struct stm32_mcp2515config_s g_mcp2515config =
   .config =
   {
     .spi        = NULL,
-    .baud       = 0,     /* REVISIT.  Proably broken by commit eb7373cedfa */
-    .btp        = 0,     /* REVISIT.  Proably broken by commit eb7373cedfa */
+    .baud       = 0,     /* REVISIT.  Probably broken by commit eb7373cedfa */
+    .btp        = 0,     /* REVISIT.  Probably broken by commit eb7373cedfa */
     .devid      = 0,
-    .mode       = 0,     /* REVISIT.  Proably broken by commit eb7373cedfa */
+    .mode       = 0,     /* REVISIT.  Probably broken by commit eb7373cedfa */
     .nfilters   = 6,
 #ifdef MCP2515_LOOPBACK
     .loopback   = false;
@@ -161,8 +161,8 @@ static int mcp2515_attach(FAR struct mcp2515_config_s *state,
 
   /* Configure the interrupt for falling edge */
 
-  (void)stm32_gpiosetevent(GPIO_MCP2515_IRQ, false, true, false,
-                           mcp2515_interrupt, priv);
+  stm32_gpiosetevent(GPIO_MCP2515_IRQ, false, true, false,
+                     mcp2515_interrupt, priv);
 
   leave_critical_section(flags);
 
@@ -202,7 +202,7 @@ int stm32_mcp2515initialize(FAR const char *devpath)
 
       /* Configure the MCP2515 interrupt pin as an input */
 
-      (void)stm32_configgpio(GPIO_MCP2515_IRQ);
+      stm32_configgpio(GPIO_MCP2515_IRQ);
 
       spi = stm32_spibus_initialize(MCP2515_SPI_PORTNO);
 

@@ -1,36 +1,20 @@
 /****************************************************************************
  * arch/z80/src/ez80/ez80_i2c.c
  *
- *   Copyright(C) 2009, 2011, 2013, 2016-2017 Gregory Nutt. All rights
- *     reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name NuttX nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES(INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  *
  ****************************************************************************/
 
@@ -43,25 +27,25 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <semaphore.h>
 #include <errno.h>
 #include <assert.h>
 #include <debug.h>
 
+#include <nuttx/semaphore.h>
 #include <nuttx/i2c/i2c_master.h>
 #include <nuttx/kmalloc.h>
 #include <arch/io.h>
 #include <arch/board/board.h>
 
 #include "ez80f91.h"
-#include "ez80f91_i2c.h"
+#include "ez80_i2c.h"
 
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
 
 #define EZ80_NOSTOP    (1 << 0)   /* Bit 0: No STOP on this transfer */
-#define EZ80_NOSTART   (1 << 1)   /* Bit 1: No address or START on this tranfers */
+#define EZ80_NOSTART   (1 << 1)   /* Bit 1: No address or START on this transfers */
 
 /****************************************************************************
  * Private Types
@@ -102,14 +86,6 @@ static int      ez80_i2c_transfer(FAR struct i2c_master_s *dev,
                   FAR struct i2c_msg_s *msgs, int count);
 
 /****************************************************************************
- * Public Function Prototypes
- ****************************************************************************/
-
-/* This function is normally prototyped int the ZiLOG header file sio.h */
-
-extern uint32_t get_freq(void);
-
-/****************************************************************************
  * Private Data
  ****************************************************************************/
 
@@ -124,6 +100,7 @@ const struct i2c_ops_s g_ops =
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
+
 /****************************************************************************
  * Name: ez80_i2c_semtake/ez80_i2c_semgive
  *
@@ -138,26 +115,10 @@ const struct i2c_ops_s g_ops =
  *
  ****************************************************************************/
 
-static void ez80_i2c_semtake(void)
+static int ez80_i2c_semtake(void)
 {
-  int ret;
-
-  do
-    {
-      /* Take the semaphore (perhaps waiting) */
-
-      ret = nxsem_wait(&g_i2csem);
-
-      /* The only case that an error should occur here is if the wait was
-       * awakened by a signal.
-       */
-
-      DEBUGASSERT(ret == OK || ret == -EINTR);
-    }
-  while (ret == -EINTR);
+  return nxsem_wait(&g_i2csem);
 }
-
-#define ez80_i2c_semgive() nxsem_post(&g_i2csem)
 
 /****************************************************************************
  * Name: ez80_i2c_setccr
@@ -214,7 +175,7 @@ static uint16_t ez80_i2c_getccr(uint32_t fscl)
    * The minimum value of the fsamp is given by:
    */
 
-   fsamp = 10 * fscl;
+  fsamp = 10 * fscl;
 
   /* Now, serarch for the smallest value of N that results in the actual
    * fsamp >= the ideal fsamp.  Fortunately, we only have to check at most
@@ -275,12 +236,12 @@ static uint16_t ez80_i2c_getccr(uint32_t fscl)
 
   m = ftmp / fscl;
   if (m > 0)
-  {
-    if (--m > 15)
-      {
-        m = 15;
-      }
-  }
+    {
+      if (--m > 15)
+        {
+          m = 15;
+        }
+    }
 
   /* Return the value for CCR */
 
@@ -392,7 +353,7 @@ static void ez80_i2c_stop(void)
 
  *   Or <0: Negated error value.  IFLG is cleared.
  *
- *   -EIO: Irrecoverable (or unexpected) error occured
+ *   -EIO: Irrecoverable (or unexpected) error occurred
  *   -EAGAIN: And
  *
  ****************************************************************************/
@@ -452,8 +413,8 @@ static int ez80_i2c_sendaddr(struct ez80_i2cdev_s *priv, uint8_t readbit)
       sr = ez80_i2c_waitiflg();
       if (sr != I2C_SR_MADDRWRACK && sr != I2C_SR_MADDRWR)
         {
-         i2cerr("ERROR: Bad ADDR10H status: %02x\n", sr);
-         goto failure;
+          i2cerr("ERROR: Bad ADDR10H status: %02x\n", sr);
+          goto failure;
         }
 
       /* Now send the lower 8 bits of the 10-bit address */
@@ -845,7 +806,7 @@ static int ez80_i2c_transfer(FAR struct i2c_master_s *dev,
   FAR struct i2c_msg_s *msg;
   bool nostop;
   uint8_t flags;
-  int ret = OK;
+  int ret;
   int i;
 
   /* Perform each segment of the transfer, message at a time */
@@ -854,9 +815,13 @@ static int ez80_i2c_transfer(FAR struct i2c_master_s *dev,
 
   /* Get exclusive access to the I2C bus */
 
-  ez80_i2c_semtake();
+  ret = nxsem_wait(&g_i2csem);
+  if (ret < 0)
+    {
+      return ret;
+    }
 
-  /* The process each message seqment */
+  /* The process each message segment */
 
   for (i = 0; i < count; i++)
     {
@@ -873,7 +838,7 @@ static int ez80_i2c_transfer(FAR struct i2c_master_s *dev,
 
       nostop = false;
       if (i < (count - 1))
-       {
+        {
           FAR struct i2c_msg_s *next;
 
           /* No... Check if the next message should have a repeated start or
@@ -922,7 +887,7 @@ static int ez80_i2c_transfer(FAR struct i2c_master_s *dev,
       flags = (nostop) ? EZ80_NOSTART : 0;
     }
 
-  ez80_i2c_semgive();
+  nxsem_post(&g_i2csem);
   return ret;
 }
 

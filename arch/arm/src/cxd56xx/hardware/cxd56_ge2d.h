@@ -33,8 +33,12 @@
  *
  ****************************************************************************/
 
-#ifndef __SRC_CHIP_CXD56_GE2D_H
-#define __SRC_CHIP_CXD56_GE2D_H
+#ifndef __ARCH_ARM_SRC_CXD56XX_CXD56_GE2D_H
+#define __ARCH_ARM_SRC_CXD56XX_CXD56_GE2D_H
+
+/****************************************************************************
+ * Included Files
+ ****************************************************************************/
 
 #include "hardware/cxd5602_memorymap.h"
 
@@ -79,4 +83,4 @@
 #define GE2D_EXEC  1
 #define GE2D_STOP  3
 
-#endif /* __SRC_CHIP_CXD56_GE2D_H */
+#endif /* __ARCH_ARM_SRC_CXD56XX_CXD56_GE2D_H */

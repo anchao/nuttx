@@ -50,7 +50,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 
 #include "hardware/tms570_sys.h"
 #include "hardware/tms570_pbist.h"
@@ -154,7 +154,7 @@ static void pbist_memtest_start(uint32_t rinfol, uint32_t algomask)
  *   None
  *
  * Returned Value:
- *   true if the PBIST test is compelte
+ *   true if the PBIST test is complete
  *
  ****************************************************************************/
 
@@ -242,7 +242,7 @@ void tms570_memtest_selftest(void)
  * Name: tms570_memtest_start
  *
  * Description:
- *   Start the memory test on the selecte set of RAMs.  This test does not
+ *   Start the memory test on the selected set of RAMs.  This test does not
  *   return until the memory test is completed.
  *
  * Input Parameters:

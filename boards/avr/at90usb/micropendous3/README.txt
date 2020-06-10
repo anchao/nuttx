@@ -161,7 +161,7 @@ DFU Bootloader
 ^^^^^^^^^^^^^^
 
 There is also an DFU bootloader that resides in the upper 8Kb of FLASH
-(unless you ERASE the flash with with ICE).  You can enter this bootloader
+(unless you ERASE the flash with ICE).  You can enter this bootloader
 (if it is in FLASH) by:
 
 Holding both the SW1 (RESET) and SW2, then releasing SW1 while continuing
@@ -241,9 +241,9 @@ Linux:
   After configuring NuttX, make sure that CONFIG_AVR_LINUXGCC_TOOLCHAIN=y is set in your
   .config file.
 
-Mac OS X:
+macOS:
 
-  For Mac OS X, the CrossPack for AVR toolchain is available from:
+  For macOS, the CrossPack for AVR toolchain is available from:
 
     http://www.obdev.at/products/crosspack/index.html
 

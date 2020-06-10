@@ -91,6 +91,15 @@
 
 #  include <arch/board/board_384mhz.h>
 
+#elif defined(CONFIG_SAMA5D2XULT_498MHZ)
+
+/* This is the configuration results in a CPU clock of 498MHz.
+ *
+ * In this configuration, UPLL is the source of the UHPHS clock (if enabled).
+ */
+
+#  include <arch/board/board_498mhz.h>
+
 #elif defined(CONFIG_SAMA5D2XULT_528MHZ)
 
 /* This is the configuration results in a CPU clock of 528MHz.
@@ -228,6 +237,34 @@
 #define PIO_UART1_RXD     PIO_UART1_RXD_1
 #define PIO_UART1_TXD     PIO_UART1_TXD_1
 
+/* Standard UART on Arduino connector (J22) is UART2.
+ *
+ *   ---- ------- -------------
+ *   J22  BOARD      SAMA5D2
+ *   PIN  NAME    PIO  FUNCTION
+ *   ---- ------- -------------
+ *    7   URXD2   PD4 UART2 URXD2
+ *    8   UTXD2   PD5 UART2 UTXD2
+ *   ---- ------- -------------
+ */
+
+#define PIO_UART2_RXD     PIO_UART2_RXD_2
+#define PIO_UART2_TXD     PIO_UART2_TXD_2
+
+/* Standard UART on Arduino connector (J17) is UART3.
+ *
+ *   ---- ------- -------------
+ *   J17  BOARD      SAMA5D2
+ *   PIN  NAME    PIO  FUNCTION
+ *   ---- ------- -------------
+ *    27   URXD3  PB11 UART3 URXD3
+ *    28   UTXD3  PB12 UART3 UTXD3
+ *   ---- ------- -------------
+ */
+
+#define PIO_UART3_RXD     PIO_UART3_RXD_1
+#define PIO_UART3_TXD     PIO_UART3_TXD_1
+
 /* Standard UART on Arduino connector (J21) is FLEXCOM4.
  *
  *   ---- ------- -------------
@@ -289,4 +326,4 @@
   .endm
 #endif /* __ASSEMBLY__ */
 
-#endif  /* __BOARDS_ARM_SAMA5_SAMA5D2_XULT_INCLUDE_BOARD_H */
+#endif /* __BOARDS_ARM_SAMA5_SAMA5D2_XULT_INCLUDE_BOARD_H */

@@ -46,7 +46,7 @@
 #include <nuttx/arch.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "lpc43_gpio.h"
 
 #ifdef CONFIG_LPC43_GPIO_IRQ
@@ -252,6 +252,3 @@ bool lpc43_gpio_read(uint16_t gpiocfg)
 
   return (getreg8(LPC43_GPIO_B(port, pin)) & GPIO_B) != 0;
 }
-
-
-

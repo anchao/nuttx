@@ -60,7 +60,7 @@
 
 #include <arch/xmc4/chip.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "hardware/xmc4_usic.h"
 #include "hardware/xmc4_scu.h"
 #include "xmc4_clockconfig.h"
@@ -467,4 +467,3 @@ int xmc4_usic_baudrate(enum usic_channel_e channel, uint32_t baud,
 
   return ret;
 }
-

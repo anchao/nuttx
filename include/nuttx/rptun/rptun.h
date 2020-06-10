@@ -96,7 +96,7 @@
  * Name: RPTUN_GET_ADDRENV
  *
  * Description:
- *   Get adress env list
+ *   Get address env list
  *
  * Input Parameters:
  *   dev  - Device-specific state data
@@ -112,7 +112,7 @@
  * Name: RPTUN_GET_RESOURCE
  *
  * Description:
- *   Get rptun resouce
+ *   Get rptun resource
  *
  * Input Parameters:
  *   dev  - Device-specific state data
@@ -260,7 +260,7 @@ struct __attribute__((aligned(B2C(8)))) rptun_rsc_s
   struct fw_rsc_vdev       rpmsg_vdev;
   struct fw_rsc_vdev_vring rpmsg_vring0;
   struct fw_rsc_vdev_vring rpmsg_vring1;
-  unsigned int             buf_size;
+  struct fw_rsc_config     config;
 };
 
 struct rptun_dev_s;
@@ -269,7 +269,8 @@ struct rptun_ops_s
   CODE FAR const char *(*get_cpuname)(FAR struct rptun_dev_s *dev);
   CODE FAR const char *(*get_firmware)(FAR struct rptun_dev_s *dev);
 
-  CODE FAR const struct rptun_addrenv_s *(*get_addrenv)(FAR struct rptun_dev_s *dev);
+  CODE FAR const struct rptun_addrenv_s *(*get_addrenv)(
+                        FAR struct rptun_dev_s *dev);
   CODE FAR struct rptun_rsc_s *(*get_resource)(FAR struct rptun_dev_s *dev);
 
   CODE bool (*is_autostart)(FAR struct rptun_dev_s *dev);
@@ -308,4 +309,3 @@ int rptun_boot(FAR const char *cpuname);
 
 #endif /* CONFIG_RPTUN */
 #endif /* __INCLUDE_NUTTX_RPTUN_RPTUN_H */
-

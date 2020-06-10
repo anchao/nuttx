@@ -200,7 +200,7 @@ static int nsh_waiter(int argc, char *argv[])
         {
           /* Yes.. enumerate the newly connected device */
 
-          (void)CONN_ENUMERATE(g_usbconn, hport);
+          CONN_ENUMERATE(g_usbconn, hport);
         }
     }
 
@@ -251,7 +251,7 @@ static int nsh_sdinitialize(void)
       goto errout;
     }
 
-  syslog(LOG_INFO, "Successfuly bound SPI port %d to MMC/SD slot %d\n",
+  syslog(LOG_INFO, "Successfully bound SPI port %d to MMC/SD slot %d\n",
          CONFIG_NSH_MMCSDSPIPORTNO,
          CONFIG_NSH_MMCSDSLOTNO);
   return OK;
@@ -366,7 +366,7 @@ static int nsh_usbdevinitialize(void)
  *         implementation without modification.  The argument has no
  *         meaning to NuttX; the meaning of the argument is a contract
  *         between the board-specific initialization logic and the
- *         matching application logic.  The value cold be such things as a
+ *         matching application logic.  The value could be such things as a
  *         mode enumeration value, a set of DIP switch switch settings, a
  *         pointer to configuration data read from a file or serial FLASH,
  *         or whatever you would like to do with it.  Every implementation

@@ -54,7 +54,7 @@
 #include <nuttx/spi/spi.h>
 #include <nuttx/lcd/lcd.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "stm32.h"
 #include "hymini-stm32v.h"
 
@@ -493,7 +493,7 @@ static int lcd_getrun(fb_coord_t row, fb_coord_t col, FAR uint8_t *buffer,
 
   /* dummy read */
 
-  (void)read_data();
+  read_data();
 
   for (i = 0; i < npixels; i++)
     {
@@ -697,7 +697,7 @@ static inline void lcd_initialize(void)
   write_reg(0x52,0x0000);
   write_reg(0x53,0x013F);
 
-  /* Pannel Image Control */
+  /* Panel Image Control */
 
   write_reg(0x60,0x2700);
   write_reg(0x61,0x0001);
@@ -784,7 +784,7 @@ static void lcd_backlight(void)
 
   putreg16(0, STM32_TIM3_PSC);
 
-  /* Generate an update event to reload the Prescaler value immediatly */
+  /* Generate an update event to reload the Prescaler value immediately */
 
   putreg16(ATIM_EGR_UG, STM32_TIM3_EGR);
 

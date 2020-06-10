@@ -6,7 +6,7 @@
  *   Copyright (C) 2016 Gregory Nutt. All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
  *
- * Derivies from sample code provided by Expressif Systems:
+ * Derives from sample code provided by Espressif Systems:
  *
  *   Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD
  *
@@ -25,7 +25,7 @@
  ****************************************************************************/
 
 #ifndef __ARCH_XTENSA_SRC_ESP32_HARDWARE_ESP32_MUX_H
-#define __ARCH_XTENSA_SRC_ESP32_HARDWARE_ESP32_MUX_H 1
+#define __ARCH_XTENSA_SRC_ESP32_HARDWARE_ESP32_MUX_H
 
 /****************************************************************************
  * Included Files

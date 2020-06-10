@@ -47,7 +47,7 @@
 #include <nuttx/irq.h>
 
 #include "chip.h"
-#include "up_internal.h"
+#include "arm_internal.h"
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -108,7 +108,7 @@ static void up_idlepm(void)
         {
           /* The new state change failed, revert to the preceding state */
 
-          (void)pm_changestate(PM_IDLE_DOMAIN, oldstate);
+          pm_changestate(PM_IDLE_DOMAIN, oldstate);
         }
       else
         {
@@ -132,7 +132,7 @@ static void up_idlepm(void)
           break;
 
         case PM_SLEEP:
-          (void)imxrt_pmstandby();
+          imxrt_pmstandby();
           break;
 
         default:
@@ -185,12 +185,10 @@ void up_idle(void)
  * For further investigation post release of 8.2.
  */
 
-#if 0
   /* Sleep until an interrupt occurs to save power. */
 
   BEGIN_IDLE();
   asm("WFI");
   END_IDLE();
-#endif
 #endif
 }

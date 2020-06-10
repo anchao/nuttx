@@ -51,7 +51,7 @@
 #include <nuttx/timers/watchdog.h>
 
 #include "chip.h"
-#include "up_arch.h"
+#include "arm_arch.h"
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -254,7 +254,7 @@ static int wdt_interrupt(int irq, void *context, FAR void *arg)
 
 static ssize_t wdt_read(struct file *filep, char *buffer, size_t buflen)
 {
-  /* We are going to return "NNNNNNNN NNNNNNNN."  The followig logic will
+  /* We are going to return "NNNNNNNN NNNNNNNN."  The following logic will
    * not work if the user provides a buffer smaller than 18 bytes.
    */
 
@@ -354,10 +354,10 @@ static int wdt_close(struct file *filep)
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_wdtinit
+ * Name: arm_wdtinit
  ****************************************************************************/
 
-int up_wdtinit(void)
+int arm_wdtinit(void)
 {
   int ret;
 

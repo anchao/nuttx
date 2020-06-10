@@ -33,7 +33,7 @@
  *
  ****************************************************************************/
 
-/* This file should never be included directed but, rather,
+/* This file should never be included directly but, rather,
  * only indirectly through nuttx/irq.h (via arch/irq.h)
  */
 
@@ -258,4 +258,3 @@ void       up_irq_restore(irqstate_t flags);
 #endif
 
 #endif /* __ARCH_Z16_INCLUDE_Z16F_IRQ_H */
-

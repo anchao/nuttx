@@ -33,9 +33,8 @@
 #
 ############################################################################
 
--include $(TOPDIR)/Make.defs
+include $(TOPDIR)/Make.defs
 
-ASRCS =
 CSRCS = sam_boot.c
 
 ifeq ($(CONFIG_SAMV7_SDRAMC),y)
@@ -44,6 +43,9 @@ endif
 
 ifeq ($(CONFIG_LIB_BOARDCTL),y)
 CSRCS += sam_appinit.c sam_bringup.c
+ifeq ($(CONFIG_BOARDCTL_RESET),y)
+CSRCS += sam_reset.c
+endif
 else ifeq ($(CONFIG_BOARD_LATE_INITIALIZE),y)
 CSRCS += sam_bringup.c
 endif
@@ -60,6 +62,10 @@ endif
 
 ifeq ($(CONFIG_SAMV7_HSMCI0),y)
 CSRCS += sam_hsmci.c
+endif
+
+ifeq ($(CONFIG_FS_AUTOMOUNTER),y)
+CSRCS += sam_automount.c
 endif
 
 ifeq ($(CONFIG_SAMV7_EMAC),y)

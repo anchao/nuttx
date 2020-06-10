@@ -41,7 +41,6 @@
 
 #include <sys/types.h>
 #include <limits.h>
-#include <semaphore.h>
 #include <errno.h>
 
 #include <nuttx/semaphore.h>
@@ -83,7 +82,7 @@ int nxsem_init(FAR sem_t *sem, int pshared, unsigned int value)
 
   if (sem != NULL && value <= SEM_VALUE_MAX)
     {
-      /* Initialize the seamphore count */
+      /* Initialize the semaphore count */
 
       sem->semcount         = (int16_t)value;
 

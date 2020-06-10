@@ -89,7 +89,9 @@
 #  error CONFIG_IOB_BUFSIZE to small for max Bluetooth frame
 #endif
 
-/* TX poll delay = 1 seconds. CLK_TCK is the number of clock ticks per second */
+/* TX poll delay = 1 seconds.
+ * CLK_TCK is the number of clock ticks per second
+ */
 
 #define TXPOLL_WDDELAY   (1*CLK_TCK)
 
@@ -136,7 +138,7 @@ struct btnet_driver_s
 static int  btnet_advertise(FAR struct net_driver_s *netdev);
 static inline void btnet_netmask(FAR struct net_driver_s *netdev);
 
-/* Bluetooth callback functions ***************************************/
+/* Bluetooth callback functions *********************************************/
 
 /* L2CAP callbacks */
 
@@ -157,6 +159,7 @@ static void btnet_hci_disconnected(FAR struct bt_conn_s *conn,
               FAR void *context);
 
 /* Network interface support ************************************************/
+
 /* Common TX logic */
 
 static int  btnet_txpoll_callback(FAR struct net_driver_s *netdev);
@@ -498,8 +501,8 @@ static void btnet_hci_disconnected(FAR struct bt_conn_s *conn,
 
 static int btnet_txpoll_callback(FAR struct net_driver_s *netdev)
 {
-  /* If zero is returned, the polling will continue until all connections have
-   * been examined.
+  /* If zero is returned, the polling will continue until all connections
+   * have been examined.
    */
 
   return 0;
@@ -542,12 +545,12 @@ static void btnet_txpoll_work(FAR void *arg)
 
   /* Then perform the poll */
 
-  (void)devif_timer(&priv->bd_dev.r_dev, btnet_txpoll_callback);
+  devif_timer(&priv->bd_dev.r_dev, TXPOLL_WDDELAY, btnet_txpoll_callback);
 
   /* Setup the watchdog poll timer again */
 
-  (void)wd_start(priv->bd_txpoll, TXPOLL_WDDELAY, btnet_txpoll_expiry, 1,
-                 (wdparm_t)priv);
+  wd_start(priv->bd_txpoll, TXPOLL_WDDELAY, btnet_txpoll_expiry, 1,
+           (wdparm_t)priv);
   net_unlock();
 }
 
@@ -626,8 +629,8 @@ static int btnet_ifup(FAR struct net_driver_s *netdev)
 
       /* Set and activate a timer process */
 
-      (void)wd_start(priv->bd_txpoll, TXPOLL_WDDELAY, btnet_txpoll_expiry,
-                     1, (wdparm_t)priv);
+      wd_start(priv->bd_txpoll, TXPOLL_WDDELAY, btnet_txpoll_expiry,
+               1, (wdparm_t)priv);
 
       /* The interface is now up */
 
@@ -723,7 +726,7 @@ static void btnet_txavail_work(FAR void *arg)
 
       /* Then poll the network for new XMIT data */
 
-      (void)devif_poll(&priv->bd_dev.r_dev, btnet_txpoll_callback);
+      devif_poll(&priv->bd_dev.r_dev, btnet_txpoll_callback);
     }
 
   net_unlock();
@@ -792,8 +795,8 @@ static int btnet_txavail(FAR struct net_driver_s *netdev)
 static int btnet_addmac(FAR struct net_driver_s *netdev,
                         FAR const uint8_t *mac)
 {
-  /* Add the MAC address to the hardware multicast routing table.  Not used
-   * with Bluetooth.
+  /* Add the MAC address to the hardware multicast routing table.
+   *  Not used with Bluetooth.
    */
 
   return -ENOSYS;
@@ -804,8 +807,8 @@ static int btnet_addmac(FAR struct net_driver_s *netdev,
  * Name: btnet_rmmac
  *
  * Description:
- *   NuttX Callback: Remove the specified MAC address from the hardware multicast
- *   address filtering
+ *   NuttX Callback: Remove the specified MAC address from the hardware
+ *   multicast address filtering
  *
  * Input Parameters:
  *   netdev  - Reference to the NuttX driver state structure
@@ -822,8 +825,8 @@ static int btnet_addmac(FAR struct net_driver_s *netdev,
 static int btnet_rmmac(FAR struct net_driver_s *netdev,
                        FAR const uint8_t *mac)
 {
-  /* Remove the MAC address from the hardware multicast routing table  Not used
-   * with Bluetooth.
+  /* Remove the MAC address from the hardware multicast routing table
+   *  Not used with Bluetooth.
    */
 
   return -ENOSYS;
@@ -1111,9 +1114,10 @@ int bt_netdev_register(FAR const struct bt_driver_s *btdev)
   btnet_ifdown(netdev);
 
 #ifdef CONFIG_NET_6LOWPAN
-  /* Make sure the our single packet buffer is attached. We must do this before
-   * registering the device since, once the device is registered, a packet may
-   * be attempted to be forwarded and require the buffer.
+  /* Make sure the our single packet buffer is attached.
+   * We must do this before registering the device since, once the device is
+   * registered, a packet may be attempted to be forwarded and require the
+   * buffer.
    */
 
   priv->bd_dev.r_dev.d_buf = g_iobuffer.rb_buf;
@@ -1132,6 +1136,7 @@ int bt_netdev_register(FAR const struct bt_driver_s *btdev)
   nerr("ERROR: netdev_register() failed: %d\n", ret);
 
 errout:
+
   /* Release wdog timers */
 
   wd_delete(priv->bd_txpoll);

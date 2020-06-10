@@ -43,7 +43,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
-#include <semaphore.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -108,7 +107,6 @@ extern const uint8_t g_bt_firmware_hcd[];
 
 static void hciuart_cb(FAR const struct btuart_lowerhalf_s *lower,
                        FAR void *param)
-
 {
   FAR sem_t *rxsem = (FAR sem_t *)param;
 
@@ -139,7 +137,6 @@ static int uartwriteconf(FAR const struct btuart_lowerhalf_s *lower,
                          FAR sem_t *rxsem,
                          FAR const uint8_t *dout, uint32_t doutl,
                          FAR const uint8_t *cmp, uint32_t maxl)
-
 {
   int ret;
   int gotlen = 0;
@@ -168,41 +165,38 @@ static int uartwriteconf(FAR const struct btuart_lowerhalf_s *lower,
   din = kmm_malloc(maxl);
   while (gotlen < maxl)
     {
-      do
+      ret = clock_gettime(CLOCK_REALTIME, &abstime);
+      if (ret < 0)
         {
-          ret = clock_gettime(CLOCK_REALTIME, &abstime);
-          if (ret < 0)
-            {
-              goto exit_uartwriteconf;
-            }
-
-          /* Add the offset to the time in the future */
-
-          abstime.tv_nsec += NSEC_PER_SEC / 10;
-          if (abstime.tv_nsec >= NSEC_PER_SEC)
-            {
-              abstime.tv_nsec -= NSEC_PER_SEC;
-              abstime.tv_sec++;
-            }
-
-          ret = nxsem_timedwait(rxsem, &abstime);
-          if (ret == -ETIMEDOUT)
-            {
-              /* We didn't receive enough message, so fall out */
-
-              wlerr("Response timed out\n");
-              goto exit_uartwriteconf;
-            }
+          goto exit_uartwriteconf;
         }
-      while (ret == -EINTR);
+
+      /* Add the offset to the time in the future */
+
+      abstime.tv_nsec += NSEC_PER_SEC / 10;
+      if (abstime.tv_nsec >= NSEC_PER_SEC)
+        {
+          abstime.tv_nsec -= NSEC_PER_SEC;
+          abstime.tv_sec++;
+        }
+
+      ret = nxsem_timedwait_uninterruptible(rxsem, &abstime);
+      if (ret < 0)
+        {
+          /* We didn't receive enough message, so fall out */
+
+          wlerr("Response timed out: %d\n", ret);
+          goto exit_uartwriteconf;
+        }
 
       ret = lower->read(lower, &din[gotlen], maxl - gotlen);
       if (ret < 0)
         {
-          wlerr("Couldn't read\n");
+          wlerr("Couldn't read: %d\n", ret);
           ret = -ECOMM;
           goto exit_uartwriteconf;
         }
+
       gotlen += ret;
     }
 
@@ -232,7 +226,6 @@ exit_uartwriteconf_nofree:
 
 static int set_baudrate(FAR const struct btuart_lowerhalf_s *lower,
                         FAR sem_t *rxsem, int targetspeed)
-
 {
   int ret;
   uint8_t baudrate_cmd[] =
@@ -272,7 +265,6 @@ static int set_baudrate(FAR const struct btuart_lowerhalf_s *lower,
  ****************************************************************************/
 
 static int load_bcm4343x_firmware(FAR const struct btuart_lowerhalf_s *lower)
-
 {
   FAR uint8_t *rp = (FAR uint8_t *)g_bt_firmware_hcd;
   int ret = OK;
@@ -286,31 +278,39 @@ static int load_bcm4343x_firmware(FAR const struct btuart_lowerhalf_s *lower)
 
   const uint8_t command_resp[] =
     {
-      0x04, 0x0e, 0x04, 0x01, g_hcd_write_command, g_hcd_command_byte2, 0x00
+      0x04, 0x0e, 0x04, 0x01, g_hcd_write_command, g_hcd_command_byte2,
+      0x00
     };
+
   const uint8_t launch_resp[] =
     {
-      0x04, 0x0e, 0x04, 0x01, g_hcd_launch_command, g_hcd_command_byte2, 0x00
+      0x04, 0x0e, 0x04, 0x01, g_hcd_launch_command, g_hcd_command_byte2,
+      0x00
     };
+
   const uint8_t download_resp[] =
     {
-      0x04, 0x0e, 0x04, 0x01, g_hcd_patchram_command, g_hcd_command_byte2, 0x00
+      0x04, 0x0e, 0x04, 0x01, g_hcd_patchram_command, g_hcd_command_byte2,
+      0x00
     };
 
   /* Command to switch the chip into download mode */
 
   const uint8_t enter_download_mode[] =
     {
-      0x01, g_hcd_patchram_command, g_hcd_command_byte2, 0x00
+      0x01, g_hcd_patchram_command, g_hcd_command_byte2,
+      0x00
     };
 
-  /* Let's temporarily connect to the hci uart rx callback so we can get data */
+  /* Let's temporarily connect to the hci uart rx callback so we can get
+   * data.
+   */
 
   lower->rxattach(lower, hciuart_cb, &rxsem);
   lower->rxenable(lower, true);
 
   nxsem_init(&rxsem, 0, 0);
-  nxsem_setprotocol(&rxsem, SEM_PRIO_NONE);
+  nxsem_set_protocol(&rxsem, SEM_PRIO_NONE);
 
   /* It is possible this could fail if modem is already at high speed, so we
    * can safely ignore error return value.
@@ -468,7 +468,7 @@ int btuart_register(FAR const struct btuart_lowerhalf_s *lower)
   ret = bt_netdev_register(&upper->dev);
   if (ret < 0)
     {
-      wlerr("ERROR: bt_driver_register failed: %d\n", ret);
+      wlerr("ERROR: bt_netdev_register failed: %d\n", ret);
       kmm_free(upper);
     }
 

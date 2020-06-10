@@ -144,9 +144,9 @@ to a particular configuration.
      as of this writing. See discussion in include/nuttx/spi/slave.h and
      in the section entitle "SPI Slave" below.
 
-  9. A QSPI FLASH driver was added and verifed on 2015-11-10.  This driver
+  9. A QSPI FLASH driver was added and verified on 2015-11-10.  This driver
      operated in the memory mapped Serial Memory Mode (SMM).  See the
-     "S25FL116K QuadSPI FLASH" section below for futher information.
+     "S25FL116K QuadSPI FLASH" section below for further information.
 
  10. On-chip FLASH support as added and verified on 2015-11-13.  See the
      "Program FLASH Access" section below for further information.
@@ -174,7 +174,7 @@ use either the VCOM or an external RS-232 driver.  Here are some options.
     ------ ------ ------- ------- --------
 
     In this configuration, an external RS232 driver can also be used
-    instead of the shield.  Simply connext as follows:
+    instead of the shield.  Simply connect as follows:
 
     --------- -----------
     Arduino   RS-232
@@ -489,7 +489,7 @@ The configuration data device will appear at /dev/config.
 S25FL116K QuadSPI FLASH
 ====================
 
-A QSPI FLASH driver was added and verifed on 2015-11-07.  This driver
+A QSPI FLASH driver was added and verified on 2015-11-07.  This driver
 operated in the memory mapped Serial Memory Mode (SMM).  These
 configuration options were enabled to test QSPI:
 
@@ -575,10 +575,11 @@ wrapped as a character driver and available as /dev/mtd0.
 
 Program FLASH Access
 ====================
-An on-chip FLASH driver was added and verifed on 2015-11-13.  These
+An on-chip FLASH driver was added and verified on 2015-11-13.  These
 configuration options were enabled to test the on-chip FLASH support:
 
   CONFIG_MTD_PROGMEM=y
+  CONFIG_ARCH_RAMFUNCS=y
   CONFIG_SAMV7_PROGMEM=y
   CONFIG_SAMV7_PROGMEM_NSECTORS=8
 
@@ -711,7 +712,6 @@ Selecting the GMAC peripheral
     CONFIG_NET_ARP_SEND=y                : Use ARP to get peer address before sending
     CONFIG_NET_TCP=y                     : Enable TCP/IP networking
     CONFIG_NET_TCPBACKLOG=y              : Support TCP/IP backlog
-    CONFIG_NET_TCP_READAHEAD=y           : Enable TCP read-ahead buffering
     CONFIG_NET_TCP_WRITE_BUFFERS=y       : Enable TCP write buffering
     CONFIG_NET_UDP=y                     : Enable UDP networking
     CONFIG_NET_BROADCAST=y               : Support UDP broadcast packets
@@ -767,9 +767,9 @@ Cache-Related Issues
 
 I- and D-Caches can be enabled but the D-Cache must be enabled in write-
 through mode.  This is to work around issues with the RX and TX descriptors
-with are 8-bytes in size.  But the D-Cache cache line size is 32-bytes.
+which are 8-bytes in size.  But the D-Cache cache line size is 32-bytes.
 That means that you cannot reload, clean or invalidate a descriptor without
-also effecting three neighboring descriptors. Setting write through mode
+also affecting three neighboring descriptors.  Setting write through mode
 eliminates the need for cleaning the D-Cache.  If only reloading and
 invalidating are done, then there is no problem.
 
@@ -842,7 +842,7 @@ You can also log into the NSH from the host PC like this:
     cp          free        kill        mkrd        put         usleep
     cmp         get         losetup     mh          rm          wget
     dd          help        ls          mount       rmdir       xd
-    df          hexdump     mb          mv          sh
+    df          hexdump     mb          mv          source
 
   Builtin Apps:
   nsh>
@@ -963,7 +963,7 @@ serial device class:
 
   Device Drivers -> USB Device Driver Support
     CONFIG_CDCACM=y                           : USB Modem (CDC ACM) support
-    CONFIG_CDCACM_EP0MAXPACKET=64             : Enpoint 0 packet size
+    CONFIG_CDCACM_EP0MAXPACKET=64             : Endpoint 0 packet size
     CONFIG_CDCACM_EPINTIN=1                   : Interrupt IN endpoint number
     CONFIG_CDCACM_EPINTIN_FSSIZE=64           : Full speed packet size
     CONFIG_CDCACM_EPINTIN_HSSIZE=64           : High speed packet size
@@ -1191,7 +1191,7 @@ the connectors worked.  Let me share this so that, perhaps, I can save you
 the same embarrassment:
 
 - The maXTouch Xplained Pro has an Omron XF2M-5015-1A connector.  There is a
-  black bar at back (toward the baord).  Raise that bar and insert the cable
+  black bar at back (toward the board).  Raise that bar and insert the cable
   with the contacts away from the board.  Lower that bar to lock the cable
   in place.
 
@@ -1878,7 +1878,6 @@ Configuration sub-directories
 
        Device Drivers:
          CONFIG_RAMLOG=y             : Enable the RAM-based logging feature.
-         CONFIG_RAMLOG_CONSOLE=n     : (We don't use the RAMLOG console)
          CONFIG_RAMLOG_SYSLOG=y      : This enables the RAM-based logger as the
                                      system logger.
          CONFIG_RAMLOG_NONBLOCKING=y : Needs to be non-blocking for dmesg
@@ -1904,7 +1903,6 @@ Configuration sub-directories
        following in the .config file:
 
          CONFIG_SYSLOG_CONSOLE=y
-         CONFIG_SYSLOG_SERIAL_CONSOLE=y
 
     7. Telnet:  The clicker2-stm32 star point configuration supports the
        Telnet daemon, but not the Telnet client; the star hub configuration
@@ -1932,7 +1930,7 @@ Configuration sub-directories
       2017-07-02:  Configurations added.  Not yet tested.
 
       2017-07-03:  Initial testing, appears to be working, but endpoints
-        fail to associate; sniffer shows that nothing sent fro the star
+        fail to associate; sniffer shows that nothing sent from the star
         hub.  I am thinking that there is something wrong with the
         GPIO interrupt configuration so that no MRF24J40 interrupt are
         being received.
@@ -2097,7 +2095,6 @@ Configuration sub-directories
          CONFIG_PTHREAD_STACK_DEFAULT=2048
          CONFIG_POSIX_SPAWN_PROXY_STACKSIZE=1024
          CONFIG_TASK_SPAWN_DEFAULT_STACKSIZE=2048
-         CONFIG_BUILTIN_PROXY_STACKSIZE=1024
          CONFIG_NSH_TELNETD_DAEMONSTACKSIZE=2048
          CONFIG_NSH_TELNETD_CLIENTSTACKSIZE=2048
 
@@ -2279,7 +2276,7 @@ Configuration sub-directories
          Where <cmd> is one of:
 
            Show help     : ?
-           List busses   : bus
+           List buses   : bus
            List devices  : dev [OPTIONS] <first> <last>
            Read register : get [OPTIONS] [<repititions>]
            Show help     : help
@@ -2411,7 +2408,7 @@ Configuration sub-directories
         - Other images are horizontally compressed (such as the initial NX
           logo on the background).
 
-      - As mentioned above, reading fromthe LCD is not currently functional.
+      - As mentioned above, reading from the LCD is not currently functional.
         There are some special settings work work around this but the
         bottom line is that transparent operations cannot yet be supported.
 

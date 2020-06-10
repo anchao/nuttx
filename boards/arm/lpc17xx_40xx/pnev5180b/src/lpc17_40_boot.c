@@ -44,8 +44,8 @@
 #include <nuttx/board.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "pnev5180b.h"
 
@@ -91,6 +91,6 @@ void board_late_initialize(void)
 {
   /* Perform board-specific initialization */
 
-  (void)pnev5180b_bringup();
+  pnev5180b_bringup();
 }
 #endif

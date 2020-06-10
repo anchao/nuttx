@@ -87,7 +87,7 @@
  *
  ****************************************************************************/
 
-static void nxsig_timeout(int argc, wdparm_t itcb)
+static void nxsig_timeout(int argc, wdparm_t itcb, ...)
 {
 #ifdef CONFIG_SMP
   irqstate_t flags;
@@ -269,7 +269,8 @@ int nxsig_timedwait(FAR const sigset_t *set, FAR struct siginfo *info,
        * pending.
        */
 
-      sigpend = nxsig_remove_pendingsignal(rtcb, nxsig_lowest(&intersection));
+      sigpend = nxsig_remove_pendingsignal(rtcb,
+                                           nxsig_lowest(&intersection));
       DEBUGASSERT(sigpend);
 
       /* Return the signal info to the caller if so requested */
@@ -325,7 +326,8 @@ int nxsig_timedwait(FAR const sigset_t *set, FAR struct siginfo *info,
 
 #ifdef CONFIG_HAVE_LONG_LONG
           uint64_t waitticks64 = ((uint64_t)timeout->tv_sec * NSEC_PER_SEC +
-                                  (uint64_t)timeout->tv_nsec + NSEC_PER_TICK - 1) /
+                                  (uint64_t)timeout->tv_nsec +
+                                  NSEC_PER_TICK - 1) /
                                  NSEC_PER_TICK;
           DEBUGASSERT(waitticks64 <= UINT32_MAX);
           waitticks = (uint32_t)waitticks64;
@@ -355,8 +357,8 @@ int nxsig_timedwait(FAR const sigset_t *set, FAR struct siginfo *info,
 
               /* Start the watchdog */
 
-              (void)wd_start(rtcb->waitdog, waitticks,
-                             (wdentry_t)nxsig_timeout, 1, wdparm.pvarg);
+              wd_start(rtcb->waitdog, waitticks,
+                       nxsig_timeout, 1, wdparm.pvarg);
 
               /* Now wait for either the signal or the watchdog, but
                * first, make sure this is not the idle task,
@@ -400,11 +402,11 @@ int nxsig_timedwait(FAR const sigset_t *set, FAR struct siginfo *info,
 
       if (GOOD_SIGNO(rtcb->sigunbinfo.si_signo))
         {
-          /* We were awakened by a signal... but is it one of the signals that
-           * we were waiting for?
+          /* We were awakened by a signal... but is it one of the signals
+           * that we were waiting for?
            */
 
-          if (sigismember(set, rtcb->sigunbinfo.si_signo))
+          if (nxsig_ismember(set, rtcb->sigunbinfo.si_signo))
             {
               /* Yes.. the return value is the number of the signal that
                * awakened us.
@@ -506,7 +508,7 @@ int sigtimedwait(FAR const sigset_t *set, FAR struct siginfo *info,
 
   /* sigtimedwait() is a cancellation point */
 
-  (void)enter_cancellation_point();
+  enter_cancellation_point();
 
   /* Let nxsig_timedwait() do the work. */
 

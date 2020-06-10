@@ -89,15 +89,15 @@ void pthread_release(FAR struct task_group_s *group)
 
       /* Destroy the join semaphores */
 
-      (void)nxsem_destroy(&join->data_sem);
-      (void)nxsem_destroy(&join->exit_sem);
+      nxsem_destroy(&join->data_sem);
+      nxsem_destroy(&join->exit_sem);
 
       /* And deallocate the join structure */
 
-      sched_kfree(join);
+      kmm_free(join);
     }
 
   /* Destroy the join list semaphore */
 
-  (void)nxsem_destroy(&group->tg_joinsem);
+  nxsem_destroy(&group->tg_joinsem);
 }

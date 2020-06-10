@@ -42,11 +42,10 @@
 
 #include <nuttx/config.h>
 
-#if defined(CONFIG_ARCH_CHIP_SAMD5X) || defined(ARCH_CHIP_SAME5X)
+#if defined(CONFIG_ARCH_CHIP_SAMD5X) || defined(CONFIG_ARCH_CHIP_SAME5X)
 #  include "hardware/samd5e5_memorymap.h"
 #else
 #  error "Unsupported SAMD5/E5 family"
 #endif
 
 #endif /* __ARCH_ARM_SRC_SAMD5E5_HARDWARE_SAM_MEMORYMAP_H */
-

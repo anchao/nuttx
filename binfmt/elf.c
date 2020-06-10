@@ -57,8 +57,8 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-/* CONFIG_DEBUG_FEATURES, CONFIG_DEBUG_INFO, and CONFIG_DEBUG_BINFMT have to be
- * defined or CONFIG_ELF_DUMPBUFFER does nothing.
+/* CONFIG_DEBUG_FEATURES, CONFIG_DEBUG_INFO, and CONFIG_DEBUG_BINFMT
+ * have to be defined or CONFIG_ELF_DUMPBUFFER does nothing.
  */
 
 #if !defined(CONFIG_DEBUG_INFO) || !defined (CONFIG_DEBUG_BINFMT)
@@ -152,7 +152,7 @@ static void elf_dumploadinfo(FAR struct elf_loadinfo_s *loadinfo)
     {
       for (i = 0; i < loadinfo->ehdr.e_shnum; i++)
         {
-          FAR Elf32_Shdr *shdr = &loadinfo->shdr[i];
+          FAR Elf_Shdr *shdr = &loadinfo->shdr[i];
           binfo("Sections %d:\n", i);
           binfo("  sh_name:      %08x\n", shdr->sh_name);
           binfo("  sh_type:      %08x\n", shdr->sh_type);
@@ -354,8 +354,7 @@ int elf_initialize(void)
 
 void elf_uninitialize(void)
 {
-  (void)unregister_binfmt(&g_elfbinfmt);
+  unregister_binfmt(&g_elfbinfmt);
 }
 
 #endif /* CONFIG_ELF */
-

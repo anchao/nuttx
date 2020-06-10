@@ -44,14 +44,14 @@
 #include <sys/types.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <semaphore.h>
 #include <assert.h>
 #include <errno.h>
 
 #include <nuttx/irq.h>
 #include <nuttx/arch.h>
+#include <nuttx/semaphore.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "cxd56_clock.h"
 #include "hardware/cxd56_udmac.h"
 #include "cxd56_udmac.h"
@@ -65,7 +65,7 @@
 #define ALIGN_UP(v, m)   (((v) + (m)) & ~m)
 
 /****************************************************************************
- * Public Types
+ * Private Types
  ****************************************************************************/
 
 /* This structure describes one DMA channel */
@@ -172,7 +172,8 @@ static inline struct dma_descriptor_s *cxd56_get_descriptor(
 {
   uintptr_t base;
 
-  base = alt ? getreg32(CXD56_DMA_ALTCTRLBASE) : getreg32(CXD56_DMA_CTRLBASE);
+  base = alt ?
+           getreg32(CXD56_DMA_ALTCTRLBASE) : getreg32(CXD56_DMA_CTRLBASE);
   return ((struct dma_descriptor_s *)base) + dmach->chan;
 }
 
@@ -203,6 +204,7 @@ static int cxd56_dmac_interrupt(int irq, void *context, FAR void *arg)
       putreg32(mask, CXD56_DMA_ERR);
       result = EIO;
     }
+
   if (done & mask)
     {
       /* Clear DMA done status */
@@ -252,8 +254,8 @@ void cxd56_udmainitialize(void)
 
   /* Initialize the channel list  */
 
-  sem_init(&g_dmac.exclsem, 0, 1);
-  sem_init(&g_dmac.chansem, 0, CXD56_DMA_NCHANNELS);
+  nxsem_init(&g_dmac.exclsem, 0, 1);
+  nxsem_init(&g_dmac.chansem, 0, CXD56_DMA_NCHANNELS);
 
   for (i = 0; i < CXD56_DMA_NCHANNELS; i++)
     {
@@ -304,27 +306,27 @@ DMA_HANDLE cxd56_udmachannel(void)
   struct dma_channel_s *dmach;
   unsigned int ch;
   uint32_t bit;
+  int ret;
 
-  /* Take a count from from the channel counting semaphore.  We may block
+  /* Take a count from the channel counting semaphore.  We may block
    * if there are no free channels.  When we get the count, then we can
    * be assured that a channel is available in the channel list and is
    * reserved for us.
    */
 
-  while (sem_wait(&g_dmac.chansem) < 0)
+  ret = nxsem_wait_uninterruptible(&g_dmac.chansem);
+  if (ret < 0)
     {
-      /* sem_wait should fail only if it is awakened by a a signal */
-
-      DEBUGASSERT(errno == EINTR);
+      return NULL;
     }
 
   /* Get exclusive access to the DMA channel list */
 
-  while (sem_wait(&g_dmac.exclsem) < 0)
+  ret = nxsem_wait_uninterruptible(&g_dmac.exclsem);
+  if (ret < 0)
     {
-      /* sem_wait should fail only if it is awakened by a a signal */
-
-      DEBUGASSERT(errno == EINTR);
+      nxsem_post(&g_dmac.chansem);
+      return NULL;
     }
 
   /* Search for an available DMA channel */
@@ -346,11 +348,11 @@ DMA_HANDLE cxd56_udmachannel(void)
         }
     }
 
-  sem_post(&g_dmac.exclsem);
+  nxsem_post(&g_dmac.exclsem);
 
   /* Attach DMA interrupt vector */
 
-  (void)irq_attach(CXD56_IRQ_DMA_A_0 + ch, cxd56_dmac_interrupt, NULL);
+  irq_attach(CXD56_IRQ_DMA_A_0 + ch, cxd56_dmac_interrupt, NULL);
 
   /* Enable the IRQ at the AIC (still disabled at the DMA controller) */
 
@@ -369,11 +371,11 @@ DMA_HANDLE cxd56_udmachannel(void)
  * Name: cxd56_udmafree
  *
  * Description:
- *   Release a DMA channel.  If another thread is waiting for this DMA channel
- *   in a call to cxd56_udmachannel, then this function will re-assign the
- *   DMA channel to that thread and wake it up.  NOTE:  The 'handle' used
- *   in this argument must NEVER be used again until cxd56_udmachannel() is
- *   called again to re-gain access to the channel.
+ *   Release a DMA channel.  If another thread is waiting for this DMA
+ *   channel in a call to cxd56_udmachannel, then this function will
+ *   re-assign the DMA channel to that thread and wake it up.  NOTE:  The
+ *   'handle' used in this argument must NEVER be used again until
+ *   cxd56_udmachannel() is called again to re-gain access to the channel.
  *
  * Returned Value:
  *   None
@@ -395,8 +397,8 @@ void cxd56_udmafree(DMA_HANDLE handle)
 
   putreg32(1 << dmach->chan, CXD56_DMA_CHENC);
 
-  /* Mark the channel no longer in use.  Clearing the in-use flag is an atomic
-   * operation and so should be safe.
+  /* Mark the channel no longer in use.  Clearing the in-use flag is an
+   * atomic operation and so should be safe.
    */
 
   dmach->inuse = false;
@@ -405,7 +407,7 @@ void cxd56_udmafree(DMA_HANDLE handle)
    * thread that may be waiting for a channel.
    */
 
-  sem_post(&g_dmac.chansem);
+  nxsem_post(&g_dmac.chansem);
 }
 
 /****************************************************************************
@@ -441,8 +443,8 @@ void cxd56_rxudmasetup(DMA_HANDLE handle, uintptr_t paddr, uintptr_t maddr,
   shift = cxd56_align_shift(config);
   mask  = ALIGN_MASK(shift);
 
-  /* Make sure that the number of bytes we are asked to transfer is a multiple
-   * of the transfer size.
+  /* Make sure that the number of bytes we are asked to transfer is a
+   * multiple of the transfer size.
    */
 
   xfersize = (1 << shift);
@@ -538,8 +540,8 @@ void cxd56_txudmasetup(DMA_HANDLE handle, uintptr_t paddr, uintptr_t maddr,
   shift = cxd56_align_shift(config);
   mask  = ALIGN_MASK(shift);
 
-  /* Make sure that the number of bytes we are asked to transfer is a multiple
-   * of the transfer size.
+  /* Make sure that the number of bytes we are asked to transfer is a
+   * multiple of the transfer size.
    */
 
   xfersize = (1 << shift);

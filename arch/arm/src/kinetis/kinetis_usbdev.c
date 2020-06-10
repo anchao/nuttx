@@ -68,7 +68,7 @@
 
 #include <nuttx/irq.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "kinetis.h"
 #include "kinetis_usbotg.h"
 #include "hardware/kinetis_sim.h"
@@ -1096,7 +1096,7 @@ static void khci_rqrestart(int argc, uint32_t arg1, ...)
 #ifndef CONFIG_USBDEV_NOWRITEAHEAD
               privreq->inflight[1] = 0;
 #endif
-              (void)khci_wrrequest(priv, privep);
+              khci_wrrequest(priv, privep);
             }
         }
     }
@@ -1114,8 +1114,8 @@ static void khci_delayedrestart(struct khci_usbdev_s *priv, uint8_t epno)
 
   /* And start (or re-start) the watchdog timer */
 
-  (void)wd_start(priv->wdog, RESTART_DELAY, khci_rqrestart, 1,
-                 (uint32_t)priv);
+  wd_start(priv->wdog, RESTART_DELAY, khci_rqrestart, 1,
+           (uint32_t)priv);
 }
 
 /****************************************************************************
@@ -1366,7 +1366,7 @@ static int khci_wrrequest(struct khci_usbdev_s *priv, struct khci_ep_s *privep)
        * queued
        */
 
-      (void)khci_wrstart(priv, privep);
+      khci_wrstart(priv, privep);
     }
 #else
   UNUSED(ret);
@@ -1840,7 +1840,7 @@ static void khci_eptransfer(struct khci_usbdev_s *priv, uint8_t epno,
         {
           /* If that succeeds, then try to set up another OUT transfer. */
 
-          (void)khci_rdrequest(priv, privep);
+          khci_rdrequest(priv, privep);
         }
 #else
       UNUSED(ret);
@@ -1860,7 +1860,7 @@ static void khci_eptransfer(struct khci_usbdev_s *priv, uint8_t epno,
 
       /* Handle additional queued write requests */
 
-      (void)khci_wrrequest(priv, privep);
+      khci_wrrequest(priv, privep);
     }
 }
 
@@ -1871,7 +1871,7 @@ static void khci_eptransfer(struct khci_usbdev_s *priv, uint8_t epno,
  *   This function is called (1) after successful completion of an EP0 Setup
  *   command, or (2) after receipt of the OUT complete event (for simple
  *   transfers).  It simply sets up the single BDT to accept the next
- *   SETUP commend.
+ *   SETUP command.
  *
  ****************************************************************************/
 
@@ -2472,7 +2472,7 @@ resume_packet_processing:
    * could stall the endpoint and perhaps speed things up a bit???.
    */
 
-   /* Set up the BDT to accept the next setup commend. */
+   /* Set up the BDT to accept the next setup command. */
 
    khci_ep0nextsetup(priv);
    priv->ctrlstate = CTRLSTATE_WAITSETUP;
@@ -2718,7 +2718,7 @@ static void khci_ep0transfer(struct khci_usbdev_s *priv, uint16_t ustat)
       /* Stall EP0 */
 
       usbtrace(TRACE_DEVERROR(KHCI_TRACEERR_EP0SETUPSTALLED), priv->ctrlstate);
-      (void)khci_epstall(&priv->eplist[EP0].ep, false);
+      khci_epstall(&priv->eplist[EP0].ep, false);
     }
 }
 
@@ -2827,13 +2827,13 @@ static int khci_interrupt(int irq, void *context, FAR void *arg)
         /* Disable and deactivate HNP */
 #warning Missing Logic
 #endif
-      /* Acknowlege the reset interrupt */
+      /* Acknowledge the reset interrupt */
 
       khci_putreg(USB_INT_USBRST, KINETIS_USB0_ISTAT);
       goto interrupt_exit;
     }
 
-#ifdef  CONFIG_KINETIS_USBOTG
+#ifdef CONFIG_KINETIS_USBOTG
   /* Check if the ID Pin Changed State */
 
   if ((otgir & USB_OTGISTAT_IDCHG) != 0)
@@ -2965,7 +2965,7 @@ static int khci_interrupt(int irq, void *context, FAR void *arg)
 
 interrupt_exit:
   kinetis_clrpend(KINETIS_IRQ_USBOTG);
-#ifdef  CONFIG_KINETIS_USBOTG
+#ifdef CONFIG_KINETIS_USBOTG
   usbtrace(TRACE_INTEXIT(KHCI_TRACEINTID_INTERRUPT), usbir | otgir);
 #else
   usbtrace(TRACE_INTEXIT(KHCI_TRACEINTID_INTERRUPT), usbir);
@@ -3519,7 +3519,7 @@ static int khci_epsubmit(struct usbdev_ep_s *ep, struct usbdev_req_s *req)
 
       if (!privep->stalled)
         {
-          (void)khci_wrrequest(priv, privep);
+          khci_wrrequest(priv, privep);
         }
     }
 
@@ -3538,7 +3538,7 @@ static int khci_epsubmit(struct usbdev_ep_s *ep, struct usbdev_req_s *req)
 
       if (!privep->stalled)
         {
-          (void)khci_rdrequest(priv, privep);
+          khci_rdrequest(priv, privep);
         }
     }
 
@@ -3653,7 +3653,7 @@ static int khci_epbdtstall(struct usbdev_ep_s *ep, bool resume, bool epin)
 
       /* Check for the EP0 OUT endpoint.  This is a special case because we
        * need to set it up to receive the next setup packet (Hmmm... what
-       * if there are queued outgoing reponses.  We need to revisit this.)
+       * if there are queued outgoing responses.  We need to revisit this.)
        */
 
       if (epno == 0 && !epin)
@@ -3876,7 +3876,7 @@ static void khci_freeep(struct usbdev_s *dev, struct usbdev_ep_s *ep)
 
   /* Disable the endpoint */
 
-  (void)khci_epdisable(ep);
+  khci_epdisable(ep);
 
   /* Mark the endpoint as available */
 
@@ -4324,7 +4324,7 @@ static void khci_hwshutdown(struct khci_usbdev_s *priv)
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_usbinitialize
+ * Name: arm_usbinitialize
  *
  * Description:
  *   Initialize the USB driver
@@ -4344,7 +4344,7 @@ static void khci_hwshutdown(struct khci_usbdev_s *priv)
  *
  ****************************************************************************/
 
-void up_usbinitialize(void)
+void arm_usbinitialize(void)
 {
   /* For now there is only one USB controller, but we will always refer to
    * it using a pointer to make any future ports to multiple USB controllers
@@ -4400,7 +4400,7 @@ void up_usbinitialize(void)
     {
       usbtrace(TRACE_DEVERROR(KHCI_TRACEERR_IRQREGISTRATION),
                (uint16_t)KINETIS_IRQ_USBOTG);
-      up_usbuninitialize();
+      arm_usbuninitialize();
       return;
     }
 
@@ -4408,7 +4408,7 @@ void up_usbinitialize(void)
 }
 
 /****************************************************************************
- * Name: up_usbuninitialize
+ * Name: arm_usbuninitialize
  * Description:
  *   Initialize the USB driver
  * Input Parameters:
@@ -4419,7 +4419,7 @@ void up_usbinitialize(void)
  *
  ****************************************************************************/
 
-void up_usbuninitialize(void)
+void arm_usbuninitialize(void)
 {
   /* For now there is only one USB controller, but we will always refer to
    * it using a pointer to make any future ports to multiple USB controllers

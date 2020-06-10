@@ -56,6 +56,10 @@
 #  define KX022_FIFO_CNT 1
 #endif
 
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
+
 #ifdef CONFIG_SENSORS_KX022_SCU
 int board_kx022_initialize(FAR const char *devpath, int bus)
 {
@@ -65,7 +69,7 @@ int board_kx022_initialize(FAR const char *devpath, int bus)
 
   sninfo("Initializing KX022...\n");
 
-  /* Initialize i2c deivce */
+  /* Initialize i2c device */
 
   i2c = cxd56_i2cbus_initialize(bus);
   if (!i2c)

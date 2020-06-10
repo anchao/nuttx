@@ -34,8 +34,8 @@
  *
  ****************************************************************************/
 
-#ifndef __ARCH_ARM_SRC_CXD56XX_CHIP_CXD56_SPI_H
-#define __ARCH_ARM_SRC_CXD56XX_CHIP_CXD56_SPI_H
+#ifndef __ARCH_ARM_SRC_CXD56XX_HARDWARE_CXD56_SPI_H
+#define __ARCH_ARM_SRC_CXD56XX_HARDWARE_CXD56_SPI_H
 
 /****************************************************************************
  * Included Files
@@ -53,18 +53,18 @@
 
 /* Register offsets *********************************************************/
 
-#define CXD56_SPI_CR0_OFFSET    0x0000 /* Control Register 0 */
-#define CXD56_SPI_CR1_OFFSET    0x0004 /* Control Register 1 */
-#define CXD56_SPI_DR_OFFSET     0x0008 /* Data Register */
-#define CXD56_SPI_SR_OFFSET     0x000c /* Status Register */
-#define CXD56_SPI_CPSR_OFFSET   0x0010 /* Clock Prescale Register */
-#define CXD56_SPI_IMSC_OFFSET   0x0014 /* Interrupt Mask Set and Clear Reg */
-#define CXD56_SPI_RIS_OFFSET    0x0018 /* Raw Interrupt Status Register */
-#define CXD56_SPI_MIS_OFFSET    0x001c /* Masked Interrupt Status Register */
-#define CXD56_SPI_ICR_OFFSET    0x0020 /* Interrupt Clear Register */
-#define CXD56_SPI_DMACR_OFFSET  0x0024 /* DMA Control Register */
-#define CXD56_SPI_CSMODE_OFFSET 0x0090 /* CS control mode */
-#define CXD56_SPI_CS_OFFSET     0x0094 /* CS output */
+#define CXD56_SPI_CR0_OFFSET       0x0000 /* Control Register 0 */
+#define CXD56_SPI_CR1_OFFSET       0x0004 /* Control Register 1 */
+#define CXD56_SPI_DR_OFFSET        0x0008 /* Data Register */
+#define CXD56_SPI_SR_OFFSET        0x000c /* Status Register */
+#define CXD56_SPI_CPSR_OFFSET      0x0010 /* Clock Prescale Register */
+#define CXD56_SPI_IMSC_OFFSET      0x0014 /* Interrupt Mask Set and Clear Reg */
+#define CXD56_SPI_RIS_OFFSET       0x0018 /* Raw Interrupt Status Register */
+#define CXD56_SPI_MIS_OFFSET       0x001c /* Masked Interrupt Status Register */
+#define CXD56_SPI_ICR_OFFSET       0x0020 /* Interrupt Clear Register */
+#define CXD56_SPI_DMACR_OFFSET     0x0024 /* DMA Control Register */
+#define CXD56_SPI_CSMODE_OFFSET    0x0090 /* CS control mode */
+#define CXD56_SPI_CS_OFFSET        0x0094 /* CS output */
 #define CXD56_SPI_SLAVETYPE_OFFSET 0x0098 /* Slave type */
 
 /* Register addresses *******************************************************/
@@ -187,7 +187,7 @@
 #define SPI_INT_ROR             (1 << 0)  /* Bit 0: RX FIFO overrun */
 #define SPI_INT_RT              (1 << 1)  /* Bit 1: RX FIFO timeout */
 #define SPI_INT_RX              (1 << 2)  /* Bit 2: RX FIFO at least half full */
-#define SPI_INT_TX              (1 << 3 ) /* Bit 3: TX FIFO at least half empy */
+#define SPI_INT_TX              (1 << 3 ) /* Bit 3: TX FIFO at least half empty */
                                           /* Bits 4-31: Reserved */
 
 /* DMA Control Register */
@@ -205,7 +205,7 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Public Functions
+ * Public Functions Prototypes
  ****************************************************************************/
 
-#endif /* __ARCH_ARM_SRC_CXD56XX_CHIP_CXD56_SPI_H */
+#endif /* __ARCH_ARM_SRC_CXD56XX_HARDWARE_CXD56_SPI_H */

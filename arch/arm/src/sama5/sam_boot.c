@@ -54,8 +54,8 @@
 #include "arm.h"
 #include "mmu.h"
 #include "fpu.h"
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 
 #include "hardware/sam_wdt.h"
 #include "hardware/sam_aximx.h"
@@ -362,7 +362,7 @@ static inline void sam_wdtdisable(void)
  *       a. Stack Setup for ARM supervisor mode
  *       b. Main Oscillator Detection:  The bootloader attempts to use an
  *          external crystal.  If this is not successful, then  the 12 MHz
- *          Fast RC internal oscillator is used as the main osciallator.
+ *          Fast RC internal oscillator is used as the main oscillator.
  *       c. Main Clock Selection: The Master Clock source is switched from
  *          to the main oscillator without prescaler. PCK and MCK are now
  *          the Main Clock.

@@ -1,35 +1,20 @@
 /****************************************************************************
  * boards/sim/sim/sim/src/sim_touchscreen.c
  *
- *   Copyright (C) 2011, 2016-2018 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name NuttX nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  *
  ****************************************************************************/
 
@@ -44,7 +29,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <sched.h>
-#include <semaphore.h>
 #include <errno.h>
 #include <debug.h>
 
@@ -52,6 +36,7 @@
 #include <nuttx/board.h>
 #include <nuttx/video/fb.h>
 #include <nuttx/input/touchscreen.h>
+#include <nuttx/semaphore.h>
 #include <nuttx/nx/nx.h>
 #include <nuttx/nx/nxglib.h>
 
@@ -135,7 +120,7 @@ static FAR void *sim_listener(FAR void *arg)
       if (!g_simtc.connected)
         {
           g_simtc.connected = true;
-          sem_post(&g_simtc.eventsem);
+          nxsem_post(&g_simtc.eventsem);
           ginfo("Connected\n");
         }
     }
@@ -174,10 +159,10 @@ int sim_tsc_setup(int minor)
   /* Set the client task priority */
 
   param.sched_priority = CONFIG_SIM_CLIENTPRIO;
-  ret = nxsched_setparam(0, &param);
+  ret = nxsched_set_param(0, &param);
   if (ret < 0)
     {
-      gerr("ERROR: nxsched_setparam failed: %d\n" , ret);
+      gerr("ERROR: nxsched_set_param failed: %d\n" , ret);
       return ret;
     }
 
@@ -208,15 +193,16 @@ int sim_tsc_setup(int minor)
           return ret;
         }
 #endif
+
       /* Start a separate thread to listen for server events.
        * This is probably the least efficient way to do this,
        * but it makes this example flow more smoothly.
        */
 
-      (void)pthread_attr_init(&attr);
+      pthread_attr_init(&attr);
       param.sched_priority = CONFIG_SIM_LISTENERPRIO;
-      (void)pthread_attr_setschedparam(&attr, &param);
-      (void)pthread_attr_setstacksize(&attr, CONFIG_SIM_LISTENER_STACKSIZE);
+      pthread_attr_setschedparam(&attr, &param);
+      pthread_attr_setstacksize(&attr, CONFIG_SIM_LISTENER_STACKSIZE);
 
       ret = pthread_create(&thread, &attr, sim_listener, NULL);
       if (ret != 0)
@@ -233,7 +219,7 @@ int sim_tsc_setup(int minor)
            * are connected.
            */
 
-           (void)sem_wait(&g_simtc.eventsem);
+           nxsem_wait(&g_simtc.eventsem);
         }
     }
   else

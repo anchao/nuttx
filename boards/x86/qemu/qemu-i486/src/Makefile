@@ -33,9 +33,12 @@
 #
 ############################################################################
 
--include $(TOPDIR)/Make.defs
+include $(TOPDIR)/Make.defs
 
-ASRCS =
 CSRCS = qemu_boot.c
+
+ifeq ($(CONFIG_LIB_BOARDCTL),y)
+  CSRCS += qemu_appinit.c
+endif
 
 include $(TOPDIR)/boards/Board.mk

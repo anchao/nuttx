@@ -47,8 +47,8 @@
 #include <arch/board/board.h>
 
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 #include "sam_gpio.h"
 #include "sam4e-ek.h"
 
@@ -178,9 +178,9 @@ static void sam_setleds(uint8_t state)
 
 void board_autoled_initialize(void)
 {
-  (void)sam_configgpio(GPIO_D3);
-  (void)sam_configgpio(GPIO_D2);
-  (void)sam_configgpio(GPIO_D4);
+  sam_configgpio(GPIO_D3);
+  sam_configgpio(GPIO_D2);
+  sam_configgpio(GPIO_D4);
 }
 
 /****************************************************************************

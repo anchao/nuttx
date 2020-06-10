@@ -33,18 +33,16 @@
 #
 ###########################################################################
 
--include $(TOPDIR)/Make.defs
-DELIM ?= $(strip /)
+include $(TOPDIR)/Make.defs
 
-include proxies$(DELIM)Make.defs
-include stubs$(DELIM)Make.defs
+include proxies/Make.defs
+include stubs/Make.defs
 
 MKSYSCALL = "$(TOPDIR)$(DELIM)tools$(DELIM)mksyscall$(HOSTEXEEXT)"
 CSVFILE = "$(TOPDIR)$(DELIM)syscall$(DELIM)syscall.csv"
 
 STUB_SRCS += syscall_funclookup.c syscall_stublookup.c syscall_nparms.c
 
-ASRCS =
 AOBJS = $(ASRCS:.S=$(OBJEXT))
 
 PROXY_OBJS = $(PROXY_SRCS:.c=$(OBJEXT))
@@ -56,7 +54,6 @@ COBJS = $(CSRCS:.c=$(OBJEXT))
 SRCS = $(ASRCS) $(CSRCS)
 OBJS = $(AOBJS) $(COBJS)
 
-ROOTDEPPATH = --dep-path .
 PROXYDEPPATH = --dep-path proxies
 STUBDEPPATH = --dep-path stubs
 VPATH = proxies:stubs
@@ -80,7 +77,7 @@ $(BIN2): $(STUB_OBJS)
 	$(call ARCHIVE, $@, $(STUB_OBJS))
 
 .depend: Makefile $(SRCS)
-	$(Q) $(MKDEP) $(ROOTDEPPATH) $(PROXYDEPPATH) $(STUBDEPPATH) \
+	$(Q) $(MKDEP) $(PROXYDEPPATH) $(STUBDEPPATH) \
 	  "$(CC)" -- $(CFLAGS) -- $(SRCS) >Make.dep
 	$(Q) touch $@
 
@@ -111,4 +108,3 @@ distclean: clean
 	$(call DELFILE, stubs$(DELIM)*.c)
 
 -include Make.dep
-

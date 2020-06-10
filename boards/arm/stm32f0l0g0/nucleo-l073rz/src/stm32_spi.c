@@ -46,7 +46,7 @@
 
 #include <nuttx/spi/spi.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "chip.h"
 #include "stm32_gpio.h"
 #include "stm32_spi.h"
@@ -112,16 +112,16 @@ void stm32_spidev_initialize(void)
   stm32_gpiowrite(GPIO_SX127X_CS, true);
 #  endif
 
-#endif  /*  CONFIG_STM32F0L0G0_SPI1 */
+#endif /* CONFIG_STM32F0L0G0_SPI1 */
 
 #ifdef CONFIG_STM32F0L0G0_SPI2
   /* Configure the SPI-based MFRC522 chip select GPIO */
 
 #  ifdef CONFIG_CL_MFRC522
-  (void)stm32_configgpio(GPIO_MFRC522_CS);
+  stm32_configgpio(GPIO_MFRC522_CS);
 #  endif
 
-#endif  /* CONFIG_STM32F0L0G0_SPI2 */
+#endif /* CONFIG_STM32F0L0G0_SPI2 */
 }
 
 /****************************************************************************
@@ -215,7 +215,7 @@ uint8_t stm32_spi1status(FAR struct spi_dev_s *dev, uint32_t devid)
 
   return status;
 }
-#endif  /* CONFIG_STM32F0L0G0_SPI1 */
+#endif /* CONFIG_STM32F0L0G0_SPI1 */
 
 #ifdef CONFIG_STM32F0L0G0_SPI2
 void stm32_spi2select(FAR struct spi_dev_s *dev, uint32_t devid,
@@ -259,6 +259,6 @@ uint8_t stm32_spi2status(FAR struct spi_dev_s *dev, uint32_t devid)
 
   return status;
 }
-#endif  /* CONFIG_STM32F0L0G0_SPI2 */
+#endif /* CONFIG_STM32F0L0G0_SPI2 */
 
 #endif

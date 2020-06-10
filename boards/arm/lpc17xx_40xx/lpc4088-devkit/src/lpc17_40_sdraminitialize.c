@@ -45,8 +45,8 @@
 #include <nuttx/arch.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 #include "hardware/lpc17_40_syscon.h"
 #include "lpc17_40_emc.h"
 
@@ -212,9 +212,9 @@ void lpc4088_devkit_sdram_initialize(void)
            EMC_DYNAMICCONTROL_I_MODE, LPC17_40_EMC_DYNAMICCONTROL);
 
 #ifdef CONFIG_LPC17_40_SDRAM_16BIT
-  (void)getreg16(SDRAM_BASE | (0x33 << 12));  /* 8 burst, 3 CAS latency */
+  getreg16(SDRAM_BASE | (0x33 << 12));  /* 8 burst, 3 CAS latency */
 #elif defined CONFIG_LPC17_40_SDRAM_32BIT
-  (void)getreg32(SDRAM_BASE | (0x32 << 13)); /* 4 burst, 3 CAS latency */
+  getreg32(SDRAM_BASE | (0x32 << 13)); /* 4 burst, 3 CAS latency */
 #endif
 
   /* Issue NORMAL command */

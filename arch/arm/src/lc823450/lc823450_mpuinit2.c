@@ -46,7 +46,7 @@
 #include <nuttx/userspace.h>
 
 #include "mpu.h"
-#include "up_internal.h"
+#include "arm_internal.h"
 #include "lc823450_mpuinit2.h"
 
 #ifdef CONFIG_ARM_MPU
@@ -138,4 +138,3 @@ void lc823450_mpu_uheap(uintptr_t start, size_t size)
 }
 
 #endif /* CONFIG_ARM_MPU */
-

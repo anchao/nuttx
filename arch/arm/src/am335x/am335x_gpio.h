@@ -300,8 +300,18 @@ int am335x_dump_gpio(uint32_t pinset, const char *msg);
 #  define am335x_dump_gpio(p,m)
 #endif
 
+/************************************************************************************
+ * Function:  am335x_periph_gpio
+ *
+ * Description:
+ *   Return GPIO pinset that correspond to provided peripheral pinset.
+ *
+ ************************************************************************************/
+
+gpio_pinset_t am335x_periph_gpio(gpio_pinset_t pinset);
+
 #undef EXTERN
 #if defined(__cplusplus)
 }
 #endif
-#endif  /* __ARCH_ARM_SRC_AM335X_AM335X_GPIO_H */
+#endif /* __ARCH_ARM_SRC_AM335X_AM335X_GPIO_H */

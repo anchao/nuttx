@@ -139,18 +139,7 @@ static const struct file_operations userled_fops =
 
 static inline int userled_takesem(sem_t *sem)
 {
-  int ret;
-
-  /* Take a count from the semaphore, possibly waiting */
-
-  ret = nxsem_wait(sem);
-
-  /* The only case that an error should occur here is if the wait
-   * was awakened by a signal
-   */
-
-  DEBUGASSERT(ret == OK || ret == -EINTR);
-  return ret;
+  return nxsem_wait(sem);
 }
 
 /****************************************************************************
@@ -183,7 +172,7 @@ static int userled_open(FAR struct file *filep)
   opriv = (FAR struct userled_open_s *)kmm_zalloc(sizeof(struct userled_open_s));
   if (!opriv)
     {
-      lederr("ERROR: Failled to allocate open structure\n");
+      lederr("ERROR: Failed to allocate open structure\n");
       ret = -ENOMEM;
       goto errout_with_sem;
     }

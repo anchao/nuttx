@@ -51,56 +51,75 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: dup
+ * Name: nx_dup
  *
  * Description:
- *   Clone a file or socket descriptor to an arbitray descriptor number
+ *   nx_dup() is similar to the standard 'dup' interface except that is
+ *   not a cancellation point and it does not modify the errno variable.
+ *
+ *   nx_dup() is an internal NuttX interface and should not be called from
+ *   applications.
+ *
+ * Returned Value:
+ *   The new file descriptor is returned on success; a negated errno value is
+ *   returned on any failure.
  *
  ****************************************************************************/
 
-int dup(int fd)
+int nx_dup(int fd)
 {
-  int ret = OK;
-
   /* Check the range of the descriptor to see if we got a file or a socket
    * descriptor.
    */
 
-  if ((unsigned int)fd < CONFIG_NFILE_DESCRIPTORS)
+  if (fd < CONFIG_NFILE_DESCRIPTORS)
     {
       /* Its a valid file descriptor.. dup the file descriptor using any
-       * other file descriptor.  fd_dupfd() sets the errno value in the
-       * event of any failures.
+       * other file descriptor.
        */
 
-      ret = fs_dupfd(fd, 0);
+      return fs_dupfd(fd, 0);
     }
   else
     {
-      /* Not a valid file descriptor.  Did we get a valid socket descriptor? */
+      /* Not a valid file descriptor.
+       * Did we get a valid socket descriptor?
+       */
 
 #ifdef CONFIG_NET
-      if ((unsigned int)fd < (CONFIG_NFILE_DESCRIPTORS + CONFIG_NSOCKET_DESCRIPTORS))
+      if (fd < (CONFIG_NFILE_DESCRIPTORS + CONFIG_NSOCKET_DESCRIPTORS))
         {
-          /* Yes.. dup the socket descriptor.  The errno value is not set. */
+          /* Yes.. dup the socket descriptor. */
 
-          ret = net_dupsd(fd, CONFIG_NFILE_DESCRIPTORS);
+          return net_dup(fd, CONFIG_NFILE_DESCRIPTORS);
         }
       else
 #endif
         {
           /* No.. then it is a bad descriptor number */
 
-          ret = -EBADF;
+          return -EBADF;
         }
+    }
+}
 
-      /* Set the errno value on failures */
+/****************************************************************************
+ * Name: dup
+ *
+ * Description:
+ *   Clone a file or socket descriptor to an arbitrary descriptor number
+ *
+ ****************************************************************************/
 
-      if (ret < 0)
-        {
-          set_errno(-ret);
-          ret = ERROR;
-        }
+int dup(int fd)
+{
+  int ret;
+
+  ret = nx_dup(fd);
+  if (ret < 0)
+    {
+      set_errno(-ret);
+      ret = ERROR;
     }
 
   return ret;

@@ -47,15 +47,14 @@
 #include <nuttx/fs/fs.h>
 #include <nuttx/irq.h>
 #include <nuttx/arch.h>
-#include <nuttx/semaphore.h>
 #include <nuttx/fs/ioctl.h>
 #include <nuttx/drivers/drivers.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "chip.h"
 #include "hardware/nrf52_utils.h"
 #include "hardware/nrf52_rng.h"
-#include "up_internal.h"
+#include "arm_internal.h"
 
 /****************************************************************************
  * Private Functions
@@ -77,7 +76,7 @@ static bool errata_16(void)
 
 static bool errata_66(void)
 {
-  /* This piece of code is modifed from Nordic SDK , there is no document to
+  /* This piece of code is modified from Nordic SDK , there is no document to
    * describe how to get the errdata information
    */
 

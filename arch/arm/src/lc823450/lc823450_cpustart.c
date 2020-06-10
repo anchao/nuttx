@@ -52,11 +52,11 @@
 #include <nuttx/spinlock.h>
 #include <nuttx/sched_note.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "nvic.h"
 #include "sched/sched.h"
 #include "init/init.h"
-#include "up_internal.h"
+#include "arm_internal.h"
 
 #include "lc823450_syscontrol.h"
 
@@ -76,12 +76,6 @@
 
 #define CPU1_VECTOR_ISTACK  0x00000000
 #define CPU1_VECTOR_RESETV  0x00000004
-
-/****************************************************************************
- * Private Data
- ****************************************************************************/
-
-static uint32_t cpu1_vector_table[];
 
 /****************************************************************************
  * Public Data
@@ -120,7 +114,7 @@ static void cpu1_boot(void)
 #if defined(CONFIG_BUILD_FLAT) && defined(CONFIG_ARM_MPU)
       lc823450_mpuinitialize();
 
-      irq_attach(LC823450_IRQ_MEMFAULT, up_memfault, NULL);
+      irq_attach(LC823450_IRQ_MEMFAULT, arm_memfault, NULL);
       up_enable_irq(LC823450_IRQ_MEMFAULT);
 #endif
 
@@ -138,7 +132,7 @@ static void cpu1_boot(void)
 
   /* Then transfer control to the IDLE task */
 
-  (void)nx_idle_task(0, NULL);
+  nx_idle_task(0, NULL);
 
 }
 
@@ -157,7 +151,7 @@ static void cpu1_boot(void)
  *
  *   Each CPU is provided the entry point to is IDLE task when started.  A
  *   TCB for each CPU's IDLE task has been initialized and placed in the
- *   CPU's g_assignedtasks[cpu] list.  Not stack has been alloced or
+ *   CPU's g_assignedtasks[cpu] list.  Not stack has been allocated or
  *   initialized.
  *
  *   The OS initialization logic calls this function repeatedly until each

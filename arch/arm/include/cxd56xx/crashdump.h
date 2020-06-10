@@ -71,7 +71,7 @@
 
 #define ARRAYSIZE(a) (sizeof((a))/sizeof(a[0]))
 
-/* For Assert keep this much of the file name*/
+/* For Assert keep this much of the file name */
 
 #define MAX_FILE_PATH_LENGTH 40
 
@@ -162,4 +162,4 @@ extern "C"
 #endif
 
 #endif /* __ASSEMBLY__ */
-#endif  /* __ARCH_ARM_INCLUDE_CXD56XX_CRASHDUMP_H */
+#endif /* __ARCH_ARM_INCLUDE_CXD56XX_CRASHDUMP_H */

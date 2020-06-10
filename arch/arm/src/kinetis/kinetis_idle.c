@@ -43,7 +43,7 @@
 #include <nuttx/arch.h>
 #include <nuttx/board.h>
 
-#include "up_internal.h"
+#include "arm_internal.h"
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -103,4 +103,3 @@ void up_idle(void)
   END_IDLE();
 #endif
 }
-

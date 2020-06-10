@@ -45,7 +45,7 @@
 #include <nuttx/board.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "stm32_ccm.h"
 #include "stm32.h"
 #include "stm32_i2c.h"
@@ -61,7 +61,7 @@
  *
  * Description:
  *   All STM32 architectures must provide the following entry point.  This
- *   entry point is called early in the intitialization -- after all memory
+ *   entry point is called early in the initialization -- after all memory
  *   has been configured and mapped but before any devices have been
  *   initialized.
  *
@@ -112,6 +112,6 @@ void board_late_initialize(void)
 {
   /* Perform board-specific initialization */
 
-  (void)stm32_bringup();
+  stm32_bringup();
 }
 #endif

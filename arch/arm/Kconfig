@@ -97,6 +97,7 @@ config ARCH_CHIP_IMX6
 	select BOOT_RUNFROMSDRAM
 	select ARCH_HAVE_ADDRENV
 	select ARCH_NEED_ADDRENV_MAPPING
+	select ARCH_GLOBAL_IRQDISABLE
 	---help---
 		Freescale iMX.6 architectures (Cortex-A9)
 
@@ -308,7 +309,7 @@ config ARCH_CHIP_SIMPLELINK
 		TI SimpleLink CCxxx architectures (ARM Cortex-M3 or M4)
 
 config ARCH_CHIP_STM32
-	bool "STMicro STM32 F1/F2/F3/F4/L1"
+	bool "STMicro STM32 F1/F2/F3/F4/G4/L1"
 	select ARCH_HAVE_MPU
 	select ARCH_HAVE_FETCHADD
 	select ARCH_HAVE_I2CRESET
@@ -533,10 +534,6 @@ config ARCH_CORTEXM0
 	select ARCH_HAVE_RESET
 	select ARCH_HAVE_HARDFAULT_DEBUG
 
-config ARCH_CORTEXM23
-	bool
-	default n
-
 config ARCH_ARMV7M
 	bool
 	default n
@@ -555,10 +552,6 @@ config ARCH_CORTEXM3
 	select ARCH_HAVE_TESTSET
 	select ARCH_HAVE_HARDFAULT_DEBUG
 	select ARCH_HAVE_MEMFAULT_DEBUG
-
-config ARCH_CORTEXM33
-	bool
-	default n
 
 config ARCH_CORTEXM4
 	bool
@@ -664,6 +657,53 @@ config ARCH_CORTEXR7
 	select ARCH_HAVE_MPU
 	select ARCH_HAVE_TESTSET
 
+config ARCH_ARMV8M
+	bool
+	default n
+	select ARCH_HAVE_SETJMP
+
+config ARCH_CORTEXM23
+	bool
+	default n
+	select ARCH_ARMV8M
+	select ARCH_HAVE_IRQPRIO
+	select ARCH_HAVE_IRQTRIGGER
+	select ARCH_HAVE_RAMVECTORS
+	select ARCH_HAVE_LAZYFPU
+	select ARCH_HAVE_HIPRI_INTERRUPT
+	select ARCH_HAVE_RESET
+	select ARCH_HAVE_TESTSET
+	select ARCH_HAVE_HARDFAULT_DEBUG
+	select ARCH_HAVE_MEMFAULT_DEBUG
+
+config ARCH_CORTEXM33
+	bool
+	default n
+	select ARCH_ARMV8M
+	select ARCH_HAVE_IRQPRIO
+	select ARCH_HAVE_IRQTRIGGER
+	select ARCH_HAVE_RAMVECTORS
+	select ARCH_HAVE_LAZYFPU
+	select ARCH_HAVE_HIPRI_INTERRUPT
+	select ARCH_HAVE_RESET
+	select ARCH_HAVE_TESTSET
+	select ARCH_HAVE_HARDFAULT_DEBUG
+	select ARCH_HAVE_MEMFAULT_DEBUG
+
+config ARCH_CORTEXM35P
+	bool
+	default n
+	select ARCH_ARMV8M
+	select ARCH_HAVE_IRQPRIO
+	select ARCH_HAVE_IRQTRIGGER
+	select ARCH_HAVE_RAMVECTORS
+	select ARCH_HAVE_LAZYFPU
+	select ARCH_HAVE_HIPRI_INTERRUPT
+	select ARCH_HAVE_RESET
+	select ARCH_HAVE_TESTSET
+	select ARCH_HAVE_HARDFAULT_DEBUG
+	select ARCH_HAVE_MEMFAULT_DEBUG
+
 config ARCH_FAMILY
 	string
 	default "arm"		if ARCH_ARM7TDMI || ARCH_ARM926EJS || ARCH_ARM920T
@@ -671,6 +711,7 @@ config ARCH_FAMILY
 	default "armv7-a"	if ARCH_ARMV7A
 	default "armv7-m"	if ARCH_ARMV7M
 	default "armv7-r"	if ARCH_ARMV7R
+	default "armv8-m"	if ARCH_ARMV8M
 
 config ARCH_CHIP
 	string
@@ -834,6 +875,9 @@ config ARM_SEMIHOSTING_HOSTFS
 	---help---
 		Mount HostFS through semihosting.
 
+		This doesn't support some directory operations like readdir because
+		of the limitations of semihosting mechanism.
+
 config ARM_LWL_CONSOLE
 	bool "Lightweight Link Console Support"
 	default n
@@ -844,7 +888,7 @@ config ARM_LWL_CONSOLE
 		for openocd as the debugger is available in tools/ocdconsole.py.
 
 		Currently only available for STM32 architectures, but easily
-		added to other ARM architectures be addd up_low_console.c to the
+		added to other ARM architectures be add up_low_console.c to the
 		architecture Make.defs file.
 
 if ARCH_CORTEXM0
@@ -858,6 +902,9 @@ source arch/arm/src/armv7-m/Kconfig
 endif
 if ARCH_ARMV7R
 source arch/arm/src/armv7-r/Kconfig
+endif
+if ARCH_ARMV8M
+source arch/arm/src/armv8-m/Kconfig
 endif
 if ARCH_ARM7TDMI || ARCH_ARM920T || ARCH_ARM926EJS || ARCH_ARM1136J || ARCH_ARM1156T2 || ARCH_ARM1176JZ
 source arch/arm/src/arm/Kconfig

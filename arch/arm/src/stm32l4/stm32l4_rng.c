@@ -51,9 +51,9 @@
 #include <nuttx/fs/fs.h>
 #include <nuttx/drivers/drivers.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "hardware/stm32l4_rng.h"
-#include "up_internal.h"
+#include "arm_internal.h"
 
 #if defined(CONFIG_STM32L4_RNG)
 #if defined(CONFIG_DEV_RANDOM) || defined(CONFIG_DEV_URANDOM_ARCH)
@@ -267,7 +267,7 @@ static ssize_t stm32l4_rngread(struct file *filep, char *buffer, size_t buflen)
    */
 
   nxsem_init(&g_rngdev.rd_readsem, 0, 0);
-  nxsem_setprotocol(&g_rngdev.rd_readsem, SEM_PRIO_NONE);
+  nxsem_set_protocol(&g_rngdev.rd_readsem, SEM_PRIO_NONE);
 
   g_rngdev.rd_buflen = buflen;
   g_rngdev.rd_buf = buffer;
@@ -313,7 +313,7 @@ static ssize_t stm32l4_rngread(struct file *filep, char *buffer, size_t buflen)
 void devrandom_register(void)
 {
   stm32l4_rng_initialize();
-  (void)register_driver("/dev/random", &g_rngops, 0444, NULL);
+  register_driver("/dev/random", &g_rngops, 0444, NULL);
 }
 #endif
 
@@ -337,7 +337,7 @@ void devurandom_register(void)
 #ifndef CONFIG_DEV_RANDOM
   stm32l4_rng_initialize();
 #endif
-  (void)register_driver("/dev/urandom", &g_rngops, 0444, NULL);
+  register_driver("/dev/urandom", &g_rngops, 0444, NULL);
 }
 #endif
 

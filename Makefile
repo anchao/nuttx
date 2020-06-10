@@ -37,13 +37,19 @@
 # Makefile.  If you already know the Makefile that you want, you can skip
 # this nonsense using:
 #
-#   make -f Makefile.unix, OR
-#   make -f Makefile.win
+#   make -f tools/Makefile.unix, OR
+#   make -f tools/Makefile.win
 #
 
--include .config
+ifeq ($(wildcard .config),)
+.DEFAULT default:
+	@echo "Nuttx has not been configured:"
+	@echo "  tools/configure.sh <target>"
+else
+include .config
 ifeq ($(CONFIG_WINDOWS_NATIVE),y)
 include tools/Makefile.win
 else
 include tools/Makefile.unix
+endif
 endif

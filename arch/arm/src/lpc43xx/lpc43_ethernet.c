@@ -61,7 +61,7 @@
 #  include <nuttx/net/pkt.h>
 #endif
 
-#include "up_internal.h"
+#include "arm_internal.h"
 
 #include "chip.h"
 #include "lpc43_pinconfig.h"
@@ -71,7 +71,7 @@
 #include "hardware/lpc43_ccu.h"
 #include "lpc43_rgu.h"
 #include "lpc43_gpio.h"
-#include "up_arch.h"
+#include "arm_arch.h"
 #include <arch/board/board.h>
 
 /****************************************************************************
@@ -992,7 +992,7 @@ static int lpc43_transmit(FAR struct lpc43_ethmac_s *priv)
 
               txdesc->tdes0 |= (ETH_TDES0_LS | ETH_TDES0_IC);
 
-              /* This segement is, most likely, of fractional buffersize */
+              /* This segment is, most likely, of fractional buffersize */
 
               txdesc->tdes1  = lastsize;
               buffer        += lastsize;
@@ -1103,7 +1103,7 @@ static int lpc43_transmit(FAR struct lpc43_ethmac_s *priv)
 
   /* Setup the TX timeout watchdog (perhaps restarting the timer) */
 
-  (void)wd_start(priv->txtimeout, LPC43_TXTIMEOUT, lpc43_txtimeout_expiry, 1, (uint32_t)priv);
+  wd_start(priv->txtimeout, LPC43_TXTIMEOUT, lpc43_txtimeout_expiry, 1, (uint32_t)priv);
   return OK;
 }
 
@@ -1267,7 +1267,7 @@ static void lpc43_dopoll(FAR struct lpc43_ethmac_s *priv)
 
       if (dev->d_buf)
         {
-          (void)devif_poll(dev, lpc43_txpoll);
+          devif_poll(dev, lpc43_txpoll);
 
           /* We will, most likely end up with a buffer to be freed.  But it
            * might not be the same one that we allocated above.
@@ -1672,7 +1672,7 @@ static void lpc43_receive(FAR struct lpc43_ethmac_s *priv)
 #ifdef CONFIG_NET_IPv6
       if (BUF->type == HTONS(ETHTYPE_IP6))
         {
-          ninfo("Iv6 frame\n");
+          ninfo("IPv6 frame\n");
 
           /* Give the IPv6 packet to the network layer */
 
@@ -2169,7 +2169,7 @@ static void lpc43_poll_work(FAR void *arg)
           /* Update TCP timing states and poll for new XMIT data.
            */
 
-          (void)devif_timer(dev, lpc43_txpoll);
+          devif_timer(dev, LPC43_WDDELAY, lpc43_txpoll);
 
           /* We will, most likely end up with a buffer to be freed.  But it
            * might not be the same one that we allocated above.
@@ -2186,7 +2186,7 @@ static void lpc43_poll_work(FAR void *arg)
 
   /* Setup the watchdog poll timer again */
 
-  (void)wd_start(priv->txpoll, LPC43_WDDELAY, lpc43_poll_expiry, 1, priv);
+  wd_start(priv->txpoll, LPC43_WDDELAY, lpc43_poll_expiry, 1, priv);
   net_unlock();
 }
 
@@ -2261,8 +2261,8 @@ static int lpc43_ifup(struct net_driver_s *dev)
 
   /* Set and activate a timer process */
 
-  (void)wd_start(priv->txpoll, LPC43_WDDELAY, lpc43_poll_expiry, 1,
-                (uint32_t)priv);
+  wd_start(priv->txpoll, LPC43_WDDELAY, lpc43_poll_expiry, 1,
+           (uint32_t)priv);
 
   /* Enable the Ethernet interrupt */
 
@@ -2634,7 +2634,7 @@ static void lpc43_txdescinit(FAR struct lpc43_ethmac_s *priv)
         }
     }
 
-  /* Set Transmit Desciptor List Address Register */
+  /* Set Transmit Descriptor List Address Register */
 
   lpc43_putreg((uint32_t)priv->txtable, LPC43_ETH_DMATXDLA);
 }
@@ -3081,7 +3081,7 @@ static int lpc43_phyinit(FAR struct lpc43_ethmac_s *priv)
     }
 #endif
 
-  /* Perform auto-negotion if so configured */
+  /* Perform auto-negotiation if so configured */
 
 #ifdef CONFIG_LPC43_AUTONEG
   /* Wait for link status */
@@ -3212,7 +3212,7 @@ static int lpc43_phyinit(FAR struct lpc43_ethmac_s *priv)
 #endif
 #endif
 
-#else /* Auto-negotion not selected */
+#else /* Auto-negotiation not selected */
 
 #ifdef CONFIG_LPC43_ETHFD
   priv->fduplex = 1;
@@ -3267,7 +3267,7 @@ static int lpc43_phyinit(FAR struct lpc43_ethmac_s *priv)
  * Name: lpc43_selectmii
  *
  * Description:
- *   Selects the MII inteface.
+ *   Selects the MII interface.
  *
  * Input Parameters:
  *   None
@@ -3292,7 +3292,7 @@ static inline void lpc43_selectmii(void)
  * Name: lpc43_selectrmii
  *
  * Description:
- *   Selects the RMII inteface.
+ *   Selects the RMII interface.
  *
  * Input Parameters:
  *   None
@@ -3612,7 +3612,7 @@ static void lpc43_ipv6multicast(FAR struct lpc43_ethmac_s *priv)
   ninfo("IPv6 Multicast: %02x:%02x:%02x:%02x:%02x:%02x\n",
         mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
-  (void)lpc43_addmac(dev, mac);
+  lpc43_addmac(dev, mac);
 
 #ifdef CONFIG_NET_ICMPv6_AUTOCONF
   /* Add the IPv6 all link-local nodes Ethernet address.  This is the
@@ -3620,7 +3620,7 @@ static void lpc43_ipv6multicast(FAR struct lpc43_ethmac_s *priv)
    * packets.
    */
 
-  (void)lpc43_addmac(dev, g_ipv6_ethallnodes.ether_addr_octet);
+  lpc43_addmac(dev, g_ipv6_ethallnodes.ether_addr_octet);
 
 #endif /* CONFIG_NET_ICMPv6_AUTOCONF */
 #ifdef CONFIG_NET_ICMPv6_ROUTER
@@ -3629,7 +3629,7 @@ static void lpc43_ipv6multicast(FAR struct lpc43_ethmac_s *priv)
    * packets.
    */
 
-  (void)lpc43_addmac(dev, g_ipv6_ethallrouters.ether_addr_octet);
+  lpc43_addmac(dev, g_ipv6_ethallrouters.ether_addr_octet);
 
 #endif /* CONFIG_NET_ICMPv6_ROUTER */
 }
@@ -3857,16 +3857,16 @@ static inline int lpc43_ethinitialize(void)
 
   /* Register the device with the OS so that socket IOCTLs can be performed */
 
-  (void)netdev_register(&priv->dev, NET_LL_ETHERNET);
+  netdev_register(&priv->dev, NET_LL_ETHERNET);
   return OK;
 }
 
 /****************************************************************************
- * Function: up_netinitialize
+ * Function: arm_netinitialize
  *
  * Description:
  *   This is the "standard" network initialization logic called from the
- *   low-level initialization logic in up_initialize.c.
+ *   low-level initialization logic in arm_initialize.c.
  *
  * Input Parameters:
  *   None.
@@ -3879,9 +3879,9 @@ static inline int lpc43_ethinitialize(void)
  ****************************************************************************/
 
 #ifndef CONFIG_NETDEV_LATEINIT
-void up_netinitialize(void)
+void arm_netinitialize(void)
 {
-  (void)lpc43_ethinitialize();
+  lpc43_ethinitialize();
 }
 #endif
 

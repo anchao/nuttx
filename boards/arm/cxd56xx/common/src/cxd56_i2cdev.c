@@ -46,6 +46,10 @@
 #include "cxd56_i2c.h"
 
 /****************************************************************************
+ * Public Functions
+ ****************************************************************************/
+
+/****************************************************************************
  * Name: board_i2cdev_initialize
  *
  * Description:
@@ -60,7 +64,7 @@ int board_i2cdev_initialize(int port)
 
   _info("Initializing /dev/i2c%d..\n", port);
 
-  /* Initialize i2c deivce */
+  /* Initialize i2c device */
 
   i2c = cxd56_i2cbus_initialize(port);
   if (!i2c)

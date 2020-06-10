@@ -1,7 +1,7 @@
-README for the Expressif ESP32 Core board (V2)
+README for the Espressif ESP32 Core board (V2)
 ==============================================
 
-  The ESP32 is a dual-core system from Expressif with two Harvard
+  The ESP32 is a dual-core system from Espressif with two Harvard
   architecture Xtensa LX6 CPUs. All embedded memory, external memory and
   peripherals are located on the data bus and/or the instruction bus of
   these CPUs. With some minor exceptions, the address mapping of two CPUs
@@ -47,7 +47,7 @@ STATUS
   The NuttX fork, TizenRT, has taken the NuttX ESP32 code and developed it
   further.  Refer to:
 
-    https://github.com/Samsung/TizenRT/tree/master/os/arch/xtensai
+    https://github.com/Samsung/TizenRT/tree/master/os/arch/xtensa
 
   for the current status.
 
@@ -86,18 +86,22 @@ ESP32 Toolchain
   BSP.  The steps to build toolchain with crosstool-NG on Linux are as
   follows:
 
-    git clone -b xtensa-1.22.x https://github.com/espressif/crosstool-NG.git
+    git clone https://github.com/espressif/crosstool-NG.git
     cd crosstool-NG
-    ./bootstrap && ./configure --prefix=$PWD && make install
+    git checkout esp-2019r2
+    git submodule update --init
+
+    ./bootstrap && ./configure --enable-local && make
+
     ./ct-ng xtensa-esp32-elf
     ./ct-ng build
+
     chmod -R u+w builds/xtensa-esp32-elf
 
-  These steps are given in setup guide in ESP-IDF repository:
-  https://github.com/espressif/esp-idf/blob/master/docs/linux-setup.rst#alternative-step-1-compile-the-toolchain-from-source-using-crosstool-ng
+    export PATH="crosstool-NG/builds/xtensa-esp32-elf/bin:$PATH"
 
-  NOTE: The xtensa-esp32-elf configuration is only available in the
-  xtensa-1.22.x branch.
+  These steps are given in setup guide in ESP-IDF repository:
+  https://docs.espressif.com/projects/esp-idf/en/latest/get-started/linux-setup-scratch.html
 
 Memory Map
 ==========
@@ -169,7 +173,7 @@ Memory Map
   IRAM for PRO cpu:  0x40080000 0x400a0000  RX  iram0_0_seg
     - Interrupt Vectors
     - Low level handlers
-    - Xtensa/Expressif libraries
+    - Xtensa/Espressif libraries
   RTC fast memory:   0x400c0000 0x400c2000  RWX rtc_iram_seg (PRO_CPU only)
     - .rtc.text (unused?)
   FLASH:             0x400d0018 0x40400018  RX  iram0_2_seg  (actually FLASH)
@@ -235,7 +239,7 @@ SMP
 
   Open Issues:
 
-  1. Cache Issues.  I have not though about this yet, but certainly caching is
+  1. Cache Issues.  I have not thought about this yet, but certainly caching is
      an issue in an SMP system:
 
      - Cache coherency.  Are there separate caches for each CPU?  Or a single
@@ -284,6 +288,42 @@ OpenOCD for the ESP32
     - The "find interface/ftdi/tumpa.cfg".  This means that you will
       need to specify the interface configuration file on the OpenOCD
       command line.
+
+  NOTE: Another OpenOCD configuration file is available in the NuttX
+  source tree at
+  nuttx/boards/xtensa/esp32/esp32-core/scripts/esp32-ft232h.cfg .
+  It has been tested with:
+
+    - ESP32-DevKitC V4
+
+      https://docs.espressif.com/projects/esp-idf/en/latest/esp32/hw-reference/esp32/get-started-devkitc.html
+
+    - Akizukidenshi's FT232HL, a FT232H based JTAG adapter
+
+      http://akizukidenshi.com/catalog/g/gK-06503/
+
+      With JP3 and JP4 closed, and connected to ESP32 as:
+
+        ---------------- -------
+        ESP32-DevKitC V4 FT232HL
+        ---------------- -------
+        J2       J3      J2
+        -------- ------- -------
+        IO13             AD0     (TCK)
+        IO12             AD1     (TDI)
+                 IO15    AD2     (TDO)
+        IO14             AD3     (TMS)
+        GND              GND
+        -------- ------- -------
+
+    - The following version of OpenOCD from ESP-IDF (macOS version)
+
+      % openocd --version
+      Open On-Chip Debugger  v0.10.0-esp32-20191114 (2019-11-14-14:19)
+      Licensed under GNU GPL v2
+      For bug reports, read
+              http://openocd.org/doc/doxygen/bugs.html
+      %
 
   General OpenOCD build instructions
   ----------------------------------
@@ -451,7 +491,7 @@ OpenOCD for the ESP32
   -----
   OpenOCD currently doesn't have a FLASH driver for ESP32, so you can load
   code into IRAM only via JTAG. FLASH-resident sections like .FLASH.rodata
-  will fail to load.  The bootloader in ROM doesn't parse ELF, so any imag
+  will fail to load.  The bootloader in ROM doesn't parse ELF, so any image
   which is bootloaded from FLASH has to be converted into a custom image
   format first.
 
@@ -466,11 +506,14 @@ OpenOCD for the ESP32
   this:
 
     esptool.py --chip esp32 elf2image --flash_mode dio --flash_size 4MB -o nuttx.bin nuttx
-    esptool.py --chip esp32 --port COMx write_flash 0x1000 bootloader.bin 0x4000 partition_table.bin 0x10000 nuttx.bin
+    esptool.py --chip esp32 --port COMx write_flash 0x1000 bootloader.bin 0x8000 partition_table.bin 0x10000 nuttx.bin
 
   The first step converts an ELF image into an ESP32-compatible binary
   image format, and the second step flashes it (along with bootloader image and
   partition table binary.)
+  The offset for the partition table may vary, depending on ESP-IDF
+  configuration, CONFIG_PARTITION_TABLE_OFFSET, which is by default 0x8000
+  as of writing this.
 
   To put the ESP32 into serial flashing mode, it needs to be reset with IO0 held
   low.  On the Core boards this can be accomplished by holding the button marked
@@ -483,6 +526,11 @@ OpenOCD for the ESP32
   ---------------------------------------
   See https://github.com/espressif/esp-idf/tree/master/components/bootloader
   and https://github.com/espressif/esp-idf/tree/master/components/partition_table .
+
+  The secondary boot loader by default programs a RTC watchdog timer.
+  As NuttX doesn't know the timer, it reboots every ~9 seconds. You can
+  disable the timer by tweaking sdkconfig CONFIG_BOOTLOADER_WDT_ENABLE
+  and rebuild the boot loader.
 
   Running from IRAM with OpenOCD
   ------------------------------
@@ -562,7 +610,7 @@ OpenOCD for the ESP32
 
   Single stepping works fine for me as do breakpoints:
 
-    Breakpoint 1, xtensa_timer_initialize () at chip/esp32_timerisr.c:172
+    Breakpoint 1, up_timer_initialize () at chip/esp32_timerisr.c:172
     72 {
     (gdb) n
     esp32.cpu0: Target halted, pc=0x400835BF
@@ -661,7 +709,7 @@ NOTES:
 
     Another NSH configuration, similar to nsh, but also enables
     SMP operation.  It differs from the nsh configuration only in these
-    addtional settings:
+    additional settings:
 
     SMP is enabled:
 
@@ -704,7 +752,7 @@ Things to Do
   1. There is no support for an interrupt stack yet.
 
   2. There is no clock initialization logic in place.  This depends on logic in
-     Expressif libriaries.  The board comes up using that basic 40 Mhz crystal
+     Espressif libraries.  The board comes up using that basic 40 MHz crystal
      for clocking.  Getting to 80 MHz will require clocking initialization in
      esp32_clockconfig.c.
 
@@ -744,7 +792,7 @@ Things to Do
        CONFIG_SUPPRESS_UART_CONFIG=y
 
      I have not debugged this in detail, but this appears to be an issue with the
-     impelentation of esp32_configgpio() and/or gpio_matrix_out() when called from
+     implementation of esp32_configgpio() and/or gpio_matrix_out() when called from
      the setup logic in arch/xtensa/src/esp32/esp32_serial.c.  I am not inclined
      to invest a lot in driver debug until the clock configuration is finalized.
 

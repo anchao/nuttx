@@ -48,7 +48,7 @@
 #include <nuttx/lcd/lcd.h>
 #include <nuttx/lcd/ssd1289.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "stm32.h"
 #include "hymini-stm32v.h"
 
@@ -292,7 +292,7 @@ static void init_lcd_backlight(void)
 
   putreg16(0, STM32_TIM3_PSC);
 
-  /* Generate an update event to reload the Prescaler value immediatly */
+  /* Generate an update event to reload the Prescaler value immediately */
 
   putreg16(ATIM_EGR_UG, STM32_TIM3_EGR);
 

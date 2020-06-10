@@ -52,7 +52,7 @@
  *   SSEL1 - pin 55, P0.20/MAT1.3/SSEL1/EINT3
  *
  * SPI0 is available on the mcu123.com board (pins 27, 29, 30, and 31).
- * Pin 27 is dedicated to a chip select, pins 30 and 31 connect to keys, nd
+ * Pin 27 is dedicated to a chip select, pins 30 and 31 connect to keys, and
  * pin 29 is unconnected.
  *
  ****************************************************************************/
@@ -66,17 +66,17 @@
 #include <sys/types.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <semaphore.h>
 #include <assert.h>
 #include <errno.h>
 #include <debug.h>
 
 #include <arch/board/board.h>
 #include <nuttx/arch.h>
+#include <nuttx/semaphore.h>
 #include <nuttx/spi/spi.h>
 
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 
 #include "chip.h"
 #include "lpc214x_power.h"
@@ -117,7 +117,7 @@ static uint8_t spi_status(FAR struct spi_dev_s *dev, uint32_t devid);
 #ifdef CONFIG_SPI_CMDDATA
 static int spi_cmddata(FAR struct spi_dev_s *dev, uint32_t devid, bool cmd);
 #endif
-static uint16_t spi_send(FAR struct spi_dev_s *dev, uint16_t ch);
+static uint32_t spi_send(FAR struct spi_dev_s *dev, uint32_t ch);
 static void spi_sndblock(FAR struct spi_dev_s *dev, FAR const void *buffer,
                          size_t nwords);
 static void spi_recvblock(FAR struct spi_dev_s *dev, FAR void *buffer,
@@ -142,7 +142,11 @@ static const struct spi_ops_s g_spiops =
   .registercallback  = 0,                 /* Not implemented */
 };
 
-static struct spi_dev_s g_spidev = {&g_spiops};
+static struct spi_dev_s g_spidev =
+{
+  &g_spiops
+};
+
 static sem_t g_exclsem = SEM_INITIALIZER(1);  /* For mutually exclusive access */
 
 /****************************************************************************
@@ -157,12 +161,12 @@ static sem_t g_exclsem = SEM_INITIALIZER(1);  /* For mutually exclusive access *
  * Name: spi_lock
  *
  * Description:
- *   On SPI busses where there are multiple devices, it will be necessary to
- *   lock SPI to have exclusive access to the busses for a sequence of
+ *   On SPI buses where there are multiple devices, it will be necessary to
+ *   lock SPI to have exclusive access to the buses for a sequence of
  *   transfers.  The bus should be locked before the chip is selected. After
  *   locking the SPI bus, the caller should then also call the setfrequency,
  *   setbits, and setmode methods to make sure that the SPI is properly
- *   configured for the device.  If the SPI buss is being shared, then it
+ *   configured for the device.  If the SPI bus is being shared, then it
  *   may have been left in an incompatible state.
  *
  * Input Parameters:
@@ -180,24 +184,11 @@ static int spi_lock(FAR struct spi_dev_s *dev, bool lock)
 
   if (lock)
     {
-      /* Take the semaphore (perhaps waiting) */
-
-      do
-        {
-          ret = nxsem_wait(&g_exclsem);
-
-          /* The only case that an error should occur here is if the wait
-           * was awakened by a signal.
-           */
-
-          DEBUGASSERT(ret == OK || ret == -EINTR);
-        }
-      while (ret == -EINTR);
+      ret = nxsem_wait_uninterruptible(&g_exclsem);
     }
   else
     {
-      (void)nxsem_post(&g_exclsem);
-      ret = OK;
+      ret = nxsem_post(&g_exclsem);
     }
 
   return ret;
@@ -257,7 +248,7 @@ static void spi_select(FAR struct spi_dev_s *dev, uint32_t devid,
 
       do
         {
-          (void)getreg16(LPC214X_SPI1_DR);
+          getreg16(LPC214X_SPI1_DR);
         }
       while (getreg8(LPC214X_SPI1_SR) & LPC214X_SPI1SR_RNE);
     }
@@ -316,8 +307,8 @@ static uint32_t spi_setfrequency(FAR struct spi_dev_s *dev,
 
 static uint8_t spi_status(FAR struct spi_dev_s *dev, uint32_t devid)
 {
-  /* I don't think there is anyway to determine these things on the mcu123.com
-   * board.
+  /* I don't think there is anyway to determine these things on the
+   * mcu123.com board.
    */
 
   spiinfo("Return SPI_STATUS_PRESENT\n");
@@ -372,7 +363,7 @@ static int spi_cmddata(FAR struct spi_dev_s *dev, uint32_t devid, bool cmd)
  *
  ****************************************************************************/
 
-static uint16_t spi_send(FAR struct spi_dev_s *dev, uint16_t wd)
+static uint32_t spi_send(FAR struct spi_dev_s *dev, uint32_t wd)
 {
   register uint16_t regval;
 
@@ -421,7 +412,7 @@ static void spi_sndblock(FAR struct spi_dev_s *dev, FAR const void *buffer,
   FAR const uint8_t *ptr = (FAR const uint8_t *)buffer;
   uint8_t sr;
 
-  /* Loop while thre are bytes remaining to be sent */
+  /* Loop while there are bytes remaining to be sent */
 
   spiinfo("nwords: %d\n", nwords);
   while (nwords > 0)
@@ -450,13 +441,13 @@ static void spi_sndblock(FAR struct spi_dev_s *dev, FAR const void *buffer,
         {
           /* Yes.. Read and discard */
 
-          (void)getreg16(LPC214X_SPI1_DR);
+          getreg16(LPC214X_SPI1_DR);
         }
 
       /* There is a race condition where TFE may go true just before
-       * RNE goes true and this loop terminates prematurely.  The nasty little
-       * delay in the following solves that (it could probably be tuned
-       * to improve performance).
+       * RNE goes true and this loop terminates prematurely.  The nasty
+       * little delay in the following solves that (it could probably
+       * be tuned to improve performance).
        */
 
       else if ((sr & LPC214X_SPI1SR_TFE) != 0)
@@ -492,7 +483,7 @@ static void spi_sndblock(FAR struct spi_dev_s *dev, FAR const void *buffer,
 static void spi_recvblock(FAR struct spi_dev_s *dev, FAR void *buffer,
                           size_t nwords)
 {
-  FAR uint8_t *ptr = (FAR uint8_t*)buffer;
+  FAR uint8_t *ptr = (FAR uint8_t *)buffer;
   uint32_t rxpending = 0;
 
   /* While there is remaining to be sent
@@ -517,7 +508,7 @@ static void spi_recvblock(FAR struct spi_dev_s *dev, FAR void *buffer,
           rxpending++;
         }
 
-      /* Now, read the RX data from the RX FIFO while the RX FIFO is not empty */
+      /* Now, read RX data from the RX FIFO while RX FIFO is not empty */
 
       spiinfo("RX: rxpending: %d\n", rxpending);
       while (getreg8(LPC214X_SPI1_SR) & LPC214X_SPI1SR_RNE)
@@ -600,7 +591,7 @@ FAR struct spi_dev_s *lpc214x_spibus_initialize(int port)
   putreg8(0, LPC214X_SPI1_CR1);
   putreg8(0, LPC214X_SPI1_IMSC);
 
-  /* Set the initial clock frequency for indentification mode < 400kHz */
+  /* Set the initial clock frequency for identification mode < 400kHz */
 
   spi_setfrequency(NULL, 400000);
 
@@ -611,7 +602,7 @@ FAR struct spi_dev_s *lpc214x_spibus_initialize(int port)
 
   for (i = 0; i < 8; i++)
     {
-      (void)getreg16(LPC214X_SPI1_DR);
+      getreg16(LPC214X_SPI1_DR);
     }
 
   return &g_spidev;

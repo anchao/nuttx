@@ -58,8 +58,8 @@
 #include <arch/board/board.h>
 
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "stm32_otgfs.h"
 
@@ -1499,7 +1499,7 @@ static void stm32_rxfifo_discard(FAR struct stm32_ep_s *privep, int len)
       for (i = 0; i < len; i += 4)
         {
           volatile uint32_t data = stm32_getreg(regaddr);
-          (void)data;
+          UNUSED(data);
         }
     }
 }
@@ -2268,7 +2268,7 @@ static inline void stm32_ep0out_stdrequest(struct stm32_usbdev_s *priv,
               {
                 /* Actually, I think we could just stall here. */
 
-                (void)stm32_req_dispatch(priv, &priv->ctrlreq);
+                stm32_req_dispatch(priv, &priv->ctrlreq);
               }
           }
         else
@@ -2314,7 +2314,7 @@ static inline void stm32_ep0out_stdrequest(struct stm32_usbdev_s *priv,
               {
                 /* Actually, I think we could just stall here. */
 
-                (void)stm32_req_dispatch(priv, &priv->ctrlreq);
+                stm32_req_dispatch(priv, &priv->ctrlreq);
               }
             else
               {
@@ -2378,7 +2378,7 @@ static inline void stm32_ep0out_stdrequest(struct stm32_usbdev_s *priv,
         usbtrace(TRACE_INTDECODE(STM32_TRACEINTID_GETSETDESC), 0);
         if ((ctrlreq->type & USB_REQ_RECIPIENT_MASK) == USB_REQ_RECIPIENT_DEVICE)
           {
-            (void)stm32_req_dispatch(priv, &priv->ctrlreq);
+            stm32_req_dispatch(priv, &priv->ctrlreq);
           }
         else
           {
@@ -2403,7 +2403,7 @@ static inline void stm32_ep0out_stdrequest(struct stm32_usbdev_s *priv,
             ctrlreq->index == 0 &&
             ctrlreq->len == 1)
           {
-            (void)stm32_req_dispatch(priv, &priv->ctrlreq);
+            stm32_req_dispatch(priv, &priv->ctrlreq);
           }
         else
           {
@@ -2475,7 +2475,7 @@ static inline void stm32_ep0out_stdrequest(struct stm32_usbdev_s *priv,
 
       {
         usbtrace(TRACE_INTDECODE(STM32_TRACEINTID_GETSETIF), 0);
-        (void)stm32_req_dispatch(priv, &priv->ctrlreq);
+        stm32_req_dispatch(priv, &priv->ctrlreq);
       }
       break;
 
@@ -2553,7 +2553,7 @@ static inline void stm32_ep0out_setup(struct stm32_usbdev_s *priv)
     {
       /* Dispatch any non-standard requests */
 
-      (void)stm32_req_dispatch(priv, &priv->ctrlreq);
+      stm32_req_dispatch(priv, &priv->ctrlreq);
     }
   else
     {
@@ -2570,7 +2570,7 @@ static inline void stm32_ep0out_setup(struct stm32_usbdev_s *priv)
       stm32_ep0_stall(priv);
     }
 
-  /* Reset state/data associated with thie SETUP request */
+  /* Reset state/data associated with the SETUP request */
 
    priv->ep0datlen = 0;
 }
@@ -2704,7 +2704,7 @@ static inline void stm32_epout_interrupt(FAR struct stm32_usbdev_s *priv)
           doepint  = stm32_getreg(STM32_OTGFS_DOEPINT(epno));
           doepint &= stm32_getreg(STM32_OTGFS_DOEPMSK);
 
-          /* Transfer completed interrupt.  This interrupt is trigged when
+          /* Transfer completed interrupt.  This interrupt is triggered when
            * stm32_rxinterrupt() removes the last packet data from the RxFIFO.
            * In this case, core internally sets the NAK bit for this endpoint to
            * prevent it from receiving any more packets.
@@ -4058,17 +4058,17 @@ static void stm32_ep0_configure(FAR struct stm32_usbdev_s *priv)
 {
   /* Enable EP0 IN and OUT */
 
-  (void)stm32_epin_configure(&priv->epin[EP0], USB_EP_ATTR_XFER_CONTROL,
-                             CONFIG_USBDEV_EP0_MAXSIZE);
-  (void)stm32_epout_configure(&priv->epout[EP0], USB_EP_ATTR_XFER_CONTROL,
-                              CONFIG_USBDEV_EP0_MAXSIZE);
+  stm32_epin_configure(&priv->epin[EP0], USB_EP_ATTR_XFER_CONTROL,
+                       CONFIG_USBDEV_EP0_MAXSIZE);
+  stm32_epout_configure(&priv->epout[EP0], USB_EP_ATTR_XFER_CONTROL,
+                        CONFIG_USBDEV_EP0_MAXSIZE);
 }
 
 /****************************************************************************
  * Name: stm32_epout_disable
  *
  * Description:
- *   Diable an OUT endpoint will no longer be used
+ *   Disable an OUT endpoint will no longer be used
  *
  ****************************************************************************/
 
@@ -5434,7 +5434,7 @@ static void stm32_hwinitialize(FAR struct stm32_usbdev_s *priv)
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_usbinitialize
+ * Name: arm_usbinitialize
  *
  * Description:
  *   Initialize USB hardware.
@@ -5448,7 +5448,7 @@ static void stm32_hwinitialize(FAR struct stm32_usbdev_s *priv)
  *
  ****************************************************************************/
 
-void up_usbinitialize(void)
+void arm_usbinitialize(void)
 {
   /* At present, there is only a single OTG FS device support. Hence it is
    * pre-allocated as g_otgfsdev.  However, in most code, the private data
@@ -5498,7 +5498,7 @@ void up_usbinitialize(void)
    * known state.
    */
 
-  up_usbuninitialize();
+  arm_usbuninitialize();
 
   /* Initialie the driver data structure */
 
@@ -5531,14 +5531,14 @@ void up_usbinitialize(void)
   return;
 
 errout:
-  up_usbuninitialize();
+  arm_usbuninitialize();
 }
 
 /****************************************************************************
- * Name: up_usbuninitialize
+ * Name: arm_usbuninitialize
  ****************************************************************************/
 
-void up_usbuninitialize(void)
+void arm_usbuninitialize(void)
 {
   /* At present, there is only a single OTG FS device support. Hence it is
    * pre-allocated as g_otgfsdev.  However, in most code, the private data

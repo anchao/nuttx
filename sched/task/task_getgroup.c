@@ -61,7 +61,7 @@
  * Returned Value:
  *   On success, a pointer to the group task structure is returned.  This
  *   function can fail only if there is no group that corresponds to the
- *   groupd ID.
+ *   grouped ID.
  *
  * Assumptions:
  *   Called during when signally tasks in a safe context.  No special
@@ -72,7 +72,7 @@
 
 FAR struct task_group_s *task_getgroup(pid_t pid)
 {
-  FAR struct tcb_s *tcb = sched_gettcb(pid);
+  FAR struct tcb_s *tcb = nxsched_get_tcb(pid);
   if (tcb)
     {
       return tcb->group;
@@ -80,4 +80,3 @@ FAR struct task_group_s *task_getgroup(pid_t pid)
 
   return NULL;
 }
-

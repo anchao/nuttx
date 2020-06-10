@@ -306,6 +306,7 @@ static uint8_t sht3x_crc_word(uint16_t word)
     0x00, 0x31, 0x62, 0x53, 0xc4, 0xf5, 0xa6, 0x97,
     0xb9, 0x88, 0xdb, 0xea, 0x7d, 0x4c, 0x1f, 0x2e
   };
+
   uint8_t crc = 0xff;
 
   crc ^= word >> 8;
@@ -319,10 +320,10 @@ static uint8_t sht3x_crc_word(uint16_t word)
 }
 
 /****************************************************************************
- * Name: sht3x_data_word_to_uint16
+ * Name: sht3x_data_word2uint16
  ****************************************************************************/
 
-static uint16_t sht3x_data_word_to_uint16(FAR const struct sht3x_word_s *word)
+static uint16_t sht3x_data_word2uint16(FAR const struct sht3x_word_s *word)
 {
   return (word[0].data[0] << 8) | (word[0].data[1]);
 }
@@ -336,7 +337,7 @@ static int sht3x_check_data_crc(FAR const struct sht3x_word_s *words,
 {
   while (num_words)
     {
-      if (sht3x_crc_word(sht3x_data_word_to_uint16(words)) != words->crc)
+      if (sht3x_crc_word(sht3x_data_word2uint16(words)) != words->crc)
         {
           return -1;
         }
@@ -426,8 +427,8 @@ static int sht3x_read_values(FAR struct sht3x_dev_s *priv,
       return ret;
     }
 
-  temp16 = sht3x_data_word_to_uint16(data);
-  rh16 = sht3x_data_word_to_uint16(&data[1]);
+  temp16 = sht3x_data_word2uint16(data);
+  rh16 = sht3x_data_word2uint16(&data[1]);
   add_sensor_randomness(ts.tv_nsec ^ ((int)temp16 << 16 | rh16));
 
   priv->data.temperature = sht3x_temp_to_celsius(temp16);
@@ -456,17 +457,11 @@ static int sht3x_open(FAR struct file *filep)
 
   /* Get exclusive access */
 
-  do
+  ret = nxsem_wait_uninterruptible(&priv->devsem);
+  if (ret < 0)
     {
-      ret = nxsem_wait(&priv->devsem);
-
-      /* The only case that an error should occur here is if the wait was
-       * awakened by a signal.
-       */
-
-      DEBUGASSERT(ret == OK || ret == -EINTR);
+      return ret;
     }
-  while (ret == -EINTR);
 
   /* Increment the count of open references on the driver */
 
@@ -495,17 +490,11 @@ static int sht3x_close(FAR struct file *filep)
 
   /* Get exclusive access */
 
-  do
+  ret = nxsem_wait_uninterruptible(&priv->devsem);
+  if (ret < 0)
     {
-      ret = nxsem_wait(&priv->devsem);
-
-      /* The only case that an error should occur here is if the wait was
-       * awakened by a signal.
-       */
-
-      DEBUGASSERT(ret == OK || ret == -EINTR);
+      return ret;
     }
-  while (ret == -EINTR);
 
   /* Decrement the count of open references on the driver */
 
@@ -562,17 +551,11 @@ static int sht3x_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
 
   /* Get exclusive access */
 
-  do
+  ret = nxsem_wait_uninterruptible(&priv->devsem);
+  if (ret < 0)
     {
-      ret = nxsem_wait(&priv->devsem);
-
-      /* The only case that an error should occur here is if the wait was
-       * awakened by a signal.
-       */
-
-      DEBUGASSERT(ret == OK || ret == -EINTR);
+      return ret;
     }
-  while (ret == -EINTR);
 
 #ifndef CONFIG_DISABLE_PSEUDOFS_OPERATIONS
   if (priv->unlinked)
@@ -647,17 +630,11 @@ static int sht3x_unlink(FAR struct inode *inode)
 
   /* Get exclusive access */
 
-  do
+  ret = nxsem_wait_uninterruptible(&priv->devsem);
+  if (ret < 0)
     {
-      ret = nxsem_wait(&priv->devsem);
-
-      /* The only case that an error should occur here is if the wait was
-       * awakened by a signal.
-       */
-
-      DEBUGASSERT(ret == OK || ret == -EINTR);
+      return ret;
     }
-  while (ret == -EINTR);
 
   /* Are there open references to the driver data structure? */
 
@@ -674,7 +651,7 @@ static int sht3x_unlink(FAR struct inode *inode)
 
   priv->unlinked = true;
   nxsem_post(&priv->devsem);
-  return ret;
+  return OK;
 }
 #endif
 

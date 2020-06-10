@@ -62,7 +62,7 @@
 
 #if defined(CONFIG_SIG_SIGUSR1_ACTION) || defined(CONFIG_SIG_SIGUSR2_ACTION) || \
     defined(CONFIG_SIG_SIGALRM_ACTION) || defined(CONFIG_SIG_SIGPOLL_ACTION) || \
-    defined(CONFIG_SIG_SIGKILL_ACTION)
+    defined(CONFIG_SIG_SIGKILL_ACTION) || defined(CONFIG_SIG_SIGPIPE_ACTION)
 #  define HAVE_NXSIG_ABNORMAL_TERMINANTION 1
 #endif
 
@@ -101,7 +101,8 @@ static void nxsig_stop_task(int signo);
 
 static _sa_handler_t nxsig_default_action(int signo);
 static void nxsig_setup_default_action(FAR struct task_group_s *group,
-                                       FAR const struct nxsig_defaction_s *info);
+                                       FAR const struct nxsig_defaction_s *
+                                           info);
 
 /****************************************************************************
  * Private Data
@@ -217,13 +218,13 @@ static void nxsig_abnormal_termination(int signo)
       /* Then we cannot cancel the thread now.  Here is how this is
        * supposed to work:
        *
-       * "When cancelability is disabled, all cancels are held pending
-       *  in the target thread until the thread changes the cancelability.
-       *  When cancelability is deferred, all cancels are held pending in
-       *  the target thread until the thread changes the cancelability,
+       * "When cancellability is disabled, all cancels are held pending
+       *  in the target thread until the thread changes the cancellability.
+       *  When cancellability is deferred, all cancels are held pending in
+       *  the target thread until the thread changes the cancellability,
        *  calls a function which is a cancellation point or calls
        *  pthread_testcancel(), thus creating a cancellation point.  When
-       *  cancelability is asynchronous, all cancels are acted upon
+       *  cancellability is asynchronous, all cancels are acted upon
        *  immediately, interrupting the thread with its processing."
        *
        * REVISIT:  Does this rule apply to equally to both SIGKILL and
@@ -240,8 +241,8 @@ static void nxsig_abnormal_termination(int signo)
 
   if ((rtcb->flags & TCB_FLAG_CANCEL_DEFERRED) != 0)
     {
-      /* Then we cannot cancel the task asynchronously.  Mark the cancellation
-       * as pending.
+      /* Then we cannot cancel the task asynchronously.
+       * Mark the cancellation as pending.
        */
 
       rtcb->flags |= TCB_FLAG_CANCEL_PENDING;
@@ -267,13 +268,12 @@ static void nxsig_abnormal_termination(int signo)
    */
 
 #ifdef HAVE_GROUP_MEMBERS
-  /* Kill of of the children of the task.  This will not kill the currently
+  /* Kill all of the children of the task.  This will not kill the currently
    * running task/pthread (this_task).  It will kill the main thread of the
-   * task group if the this_task is a
-   * pthread.
+   * task group if this_task is a pthread.
    */
 
-  group_killchildren((FAR struct task_tcb_s *)rtcb);
+  group_kill_children((FAR struct task_tcb_s *)rtcb);
 #endif
 
 #ifndef CONFIG_DISABLE_PTHREAD
@@ -328,16 +328,16 @@ static void nxsig_stop_task(int signo)
    */
 
 #ifdef HAVE_GROUP_MEMBERS
-  /* Suspend of of the children of the task.  This will not suspend the
+  /* Suspend all of the children of the task.  This will not suspend the
    * currently running task/pthread (this_task).  It will suspend the
-   * main thread of the task group if the this_task is a pthread.
+   * main thread of the task group if this_task is a pthread.
    */
 
-  group_suspendchildren(rtcb);
+  group_suspend_children(rtcb);
 #endif
 
   /* Lock the scheduler so this thread is not pre-empted until after we
-   * call sched_suspend().
+   * call nxsched_suspend().
    */
 
   sched_lock();
@@ -377,7 +377,7 @@ static void nxsig_stop_task(int signo)
 
   /* Then, finally, suspend this the final thread of the task group */
 
-  sched_suspend(rtcb);
+  nxsched_suspend(rtcb);
   sched_unlock();
 }
 #endif
@@ -437,7 +437,8 @@ static _sa_handler_t nxsig_default_action(int signo)
  ****************************************************************************/
 
 static void nxsig_setup_default_action(FAR struct task_group_s *group,
-                                       FAR const struct nxsig_defaction_s *info)
+                                       FAR const struct nxsig_defaction_s *
+                                           info)
 {
   /* Get the address of the handler for this signals default action. */
 
@@ -454,11 +455,11 @@ static void nxsig_setup_default_action(FAR struct task_group_s *group,
       memset(&sa, 0, sizeof(sa));
       sa.sa_handler = info->action;
       sa.sa_flags   = SA_SIGINFO;
-      (void)nxsig_action(info->signo, &sa, NULL, true);
+      nxsig_action(info->signo, &sa, NULL, true);
 
       /* Indicate that the default signal handler has been attached */
 
-      (void)sigaddset(&group->tg_sigdefault, (int)info->signo);
+      nxsig_addset(&group->tg_sigdefault, (int)info->signo);
     }
 }
 
@@ -494,7 +495,7 @@ bool nxsig_isdefault(FAR struct tcb_s *tcb, int signo)
    * false in all other cases.
    */
 
-  ret = sigismember(&group->tg_sigdefault, signo);
+  ret = nxsig_ismember(&group->tg_sigdefault, signo);
   return ret < 0 ? false : (bool)ret;
 }
 
@@ -539,7 +540,7 @@ bool nxsig_iscatchable(int signo)
  *
  * Description:
  *   If 'defaction' is true, then return the default signal handler action
- *   for the specified signal and mark that the default signal hander is
+ *   for the specified signal and mark that the default signal handler is
  *   in place (it is not yet).
  *
  *   If 'defaction' is false, then mark that the default signal handler is
@@ -578,22 +579,22 @@ _sa_handler_t nxsig_default(FAR struct tcb_s *tcb, int signo, bool defaction)
       handler = nxsig_default_action(signo);
       if (handler != SIG_IGN)
         {
-          /* sigaddset() is not atomic (but neither is sigaction()) */
+          /* nxsig_addset() is not atomic (but neither is sigaction()) */
 
           flags = spin_lock_irqsave();
-          (void)sigaddset(&group->tg_sigdefault, signo);
+          nxsig_addset(&group->tg_sigdefault, signo);
           spin_unlock_irqrestore(flags);
         }
     }
 
   if (handler == SIG_IGN)
     {
-      /* We are unsetting the default action.  NOTE that sigdelset() is not
+      /* We are unsetting the default action. NOTE that nxsig_delset() is not
        * atomic (but neither is sigaction()).
        */
 
       flags = spin_lock_irqsave();
-      (void)sigdelset(&group->tg_sigdefault, signo);
+      nxsig_delset(&group->tg_sigdefault, signo);
       spin_unlock_irqrestore(flags);
     }
 
@@ -626,7 +627,7 @@ int nxsig_default_initialize(FAR struct tcb_s *tcb)
 
   /* Initialize the set of default signal handlers */
 
-  (void)sigemptyset(&group->tg_sigdefault);
+  sigemptyset(&group->tg_sigdefault);
 
   /* Setup the default action for each signal in g_defactions[] */
 

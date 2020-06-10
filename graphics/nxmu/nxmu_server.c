@@ -42,7 +42,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <semaphore.h>
 #include <mqueue.h>
 #include <fcntl.h>
 #include <assert.h>
@@ -79,7 +78,7 @@ static inline void nxmu_disconnect(FAR struct nxmu_conn_s *conn)
 
   /* Close the outgoing client message queue */
 
-  (void)mq_close(conn->swrmq);
+  mq_close(conn->swrmq);
 }
 
 /****************************************************************************
@@ -133,7 +132,7 @@ static inline void nxmu_shutdown(FAR struct nxmu_state_s *nxmu)
 
   for (wnd = nxmu->be.topwnd; wnd; wnd = wnd->below)
     {
-       (void)nxmu_disconnect(wnd->conn);
+       nxmu_disconnect(wnd->conn);
     }
 }
 
@@ -191,7 +190,7 @@ static inline int nxmu_setup(FAR const char *mqname, FAR NX_DRIVERTYPE *dev,
 #endif /* CONFIG_FB_CMAP */
 
   /* Initialize the non-NULL elements of the server connection structure.
-   * Oddly, this strcture represents the connection between the server and
+   * Oddly, this structure represents the connection between the server and
    * itself.
    *
    * Open the incoming server MQ.  The server receives messages on the

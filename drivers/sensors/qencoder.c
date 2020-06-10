@@ -45,7 +45,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <semaphore.h>
 #include <fcntl.h>
 #include <assert.h>
 #include <errno.h>
@@ -54,6 +53,7 @@
 #include <nuttx/kmalloc.h>
 #include <nuttx/fs/fs.h>
 #include <nuttx/arch.h>
+#include <nuttx/semaphore.h>
 #include <nuttx/sensors/qencoder.h>
 
 #include <arch/irq.h>
@@ -63,6 +63,7 @@
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
+
 /* Debug ********************************************************************/
 
 /****************************************************************************
@@ -84,8 +85,10 @@ struct qe_upperhalf_s
 
 static int     qe_open(FAR struct file *filep);
 static int     qe_close(FAR struct file *filep);
-static ssize_t qe_read(FAR struct file *filep, FAR char *buffer, size_t buflen);
-static ssize_t qe_write(FAR struct file *filep, FAR const char *buffer, size_t buflen);
+static ssize_t qe_read(FAR struct file *filep, FAR char *buffer,
+                       size_t buflen);
+static ssize_t qe_write(FAR struct file *filep, FAR const char *buffer,
+                        size_t buflen);
 static int     qe_ioctl(FAR struct file *filep, int cmd, unsigned long arg);
 
 /****************************************************************************

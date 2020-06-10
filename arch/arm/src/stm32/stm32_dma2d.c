@@ -46,7 +46,6 @@
 #include <string.h>
 #include <errno.h>
 #include <debug.h>
-#include <semaphore.h>
 
 #include <nuttx/irq.h>
 #include <nuttx/kmalloc.h>
@@ -55,8 +54,8 @@
 
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 #include "stm32.h"
 #include "hardware/stm32_ltdc.h"
 #include "hardware/stm32_dma2d.h"
@@ -808,7 +807,7 @@ static int stm32_dma2d_setclut(FAR const struct fb_cmap_s *cmap)
  * Input Parameters:
  *   oinfo - Overlay to fill
  *   area  - Reference to the valid area structure select the area
- *   argb  - Color to fill the selected area. Color must be argb8888 formated.
+ *   argb  - Color to fill the selected area. Color must be argb8888 formatted.
  *
  * Returned Value:
  *    OK        - On success
@@ -1111,7 +1110,7 @@ int stm32_dma2dinitialize(void)
        */
 
       nxsem_init(g_interrupt.sem, 0, 0);
-      nxsem_setprotocol(g_interrupt.sem, SEM_PRIO_NONE);
+      nxsem_set_protocol(g_interrupt.sem, SEM_PRIO_NONE);
 
 #ifdef CONFIG_STM32_FB_CMAP
       /* Enable dma2d transfer and clut loading interrupts only */
@@ -1130,7 +1129,7 @@ int stm32_dma2dinitialize(void)
 
       /* Attach DMA2D interrupt vector */
 
-      (void)irq_attach(g_interrupt.irq, stm32_dma2dirq, NULL);
+      irq_attach(g_interrupt.irq, stm32_dma2dirq, NULL);
 
       /* Enable the IRQ at the NVIC */
 

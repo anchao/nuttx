@@ -41,8 +41,8 @@
 #include <stdint.h>
 
 #include "chip.h"
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 
 #include <nuttx/board.h>
 
@@ -102,7 +102,7 @@ static const struct section_mapping_s section_mapping[] =
  ************************************************************************************/
 
 /* All i.MX architectures must provide the following entry point.  This entry point
- * is called early in the intitialization -- after all memory has been configured
+ * is called early in the initialization -- after all memory has been configured
  * and mapped but before any devices have been initialized.
  */
 
@@ -209,7 +209,7 @@ void arm_boot(void)
 
   up_copyvectorblock();
 
-  /* Perform board-specific initialiation */
+  /* Perform board-specific initialization */
 
   imx_board_initialize();
 
@@ -222,6 +222,6 @@ void arm_boot(void)
   /* Perform early serial initialization */
 
 #ifdef USE_EARLYSERIALINIT
-  up_earlyserialinit();
+  arm_earlyserialinit();
 #endif
 }

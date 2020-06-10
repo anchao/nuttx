@@ -63,7 +63,7 @@
  *
  * Description:
  *   All SAMA5 architectures must provide the following entry point.
- *   This entry point is called early in the intitialization -- after all
+ *   This entry point is called early in the initialization -- after all
  *   memory has been configured and mapped but before any devices have been
  *   initialized.
  *
@@ -154,7 +154,7 @@ void board_late_initialize(void)
    */
 
 #if defined(CONFIG_NSH_LIBRARY) && !defined(CONFIG_LIB_BOARDCTL)
-  (void)board_app_initialize(0);
+  board_app_initialize(0);
 #endif
 }
 #endif /* CONFIG_BOARD_LATE_INITIALIZE */

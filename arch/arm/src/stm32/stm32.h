@@ -47,7 +47,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "up_internal.h"
+#include "arm_internal.h"
 
 /************************************************************************************
  * Pre-processor Definitions
@@ -83,4 +83,3 @@
 #include "stm32_eth.h"
 
 #endif /* __ARCH_ARM_SRC_STM32_STM32_H */
-

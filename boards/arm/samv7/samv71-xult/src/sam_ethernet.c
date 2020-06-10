@@ -174,7 +174,7 @@ int sam_emac0_setmac(void)
   if (!at24)
     {
       nerr("ERROR: Failed to initialize the AT24 driver\n");
-      (void)sam_i2cbus_uninitialize(i2c);
+      sam_i2cbus_uninitialize(i2c);
       return -ENODEV;
     }
 
@@ -184,7 +184,7 @@ int sam_emac0_setmac(void)
   if (ret < 0)
     {
       nerr("ERROR: AT24 ioctl(MTDIOC_EXTENDED) failed: %d\n", ret);
-      (void)sam_i2cbus_uninitialize(i2c);
+      sam_i2cbus_uninitialize(i2c);
       return ret;
     }
 
@@ -195,7 +195,7 @@ int sam_emac0_setmac(void)
     {
       nerr("ERROR: AT24 read(AT24XX_MACADDR_OFFSET) failed: ld\n",
           (long)nread);
-      (void)sam_i2cbus_uninitialize(i2c);
+      sam_i2cbus_uninitialize(i2c);
       return (int)nread;
     }
 
@@ -287,7 +287,7 @@ int sam_emac0_setmac(void)
  *             signal tasks in user space.  A value of NULL can be passed
  *             in order to detach and disable the PHY interrupt.
  *   arg     - The argument that will accompany the interrupt
- *   enable  - A function pointer that be unsed to enable or disable the
+ *   enable  - A function pointer that be unused to enable or disable the
  *             PHY interrupt.
  *
  * Returned Value:
@@ -338,12 +338,12 @@ int arch_phy_irq(FAR const char *intf, xcpt_t handler, void *arg,
       sam_gpioirq(pinset);
 
       phyinfo("Attach IRQ%d\n", irq);
-      (void)irq_attach(irq, handler, arg);
+      irq_attach(irq, handler, arg);
     }
   else
     {
       phyinfo("Detach IRQ%d\n", irq);
-      (void)irq_detach(irq);
+      irq_detach(irq);
       enabler = NULL;
     }
 

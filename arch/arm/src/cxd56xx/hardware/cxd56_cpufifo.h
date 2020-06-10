@@ -33,18 +33,18 @@
  *
  ****************************************************************************/
 
-#ifndef __ARCH_ARM_SRC_CXD56XX_CHIP_CXD56_CPUFIFO_H
-#define __ARCH_ARM_SRC_CXD56XX_CHIP_CXD56_CPUFIFO_H
+#ifndef __ARCH_ARM_SRC_CXD56XX_HARDWARE_CXD56_CPUFIFO_H
+#define __ARCH_ARM_SRC_CXD56XX_HARDWARE_CXD56_CPUFIFO_H
 
-/************************************************************************************
+/****************************************************************************
  * Included Files
- ************************************************************************************/
+ ****************************************************************************/
 
 #include <nuttx/config.h>
 
-/************************************************************************************
+/****************************************************************************
  * Pre-processor Definitions
- ************************************************************************************/
+ ****************************************************************************/
 
 #define CXD56_FIF_PUSH_FULL    (CXD56_CPUFIFO_BASE + 0x00)
 #define CXD56_FIF_PUSH_WRD0    (CXD56_CPUFIFO_BASE + 0x04)
@@ -55,4 +55,4 @@
 #define CXD56_FIF_PULL_WRD1    (CXD56_CPUFIFO_BASE + 0x18)
 #define CXD56_FIF_PULL_CMP     (CXD56_CPUFIFO_BASE + 0x1c)
 
-#endif /* __ARCH_ARM_SRC_CXD56XX_CHIP_CXD56_CPUFIFO_H */
+#endif /* __ARCH_ARM_SRC_CXD56XX_HARDWARE_CXD56_CPUFIFO_H */

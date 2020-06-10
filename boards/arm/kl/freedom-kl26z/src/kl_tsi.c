@@ -51,7 +51,7 @@
 
 #include <nuttx/fs/fs.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "kl_gpio.h"
 #include "hardware/kl_tsi.h"
 #include "hardware/kl_pinmux.h"
@@ -257,7 +257,7 @@ void kl_tsi_initialize(void)
 
   /* And finally register the TSI character driver */
 
-  (void)register_driver("/dev/tsi", &tsi_ops, 0444, NULL);
+  register_driver("/dev/tsi", &tsi_ops, 0444, NULL);
 }
 
 #endif /* CONFIG_KL_TSI */

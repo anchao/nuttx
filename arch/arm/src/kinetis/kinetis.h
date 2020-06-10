@@ -50,7 +50,7 @@
 
 #include <nuttx/irq.h>
 
-#include "up_internal.h"
+#include "arm_internal.h"
 #include "kinetis_config.h"
 #include "chip.h"
 #include "hardware/kinetis_port.h"
@@ -118,7 +118,7 @@
 #define _PIN_OUTPUT_SLOW       (3 << _PIN_OPTIONS_SHIFT) /* xx11 Output with slow slew rate */
 #define _PIN_OUTPUT_OD_MASK    (5 << _PIN_OPTIONS_SHIFT) /* x1x1 Mask to test for open drain */
 #define _PIN_OUTPUT_OPENDRAIN  (5 << _PIN_OPTIONS_SHIFT) /* x1x1 Output with open drain enabled */
-#define _PIN_OUTPUT_DRIVE_MASK (9 << _PIN_OPTIONS_SHIFT) /* 1xx1 Mask to test for high drive strengh */
+#define _PIN_OUTPUT_DRIVE_MASK (9 << _PIN_OPTIONS_SHIFT) /* 1xx1 Mask to test for high drive strength */
 #define _PIN_OUTPUT_LOWDRIVE   (1 << _PIN_OPTIONS_SHIFT) /* 0xx1 Output with low drive strength */
 #define _PIN_OUTPUT_HIGHDRIVE  (9 << _PIN_OPTIONS_SHIFT) /* 1xx1 Output with high drive strength */
 
@@ -360,7 +360,7 @@ void kinetis_clockconfig(void);
  * Description:
  *   Performs the low level UART/LPUART initialization early in debug so that
  *   the serial console will be available during bootup.  This must be called
- *   before up_serialinit.
+ *   before arm_serialinit.
  *
  ****************************************************************************/
 
@@ -374,7 +374,7 @@ void kinetis_earlyserialinit(void);
  * Description:
  *   Performs the low level UART initialization early in debug so that the
  *   serial console will be available during bootup.  This must be called
- *   before up_serialinit.
+ *   before arm_serialinit.
  *
  ****************************************************************************/
 
@@ -388,7 +388,7 @@ void kinetis_uart_earlyserialinit(void);
  * Description:
  *   Performs the low level LPUART initialization early in debug so that the
  *   serial console will be available during bootup.  This must be called
- *   before up_serialinit.
+ *   before arm_serialinit.
  *
  ****************************************************************************/
 

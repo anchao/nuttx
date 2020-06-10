@@ -170,8 +170,6 @@
 #define STM32_RCC_DCKCFGR1_DFSDM1SRC   0
 #define STM32_RCC_DCKCFGR1_ADFSDM1SRC  0
 
-
-
 /* Configure factors for  PLLI2S clock */
 
 #define STM32_RCC_PLLI2SCFGR_PLLI2SN   RCC_PLLI2SCFGR_PLLI2SN(192)
@@ -413,12 +411,19 @@
 #define BOARD_LTDC_PLLSAIR              5
 
 /* Pixel Clock Polarity */
+
 #define BOARD_LTDC_GCR_PCPOL            0 /* !LTDC_GCR_PCPOL */
+
 /* Data Enable Polarity */
+
 #define BOARD_LTDC_GCR_DEPOL            0 /* !LTDC_GCR_DEPOL */
+
 /* Vertical Sync Polarity */
+
 #define BOARD_LTDC_GCR_VSPOL            0 /* !LTDC_GCR_VSPOL */
-/* Horicontal Sync Polarity */
+
+/* Horizontal Sync Polarity */
+
 #define BOARD_LTDC_GCR_HSPOL            0 /* !LTDC_GCR_HSPOL */
 
 /* GPIO pinset */
@@ -457,4 +462,55 @@
 #define GPIO_LTDC_DE                    GPIO_LTDC_DE_3
 #define GPIO_LTDC_CLK                   GPIO_LTDC_CLK_3
 
-#endif  /* __BOARDS_ARM_STM32F7_STM32F746G_DISCO_INCLUDE_BOARD_H */
+/* QSPI pinset */
+
+#define GPIO_QSPI_CS                    GPIO_QUADSPI_BK1_NCS
+#define GPIO_QSPI_IO0                   GPIO_QUADSPI_BK1_IO0_3
+#define GPIO_QSPI_IO1                   GPIO_QUADSPI_BK1_IO1_3
+#define GPIO_QSPI_IO2                   GPIO_QUADSPI_BK1_IO2_1
+#define GPIO_QSPI_IO3                   GPIO_QUADSPI_BK1_IO3_2
+#define GPIO_QSPI_SCK                   GPIO_QUADSPI_CLK
+
+/* SDMMC */
+
+/* Stream selections are arbitrary for now but might become important in the future
+ * if we set aside more DMA channels/streams.
+ *
+ * SDIO DMA
+ *   DMAMAP_SDMMC1_1 = Channel 4, Stream 3
+ *   DMAMAP_SDMMC1_2 = Channel 4, Stream 6
+ */
+
+#define DMAMAP_SDMMC1  DMAMAP_SDMMC1_1
+
+/* SDIO dividers.  Note that slower clocking is required when DMA is disabled
+ * in order to avoid RX overrun/TX underrun errors due to delayed responses
+ * to service FIFOs in interrupt driven mode.  These values have not been
+ * tuned!!!
+ *
+ * SDIOCLK=48MHz, SDIO_CK=SDIOCLK/(118+2)=400 KHz
+ */
+
+#define STM32_SDMMC_INIT_CLKDIV      (118 << STM32_SDMMC_CLKCR_CLKDIV_SHIFT)
+
+/* DMA ON:  SDIOCLK=48MHz, SDIO_CK=SDIOCLK/(1+2)=16 MHz
+ * DMA OFF: SDIOCLK=48MHz, SDIO_CK=SDIOCLK/(2+2)=12 MHz
+ */
+
+#ifdef CONFIG_SDIO_DMA
+#  define STM32_SDMMC_MMCXFR_CLKDIV  (1 << STM32_SDMMC_CLKCR_CLKDIV_SHIFT)
+#else
+#  define STM32_SDMMC_MMCXFR_CLKDIV  (2 << STM32_SDMMC_CLKCR_CLKDIV_SHIFT)
+#endif
+
+/* DMA ON:  SDIOCLK=48MHz, SDIO_CK=SDIOCLK/(1+2)=16 MHz
+ * DMA OFF: SDIOCLK=48MHz, SDIO_CK=SDIOCLK/(2+2)=12 MHz
+ */
+
+#ifdef CONFIG_SDIO_DMA
+#  define STM32_SDMMC_SDXFR_CLKDIV   (1 << STM32_SDMMC_CLKCR_CLKDIV_SHIFT)
+#else
+#  define STM32_SDMMC_SDXFR_CLKDIV   (2 << STM32_SDMMC_CLKCR_CLKDIV_SHIFT)
+#endif
+
+#endif /* __BOARDS_ARM_STM32F7_STM32F746G_DISCO_INCLUDE_BOARD_H */

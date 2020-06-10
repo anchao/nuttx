@@ -104,7 +104,7 @@ static struct i2c_master_s* g_i2c3;
  *         implementation without modification.  The argument has no
  *         meaning to NuttX; the meaning of the argument is a contract
  *         between the board-specific initialization logic and the
- *         matching application logic.  The value cold be such things as a
+ *         matching application logic.  The value could be such things as a
  *         mode enumeration value, a set of DIP switch switch settings, a
  *         pointer to configuration data read from a file or serial FLASH,
  *         or whatever you would like to do with it.  Every implementation
@@ -122,9 +122,7 @@ int board_app_initialize(uintptr_t arg)
 #ifdef HAVE_RTC_DRIVER
   FAR struct rtc_lowerhalf_s *rtclower;
 #endif
-  int ret;
-
-  (void)ret;
+  int ret = OK;
 
 #ifdef HAVE_PROC
   /* mount the proc filesystem */
@@ -209,7 +207,7 @@ int board_app_initialize(uintptr_t arg)
 #ifdef CONFIG_ADC
   ainfo("Initializing ADC\n");
 
-  (void)stm32l4_adc_setup();
+  stm32l4_adc_setup();
 #ifdef CONFIG_STM32L4_DFSDM
   /* Initialize DFSDM and register its filters as additional ADC devices. */
 
@@ -224,10 +222,10 @@ int board_app_initialize(uintptr_t arg)
 #ifdef CONFIG_DAC
   ainfo("Initializing DAC\n");
 
-  (void)stm32l4_dac_setup();
+  stm32l4_dac_setup();
 #endif
 
-  return OK;
+  return ret;
 }
 #endif /* CONFIG_LIB_BOARDCTL */
 

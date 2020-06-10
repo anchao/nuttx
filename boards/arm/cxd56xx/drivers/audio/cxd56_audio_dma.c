@@ -1,5 +1,5 @@
-/***************************************************************************
- * arch/arm/src/cxd56xx/cxd56_audio_dma.c
+/****************************************************************************
+ * boards/arm/cxd56xx/drivers/audio/cxd56_audio_dma.c
  *
  *   Copyright 2018 Sony Semiconductor Solutions Corporation
  *
@@ -33,7 +33,7 @@
  *
  ****************************************************************************/
 
-/***************************************************************************
+/****************************************************************************
  * Included Files
  ****************************************************************************/
 
@@ -47,7 +47,7 @@
 #include "cxd56_audio_ac_reg.h"
 #include "cxd56_audio_bca_reg.h"
 
-/***************************************************************************
+/****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
 
@@ -61,6 +61,7 @@ enum audio_irq_reg_type_e
 };
 
 /* INT_EN1 */
+
 #define CXD56_INTC_BASE      0xe0045000
 #define INT_EN1_REG_ADDR     (CXD56_INTC_BASE + 0x10 + 3 * 4)
 #define INT_EN1_BIT_AU0      6
@@ -91,11 +92,13 @@ enum audio_irq_reg_type_e
 #define DMA_SMP_WAIT_HIRES   10 /* usec per sample. */
 #define DMA_SMP_WAIT_NORMALT 40 /* usec per sample. */
 
-/***************************************************************************
- * Public Function Prototypes
- ****************************************************************************/
+/* Private Macros */
 
-/***************************************************************************
+#define SET_DMA_ACT(_path_)  g_dma_act_status |= (1 << _path_)
+#define CLR_DMA_ACT(_path_)  g_dma_act_status &= ~(1 << _path_)
+#define IS_DMA_ACT(_path_)   ((g_dma_act_status & (1 << _path_)) != 0)
+
+/****************************************************************************
  * Private Data
  ****************************************************************************/
 
@@ -109,19 +112,7 @@ static bool s_work_arroud_dmac[DMA_HANDLE_MAX_NUM] =
   true
 };
 
-/***************************************************************************
- * Private Macro
- ****************************************************************************/
-
-#define SET_DMA_ACT(_path_)  g_dma_act_status |= (1 << _path_)
-#define CLR_DMA_ACT(_path_)  g_dma_act_status &= ~(1 << _path_)
-#define IS_DMA_ACT(_path_)   ((g_dma_act_status & (1 << _path_)) != 0)
-
-/***************************************************************************
- * Public Data
- ****************************************************************************/
-
-/***************************************************************************
+/****************************************************************************
  * Private Functions
  ****************************************************************************/
 
@@ -181,6 +172,7 @@ static CXD56_AUDIO_ECODE get_dma_handle(cxd56_audio_dma_path_t path,
       default:
         return CXD56_AUDIO_ECODE_DMA_PATH_INV;
     }
+
   return CXD56_AUDIO_ECODE_OK;
 }
 
@@ -204,6 +196,7 @@ static CXD56_AUDIO_ECODE get_dma_path(cxd56_audio_dma_t handle,
       default:
         return CXD56_AUDIO_ECODE_DMA_HANDLE_INV;
     }
+
   return CXD56_AUDIO_ECODE_OK;
 }
 
@@ -256,6 +249,7 @@ static CXD56_AUDIO_ECODE exec_dma_ch_sync_workaround(
               break;
             }
         }
+
       if (timeout_cnt == DMA_TIMEOUT_CNT)
         {
           return CXD56_AUDIO_ECODE_DMA_SMP_TIMEOUT;
@@ -351,7 +345,7 @@ static CXD56_AUDIO_ECODE start_dma_workaround(cxd56_audio_dma_t handle)
   return ret;
 }
 
-/***************************************************************************
+/****************************************************************************
  * Public Functions
  ****************************************************************************/
 
@@ -482,7 +476,7 @@ CXD56_AUDIO_ECODE cxd56_audio_dma_set_cb(cxd56_audio_dma_t handle,
 }
 
 CXD56_AUDIO_ECODE cxd56_audio_dma_get_mstate(cxd56_audio_dma_t handle,
-                                             FAR cxd56_audio_dma_mstate_t *state)
+                                    FAR cxd56_audio_dma_mstate_t *state)
 {
   cxd56_audio_bca_reg_get_dma_mstate(handle, state);
 
@@ -502,12 +496,11 @@ CXD56_AUDIO_ECODE cxd56_audio_dma_en_dmaint(void)
 
   write_int_reg(INT_EN1_REG, int_en);
 
-  /* Enalbe bus error interrupt. */
+  /* Enable bus error interrupt. */
 
   cxd56_audio_bca_reg_en_bus_err_int();
 
   return CXD56_AUDIO_ECODE_OK;
-
 }
 
 CXD56_AUDIO_ECODE cxd56_audio_dma_dis_dmaint(void)
@@ -523,7 +516,7 @@ CXD56_AUDIO_ECODE cxd56_audio_dma_dis_dmaint(void)
 
   write_int_reg(INT_EN1_REG, int_en);
 
-  /* Disalbe bus error interrupt. */
+  /* Disable bus error interrupt. */
 
   cxd56_audio_bca_reg_dis_bus_err_int();
 
@@ -565,7 +558,7 @@ CXD56_AUDIO_ECODE cxd56_audio_dma_stop(cxd56_audio_dma_t handle)
   return CXD56_AUDIO_ECODE_OK;
 }
 
-void CXD56_audio_dma_int_handler(void)
+void cxd56_audio_dma_int_handler(void)
 {
   uint32_t int_irq  = read_int_reg(INT_IRQ1_REG);
   uint32_t int_ac   = cxd56_audio_bca_reg_get_dma_done_state_mic();
@@ -666,8 +659,9 @@ void CXD56_audio_dma_int_handler(void)
 
       if (int_i2s2 & DMA_STATE_BIT_I2S_OUT_DONE)
         {
-          (*g_dma_cb[CXD56_AUDIO_DMAC_I2S1_DOWN])(CXD56_AUDIO_DMAC_I2S1_DOWN,
-                                                 CXD56_AUDIO_ECODE_DMA_CMPLT);
+          (*g_dma_cb[CXD56_AUDIO_DMAC_I2S1_DOWN])
+          (CXD56_AUDIO_DMAC_I2S1_DOWN,
+           CXD56_AUDIO_ECODE_DMA_CMPLT);
         }
 
       /* Check transfer err state. */
@@ -678,8 +672,9 @@ void CXD56_audio_dma_int_handler(void)
 
           cxd56_audio_bca_reg_clear_err_int(CXD56_AUDIO_DMAC_I2S1_DOWN);
 
-          (*g_dma_cb[CXD56_AUDIO_DMAC_I2S1_DOWN])(CXD56_AUDIO_DMAC_I2S1_DOWN,
-                                                 CXD56_AUDIO_ECODE_DMA_TRANS);
+          (*g_dma_cb[CXD56_AUDIO_DMAC_I2S1_DOWN])
+          (CXD56_AUDIO_DMAC_I2S1_DOWN,
+           CXD56_AUDIO_ECODE_DMA_TRANS);
         }
 
       /* Check bus err state. */

@@ -54,7 +54,7 @@
 #include <nuttx/wqueue.h>
 
 #include "chip.h"
-#include "up_arch.h"
+#include "arm_arch.h"
 
 #include <arch/board/board.h>
 #include <arch/chip/pin.h>
@@ -166,11 +166,13 @@ static void board_sdcard_enable(FAR void *arg)
               ret = mount("/dev/mmcsd0", "/mnt/sd0", "vfat", 0, NULL);
               if (ret == 0)
                 {
-                  finfo("Successfully mount a SDCARD via the MMC/SD driver\n");
+                  finfo(
+                     "Successfully mount a SDCARD via the MMC/SD driver\n");
                 }
               else
                 {
                   _err("ERROR: Failed to mount the SDCARD. %d\n", errno);
+                  goto release_frequency_lock;
                 }
             }
         }
@@ -180,9 +182,9 @@ static void board_sdcard_enable(FAR void *arg)
 
 release_frequency_lock:
 
-    /* Release frequency lock */
+  /* Release frequency lock */
 
-    up_pm_release_freqlock(&g_hv_lock);
+  up_pm_release_freqlock(&g_hv_lock);
 }
 
 /****************************************************************************
@@ -316,7 +318,7 @@ static int board_sdcard_detect_int(int irq, FAR void *context, FAR void *arg)
                            NULL);
     }
 
-   return OK;
+  return OK;
 }
 #endif
 

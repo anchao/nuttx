@@ -1,7 +1,7 @@
 /****************************************************************************
  * boards/arm/imxrt/imxrt1060-evk/src/imxrt_bringup.c
  *
- *   Copyright (C) 2018 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2018, 2020 Gregory Nutt. All rights reserved.
  *   Authors: Gregory Nutt <gnutt@nuttx.org>
  *            David Sidrane <david_s5@nscdg.com>
  *
@@ -52,6 +52,14 @@
 
 #ifdef CONFIG_IMXRT_USDHC
 #  include "imxrt_usdhc.h"
+#endif
+
+#ifdef CONFIG_USBMONITOR
+#  include <nuttx/usb/usbmonitor.h>
+#endif
+
+#ifdef CONFIG_PL2303
+#  include <nuttx/usb/pl2303.h>
 #endif
 
 #include "imxrt1060-evk.h"
@@ -121,7 +129,10 @@ static int nsh_sdmmc_initialize(void)
                  "ERROR: Failed to bind SDIO to the MMC/SD driver: %d\n",
                  ret);
         }
+
+      imxrt_usdhc_set_sdio_card_isr(sdmmc, NULL, NULL);
     }
+
   return OK;
 }
 #else
@@ -181,6 +192,25 @@ int imxrt_bringup(void)
     }
 #endif
 
+#if defined(CONFIG_IMXRT_USBOTG) || defined(CONFIG_USBHOST)
+  ret = imxrt_usbhost_initialize();
+  if (ret != OK)
+    {
+      syslog(LOG_ERR, "ERROR: Failed to start USB host services: %d\n", ret);
+      return ret;
+    }
+#endif
+
+#ifdef CONFIG_USBMONITOR
+  /* Start the USB Monitor */
+
+  ret = usbmonitor_start();
+  if (ret != OK)
+    {
+      syslog(LOG_ERR, "ERROR: Failed to start USB monitor: %d\n", ret);
+    }
+#endif
+
 #ifdef CONFIG_DEV_GPIO
   /* Initialize the GPIO driver */
 
@@ -216,6 +246,10 @@ int imxrt_bringup(void)
     {
       syslog(LOG_ERR, "ERROR: fb_register() failed: %d\n", ret);
     }
+#endif
+
+#ifdef CONFIG_PL2303
+  usbdev_serialinitialize(0);
 #endif
 
   UNUSED(ret);

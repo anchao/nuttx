@@ -49,13 +49,15 @@
  * Public Functions
  ****************************************************************************/
 
+#ifdef USE_EARLYSERIALINIT
+
 /****************************************************************************
  * Name: sam_earlyserialinit
  *
  * Description:
  *   Performs the low level serial initialization early so that the serial
  *   console will be available during bootup.  This must be called
- *   before up_serialinit.
+ *   before arm_serialinit.
  *
  ****************************************************************************/
 
@@ -68,7 +70,7 @@ void sam_earlyserialinit(void)
 #if defined(SAMA5_HAVE_UART) || defined(SAMA5_HAVE_USART)
   /* Initialize UART/USART drivers */
 
-   uart_earlyserialinit();
+  uart_earlyserialinit();
 #endif
 
 #ifdef SAMA5_HAVE_FLEXCOM_USART
@@ -77,17 +79,18 @@ void sam_earlyserialinit(void)
   flexus_earlyserialinit();
 #endif
 }
+#endif
 
 /****************************************************************************
- * Name: up_serialinit
+ * Name: arm_serialinit
  *
  * Description:
  *   Register all serial console and serial ports.  This assumes
- *   that up_earlyserialinit was called previously.
+ *   that arm_earlyserialinit was called previously.
  *
  ****************************************************************************/
 
-void up_serialinit(void)
+void arm_serialinit(void)
 {
 #if defined(SAMA5_HAVE_UART) || defined(SAMA5_HAVE_USART)
   /* Register UART/USART drivers */

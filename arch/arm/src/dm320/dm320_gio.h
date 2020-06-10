@@ -42,7 +42,7 @@
 
 #ifndef __ASSEMBLY__
 # include <stdint.h>
-# include "up_arch.h"
+# include "arm_arch.h"
 #endif
 
 /************************************************************************************
@@ -173,4 +173,4 @@
 
 #endif
 
-#endif  /* __DM320_DM320_GIO_H */
+#endif /* __DM320_DM320_GIO_H */

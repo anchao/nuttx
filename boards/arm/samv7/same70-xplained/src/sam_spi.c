@@ -47,7 +47,7 @@
 #include <nuttx/spi/spi.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "chip.h"
 #include "sam_gpio.h"
 #include "sam_spi.h"
@@ -73,13 +73,13 @@ void sam_spidev_initialize(void)
 #ifdef CONFIG_SAME70XPLAINED_MB1_SPI
   /* Enable chip select for mikroBUS1 */
 
-  (void)sam_configgpio(CLICK_MB1_CS);
+  sam_configgpio(CLICK_MB1_CS);
 #endif
 
 #ifdef CONFIG_SAME70XPLAINED_MB2_SPI
   /* Enable chip select for mikroBUS2 */
 
-  (void)sam_configgpio(CLICK_MB2_CS);
+  sam_configgpio(CLICK_MB2_CS);
 #endif
 #endif
 

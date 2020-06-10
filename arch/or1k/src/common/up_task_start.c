@@ -43,7 +43,7 @@
 #include "svcall.h"
 #include "up_internal.h"
 
-#if defined(CONFIG_BUILD_PROTECTED) || defined(CONFIG_BUILD_KERNEL)
+#ifndef CONFIG_BUILD_FLAT
 
 /****************************************************************************
  * Public Functions
@@ -82,6 +82,8 @@ void up_task_start(main_t taskentry, int argc, FAR char *argv[])
 
   sys_call3(SYS_task_start, (uintptr_t)taskentry, (uintptr_t)argc,
             (uintptr_t)argv);
+
+  PANIC();
 }
 
-#endif /* CONFIG_BUILD_PROTECTED || CONFIG_BUILD_KERNEL */
+#endif /* !CONFIG_BUILD_FLAT */

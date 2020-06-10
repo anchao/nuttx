@@ -46,7 +46,7 @@
 #include "sctlr.h"
 #include "mmu.h"
 #include "chip.h"
-#include "up_internal.h"
+#include "arm_internal.h"
 
 #ifndef CONFIG_PAGING
 
@@ -174,7 +174,7 @@
 #ifdef CONFIG_DEBUG_FEATURES
 	.macro	showprogress, code
 	mov		r0, #\code
-	bl		up_lowputc
+	bl		arm_lowputc
 	.endm
 #else
 	.macro	showprogress, code
@@ -309,7 +309,7 @@ __start:
 
 	adr		r0, .LCraminfo			/* Address of primary RAM info */
 	ldmia	r0, {r1, r2, r3, r4}	/* Load the primary RAM description */
-	add		r2, r5, r2, lsr #18		/* R2=Offset page table addres */
+	add		r2, r5, r2, lsr #18		/* R2=Offset page table address */
 
 	/* Loop until each page table entry has been written for the primary RAM
 	 * region.
@@ -631,6 +631,7 @@ __start:
 	/* Set up the stack pointer and clear the frame pointer */
 
 	ldr		sp, .Lstackpointer
+	bic		sp, sp, #7	/* Get the stack pointer with 8-byte alignment */
 	mov		fp, #0
 
 #ifndef CONFIG_BOOT_SDRAM_DATA
@@ -693,7 +694,7 @@ arm_data_initialize:
 
 #ifdef CONFIG_BOOT_RUNFROMFLASH
 	/* If the .data section is in a separate, uninitialized address space,
-	 * then we will also need to copy the initial values of of the .data
+	 * then we will also need to copy the initial values of the .data
 	 * section from the .text region into that .data region.  This would
 	 * be the case if we are executing from FLASH and the .data section
 	 * lies in a different physical address region OR if we are support
@@ -784,6 +785,7 @@ arm_data_initialize:
  * Data section variables
  ***************************************************************************/
 
+#ifndef CONFIG_SMP
 	/* This global variable is unsigned long g_idle_topstack and is
 	 * exported from here only because of its coupling to .Linitparms
 	 * above.
@@ -804,3 +806,4 @@ g_idle_topstack:
 	.size	g_idle_topstack, .-g_idle_topstack
 #endif
 	.end
+#endif

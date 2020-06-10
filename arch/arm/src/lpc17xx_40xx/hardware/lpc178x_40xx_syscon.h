@@ -227,7 +227,7 @@
 #  define SYSCON_FLASHCFG_TIM_2             (2 << SYSCON_FLASHCFG_TIM_SHIFT) /* 3 CPU clock <= 60 MHz CPU clock */
 #  define SYSCON_FLASHCFG_TIM_3             (3 << SYSCON_FLASHCFG_TIM_SHIFT) /* 4 CPU clock <= 80 MHz CPU clock */
 #  define SYSCON_FLASHCFG_TIM_4             (4 << SYSCON_FLASHCFG_TIM_SHIFT) /* 5 CPU clock <= 100 MHz CPU clock
-                                                                              * (Up to 120 Mhz for LPC1788x) */
+                                                                              * (Up to 120 MHz for LPC1788x) */
 #  define SYSCON_FLASHCFG_TIM_5             (5 << SYSCON_FLASHCFG_TIM_SHIFT) /* "safe" setting for any conditions */
                                                       /* Bits 16-31:  Reserved */
 /* Memory Mapping Control register (MEMMAP - 0x400F C040) */
@@ -338,7 +338,7 @@
 #define SYSCON_PBOOST_BOOST_SHIFT           (0)       /* Bits 0-1: Boost control bits */
 #define SYSCON_PBOOST_BOOST_MASK            (3 << SYSCON_PBOOST_BOOST_SHIFT)
 #define SYSCON_PBOOST_BOOST_OFF             (0)       /* Boost OFF, operation must be below 100MHz */
-#define SYSCON_PBOOST_BOOST_ON              (3)       /* Boost ON, operation upto 120MHz allowed */
+#define SYSCON_PBOOST_BOOST_ON              (3)       /* Boost ON, operation up to 120MHz allowed */
                                                       /* Bits 2-31: Reserved */
 /* SPIFI Clock Selection Register */
 
@@ -613,7 +613,7 @@
 #define SYSCON_EMCCAL_START_SHIFT           (14)     /* Bit 14: Start control bit for EMC calibration counter */
 #define SYSCON_EMCCAL_START_MASK            (1 << SYSCON_EMCCAL_START_SHIFT)
 #  define SYSCON_EMCCAL_START               (1)      /* Automatically cleared when measurement is done */
-#define SYSCON_EMCCAL_DONE_SHIFT            (15)     /* Bit 15: Measurement completetion flag bit */
+#define SYSCON_EMCCAL_DONE_SHIFT            (15)     /* Bit 15: Measurement completion flag bit */
 #define SYSCON_EMCCAL_DONE_MASK             (1 << SYSCON_EMCCAL_DONE_SHIFT)
                                                      /* Automatically cleared when START bit is set */
                                                      /* Bits 16-31: Reserved */

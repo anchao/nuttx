@@ -55,8 +55,8 @@
 #  include <nuttx/lastkmsg.h>
 #endif /* CONFIG_LASTKMSG */
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 #include "nvic.h"
 #include <arch/board/board.h>
 
@@ -143,7 +143,7 @@ static void go_nx_start(void *pv, unsigned int nbytes)
  ****************************************************************************/
 
 #ifdef CONFIG_DEBUG_FEATURES
-#  define showprogress(c) up_lowputc(c)
+#  define showprogress(c) arm_lowputc(c)
 #else
 #  define showprogress(c)
 #endif
@@ -334,7 +334,7 @@ void __start(void)
   /* Perform early serial initialization */
 
 #ifdef USE_EARLYSERIALINIT
-  up_earlyserialinit();
+  arm_earlyserialinit();
 #endif
   showprogress('D');
 
@@ -394,7 +394,7 @@ void __start(void)
   showprogress('\r');
   showprogress('\n');
 
-  (void)get_cpu_ver();
+  get_cpu_ver();
 
   /* run as interrupt context, before scheduler running */
 
@@ -409,9 +409,8 @@ void __start(void)
 
   nx_start();
 
-  /* Shoulnd't get here */
+  /* Shouldn't get here */
 
   for (;;);
 #endif
 }
-

@@ -66,9 +66,14 @@
 
 FAR void *malloc(size_t size)
 {
-#ifdef CONFIG_BUILD_KERNEL
+#if defined(CONFIG_ARCH_ADDRENV) && defined(CONFIG_BUILD_KERNEL)
   FAR void *brkaddr;
   FAR void *mem;
+
+  if (size < 1)
+    {
+      return NULL;
+    }
 
   /* Loop until we successfully allocate the memory or until an error
    * occurs. If we fail to allocate memory on the first pass, then call

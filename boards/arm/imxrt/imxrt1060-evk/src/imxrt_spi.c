@@ -48,7 +48,7 @@
 #include <nuttx/spi/spi.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 
 #include "imxrt_config.h"
 #include "imxrt_lpspi.h"
@@ -74,11 +74,11 @@
 void weak_function imxrt_spidev_initialize(void)
 {
 #ifdef CONFIG_IMXRT_LPSPI1
-  (void)imxrt_config_gpio(GPIO_LPSPI1_CS); /* LPSPI1 chip select */
-  (void)imxrt_config_gpio(GPIO_MMCSD_EN);
+  imxrt_config_gpio(GPIO_LPSPI1_CS); /* LPSPI1 chip select */
+  imxrt_config_gpio(GPIO_MMCSD_EN);
 #endif
 #ifdef CONFIG_IMXRT_LPSPI3
-  (void)imxrt_config_gpio(GPIO_LPSPI3_CS); /* LPSPI3 chip select */
+  imxrt_config_gpio(GPIO_LPSPI3_CS); /* LPSPI3 chip select */
 #endif
 }
 

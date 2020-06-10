@@ -44,8 +44,8 @@
 #include <nuttx/board.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "lpc17_40_emc.h"
 
@@ -122,6 +122,6 @@ void board_initialize(void)
 {
   /* Perform board-specific initialization */
 
-  (void)lx_cpu_bringup();
+  lx_cpu_bringup();
 }
 #endif

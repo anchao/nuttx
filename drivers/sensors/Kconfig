@@ -3,6 +3,14 @@
 # see the file kconfig-language.txt in the NuttX tools repository.
 #
 
+menuconfig SENSORS
+	bool "Sensor Device Support"
+	default n
+	---help---
+		Drivers for various sensors
+
+if SENSORS
+
 config SENSORS_APDS9960
 	bool "Avago APDS-9960 Gesture Sensor support"
 	default n
@@ -691,6 +699,20 @@ config SGP30_DEBUG
 
 endif # SENSORS_SGP30
 
+config SENSORS_AHT10
+        bool "ASAIR AHT10 temperature and humidity sensor"
+        default n
+        select I2C
+        ---help---
+                Enable driver support for the ASAIR AHT10 temperature and humidity sensors.
+
+if SENSORS_AHT10
+config AHT10_I2C_FREQUENCY
+	int "AHT10 I2C frequency"
+	default 400000
+	range 1 400000
+endif # SENSORS_AHT10
+
 config SENSORS_SHT21
 	bool "Sensirion SHT21 temperature and humidity sensor"
 	default n
@@ -829,3 +851,34 @@ config SENSORS_ADT7320
 	select SPI
 	---help---
 		Enables support for the ADT7320 Driver
+
+config SENSORS_HDC1008
+	bool "TI HDC1008 temperature and humidity sensor"
+	default n
+	select I2C
+	---help---
+		Enable driver support for the TI HDC1008 temperature and humidity sensor.
+
+if SENSORS_HDC1008
+
+config HDC1008_I2C_ADDRESS
+  hex "HDC1008 I2C address"
+  default 0x40
+  range 0x40 0x43
+  ---help---
+    The I2C address of the HDC1008 sensor. It can be configured via straps to
+    a value between 0x40 and 0x43.
+
+config HDC1008_I2C_FREQUENCY
+	int "HDC1008 I2C frequency"
+	default 400000
+	range 1 400000
+
+config HDC1008_DEBUG
+	bool "Debug support for the HDC1008"
+	default n
+	---help---
+		Enables debug features for the HDC1008
+
+endif # SENSORS_HDC1008
+endif # SENSORS

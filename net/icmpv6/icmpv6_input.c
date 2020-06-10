@@ -204,7 +204,7 @@ static uint16_t icmpv6_datahandler(FAR struct net_driver_s *dev,
   return buflen;
 
 drop_with_chain:
-  (void)iob_free_chain(iob, IOBUSER_NET_SOCK_ICMPv6);
+  iob_free_chain(iob, IOBUSER_NET_SOCK_ICMPv6);
 
 drop:
   dev->d_len = 0;
@@ -455,7 +455,7 @@ void icmpv6_input(FAR struct net_driver_s *dev, unsigned int iplen)
       {
         FAR struct icmpv6_echo_reply_s *reply;
         FAR struct icmpv6_conn_s *conn;
-        uint16_t flags = ICMPv6_ECHOREPLY;
+        uint16_t flags = ICMPv6_NEWDATA;
 
         /* Nothing consumed the ICMP reply.  That might be because this is
          * an old, invalid reply or simply because the ping application
@@ -479,7 +479,7 @@ void icmpv6_input(FAR struct net_driver_s *dev, unsigned int iplen)
 
         /* Was the ECHO reply consumed by any waiting thread? */
 
-        if ((flags & ICMPv6_ECHOREPLY) != 0)
+        if ((flags & ICMPv6_NEWDATA) != 0)
           {
             uint16_t nbuffered;
 

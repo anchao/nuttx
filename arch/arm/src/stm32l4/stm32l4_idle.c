@@ -49,7 +49,7 @@
 #include "chip.h"
 #include "stm32l4_pm.h"
 #include "stm32l4_rcc.h"
-#include "up_internal.h"
+#include "arm_internal.h"
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -110,7 +110,7 @@ static void up_idlepm(void)
         {
           /* The new state change failed, revert to the preceding state */
 
-          (void)pm_changestate(PM_IDLE_DOMAIN, oldstate);
+          pm_changestate(PM_IDLE_DOMAIN, oldstate);
         }
       else
         {
@@ -152,7 +152,7 @@ static void up_idlepm(void)
           break;
 
         case PM_SLEEP:
-          (void)stm32l4_pmstandby();
+          stm32l4_pmstandby();
           break;
 
         default:
