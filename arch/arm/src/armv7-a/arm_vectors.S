@@ -157,6 +157,9 @@ arm_vectorirq:
 	/* On entry, we are in IRQ mode.  We are free to use the IRQ mode r13
 	 * and r14.
 	 */
+#ifdef CONFIG_SMP
+	clrex
+#endif
 
 	ldr		r13, .Lirqtmp
 	sub		lr, lr, #4
