@@ -31,12 +31,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 ############################################################################
-
 # The vector table is the "head" object, i.e., the one that must forced into
 # the link in order to draw in all of the other components
 
 HEAD_ASRC  = arm_vectortab.S
-HEAD_CSRC  = spare_head.c
 
 ifeq ($(CONFIG_BUILD_KERNEL),y)
 STARTUP_OBJS = crt0$(OBJEXT)
@@ -57,38 +55,46 @@ endif
 # Common assembly language files
 
 CMN_ASRCS += arm_vectors.S arm_fpuconfig.S arm_fullcontextrestore.S
-CMN_ASRCS += arm_saveusercontext.S arm_vectoraddrexcptn.S arm_vfork.S
-CMN_ASRCS += arm_testset.S arm_fetchadd.S
+CMN_ASRCS += arm_saveusercontext.S arm_vectoraddrexcptn.S
+CMN_ASRCS += arm_testset.S arm_fetchadd.S vfork.S
 CMN_ASRCS += cp15_coherent_dcache.S cp15_invalidate_dcache.S
 CMN_ASRCS += cp15_clean_dcache.S cp15_flush_dcache.S cp15_invalidate_dcache_all.S
 
 # Common C source files
 
-CMN_CSRCS  = up_initialize.c up_interruptcontext.c up_exit.c up_createstack.c
-CMN_CSRCS += up_releasestack.c up_usestack.c up_vfork.c up_puts.c up_mdelay.c
-CMN_CSRCS += up_stackframe.c up_udelay.c up_modifyreg8.c up_modifyreg16.c
-CMN_CSRCS += up_modifyreg32.c
+CMN_CSRCS  = arm_initialize.c arm_interruptcontext.c arm_exit.c arm_createstack.c
+CMN_CSRCS += arm_releasestack.c arm_usestack.c arm_vfork.c arm_puts.c arm_mdelay.c
+CMN_CSRCS += arm_stackframe.c arm_udelay.c arm_modifyreg8.c arm_modifyreg16.c
+CMN_CSRCS += arm_modifyreg32.c
 
 CMN_CSRCS += arm_assert.c arm_blocktask.c arm_copyfullstate.c arm_dataabort.c
-CMN_CSRCS += arm_doirq.c arm_initialstate.c arm_mmu.c arm_prefetchabort.c
-CMN_CSRCS += arm_releasepending.c arm_reprioritizertr.c
+CMN_CSRCS += arm_doirq.c arm_gicv2.c arm_initialstate.c arm_mmu.c
+CMN_CSRCS += arm_prefetchabort.c arm_releasepending.c arm_reprioritizertr.c
 CMN_CSRCS += arm_schedulesigaction.c arm_sigdeliver.c arm_syscall.c
 CMN_CSRCS += arm_unblocktask.c arm_undefinedinsn.c
+
+ifeq ($(CONFIG_ARM_SEMIHOSTING_HOSTFS),y)
+CMN_CSRCS += arm_hostfs.c
+endif
+
+ifneq ($(CONFIG_ARCH_IDLE_CUSTOM),y)
+CMN_CSRCS += r328_idle.c
+endif
 
 ifeq ($(CONFIG_SMP),y)
 CMN_CSRCS += arm_cpuindex.c arm_cpustart.c arm_cpupause.c arm_cpuidlestack.c
 CMN_CSRCS += arm_scu.c
 endif
 
+ifeq ($(CONFIG_DEBUG_IRQ_INFO),y)
+CMN_CSRCS += arm_gicv2_dump.c
+endif
+
 # Use common heap allocation for now (may need to be customized later)
 
-CMN_CSRCS += up_allocateheap.c
+CMN_CSRCS += arm_allocateheap.c
 
 # Configuration dependent C and assembly language files
-
-ifneq ($(CONFIG_ARCH_IDLE_CUSTOM),y)
-CMN_CSRCS += up_idle.c
-endif
 
 ifeq ($(CONFIG_PAGING),y)
 CMN_CSRCS += arm_allocpage.c arm_checkmapping.c arm_pginitialize.c
@@ -96,7 +102,7 @@ CMN_CSRCS += arm_va2pte.c
 endif
 
 ifeq ($(CONFIG_BUILD_KERNEL),y)
-CMN_CSRCS += up_task_start.c up_pthread_start.c arm_signal_dispatch.c
+CMN_CSRCS += arm_task_start.c arm_pthread_start.c arm_signal_dispatch.c
 endif
 
 ifeq ($(CONFIG_ARCH_ADDRENV),y)
@@ -127,10 +133,8 @@ CMN_CSRCS += arm_copyarmstate.c
 endif
 
 ifeq ($(CONFIG_STACK_COLORATION),y)
-CMN_CSRCS += up_checkstack.c
+CMN_CSRCS += arm_checkstack.c
 endif
-
-CMN_CSRCS += arm_gicv2.c arm_gicv2_dump.c
 
 # r328-specific assembly language files
 

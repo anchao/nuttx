@@ -27,6 +27,13 @@ config DEFAULT_SMALL
 		have already been selected in your configuration file.  This applies
 		only to new settings that require a default value.
 
+config DEFAULT_TASK_STACKSIZE
+	int "The default stack size for tasks"
+	default 8192 if ARCH_SIM
+	default 2048
+	---help---
+		The default stack size for tasks.
+
 choice
 	prompt "Build Host Platform"
 	default HOST_LINUX
@@ -53,6 +60,14 @@ config TOOLCHAIN_WINDOWS
 		Selected internally if the selected Windows environment is compatible
 		with the use of Windows native toolchains.
 
+config CYGWIN_WINTOOL
+	bool
+	default n
+	depends on WINDOWS_CYGWIN
+	---help---
+		Selected internally if Cygwin environment with the use of Windows
+		native toolchains.
+
 choice
 	prompt "Windows Build Environment"
 	default WINDOWS_CYGWIN
@@ -61,9 +76,15 @@ choice
 config WINDOWS_NATIVE
 	bool "Windows Native"
 	select TOOLCHAIN_WINDOWS
+	depends on EXPERIMENTAL
 	---help---
 		Build natively in a CMD.exe environment with Windows style paths
-		(like C:\cgywin\home)
+		(like C:\cygwin\home)
+
+		The Windows native build is complete and available, but not often
+		used or verified.  As a consequence, it cannot be assured to be
+		fully functional at any given time.  Hence, it is marked here as
+		EXPERIMENTAL so that the end user will be aware of this state.
 
 config WINDOWS_CYGWIN
 	bool "Cygwin"
@@ -75,7 +96,7 @@ config WINDOWS_CYGWIN
 config WINDOWS_UBUNTU
 	bool "Ubuntu under Windows 10"
 	---help---
-		Build natively in an Ubuntu shell under Windoes 10 environment with
+		Build natively in an Ubuntu shell under Windows 10 environment with
 		POSIX style paths (like /mnt/c/Program Files)
 
 config WINDOWS_MSYS
@@ -83,7 +104,7 @@ config WINDOWS_MSYS
 	select TOOLCHAIN_WINDOWS
 	---help---
 		Build natively in a Cygwin environment with POSIX style paths (like
-		/cygdrive/c/cgywin/home)
+		/cygdrive/c/cygwin/home)
 
 config WINDOWS_OTHER
 	bool "Windows POSIX-like environment"
@@ -216,7 +237,6 @@ endchoice # Build configuration
 config BUILD_2PASS
 	bool "Two pass build"
 	default n
-	depends on !BUILD_KERNEL
 	---help---
 		Enables the two pass build options.
 
@@ -272,20 +292,6 @@ endif # Build 2-pass
 endmenu # Build Setup
 
 menu "Binary Output Formats"
-
-config RRLOAD_BINARY
-	bool "rrload binary format"
-	default n
-	---help---
-		Create nuttx.rr in the rrload binary format used with
-		BSPs from www.ridgerun.com using the tools/mkimage.sh script.
-
-config CXD56_BINARY
-	bool "spk binary format"
-	default n
-	---help---
-		Create nuttx.spk binary format used on spresense board and boards
-		based on cxd56xx arch.
 
 config INTELHEX_BINARY
 	bool "Intel HEX binary format"
@@ -600,7 +606,7 @@ endif # DEBUG_AUDIO
 config DEBUG_BINFMT
 	bool "Binary Loader Debug Features"
 	default n
-	depends on !BINFMT_DISABLE
+	depends on !BINFMT_DISABLE || LIBC_MODLIB
 	---help---
 		Enable binary loader debug features.
 
@@ -1806,4 +1812,3 @@ endmenu
 menu "Application Configuration"
 source "$APPSDIR/Kconfig"
 endmenu
-

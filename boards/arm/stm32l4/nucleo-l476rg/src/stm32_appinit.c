@@ -148,7 +148,7 @@ static void stm32_i2ctool(void)
  *         implementation without modification.  The argument has no
  *         meaning to NuttX; the meaning of the argument is a contract
  *         between the board-specific initialization logic and the
- *         matching application logic.  The value cold be such things as a
+ *         matching application logic.  The value could be such things as a
  *         mode enumeration value, a set of DIP switch switch settings, a
  *         pointer to configuration data read from a file or serial FLASH,
  *         or whatever you would like to do with it.  Every implementation
@@ -174,9 +174,7 @@ int board_app_initialize(uintptr_t arg)
   int index;
   char buf[9];
 #endif
-  int ret;
-
-  (void)ret;
+  int ret = OK;
 
 #ifdef HAVE_PROC
   /* Mount the proc filesystem */
@@ -432,7 +430,7 @@ int board_app_initialize(uintptr_t arg)
     {
       serr("ERROR: Failed to initialize LSM303AGR driver: %d\n", ret);
     }
-#endif    
+#endif
 
 #ifdef CONFIG_DEV_GPIO
   ret = stm32l4_gpio_initialize();
@@ -456,8 +454,7 @@ int board_app_initialize(uintptr_t arg)
     }
 #endif
 
-  UNUSED(ret);
-  return OK;
+  return ret;
 }
 
 #ifdef CONFIG_BOARDCTL_IOCTL

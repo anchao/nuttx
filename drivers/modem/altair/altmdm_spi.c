@@ -41,8 +41,10 @@
 #include <string.h>
 
 #include <nuttx/kmalloc.h>
+#include <nuttx/signal.h>
 #include <nuttx/spi/spi.h>
 #include <nuttx/modem/altmdm.h>
+
 #include "altmdm_sys.h"
 #include "altmdm_pm.h"
 #include "altmdm_pm_state.h"
@@ -287,7 +289,7 @@ static int get_dmasize(FAR struct altmdm_dev_s *priv, int data_size)
  * Name: wait_receiverready
  *
  * Description:
- *   Wait until reciever is ready.
+ *   Wait until receiver is ready.
  *
  ****************************************************************************/
 
@@ -1884,7 +1886,7 @@ int altmdm_spi_init(FAR struct altmdm_dev_s *priv)
 
   g_privdata = priv;
 
-  /* Initalize modem power management driver */
+  /* Initialize modem power management driver */
 
   altmdm_pm_init(priv);
 
@@ -1906,11 +1908,11 @@ int altmdm_spi_init(FAR struct altmdm_dev_s *priv)
 
   /* SPI settings */
 
-  (void)SPI_LOCK(priv->spi, true);
+  SPI_LOCK(priv->spi, true);
   SPI_SETMODE(priv->spi, SPIDEV_MODE0);
   SPI_SETBITS(priv->spi, 8);
-  (void)SPI_SETFREQUENCY(priv->spi, SPI_MAXFREQUENCY);
-  (void)SPI_LOCK(priv->spi, false);
+  SPI_SETFREQUENCY(priv->spi, SPI_MAXFREQUENCY);
+  SPI_LOCK(priv->spi, false);
 
   priv->spidev.task_id = task_create(XFER_TASK_NAME, XFER_TASK_PRI,
                                      XFER_TASK_STKSIZE, xfer_task, NULL);
@@ -1943,7 +1945,7 @@ int altmdm_spi_uninit(FAR struct altmdm_dev_s *priv)
           break;
         }
 
-      usleep(10);
+      nxsig_usleep(10);
     }
 
   altmdm_sys_deletelock(&priv->spidev.tx_param.lock);
@@ -1962,7 +1964,7 @@ int altmdm_spi_uninit(FAR struct altmdm_dev_s *priv)
 
   destroy_rxbufffifo(priv);
 
-  /* Uninitalize modem power management driver */
+  /* Uninitialize modem power management driver */
 
   altmdm_pm_uninit(priv);
 
@@ -2153,7 +2155,7 @@ again:
           break;
 
         case TRANS_OK_RCVBUFFUL:
-          usleep(100);
+          nxsig_usleep(100);
           goto again;
           break;
 
@@ -2307,4 +2309,4 @@ int altmdm_spi_clearreceiverready(FAR struct altmdm_dev_s *priv)
 }
 #endif
 
-#endif  /* CONFIG_MODEM_ALTMDM */
+#endif /* CONFIG_MODEM_ALTMDM */

@@ -45,7 +45,7 @@
 #include <nuttx/board.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "freedom-k66f.h"
 
 /****************************************************************************
@@ -113,7 +113,6 @@ void board_late_initialize(void)
 {
   /* Perform board initialization */
 
-  (void)k66_bringup();
+  k66_bringup();
 }
 #endif /* CONFIG_BOARD_LATE_INITIALIZE */
-

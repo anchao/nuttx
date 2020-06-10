@@ -44,6 +44,7 @@
 #include <debug.h>
 #include <string.h>
 
+#include <nuttx/arch.h>
 #include <nuttx/mm/mm.h>
 
 /****************************************************************************
@@ -53,6 +54,45 @@
 #ifndef NULL
 #  define NULL ((void *)0)
 #endif
+
+/****************************************************************************
+ * Private Functions
+ ****************************************************************************/
+
+static void mm_free_delaylist(FAR struct mm_heap_s *heap)
+{
+#if defined(CONFIG_BUILD_FLAT) || defined(__KERNEL__)
+  FAR struct mm_delaynode_s *tmp;
+  irqstate_t flags;
+
+  /* Move the delay list to local */
+
+  flags = enter_critical_section();
+
+  tmp = heap->mm_delaylist;
+  heap->mm_delaylist = NULL;
+
+  leave_critical_section(flags);
+
+  /* Test if the delayed is empty */
+
+  while (tmp)
+    {
+      FAR void *address;
+
+      /* Get the first delayed deallocation */
+
+      address = tmp;
+      tmp = tmp->flink;
+
+      /* The address should always be non-NULL since that was checked in the
+       * 'while' condition above.
+       */
+
+      mm_free(heap, address);
+    }
+#endif
+}
 
 /****************************************************************************
  * Public Functions
@@ -76,6 +116,10 @@ FAR void *mm_malloc(FAR struct mm_heap_s *heap, size_t size)
   void *ret = NULL;
   int ndx;
 
+  /* Firstly, free mm_delaylist */
+
+  mm_free_delaylist(heap);
+
   /* Ignore zero-length allocations */
 
   if (size < 1)
@@ -89,6 +133,8 @@ FAR void *mm_malloc(FAR struct mm_heap_s *heap, size_t size)
 
   alignsize = MM_ALIGN_UP(size + SIZEOF_MM_ALLOCNODE);
   DEBUGASSERT(alignsize >= size);  /* Check for integer overflow */
+  DEBUGASSERT(alignsize >= MM_MIN_CHUNK);
+  DEBUGASSERT(alignsize >= SIZEOF_MM_FREENODE);
 
   /* We need to hold the MM semaphore while we muck with the nodelist. */
 
@@ -100,7 +146,7 @@ FAR void *mm_malloc(FAR struct mm_heap_s *heap, size_t size)
 
   if (alignsize >= MM_MAX_CHUNK)
     {
-      ndx = MM_NNODES-1;
+      ndx = MM_NNODES - 1;
     }
   else
     {
@@ -116,7 +162,10 @@ FAR void *mm_malloc(FAR struct mm_heap_s *heap, size_t size)
 
   for (node = heap->mm_nodelist[ndx].flink;
        node && node->size < alignsize;
-       node = node->flink);
+       node = node->flink)
+    {
+      DEBUGASSERT(node->blink->flink == node);
+    }
 
   /* If we found a node with non-zero size, then this is one to use. Since
    * the list is ordered, we know that is must be best fitting chunk
@@ -152,7 +201,8 @@ FAR void *mm_malloc(FAR struct mm_heap_s *heap, size_t size)
         {
           /* Get a pointer to the next node in physical memory */
 
-          next = (FAR struct mm_freenode_s *)(((FAR char *)node) + node->size);
+          next = (FAR struct mm_freenode_s *)
+                 (((FAR char *)node) + node->size);
 
           /* Create the remainder node */
 
@@ -183,12 +233,13 @@ FAR void *mm_malloc(FAR struct mm_heap_s *heap, size_t size)
       ret = (void *)((FAR char *)node + SIZEOF_MM_ALLOCNODE);
     }
 
+  DEBUGASSERT(ret == NULL || mm_heapmember(heap, ret));
   mm_givesemaphore(heap);
 
 #ifdef CONFIG_MM_FILL_ALLOCATIONS
   if (ret)
     {
-       memset(ret, 0xAA, alignsize - SIZEOF_MM_ALLOCNODE);
+       memset(ret, 0xaa, alignsize - SIZEOF_MM_ALLOCNODE);
     }
 #endif
 

@@ -47,7 +47,7 @@
 
 #include "arm.h"
 #include "lpc2378.h"
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "lpc23xx_uart.h"
 #include "lpc23xx_scb.h"
 #include "lpc23xx_pinsel.h"
@@ -63,7 +63,7 @@
 #ifdef CONFIG_DEBUG_FEATURES
 	.macro	showprogress, code
 	mov	r0, #\code
-	bl	up_lowputc
+	bl	arm_lowputc
 	.endm
 #else
 	.macro	showprogress, code
@@ -100,29 +100,29 @@ _vector_table:
 	ldr	pc, .Lfiqhandler		/* 0x1c: FIQ */
 
 	.globl   __start
-	.globl	up_vectorundefinsn
-	.globl	up_vectorswi
-	.globl	up_vectorprefetch
-	.globl	up_vectordata
-	.globl	up_vectorirq
-	.globl	up_vectorfiq
+	.globl	arm_vectorundefinsn
+	.globl	arm_vectorswi
+	.globl	arm_vectorprefetch
+	.globl	arm_vectordata
+	.globl	arm_vectorirq
+	.globl	arm_vectorfiq
 
 .Lresethandler:
 	.long   __start
 .Lundefinedhandler:
-	.long	up_vectorundefinsn
+	.long	arm_vectorundefinsn
 .Lswihandler:
-	.long	up_vectorswi
+	.long	arm_vectorswi
 .Lprefetchaborthandler:
-	.long	up_vectorprefetch
+	.long	arm_vectorprefetch
 .Ldataaborthandler:
-	.long	up_vectordata
+	.long	arm_vectordata
 .Lirqhandler:
-	.long	up_vectorirq
+	.long	arm_vectorirq
 .Lfiqhandler:
-	.long	up_vectorfiq
+	.long	arm_vectorfiq
 	.size	_vector_table, . - _vector_table
-	
+
 /****************************************************************************
  * OS Entry Point
  ****************************************************************************/
@@ -142,17 +142,17 @@ __start:
 	ldr	r0, =ConfigurePLL
 	mov	lr, pc
 	bx	r0
-	
+
 	/* First, setup initial processor mode */
-	
+
 	mov	r0, #(SVC_MODE | PSR_I_BIT | PSR_F_BIT )
 	msr	cpsr, r0
-	
+
 /* Configure the uart so that we can get debug output as soon
  * as possible.  Modifies r0, r1, r2, and r14.
  */
 	bl	up_lowsetup
-	
+
 	showprogress 'A'
 
 	/* Setup system stack (and get the BSS range) */
@@ -183,7 +183,7 @@ __start:
 
 	mov	fp, #0
 #ifdef USE_EARLYSERIALINIT
-	bl	up_earlyserialinit
+	bl	arm_earlyserialinit
 	showprogress 'S'
 #endif
 
@@ -202,7 +202,7 @@ __start:
 
 	/* Variables:
 	 * _sbss is the start of the BSS region (see ld.script)
-	 * _ebss is the end of the BSS regsion (see ld.script)
+	 * _ebss is the end of the BSS region (see ld.script)
 	 * The idle task stack starts at the end of BSS and is
 	 * of size CONFIG_IDLETHREAD_STACKSIZE.  The heap continues
 	 * from there until the end of memory.  See g_idle_topstack
@@ -230,5 +230,5 @@ LC2:	.long	_eronly	/* Where .data defaults are stored in FLASH */
 g_idle_topstack:
 	.long	_ebss+CONFIG_IDLETHREAD_STACKSIZE
 	.size	g_idle_topstack, .-g_idle_topstack
-	
+
 	.end

@@ -100,7 +100,9 @@
 #  define LO_FRAMELEN IEEE802154_MAX_PHY_PACKET_SIZE
 #endif
 
-/* TX poll delay = 1 seconds. CLK_TCK is the number of clock ticks per second */
+/* TX poll delay = 1 seconds.
+ * CLK_TCK is the number of clock ticks per second
+ */
 
 #define LO_WDDELAY   (1*CLK_TCK)
 
@@ -205,8 +207,10 @@ static int lo_properties(FAR struct radio_driver_s *netdev,
  *
  *    128  112  96   80    64   48   32   16
  *    ---- ---- ---- ----  ---- ---- ---- ----
- *    fe80 0000 0000 0000  0000 00ff fe00 xxxx 2-byte short address IEEE 48-bit MAC
- *    fe80 0000 0000 0000  xxxx xxxx xxxx xxxx 8-byte extended address IEEE EUI-64
+ *    fe80 0000 0000 0000  0000 00ff fe00 xxxx 2-byte
+ *                                             short address IEEE 48-bit MAC
+ *    fe80 0000 0000 0000  xxxx xxxx xxxx xxxx 8-byte
+ *                                             extended address IEEE EUI-64
  *
  ****************************************************************************/
 
@@ -225,10 +229,14 @@ static void lo_addr2ip(FAR struct net_driver_s *dev)
   dev->d_ipv6addr[1]  = 0;
   dev->d_ipv6addr[2]  = 0;
   dev->d_ipv6addr[3]  = 0;
-  dev->d_ipv6addr[4]  = HTONS((uint16_t)g_eaddr[0] << 8 | (uint16_t)g_eaddr[1]);
-  dev->d_ipv6addr[5]  = HTONS((uint16_t)g_eaddr[2] << 8 | (uint16_t)g_eaddr[3]);
-  dev->d_ipv6addr[6]  = HTONS((uint16_t)g_eaddr[4] << 8 | (uint16_t)g_eaddr[5]);
-  dev->d_ipv6addr[7]  = HTONS((uint16_t)g_eaddr[6] << 8 | (uint16_t)g_eaddr[7]);
+  dev->d_ipv6addr[4]  = HTONS((uint16_t)g_eaddr[0] << 8 |
+                              (uint16_t)g_eaddr[1]);
+  dev->d_ipv6addr[5]  = HTONS((uint16_t)g_eaddr[2] << 8 |
+                              (uint16_t)g_eaddr[3]);
+  dev->d_ipv6addr[6]  = HTONS((uint16_t)g_eaddr[4] << 8 |
+                              (uint16_t)g_eaddr[5]);
+  dev->d_ipv6addr[7]  = HTONS((uint16_t)g_eaddr[6] << 8 |
+                              (uint16_t)g_eaddr[7]);
 
   /* Invert the U/L bit */
 
@@ -253,7 +261,8 @@ static void lo_addr2ip(FAR struct net_driver_s *dev)
   dev->d_ipv6addr[4]  = 0;
   dev->d_ipv6addr[5]  = HTONS(0x00ff);
   dev->d_ipv6addr[6]  = HTONS(0xfe00);
-  dev->d_ipv6addr[7]  = HTONS((uint16_t)g_saddr[0] << 8 |  (uint16_t)g_saddr[1]);
+  dev->d_ipv6addr[7]  = HTONS((uint16_t)g_saddr[0] << 8 |
+                              (uint16_t)g_saddr[1]);
 #endif
 }
 #endif
@@ -267,8 +276,10 @@ static void lo_addr2ip(FAR struct net_driver_s *dev)
  *
  *    128  112  96   80    64   48   32   16
  *    ---- ---- ---- ----  ---- ---- ---- ----
- *    fe80 0000 0000 0000  0000 00ff fe00 xxxx 2-byte short address IEEE 48-bit MAC
- *    fe80 0000 0000 0000  xxxx xxxx xxxx xxxx 8-byte extended address IEEE EUI-64
+ *    fe80 0000 0000 0000  0000 00ff fe00 xxxx 2-byte
+ *                                             short address IEEE 48-bit MAC
+ *    fe80 0000 0000 0000  xxxx xxxx xxxx xxxx 8-byte
+ *                                             extended address IEEE EUI-64
  *
  ****************************************************************************/
 
@@ -343,7 +354,7 @@ static int lo_loopback(FAR struct net_driver_s *dev)
   IEEE802154_EADDRCOPY(ind.dest.eaddr, g_eaddr);
 
   /* Loop while there framelist to be sent, i.e., while the freme list is not
-   * emtpy.  Sending, of course, just means relaying back through the network
+   * empty.  Sending, of course, just means relaying back through the network
    * for this driver.
    */
 
@@ -439,7 +450,7 @@ static void lo_loopback_work(FAR void *arg)
   /* Perform the loopback */
 
   net_lock();
-  (void)lo_loopback(&priv->lo_radio.r_dev);
+  lo_loopback(&priv->lo_radio.r_dev);
   net_unlock();
 }
 
@@ -476,11 +487,11 @@ static void lo_poll_work(FAR void *arg)
 
   /* Then perform the poll */
 
-  (void)devif_timer(&priv->lo_radio.r_dev, lo_loopback);
+  devif_timer(&priv->lo_radio.r_dev, LO_WDDELAY, lo_loopback);
 
   /* Setup the watchdog poll timer again */
 
-  (void)wd_start(priv->lo_polldog, LO_WDDELAY, lo_poll_expiry, 1, priv);
+  wd_start(priv->lo_polldog, LO_WDDELAY, lo_poll_expiry, 1, priv);
   net_unlock();
 }
 
@@ -547,7 +558,7 @@ static int lo_ifup(FAR struct net_driver_s *dev)
         dev->d_ipv6addr[3], dev->d_ipv6addr[4], dev->d_ipv6addr[5],
         dev->d_ipv6addr[6], dev->d_ipv6addr[7]);
 #ifdef CONFIG_NET_6LOWPAN_EXTENDEDADDR
-  ninfo("             Node: %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x PANID=%02x:%02x\n",
+  ninfo("Node: %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x PANID=%02x:%02x\n",
          dev->d_mac.radio.nv_addr[0], dev->d_mac.radio.nv_addr[1],
          dev->d_mac.radio.nv_addr[2], dev->d_mac.radio.nv_addr[3],
          dev->d_mac.radio.nv_addr[4], dev->d_mac.radio.nv_addr[5],
@@ -561,11 +572,12 @@ static int lo_ifup(FAR struct net_driver_s *dev)
 #else
   if (dev->d_mac.radio.nv_addrlen == 8)
     {
-      ninfo("Bringing up: Node: %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x PANID=%02x:%02x\n",
+      ninfo("Bringing up: Node: %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x",
              dev->d_mac.radio.nv_addr[0], dev->d_mac.radio.nv_addr[1],
              dev->d_mac.radio.nv_addr[2], dev->d_mac.radio.nv_addr[3],
              dev->d_mac.radio.nv_addr[4], dev->d_mac.radio.nv_addr[5],
-             dev->d_mac.radio.nv_addr[6], dev->d_mac.radio.nv_addr[7],
+             dev->d_mac.radio.nv_addr[6], dev->d_mac.radio.nv_addr[7]);
+      ninfo("            PANID=%02x:%02x\n",
              priv->lo_panid[0], priv->lo_panid[1]);
     }
   else if (dev->d_mac.radio.nv_addrlen == 2)
@@ -582,8 +594,8 @@ static int lo_ifup(FAR struct net_driver_s *dev)
 
   /* Set and activate a timer process */
 
-  (void)wd_start(priv->lo_polldog, LO_WDDELAY, lo_poll_expiry,
-                 1, (wdparm_t)priv);
+  wd_start(priv->lo_polldog, LO_WDDELAY, lo_poll_expiry,
+           1, (wdparm_t)priv);
 
   priv->lo_bifup = true;
   return OK;
@@ -657,7 +669,7 @@ static void lo_txavail_work(FAR void *arg)
       priv->lo_radio.r_dev.d_buf = g_iobuffer.rb_buf;
 #endif
 
-      (void)devif_poll(&priv->lo_radio.r_dev, lo_loopback);
+      devif_poll(&priv->lo_radio.r_dev, lo_loopback);
     }
 
   net_unlock();
@@ -748,8 +760,8 @@ static int lo_addmac(FAR struct net_driver_s *dev, FAR const uint8_t *mac)
  * Name: lo_rmmac
  *
  * Description:
- *   NuttX Callback: Remove the specified MAC address from the hardware multicast
- *   address filtering
+ *   NuttX Callback: Remove the specified MAC address from the hardware
+ *   multicast address filtering
  *
  * Input Parameters:
  *   dev  - Reference to the NuttX driver state structure
@@ -959,7 +971,9 @@ static int lo_req_data(FAR struct radio_driver_s *netdev,
       DEBUGASSERT(iob->io_offset == MAC_HDRLEN);
       memset(iob->io_data, 0, MAC_HDRLEN);
 
-      /* Add the IOB to the tail of the queue of framelist to be looped back */
+      /* Add the IOB to the tail of the queue of framelist to be looped
+       * back
+       */
 
       if (priv->lo_tail == NULL)
         {
@@ -1033,7 +1047,8 @@ static int lo_properties(FAR struct radio_driver_s *netdev,
   memset(properties->sp_mcast.nv_addr, 0xff, RADIO_MAX_ADDRLEN);
 
 #ifdef CONFIG_NET_STARPOINT
-  /* Star hub node address -- Not supported*/
+  /* Star hub node address -- Not supported */
+
 #endif
 
   return OK;
@@ -1105,9 +1120,10 @@ int ieee8021514_loopback(void)
   priv->lo_polldog    = wd_create();      /* Create periodic poll timer */
 
 #ifdef CONFIG_NET_6LOWPAN
-  /* Make sure the our single packet buffer is attached. We must do this before
-   * registering the device since, once the device is registered, a packet may
-   * be attempted to be forwarded and require the buffer.
+  /* Make sure the our single packet buffer is attached.
+   * We must do this before registering the device since, once the device
+   * is registered, a packet may be attempted to be forwarded and require
+   * the buffer.
    */
 
   priv->lo_radio.r_dev.d_buf = g_iobuffer.rb_buf;
@@ -1117,7 +1133,7 @@ int ieee8021514_loopback(void)
    * performed.
    */
 
-  (void)netdev_register(&priv->lo_radio.r_dev, NET_LL_IEEE802154);
+  netdev_register(&priv->lo_radio.r_dev, NET_LL_IEEE802154);
 
   /* Put the network in the UP state */
 

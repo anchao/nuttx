@@ -52,7 +52,9 @@
 #include <nuttx/semaphore.h>
 #include <nuttx/net/netconfig.h>
 #include <nuttx/net/net.h>
+#include <nuttx/net/netlink.h>
 
+#include "utils/utils.h"
 #include "netlink/netlink.h"
 
 #ifdef CONFIG_NET_NETLINK
@@ -88,23 +90,35 @@ static dq_queue_t g_active_netlink_connections;
 
 static void _netlink_semtake(FAR sem_t *sem)
 {
-  int ret;
-
-  /* Take the semaphore (perhaps waiting) */
-
-  while ((ret = net_lockedwait(sem)) < 0)
-    {
-      /* The only case that an error should occur here is if
-       * the wait was awakened by a signal.
-       */
-
-      DEBUGASSERT(ret == -EINTR || ret == -ECANCELED);
-    }
+  net_lockedwait_uninterruptible(sem);
 }
 
 static void _netlink_semgive(FAR sem_t *sem)
 {
-  (void)nxsem_post(sem);
+  nxsem_post(sem);
+}
+
+/****************************************************************************
+ * Name: netlink_response_available
+ *
+ * Description:
+ *   Handle a Netlink response available notification.
+ *
+ * Input Parameters:
+ *   Standard work handler parameters
+ *
+ * Returned Value:
+ *   None
+ *
+ ****************************************************************************/
+
+static void netlink_response_available(FAR void *arg)
+{
+  DEBUGASSERT(arg != NULL);
+
+  /* wakeup the waiter */
+
+  _netlink_semgive(arg);
 }
 
 /****************************************************************************
@@ -115,7 +129,7 @@ static void _netlink_semgive(FAR sem_t *sem)
  * Name: netlink_initialize()
  *
  * Description:
- *   Initialize the User Socket connection structures.  Called once and only
+ *   Initialize the NetLink connection structures.  Called once and only
  *   from the networking layer.
  *
  ****************************************************************************/
@@ -157,8 +171,9 @@ FAR struct netlink_conn_s *netlink_alloc(void)
   /* The free list is protected by a semaphore (that behaves like a mutex). */
 
   _netlink_semtake(&g_free_sem);
-  conn = (FAR struct netlink_conn_s *)dq_remfirst(&g_free_netlink_connections);
-  if (conn)
+  conn = (FAR struct netlink_conn_s *)
+           dq_remfirst(&g_free_netlink_connections);
+  if (conn != NULL)
     {
       /* Make sure that the connection is marked as uninitialized */
 
@@ -177,8 +192,8 @@ FAR struct netlink_conn_s *netlink_alloc(void)
  * Name: netlink_free()
  *
  * Description:
- *   Free a NetLink connection structure that is no longer in use. This should
- *   be done by the implementation of close().
+ *   Free a NetLink connection structure that is no longer in use. This
+ *   should be done by the implementation of close().
  *
  ****************************************************************************/
 
@@ -237,44 +252,148 @@ FAR struct netlink_conn_s *netlink_nextconn(FAR struct netlink_conn_s *conn)
 }
 
 /****************************************************************************
- * Name: netlink_active
- *
- * Description:
- *   Find a connection structure that is the appropriate connection for the
- *   provided NetLink address
- *
- * Assumptions:
- *
- ****************************************************************************/
-
-FAR struct netlink_conn_s *netlink_active(FAR struct sockaddr_nl *addr)
-{
-  FAR struct netlink_conn_s *conn = NULL;
-#warning "Missing logic for NETLINK active"
-  return NULL;
-}
-
-/****************************************************************************
  * Name: netlink_add_response
  *
  * Description:
  *   Add response data at the tail of the pending response list.
  *
- * Assumptions:
- *   The caller has the network locked to prevent concurrent access to the
- *   socket.
+ *   Note:  The network will be momentarily locked to support exclusive
+ *   access to the pending response list.
+ *
+ * Input Parameters:
+ *   handle - The handle previously provided to the sendto() implementation
+ *            for the protocol.  This is an opaque reference to the Netlink
+ *            socket state structure.
+ *   resp   - The response to the request.  The memory referenced by 'resp'
+ *            must have been allocated via kmm_malloc().  It will be freed
+ *            using kmm_free() after it has been consumed.
  *
  ****************************************************************************/
 
-void netlink_add_response(FAR struct socket *psock,
+void netlink_add_response(NETLINK_HANDLE handle,
                           FAR struct netlink_response_s *resp)
 {
   FAR struct netlink_conn_s *conn;
 
-  DEBUGASSERT(psock != NULL && psock->s_conn != NULL && resp != NULL);
+  conn = handle;
+  DEBUGASSERT(conn != NULL && resp != NULL);
 
-  conn = (FAR struct netlink_conn_s *)psock->s_conn;
+  /* Add the response to the end of the FIFO list */
+
+  net_lock();
   sq_addlast(&resp->flink, &conn->resplist);
+
+  /* Notify any waiters that a response is available */
+
+  netlink_notifier_signal(conn);
+  net_unlock();
+}
+
+/****************************************************************************
+ * Name: netlink_add_broadcast
+ *
+ * Description:
+ *   Add broadcast data to all interested netlink connections.
+ *
+ *   Note:  The network will be momentarily locked to support exclusive
+ *   access to the pending response list.
+ *
+ * Input Parameters:
+ *   group - The broadcast group index.
+ *   data  - The broadcast data.  The memory referenced by 'data'
+ *           must have been allocated via kmm_malloc().  It will be freed
+ *           using kmm_free() after it has been consumed.
+ *
+ ****************************************************************************/
+
+void netlink_add_broadcast(int group, FAR struct netlink_response_s *data)
+{
+  FAR struct netlink_conn_s *conn = NULL;
+  int first = 1;
+
+  DEBUGASSERT(data != NULL);
+
+  net_lock();
+
+  while ((conn = netlink_nextconn(conn)) != NULL)
+    {
+      if ((conn->groups & (1 << (group - 1))) == 0)
+        {
+          continue;
+        }
+
+      /* Duplicate the package except the first loop */
+
+      if (!first)
+        {
+          FAR struct netlink_response_s *tmp;
+          size_t len;
+
+          len = sizeof(sq_entry_t) + data->msg.nlmsg_len;
+          tmp = kmm_malloc(len);
+          if (tmp == NULL)
+            {
+              break;
+            }
+
+          memcpy(tmp, data, len);
+          data = tmp;
+        }
+
+      first = 0;
+
+      /* Add the response to the end of the FIFO list */
+
+      sq_addlast(&data->flink, &conn->resplist);
+
+      /* Notify any waiters that a response is available */
+
+      netlink_notifier_signal(conn);
+    }
+
+  net_unlock();
+
+  /* Drop the package if nobody is interested in */
+
+  if (first)
+    {
+      kmm_free(data);
+    }
+}
+
+/****************************************************************************
+ * Name: netlink_tryget_response
+ *
+ * Description:
+ *   Return the next response from the head of the pending response list.
+ *   Responses are returned one-at-a-time in FIFO order.
+ *
+ *   Note:  The network will be momentarily locked to support exclusive
+ *   access to the pending response list.
+ *
+ * Returned Value:
+ *   The next response from the head of the pending response list is
+ *   returned.  NULL will be returned if the pending response list is
+ *   empty
+ *
+ ****************************************************************************/
+
+FAR struct netlink_response_s *
+netlink_tryget_response(FAR struct netlink_conn_s *conn)
+{
+  FAR struct netlink_response_s *resp;
+
+  DEBUGASSERT(conn != NULL);
+
+  /* Return the response at the head of the pending response list (may be
+   * NULL).
+   */
+
+  net_lock();
+  resp = (FAR struct netlink_response_s *)sq_remfirst(&conn->resplist);
+  net_unlock();
+
+  return resp;
 }
 
 /****************************************************************************
@@ -284,25 +403,94 @@ void netlink_add_response(FAR struct socket *psock,
  *   Return the next response from the head of the pending response list.
  *   Responses are returned one-at-a-time in FIFO order.
  *
- * Assumptions:
- *   The caller has the network locked to prevent concurrent access to the
- *   socket.
+ *   Note:  The network will be momentarily locked to support exclusive
+ *   access to the pending response list.
+ *
+ * Returned Value:
+ *   The next response from the head of the pending response list is
+ *   returned.  This function will block until a response is received if
+ *   the pending response list is empty.  NULL will be returned only in the
+ *   event of a failure.
  *
  ****************************************************************************/
 
-FAR struct netlink_response_s *netlink_get_response(FAR struct socket *psock)
+FAR struct netlink_response_s *
+netlink_get_response(FAR struct netlink_conn_s *conn)
 {
-  FAR struct netlink_conn_s *conn;
+  FAR struct netlink_response_s *resp;
+  int ret;
 
-  DEBUGASSERT(psock != NULL && psock->s_conn != NULL);
+  DEBUGASSERT(conn != NULL);
 
-  conn = (FAR struct netlink_conn_s *)psock->s_conn;
-
-  /* Return the response at the head of the pending response list (may be
-   * NULL).
+  /* Loop, until a response is received.  A loop is used because in the case
+   * of multiple waiters, all waiters will be awakened, but only the highest
+   * priority waiter will get the response.
    */
 
-  return (FAR struct netlink_response_s *)sq_remfirst(&conn->resplist);
+  net_lock();
+  while ((resp = netlink_tryget_response(conn)) == NULL)
+    {
+      sem_t waitsem;
+
+      /* Set up a semaphore to notify us when a response is queued. */
+
+      sem_init(&waitsem, 0, 0);
+      nxsem_set_protocol(&waitsem, SEM_PRIO_NONE);
+
+      /* Set up a notifier to post the semaphore when a response is
+       * received.
+       */
+
+      ret = netlink_notifier_setup(netlink_response_available, conn,
+                                   &waitsem);
+      if (ret < 0)
+        {
+          nerr("ERROR: netlink_notifier_setup() failed: %d\n", ret);
+        }
+      else
+        {
+          /* Wait for a response to be queued */
+
+          _netlink_semtake(&waitsem);
+        }
+
+      /* Clean-up the semaphore */
+
+      sem_destroy(&waitsem);
+      netlink_notifier_teardown(conn);
+
+      /* Check for any failures */
+
+      if (ret < 0)
+        {
+          break;
+        }
+    }
+
+  net_unlock();
+  return resp;
+}
+
+/****************************************************************************
+ * Name: netlink_check_response
+ *
+ * Description:
+ *   Return true is a response is pending now.
+ *
+ * Returned Value:
+ *   True: A response is available; False; No response is available.
+ *
+ ****************************************************************************/
+
+bool netlink_check_response(FAR struct netlink_conn_s *conn)
+{
+  DEBUGASSERT(conn != NULL);
+
+  /* Check if the response is available.  It is not necessary to lock the
+   * network because the sq_peek() is an atomic operation.
+   */
+
+  return (sq_peek(&conn->resplist) != NULL);
 }
 
 #endif /* CONFIG_NET_NETLINK */

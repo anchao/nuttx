@@ -9,12 +9,10 @@
 #include "r328_keyboard.h"
 
 #ifdef	SUNXIKBD_DEBUG
-//#define sunxikbd_info(fmt, args...)  printf("%s()%d - "fmt, __func__, __LINE__, ##args)
 #define sunxikbd_info(fmt, args...) sinfo(fmt, ##args)
 #else
 #define sunxikbd_info(fmt, args...)
 #endif
-//#define sunxikbd_err(fmt, args...)  printf("%s()%d - "fmt, __func__, __LINE__, ##args)
 #define sunxikbd_err(fmt, args...) sinfo(":%d "fmt, __LINE__, ##args)
 
 #define ADC_RESOL  64
@@ -60,6 +58,7 @@ struct sunxikbd_drv_data{
 	unsigned char key_cnt;
 };
 struct sunxikbd_drv_data *key_data = NULL;
+uint32_t button_status = 0;
 
 static void sunxi_report_key_down_event(struct sunxikbd_drv_data *data)
 {
@@ -93,7 +92,7 @@ static void sunxi_report_key_down_event(struct sunxikbd_drv_data *data)
 	}
 }
 
-void lradc_irq_callback(unsigned int irq_status, unsigned int key_vol)
+int lradc_irq_callback(unsigned int irq_status, unsigned int key_vol)
 {
 	if (irq_status & LRADC_ADC0_DOWNPEND)
 		sunxikbd_info("key down\n");
@@ -107,6 +106,7 @@ void lradc_irq_callback(unsigned int irq_status, unsigned int key_vol)
 			key_data->key_code = keypad_mapindex[key_vol&0x3f];
 			sunxi_report_key_down_event(key_data);
 			key_data->key_cnt = 0;
+			button_status |= (1 << key_data->key_code);
 		}
 		if (key_data->key_cnt == 2) {
 			key_data->compare_later = key_data->compare_before;
@@ -122,7 +122,9 @@ void lradc_irq_callback(unsigned int irq_status, unsigned int key_vol)
 		key_data->compare_later = 0;
 		key_data->key_cnt = 0;
 		key_data->last_key_code = INITIAL_VALUE;
+		button_status &= ~(1 << key_data->key_code);
 	}
+	return button_status;
 }
 
 static int sunxikbd_data_init(struct sunxikbd_drv_data *data, struct sunxikbd_config *sunxikbd_config)
@@ -174,7 +176,6 @@ int sunxi_keyboard_init()
 	struct sunxikbd_config *sunxikbd_config = NULL;
 	struct sunxi_input_dev *sunxikbd_dev = NULL;
 
-	//key_data = pvPortMalloc(sizeof(struct sunxikbd_drv_data));
 	key_data = (struct sunxikbd_drv_data *)malloc(sizeof(struct sunxikbd_drv_data));
 	if (NULL == key_data) {
 		sunxikbd_err("kmm_zalloc failed.==============\n");

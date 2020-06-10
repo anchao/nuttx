@@ -47,7 +47,7 @@
 #include <nuttx/irq.h>
 #include <nuttx/wireless/gs2200m.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "chip.h"
 #include "stm32.h"
 
@@ -105,7 +105,7 @@ static FAR void *g_irq_arg = NULL;
 
 static int gs2200m_irq_attach(xcpt_t handler, FAR void *arg)
 {
-  /* NOTE: Just save the hander and arg here */
+  /* NOTE: Just save the handler and arg here */
 
   g_irq_handler = handler;
   g_irq_arg = arg;
@@ -140,8 +140,8 @@ static void gs2200m_irq_enable(void)
 
       /* NOTE: stm32 does not support level-triggered irq */
 
-      (void)stm32_gpiosetevent(GPIO_GS2200M_INT, true, false,
-                               true, g_irq_handler, g_irq_arg);
+      stm32_gpiosetevent(GPIO_GS2200M_INT, true, false,
+                         true, g_irq_handler, g_irq_arg);
     }
 
   spin_unlock_irqrestore(flags);
@@ -169,8 +169,8 @@ static void gs2200m_irq_disable(void)
 
   if (0 == _enable_count)
     {
-      (void)stm32_gpiosetevent(GPIO_GS2200M_INT, false, false,
-                               false, NULL, NULL);
+      stm32_gpiosetevent(GPIO_GS2200M_INT, false, false,
+                         false, NULL, NULL);
     }
 
   spin_unlock_irqrestore(flags);
@@ -244,7 +244,7 @@ int stm32_gs2200m_initialize(FAR const char *devpath, int bus)
 
       _config_pin();
 
-      /* Initialize spi deivce */
+      /* Initialize spi device */
 
       spi = stm32_spibus_initialize(bus);
 

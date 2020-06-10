@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/r328/perf1-r328/src/r328_leds.c
+ * boards/arm/r328/perf1/src/r328_leds.c
  *
  *   Copyright (C) 2013, 2015 Gregory Nutt. All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
@@ -47,8 +47,8 @@
 #include <arch/board/board.h>
 
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "perf1_r328.h"
 
@@ -101,9 +101,6 @@
 
 void r328_led_initialize(void)
 {
-//  r328_pio_config(PIO_LED1);
-//  r328_pio_config(PIO_LED3);
-//  r328_pio_config(PIO_LED4);
 }
 
 /****************************************************************************
@@ -133,33 +130,6 @@ void r328_led_initialize(void)
 #ifdef CONFIG_ARCH_LEDS
 void board_autoled_on(int led)
 {
-#if 0
-  switch (led)
-    {
-    case 0:
-      r328_pio_write(PIO_LED1, true);
-      r328_pio_write(PIO_LED3, true);
-      r328_pio_write(PIO_LED4, true);
-      break;
-
-    case 1:
-      r328_pio_write(PIO_LED1, false);
-      r328_pio_write(PIO_LED3, false);
-      r328_pio_write(PIO_LED4, true);
-      break;
-
-    case 2:
-      r328_pio_write(PIO_LED1, false);
-      r328_pio_write(PIO_LED3, true);
-      r328_pio_write(PIO_LED4, true);
-      break;
-
-    case 3:
-      r328_pio_write(PIO_LED4, false);
-      break;
-    }
-#endif
-
 }
 #endif
 
@@ -190,19 +160,6 @@ void board_autoled_on(int led)
 #ifdef CONFIG_ARCH_LEDS
 void board_autoled_off(int led)
 {
-#if 0
-  switch (led)
-    {
-    case 0:
-    case 1:
-    case 2:
-      break;
-
-    case 3:
-      r328_pio_write(PIO_LED4, true);
-      break;
-    }
-#endif
 }
 #endif
 
@@ -224,38 +181,13 @@ void board_autoled_off(int led)
 
 void board_userled_initialize(void)
 {
-  /* Initialization already performed in r328_led_initialize */
+  /* Initialization already performed in a1x_led_initialize */
 }
 
 void board_userled(int led, bool ledon)
 {
-#if 0
-  switch (led)
-    {
-    case BOARD_LED1:
-      r328_pio_write(PIO_LED1, ledon);
-      break;
-
-    case BOARD_LED3:
-      r328_pio_write(PIO_LED3, !ledon);
-      break;
-
-#ifndef CONFIG_ARCH_LEDS
-    case BOARD_LED4:
-      r328_pio_write(PIO_LED4, !ledon);
-      break;
-#endif
-    }
-#endif
 }
 
 void board_userled_all(uint8_t ledset)
 {
-#if 0
-  board_userled(BOARD_LED1, (ledset & BOARD_LED1) != 0);
-  board_userled(BOARD_LED3, (ledset & BOARD_LED3) != 0);
-#ifndef CONFIG_ARCH_LEDS
-  board_userled(BOARD_LED4, (ledset & BOARD_LED4) != 0);
-#endif
-#endif
 }

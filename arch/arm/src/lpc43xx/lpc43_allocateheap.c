@@ -53,8 +53,8 @@
 
 #include "mpu.h"
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "lpc43_mpuinit.h"
 #include "lpc43_emacram.h"
@@ -126,12 +126,12 @@
  * Configuration A:
  *   Program memory     = FLASH
  *   Data memory        = Local RAM Bank 0
- *   Additional regions = Local RAM Bank 1 + AHB SRAM (exluding DMA buffers)
+ *   Additional regions = Local RAM Bank 1 + AHB SRAM (excluding DMA buffers)
  *
  * Configuration B:
  *   Program memory     = Local RAM Bank 0
  *   Data memory        = Local RAM Bank 1
- *   Additional regions = AHB SRAM (exluding DMA buffers)
+ *   Additional regions = AHB SRAM (excluding DMA buffers)
  *
  * This file supports only memory configuration A.
  *
@@ -325,7 +325,7 @@
  ****************************************************************************/
 
 /* _sbss is the start of the BSS region (see the linker script) _ebss is the
- * end of the BSS regsion (see the linker script). The idle task stack starts
+ * end of the BSS region (see the linker script). The idle task stack starts
  * at the end of BSS and is of size CONFIG_IDLETHREAD_STACKSIZE.  The IDLE
  * thread is the thread that the system boots on and, eventually, becomes the
  * idle, do nothing task that runs only when there is nothing else to run.
@@ -519,7 +519,7 @@ void up_allocate_kheap(FAR void **heap_start, size_t *heap_size)
 #endif
 
 /****************************************************************************
- * Name: up_addregion
+ * Name: arm_addregion
  *
  * Description:
  *   Memory may be added in non-contiguous chunks.  Additional chunks are
@@ -528,7 +528,7 @@ void up_allocate_kheap(FAR void **heap_start, size_t *heap_size)
  ****************************************************************************/
 
 #if CONFIG_MM_REGIONS > 1
-void up_addregion(void)
+void arm_addregion(void)
 {
 #ifdef MM_HAVE_REGION
   /* start from second region */

@@ -1,7 +1,7 @@
 /****************************************************************************
  * boards/arm/stm32/nucleo-f334r8/src/stm32_spwm.c
  *
- *   Copyright (C) 2018 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2018, 2019 Gregory Nutt. All rights reserved.
  *   Author: Mateusz Szafoni <raiden00@railab.me>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,7 @@
 #include <arch/chip/chip.h>
 #include <arch/board/board.h>
 
-#include "up_internal.h"
+#include "arm_internal.h"
 #include "ram_vectors.h"
 
 #include "stm32_hrtim.h"
@@ -130,7 +130,7 @@
 #    error
 #  endif
 
-#endif  /* CONFIG_NUCLEOF334R8_SPWM_USE_TIM1 */
+#endif /* CONFIG_NUCLEOF334R8_SPWM_USE_TIM1 */
 
 /* Check the configuration for HRTIM */
 
@@ -179,7 +179,7 @@
 #    endif
 #  endif
 
-#endif  /* CONFIG_NUCLEOF334R8_SPWM_USE_HRTIM1 */
+#endif /* CONFIG_NUCLEOF334R8_SPWM_USE_HRTIM1 */
 
 /* Configuration ************************************************************/
 
@@ -216,16 +216,16 @@ struct spwm_s
 #ifdef CONFIG_NUCLEOF334R8_SPWM_USE_TIM1
   FAR struct stm32_tim_dev_s *tim;
 #endif
-  float waveform[SAMPLES_NUM];        /* Waveform samples */
-  float phase_step;                   /* Waveform phase step */
-  float waveform_freq;                /* Waveform frequency */
-  uint16_t cmp[SAMPLES_NUM];          /* PWM TIM compare table */
-  uint16_t per;                       /* PWM TIM period */
-  uint16_t samples;                   /* Modulation waveform samples num */
-  uint16_t phase_shift[PHASES_NUM];   /* Phase offset */
+  float waveform[SAMPLES_NUM];               /* Waveform samples */
+  float phase_step;                          /* Waveform phase step */
+  float waveform_freq;                       /* Waveform frequency */
+  uint16_t cmp[SAMPLES_NUM];                 /* PWM TIM compare table */
+  uint16_t per;                              /* PWM TIM period */
+  uint16_t samples;                          /* Modulation waveform samples num */
+  uint16_t phase_shift[PHASES_NUM];          /* Phase offset */
   volatile uint16_t sample_now[PHASES_NUM];  /* Current sample number for
                                               * phase */
-  uint8_t phases;                     /* Number of PWM phases */
+  uint8_t phases;                            /* Number of PWM phases */
 };
 
 /****************************************************************************
@@ -255,7 +255,7 @@ static void hrtim_master_handler(void);
 static int spwm_hrtim_setup(FAR struct spwm_s *spwm);
 static int spwm_hrtim_start(FAR struct spwm_s *spwm);
 static int spwm_hrtim_stop(FAR struct spwm_s *spwm);
-#endif  /* CONFIG_NUCLEOF334R8_SPWM_USE_HRTIM1 */
+#endif /* CONFIG_NUCLEOF334R8_SPWM_USE_HRTIM1 */
 #ifdef CONFIG_NUCLEOF334R8_SPWM_USE_TIM1
 static int spwm_tim1_setup(FAR struct spwm_s *spwm);
 static int spwm_tim6_setup(FAR struct spwm_s *spwm);
@@ -263,7 +263,7 @@ static int spwm_tim1_start(FAR struct spwm_s *spwm);
 static int spwm_tim6_start(FAR struct spwm_s *spwm);
 static int spwm_tim1_stop(FAR struct spwm_s *spwm);
 static int spwm_tim6_stop(FAR struct spwm_s *spwm);
-#endif  /* CONFIG_NUCLEOF334R8_SPWM_USE_TIM1 */
+#endif /* CONFIG_NUCLEOF334R8_SPWM_USE_TIM1 */
 static int spwm_setup(FAR struct spwm_s *spwm);
 
 /****************************************************************************
@@ -569,10 +569,10 @@ static int spwm_hrtim_setup(FAR struct spwm_s *spwm)
 
   /* Attach HRTIM Master TImer IRQ */
 
-  ret = up_ramvec_attach(STM32_IRQ_HRTIMTM, hrtim_master_handler);
+  ret = arm_ramvec_attach(STM32_IRQ_HRTIMTM, hrtim_master_handler);
   if (ret < 0)
     {
-      fprintf(stderr, "spwm_main: ERROR: up_ramvec_attach failed: %d\n",
+      fprintf(stderr, "spwm_main: ERROR: arm_ramvec_attach failed: %d\n",
               ret);
       ret = -1;
       goto errout;
@@ -697,7 +697,7 @@ static int spwm_hrtim_stop(FAR struct spwm_s *spwm)
   return OK;
 }
 
-#endif  /* CONFIG_NUCLEOF334R8_SPWM_USE_HRTIM1 */
+#endif /* CONFIG_NUCLEOF334R8_SPWM_USE_HRTIM1 */
 
 #ifdef CONFIG_NUCLEOF334R8_SPWM_USE_TIM1
 
@@ -763,7 +763,7 @@ static int spwm_tim6_setup(FAR struct spwm_s *spwm)
 
   freq = spwm->samples * spwm->waveform_freq;
   per = BOARD_TIM6_FREQUENCY / freq;
-  if (per > 0xFFFF)
+  if (per > 0xffff)
     {
       printf("ERROR: can not achieve TIM6 frequency\n");
       ret = -1;
@@ -777,10 +777,10 @@ static int spwm_tim6_setup(FAR struct spwm_s *spwm)
 
   /* Attach TIM6 ram vector */
 
-  ret = up_ramvec_attach(STM32_IRQ_TIM6, tim6_handler);
+  ret = arm_ramvec_attach(STM32_IRQ_TIM6, tim6_handler);
   if (ret < 0)
     {
-      printf("ERROR: up_ramvec_attach failed: %d\n", ret);
+      printf("ERROR: arm_ramvec_attach failed: %d\n", ret);
       ret = -1;
       goto errout;
     }
@@ -940,7 +940,7 @@ static int spwm_tim1_stop(FAR struct spwm_s *spwm)
   return OK;
 }
 
-#endif  /* CONFIG_NUCLEOF334R8_SPWM_USE_TIM1 */
+#endif /* CONFIG_NUCLEOF334R8_SPWM_USE_TIM1 */
 
 /****************************************************************************
  * Name: spwm_setup
@@ -1047,7 +1047,7 @@ int spwm_main(int argc, char *argv[])
 
       /* Sleep */
 
-      sleep(1);
+      nxsig_sleep(1);
     }
 
 errout:
@@ -1056,4 +1056,4 @@ errout:
   return 0;
 }
 
-#endif  /* CONFIG_NUCLEOF334R8_SPWM */
+#endif /* CONFIG_NUCLEOF334R8_SPWM */

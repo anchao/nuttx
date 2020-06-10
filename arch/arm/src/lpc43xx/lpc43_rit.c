@@ -54,7 +54,7 @@
 #include <nuttx/arch.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "hardware/lpc43_rit.h"
 #include "lpc43_rit.h"
 
@@ -154,7 +154,7 @@ static inline void lpc43_RIT_timer_stop(void)
  * Public Functions
  ****************************************************************************/
 
-void arm_timer_initialize(void)
+void up_timer_initialize(void)
 {
   uint32_t ticks_per_int;
   uint32_t mask_bits = 0;

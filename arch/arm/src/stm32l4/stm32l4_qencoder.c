@@ -52,8 +52,8 @@
 #include <arch/board/board.h>
 
 #include "chip.h"
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 
 #include "stm32l4.h"
 #include "stm32l4_gpio.h"
@@ -909,7 +909,7 @@ static int stm32l4_shutdown(FAR struct qe_lowerhalf_s *lower)
 
   /* Detach the interrupt handler */
 
-  (void)irq_detach(priv->config->irq);
+  irq_detach(priv->config->irq);
 
   /* Disable interrupts momentary to stop any ongoing timer processing and
    * to prevent any concurrent access to the reset register.
@@ -1017,7 +1017,7 @@ static int stm32l4_position(FAR struct qe_lowerhalf_s *lower, FAR int32_t *pos)
 
   do
     {
-      /* Don't let another task pre-empt us until we get the measurement.  The timer
+      /* Don't let another task preempt us until we get the measurement.  The timer
        * interrupt may still be processed
        */
 

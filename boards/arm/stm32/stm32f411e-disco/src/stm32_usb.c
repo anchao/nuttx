@@ -55,7 +55,7 @@
 #include <nuttx/usb/usbhost.h>
 #include <nuttx/usb/usbdev_trace.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "stm32.h"
 #include "stm32_otgfs.h"
 #include "stm32f411e-disco.h"
@@ -117,7 +117,7 @@ static int usbhost_waiter(int argc, char *argv[])
         {
           /* Yes.. enumerate the newly connected device */
 
-          (void)CONN_ENUMERATE(g_usbconn, hport);
+          CONN_ENUMERATE(g_usbconn, hport);
         }
     }
 

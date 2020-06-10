@@ -45,13 +45,13 @@
 #include <nuttx/board.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "bambino-200e.h"
 
 /****************************************************************************
- * Public Types
+ * Private Types
  ****************************************************************************/
 
 enum devid_e

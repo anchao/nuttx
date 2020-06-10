@@ -1,5 +1,5 @@
 /****************************************************************************
- * drivers/platform/sensors/bh1745nuc_scu.c
+ * boards/arm/cxd56xx/drivers/sensors/bh1745nuc_scu.c
  *
  *   Copyright 2018 Sony Semiconductor Solutions Corporation
  *
@@ -44,7 +44,6 @@
 #include <fixedmath.h>
 #include <errno.h>
 #include <debug.h>
-#include <semaphore.h>
 #include <arch/types.h>
 #include <nuttx/kmalloc.h>
 #include <nuttx/fs/fs.h>
@@ -122,9 +121,11 @@ struct bh1745nuc_dev_s
 
 static int bh1745nuc_open(FAR struct file *filep);
 static int bh1745nuc_close(FAR struct file *filep);
-static ssize_t bh1745nuc_read(FAR struct file *filep, FAR char *buffer,
+static ssize_t bh1745nuc_read(FAR struct file *filep,
+                              FAR char *buffer,
                               size_t buflen);
-static ssize_t bh1745nuc_write(FAR struct file *filep, FAR const char *buffer,
+static ssize_t bh1745nuc_write(FAR struct file *filep,
+                               FAR const char *buffer,
                                size_t buflen);
 static int bh1745nuc_ioctl(FAR struct file *filep, int cmd,
                            unsigned long arg);
@@ -270,14 +271,19 @@ static int bh1745nuc_seqinit(FAR struct bh1745nuc_dev_s *priv)
     {
       return -ENOENT;
     }
+
   priv->seq = g_seq;
 
   seq_setaddress(priv->seq, priv->addr);
 
   /* Set instruction and sample data information to sequencer */
 
-  seq_setinstruction(priv->seq, g_bh1745nucinst, itemsof(g_bh1745nucinst));
-  seq_setsample(priv->seq, BH1745NUC_BYTESPERSAMPLE, 0, BH1745NUC_ELEMENTSIZE,
+  seq_setinstruction(priv->seq, g_bh1745nucinst,
+                     itemsof(g_bh1745nucinst));
+  seq_setsample(priv->seq,
+                BH1745NUC_BYTESPERSAMPLE,
+                0,
+                BH1745NUC_ELEMENTSIZE,
                 false);
 
   return OK;
@@ -351,7 +357,7 @@ static int bh1745nuc_close(FAR struct file *filep)
 
   g_refcnt--;
 
-  (void) seq_ioctl(priv->seq, priv->minor, SCUIOC_STOP, 0);
+  seq_ioctl(priv->seq, priv->minor, SCUIOC_STOP, 0);
 
   if (g_refcnt == 0)
     {
@@ -366,7 +372,7 @@ static int bh1745nuc_close(FAR struct file *filep)
     }
   else
     {
-      (void) seq_ioctl(priv->seq, priv->minor, SCUIOC_FREEFIFO, 0);
+      seq_ioctl(priv->seq, priv->minor, SCUIOC_FREEFIFO, 0);
     }
 
   return OK;
@@ -392,7 +398,8 @@ static ssize_t bh1745nuc_read(FAR struct file *filep, FAR char *buffer,
  * Name: bh1745nuc_write
  ****************************************************************************/
 
-static ssize_t bh1745nuc_write(FAR struct file *filep, FAR const char *buffer,
+static ssize_t bh1745nuc_write(FAR struct file *filep,
+                               FAR const char *buffer,
                                size_t buflen)
 {
   return -ENOSYS;
@@ -402,7 +409,9 @@ static ssize_t bh1745nuc_write(FAR struct file *filep, FAR const char *buffer,
  * Name: bh1745nuc_ioctl
  ****************************************************************************/
 
-static int bh1745nuc_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
+static int bh1745nuc_ioctl(FAR struct file *filep,
+                           int cmd,
+                           unsigned long arg)
 {
   FAR struct inode *inode = filep->f_inode;
   FAR struct bh1745nuc_dev_s *priv = inode->i_private;
@@ -517,7 +526,7 @@ int bh1745nuc_register(FAR const char *devpath, int minor,
 
   /* Register the character driver */
 
-  (void) snprintf(path, sizeof(path), "%s%d", devpath, minor);
+  snprintf(path, sizeof(path), "%s%d", devpath, minor);
   ret = register_driver(path, &g_bh1745nucfops, 0666, priv);
   if (ret < 0)
     {

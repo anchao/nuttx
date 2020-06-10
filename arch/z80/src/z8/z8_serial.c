@@ -43,7 +43,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <semaphore.h>
 #include <string.h>
 #include <errno.h>
 #include <debug.h>
@@ -424,7 +423,7 @@ static int z8_setup(FAR struct uart_dev_s *dev)
 
 static void z8_shutdown(FAR struct uart_dev_s *dev)
 {
-  (void)z8_disableuartirq(dev);
+  z8_disableuartirq(dev);
 }
 
 /****************************************************************************
@@ -697,7 +696,7 @@ static bool z8_txempty(FAR struct uart_dev_s *dev)
 }
 
 /****************************************************************************
- * Public Funtions
+ * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
@@ -712,18 +711,18 @@ void z80_serial_initialize(void)
 {
    /* Disable all UART interrupts */
 
-  (void)z8_disableuartirq(&TTYS0_DEV);
-  (void)z8_disableuartirq(&TTYS1_DEV);
+  z8_disableuartirq(&TTYS0_DEV);
+  z8_disableuartirq(&TTYS1_DEV);
 
   /* Initialize the console for early use */
   CONSOLE_DEV.isconsole = true;
   z8_setup(&CONSOLE_DEV);
 
-  /* Reigster console and tty devices */
+  /* Register console and tty devices */
 
-  (void)uart_register("/dev/console", &CONSOLE_DEV);
-  (void)uart_register("/dev/ttyS0", &TTYS0_DEV);
-  (void)uart_register("/dev/ttyS1", &TTYS1_DEV);
+  uart_register("/dev/console", &CONSOLE_DEV);
+  uart_register("/dev/ttyS0", &TTYS0_DEV);
+  uart_register("/dev/ttyS1", &TTYS1_DEV);
 }
 
 /****************************************************************************

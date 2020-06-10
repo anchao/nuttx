@@ -46,7 +46,7 @@
 #include <nuttx/cache.h>
 #include <arch/irq.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "mmu.h"
 #include "cp15_cacheops.h"
 
@@ -153,7 +153,7 @@ int dram_main(int argc, char *argv)
    * hang when the interrupts are disabled!
    */
 
-  (void)up_irq_save();
+  up_irq_save();
 
   /* Disable the caches and the MMU.  Disabling the MMU should be safe here
    * because there is a 1-to-1 identity mapping between the physical and

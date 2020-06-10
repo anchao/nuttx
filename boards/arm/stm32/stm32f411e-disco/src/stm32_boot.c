@@ -47,7 +47,7 @@
 
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "stm32f411e-disco.h"
 
 /****************************************************************************
@@ -108,6 +108,6 @@ void board_late_initialize(void)
 {
   /* Perform board-specific initialization */
 
-  (void)stm32_bringup();
+  stm32_bringup();
 }
 #endif

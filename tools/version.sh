@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# version.sh
+# tools/version.sh
 #
 #   Copyright (C) 2011, 2019 Gregory Nutt. All rights reserved.
 #   Author: Gregory Nutt <gnutt@nuttx.org>
@@ -36,7 +36,7 @@ WD=`pwd`
 
 # Get command line parameters
 
-USAGE="USAGE: $0 [-d|-h] [-b <build>] [-v <major.minor>] <outfile-path>"
+USAGE="USAGE: $0 [-d|-h] [-b <build>] [-v <major.minor.patch>] <outfile-path>"
 ADVICE="Try '$0 -h' for more information"
 
 unset VERSION
@@ -44,99 +44,106 @@ unset BUILD
 unset OUTFILE
 
 while [ ! -z "$1" ]; do
-	case $1 in
-	-b )
-		shift
-		BUILD=$1
-		;;
-	-d )
-		set -x
-		;;
-	-v )
-		shift
-		VERSION=$1
-		;;
-	-h )
-		echo "$0 is a tool for generation of proper version files for the NuttX build"
-		echo ""
-		echo $USAGE
-		echo ""
-		echo "Where:"
-		echo "	-b <build>"
-		echo "		Use this build identification string.  Default: use GIT build ID"
-		echo "		NOTE: GIT build information may not be available in a snapshot"
-		echo "	-d"
-		echo "		Enable script debug"
-		echo "	-h"
-		echo "		show this help message and exit"
-		echo "	-v <major.minor>"
-		echo "		The NuttX version number expressed as a major and minor number separated"
-		echo "		by a period"
-		echo " 	<outfile-path>"
-		echo "		The full path to the version file to be created"
-		exit 0
-		;;
-	* )
-		break;
-		;;
-	esac
-	shift
+  case $1 in
+  -b )
+    shift
+    BUILD=$1
+    ;;
+  -d )
+    set -x
+    ;;
+  -v )
+    shift
+    VERSION=$1
+    ;;
+  -h )
+    echo "$0 is a tool for generation of proper version files for the NuttX build"
+    echo ""
+    echo $USAGE
+    echo ""
+    echo "Where:"
+    echo "  -b <build>"
+    echo "    Use this build identification string.  Default: use GIT build ID"
+    echo "    NOTE: GIT build information may not be available in a snapshot"
+    echo "  -d"
+    echo "    Enable script debug"
+    echo "  -h"
+    echo "    show this help message and exit"
+    echo "  -v <major.minor.patch>"
+    echo "    The NuttX version number expressed as a major, minor and patch"
+    echo "    number seperated by a period"
+    echo "   <outfile-path>"
+    echo "    The full path to the version file to be created"
+    exit 0
+    ;;
+  * )
+    break
+    ;;
+  esac
+  shift
 done
 
 OUTFILE=$1
 
 if [ -z ${VERSION} ] ; then
-        GIT_CUR_VERSION=`git --version | cut -d' ' -f3`
-        GIT_REQ_VERSION="2.17.1"
-        if [ "$(printf '%s\n' "$GIT_REQ_VERSION" "$GIT_CUR_VERSION" | sort -V | head -n1)" == "$GIT_REQ_VERSION" ]; then
-	        VERSION=`git tag --sort=taggerdate | tail -1 | cut -d'-' -f2`
-        else
-                VERSION=`git for-each-ref --format="%(refname)" --sort=-taggerdate --count=1 refs/tags | tail -1 | cut -d'-' -f2`
-        fi
+  VERSION=`git tag --sort=taggerdate | tail -1 | cut -d'-' -f2`
 
+  # Earlier tags used the format "major.minor", append a "0" for a patch.
+
+  if [[ ${VERSION} =~ ^([0-9]+[\.][0-9]+)$ ]] ; then
+    VERSION=${VERSION}.0
+  fi
 fi
 
 # Make sure we know what is going on
 
 if [ -z ${VERSION} ] ; then
-	echo "Missing versioning information"
-	echo $USAGE
-	echo $ADVICE
-	exit 1
+  echo "Missing versioning information"
+  echo $USAGE
+  echo $ADVICE
+  exit 1
 fi
 
 if [ -z ${OUTFILE} ] ; then
-	echo "Missing path to the output file"
-	echo $USAGE
-	echo $ADVICE
-	exit 1
+  echo "Missing path to the output file"
+  echo $USAGE
+  echo $ADVICE
+  exit 2
 fi
 
-# Get the major and minor version numbers
+# Get the major, minor and patch version numbers
 
 MAJOR=`echo ${VERSION} | cut -d'.' -f1`
 if [ "X${MAJOR}" = "X${VERSION}" ]; then
-	echo "Missing minor version number"
-	echo $USAGE
-	echo $ADVICE
-	exit 2
+  echo "Missing minor version number"
+  echo $USAGE
+  echo $ADVICE
+  exit 3
 fi
+
 MINOR=`echo ${VERSION} | cut -d'.' -f2`
+if [ "X${MAJOR}.${MINOR}" = "X${VERSION}" ]; then
+  echo "Missing patch version number"
+  echo $USAGE
+  echo $ADVICE
+  exit 4
+fi
+PATCH=`echo ${VERSION} | cut -d'.' -f3`
 
 # Get GIT information (if not provided on the command line)
 
 if [ -z "${BUILD}" ]; then
-	BUILD=`git log --oneline -1 | cut -d' ' -f1 2>/dev/null`
-	if [ -z "${BUILD}" ]; then
-		echo "GIT version information is not available"
-		exit 3
-	fi
-	if [ -n "`git diff-index --name-only HEAD | head -1`" ]; then
-		BUILD=${BUILD}-dirty
-	fi
+  BUILD=`git log --oneline -1 | cut -d' ' -f1 2>/dev/null`
+  if [ -z "${BUILD}" ]; then
+    echo "GIT version information is not available"
+    exit 5
+  fi
+  if [ -n "`git diff-index --name-only HEAD | head -1`" ]; then
+    BUILD=${BUILD}-dirty
+  fi
 fi
 
-# Write a version file into the NuttX directoy.  The syntax of file is such that it
+# Write a version file into the NuttX directory.  The syntax of file is such that it
 # may be sourced by a bash script or included by a Makefile.
 
 echo "#!/bin/bash" >${OUTFILE}
@@ -144,4 +151,5 @@ echo "" >>${OUTFILE}
 echo "CONFIG_VERSION_STRING=\"${VERSION}\"" >>${OUTFILE}
 echo "CONFIG_VERSION_MAJOR=${MAJOR}" >>${OUTFILE}
 echo "CONFIG_VERSION_MINOR=${MINOR}" >>${OUTFILE}
+echo "CONFIG_VERSION_PATCH=${PATCH}" >>${OUTFILE}
 echo "CONFIG_VERSION_BUILD=\"${BUILD}\"" >>${OUTFILE}

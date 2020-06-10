@@ -48,7 +48,6 @@
 #include <sys/types.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <semaphore.h>
 #include <errno.h>
 #include <debug.h>
 
@@ -156,7 +155,7 @@ static void dac7571_reset(FAR struct dac_dev_s *dev)
  * Description:
  *   Configure the DAC. This method is called the first time that the DAC
  *   device is opened.  This will occur when the port is first opened.
- *   This setup includes configuring and attaching DAC interrupts.  Interrupts
+ *   This setup includes configuring and attaching DAC interrupts. Interrupts
  *   are all disabled upon return.
  *
  ****************************************************************************/

@@ -45,7 +45,7 @@
 #include <arch/board/board.h>
 #include <string.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 
 #include "lc823450_clockconfig.h"
 #include "lc823450_syscontrol.h"
@@ -488,7 +488,7 @@ uint32_t lc823450_get_apb(void)
 
 /****************************************************************************
  * Name: lc823450_dvfs_tick_callback
- * This callback is called in the timer interupt on CPU0
+ * This callback is called in the timer interrupt on CPU0
  ****************************************************************************/
 
 void lc823450_dvfs_tick_callback(void)
@@ -518,7 +518,7 @@ void lc823450_dvfs_tick_callback(void)
       lc823450_dvfs_do_auto(idle);
     }
 
-  /* Update freqency statistics */
+  /* Update frequency statistics */
 
   g_dvfs_freq_stat[_dvfs_cur_idx]++;
 }
@@ -574,7 +574,7 @@ exit_with_error:
 
 /****************************************************************************
  * Name: lc823450_dvfs_exit_idle
- * This API is called in up_ack_irq() (i.e. interrupt context)
+ * This API is called in arm_ack_irq() (i.e. interrupt context)
  ****************************************************************************/
 
 void lc823450_dvfs_exit_idle(int irq)

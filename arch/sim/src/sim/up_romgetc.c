@@ -41,8 +41,6 @@
 
 #include <nuttx/arch.h>
 
-#ifdef CONFIG_ARCH_ROMGETC
-
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -52,7 +50,7 @@
  *
  * Description:
  *   In Harvard architectures, data accesses and instruction accesses occur
- *   on different busses, perhaps concurrently.  All data accesses are
+ *   on different buses, perhaps concurrently.  All data accesses are
  *   performed on the data bus unless special  machine instructions are
  *   used to read data from the instruction address space.  Also, in the
  *   typical MCU, the available SRAM data memory is much smaller that the
@@ -75,8 +73,8 @@
  *   lie in FLASH (string arguments for %s are still assumed to reside in
  *   SRAM). And (2), the string argument to puts and fputs is assumed to
  *   reside in FLASH.  Clearly, these assumptions may have to modified for
- *   the particular needs of your environment.  There is no "one-size-fits-all"
- *   solution for this problem.
+ *   the particular needs of your environment.  There is no
+ *   "one-size-fits-all" solution for this problem.
  *
  ****************************************************************************/
 
@@ -86,4 +84,3 @@ char up_romgetc(FAR const char *ptr)
 
   return *ptr;
 }
-#endif

@@ -45,7 +45,7 @@
 #include <nuttx/cache.h>
 #include <arch/irq.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "mmu.h"
 #include "cp15_cacheops.h"
 
@@ -141,7 +141,7 @@ int nor_main(int argc, char *argv)
    * will hang when the interrupts are disabled!
    */
 
-  (void)up_irq_save();
+  up_irq_save();
 
   /* Disable MATRIX write protection */
 

@@ -39,11 +39,11 @@
 
 #include <nuttx/config.h>
 #include <nuttx/kmalloc.h>
+#include <nuttx/semaphore.h>
 
 #include <sys/types.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <semaphore.h>
 #include <errno.h>
 #include <assert.h>
 #include <debug.h>
@@ -51,7 +51,7 @@
 
 #include <nuttx/arch.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "lc823450_dma.h"
 #include "lc823450_syscontrol.h"
 #include <arch/chip/clk.h>
@@ -339,10 +339,10 @@ void lc823450_dma_test()
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_dma_initialize
+ * Name: arm_dma_initialize
  ****************************************************************************/
 
-void up_dma_initialize(void)
+void arm_dma_initialize(void)
 {
   int i;
 

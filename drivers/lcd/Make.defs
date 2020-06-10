@@ -35,7 +35,7 @@
 
 ifeq ($(CONFIG_LCD),y)
 
-# Support for the generic LCD framebufer front-end
+# Support for the generic LCD framebuffer front-end
 
 ifeq ($(CONFIG_LCD_FRAMEBUFFER),y)
   CSRCS += lcd_framebuffer.c
@@ -124,6 +124,10 @@ ifeq ($(CONFIG_LCD_ILI9341),y)
   CSRCS += ili9341.c
 endif
 
+ifeq ($(CONFIG_LCD_LCDDRV_SPIIF),y)
+  CSRCS += lcddrv_spiif.c
+endif
+
 ifeq ($(CONFIG_LCD_RA8875),y)
   CSRCS += ra8875.c
 endif
@@ -153,13 +157,13 @@ endif
 ifeq ($(CONFIG_LCD),y)
   DEPPATH += --dep-path lcd
   VPATH += :lcd
-  CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(TOPDIR)$(DELIM)drivers$(DELIM)lcd}
+  CFLAGS += ${shell $(INCDIR) "$(CC)" $(TOPDIR)$(DELIM)drivers$(DELIM)lcd}
 else ifeq ($(CONFIG_SLCD),y)
   DEPPATH += --dep-path lcd
   VPATH += :lcd
-  CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(TOPDIR)$(DELIM)drivers$(DELIM)lcd}
+  CFLAGS += ${shell $(INCDIR) "$(CC)" $(TOPDIR)$(DELIM)drivers$(DELIM)lcd}
 else ifeq ($(CONFIG_LCD_OTHER),y)
   DEPPATH += --dep-path lcd
   VPATH += :lcd
-  CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(TOPDIR)$(DELIM)drivers$(DELIM)lcd}
+  CFLAGS += ${shell $(INCDIR) "$(CC)" $(TOPDIR)$(DELIM)drivers$(DELIM)lcd}
 endif

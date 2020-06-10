@@ -48,8 +48,8 @@
 #include <nuttx/arch.h>
 #include <arch/irq.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "hardware/tms570_vim.h"
 #include "tms570_gio.h"
@@ -181,8 +181,8 @@ void up_irqinitialize(void)
    * an NMI.
    */
 
-  (void)irq_attach(TMS570_REQ_ESMHIGH, tms570_esm_interrupt, NULL);
-  (void)irq_attach(TMS570_REQ_ESMLO, tms570_esm_interrupt, NULL);
+  irq_attach(TMS570_REQ_ESMHIGH, tms570_esm_interrupt, NULL);
+  irq_attach(TMS570_REQ_ESMLO, tms570_esm_interrupt, NULL);
   up_enable_irq(TMS570_REQ_ESMHIGH);
   up_enable_irq(TMS570_REQ_ESMLO);
 
@@ -390,13 +390,13 @@ void up_enable_fiq(int channel)
 #endif
 
 /****************************************************************************
- * Name: up_ack_irq
+ * Name: arm_ack_irq
  *
  * Description:
  *   Acknowledge the IRQ
  *
  ****************************************************************************/
 
-void up_ack_irq(int irq)
+void arm_ack_irq(int irq)
 {
 }

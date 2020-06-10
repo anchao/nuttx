@@ -33,20 +33,20 @@
  *
  ****************************************************************************/
 
-#ifndef __ARCH_ARM_SRC_CXD56XX_CHIP_CXD56_RTC_H
-#define __ARCH_ARM_SRC_CXD56XX_CHIP_CXD56_RTC_H
+#ifndef __ARCH_ARM_SRC_CXD56XX_HARDWARE_CXD56_RTC_H
+#define __ARCH_ARM_SRC_CXD56XX_HARDWARE_CXD56_RTC_H
 
-/****************************************************************************************
+/****************************************************************************
  * Included Files
- ****************************************************************************************/
+ ****************************************************************************/
 
 #include "hardware/cxd5602_memorymap.h"
 
-/****************************************************************************************
+/****************************************************************************
  * Pre-processor Definitions
- ****************************************************************************************/
+ ****************************************************************************/
 
-/* Register offsets *********************************************************************/
+/* Register offsets *********************************************************/
 
 #define RTC_WRREGPOSTCNT                (0x0)
 #define RTC_WRREGPRECNT                 (0x4)
@@ -83,7 +83,7 @@
 #define RTC_DBGSETALMPOSTCNT2           (0xa0)
 #define RTC_DBGSETALMPRECNT2            (0xa4)
 
-/* Register Addresses *******************************************************************/
+/* Register Addresses *******************************************************/
 
 #define CXD56_RTC0_WRREGPOSTCNT         (CXD56_RTC0_BASE + RTC_WRREGPOSTCNT)
 #define CXD56_RTC0_WRREGPRECNT          (CXD56_RTC0_BASE + RTC_WRREGPRECNT)
@@ -105,7 +105,7 @@
 #define CXD56_RTC0_ALMOUTEN(id)         (CXD56_RTC0_BASE + RTC_ALMOUTEN(id))
 #define CXD56_RTC0_ALMFLG               (CXD56_RTC0_BASE + RTC_ALMFLG)
 
-/* Register bit definitions *************************************************************/
+/* Register bit definitions *************************************************/
 
 /* Flag/Clear Register */
 
@@ -136,5 +136,4 @@
 #define RTCREG_ALM_ERREN_MASK           (1u << 16)
 #define RTCREG_ALM_ERRDBG_MASK          (1u << 31)
 
-
-#endif /* __ARCH_ARM_SRC_CXD56XX_CHIP_CXD56_RTC_H */
+#endif /* __ARCH_ARM_SRC_CXD56XX_HARDWARE_CXD56_RTC_H */

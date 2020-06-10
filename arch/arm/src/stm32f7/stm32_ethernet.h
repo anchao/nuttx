@@ -66,7 +66,7 @@ extern "C"
  * Description:
  *   Initialize the Ethernet driver for one interface.  If the STM32 chip supports
  *   multiple Ethernet controllers, then board specific logic must implement
- *   up_netinitialize() and call this function to initialize the desired interfaces.
+ *   arm_netinitialize() and call this function to initialize the desired interfaces.
  *
  * Input Parameters:
  *   intf - In the case where there are multiple EMACs, this value identifies which
@@ -115,4 +115,3 @@ int stm32_phy_boardinitialize(int intf);
 #endif /* __ASSEMBLY__ */
 #endif /* STM32F7_NETHERNET > 0 */
 #endif /* __ARCH_ARM_SRC_STM32F7_STM32_ETHERNET_H */
-

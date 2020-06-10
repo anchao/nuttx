@@ -48,8 +48,8 @@
 #include <arch/irq.h>
 
 #include "arm.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "lpc31_intc.h"
 #include "lpc31_cgudrvr.h"
@@ -101,7 +101,7 @@ void up_irqinitialize(void)
   putreg32(0, LPC31_INTC_VECTOR0);
   putreg32(0, LPC31_INTC_VECTOR1);
 
-  /* Set the priority treshold to 0, i.e. don't mask any interrupt on the
+  /* Set the priority threshold to 0, i.e. don't mask any interrupt on the
    * basis of priority level, for both targets (IRQ/FIQ)
    */
 
@@ -181,14 +181,14 @@ void up_enable_irq(int irq)
 }
 
 /****************************************************************************
- * Name: up_ack_irq
+ * Name: arm_ack_irq
  *
  * Description:
  *   Acknowledge the interrupt
  *
  ****************************************************************************/
 
-void up_ack_irq(int irq)
+void arm_ack_irq(int irq)
 {
   /* Get the address of the request register corresponding to this
    * interrupt source

@@ -33,28 +33,9 @@
 #
 ############################################################################
 
--include $(TOPDIR)/Make.defs
-
-# REVISIT: Backslash causes problems in $(COBJS) target
-DELIM := $(strip /)
-
-# CFLAGS
-
-ifneq ($(CONFIG_BUILD_FLAT),y)
-ifeq ($(CONFIG_WINDOWS_NATIVE),y)
-  KDEFINE = ${shell $(TOPDIR)\tools\define.bat "$(CC)" __KERNEL__}
-else
-  KDEFINE = ${shell $(TOPDIR)/tools/define.sh "$(CC)" __KERNEL__}
-endif
-endif
+include $(TOPDIR)/Make.defs
 
 # Sources and paths
-
-ASRCS  =
-CSRCS  =
-
-DEPPATH = --dep-path .
-VPATH = .
 
 include mm_heap/Make.defs
 include umm_heap/Make.defs
@@ -65,13 +46,14 @@ include iob/Make.defs
 
 BINDIR ?= bin
 
+CFLAGS += ${shell $(INCDIR) "$(CC)" $(TOPDIR)$(DELIM)mm}
+
 AOBJS = $(patsubst %.S, $(BINDIR)$(DELIM)%$(OBJEXT), $(ASRCS))
 COBJS = $(patsubst %.c, $(BINDIR)$(DELIM)%$(OBJEXT), $(CSRCS))
 
 SRCS = $(ASRCS) $(CSRCS)
 OBJS = $(AOBJS) $(COBJS)
 
-UBIN = libumm$(LIBEXT)
 KBIN = libkmm$(LIBEXT)
 BIN ?= libmm$(LIBEXT)
 
@@ -80,39 +62,29 @@ all: $(BIN)
 
 $(AOBJS): $(BINDIR)$(DELIM)%$(OBJEXT): %.S
 	$(call ASSEMBLE, $<, $@)
-	$(call MOVEOBJ,$(patsubst $(BINDIR)$(DELIM)%$(OBJEXT),%,$@),$(BINDIR))
 
 $(COBJS): $(BINDIR)$(DELIM)%$(OBJEXT): %.c
 	$(call COMPILE, $<, $@)
-	$(call MOVEOBJ,$(patsubst $(BINDIR)$(DELIM)%$(OBJEXT),%,$@),$(BINDIR))
 
-# Memory manager for the flat build
+# Memory manager for the flat build and
+# the user phase of the two-pass kernel build
 
 $(BIN):	$(OBJS)
 	$(call ARCHIVE, $@, $(OBJS))
-
-# Memory manager for the user phase of the two-pass kernel build
-
-ifneq ($(BIN),$(UBIN))
-$(UBIN):
-	$(Q) $(MAKE) $(UBIN) BIN=$(UBIN) BINDIR=ubin TOPDIR=$(TOPDIR) EXTRADEFINES=$(EXTRADEFINES)
-endif
 
 # Memory manager for the kernel phase of the two-pass kernel build
 
 ifneq ($(BIN),$(KBIN))
 $(KBIN):
-	$(Q) $(MAKE) $(KBIN) BIN=$(KBIN) BINDIR=kbin TOPDIR=$(TOPDIR) EXTRADEFINES=$(EXTRADEFINES)
+	$(Q) $(MAKE) $(KBIN) BIN=$(KBIN) BINDIR=kbin TOPDIR=$(TOPDIR) EXTRAFLAGS="$(EXTRAFLAGS)"
 endif
 
 # Dependencies
 
 .depend: Makefile $(SRCS)
-ifeq ($(CONFIG_BUILD_FLAT),y)
-	$(Q) $(MKDEP) --obj-suffix $(OBJEXT) $(DEPPATH) "$(CC)" -- $(CFLAGS) -- $(SRCS) >bin/Make.dep
-else
-	$(Q) $(MKDEP) --obj-suffix $(OBJEXT) $(DEPPATH) "$(CC)" -- $(CFLAGS) -- $(SRCS) >ubin/Make.dep
-	$(Q) $(MKDEP) --obj-suffix $(OBJEXT) $(DEPPATH) "$(CC)" -- $(CFLAGS) $(KDEFINE) -- $(SRCS) >kbin/Make.dep
+	$(Q) $(MKDEP) --obj-path bin --obj-suffix $(OBJEXT) $(DEPPATH) "$(CC)" -- $(CFLAGS) -- $(SRCS) >bin/Make.dep
+ifneq ($(CONFIG_BUILD_FLAT),y)
+	$(Q) $(MKDEP) --obj-path kbin --obj-suffix $(OBJEXT) $(DEPPATH) "$(CC)" -- $(CFLAGS) $(KDEFINE) -- $(SRCS) >kbin/Make.dep
 endif
 	$(Q) touch $@
 
@@ -122,10 +94,8 @@ depend: .depend
 
 clean:
 	$(Q) $(MAKE) -C bin  clean TOPDIR=$(TOPDIR)
-	$(Q) $(MAKE) -C ubin clean TOPDIR=$(TOPDIR)
 	$(Q) $(MAKE) -C kbin clean TOPDIR=$(TOPDIR)
 	$(call DELFILE, $(BIN))
-	$(call DELFILE, $(UBIN))
 	$(call DELFILE, $(KBIN))
 	$(call CLEAN)
 
@@ -133,13 +103,10 @@ clean:
 
 distclean: clean
 	$(Q) $(MAKE) -C bin  distclean TOPDIR=$(TOPDIR)
-	$(Q) $(MAKE) -C ubin distclean TOPDIR=$(TOPDIR)
 	$(Q) $(MAKE) -C kbin distclean TOPDIR=$(TOPDIR)
 	$(call DELFILE, bin/Make.dep)
-	$(call DELFILE, ubin/Make.dep)
 	$(call DELFILE, kbin/Make.dep)
 	$(call DELFILE, .depend)
 
 -include bin/Make.dep
--include ubin/Make.dep
 -include kbin/Make.dep

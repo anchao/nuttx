@@ -1,8 +1,8 @@
 ############################################################################
-# Config.mk
+# tools/Config.mk
 # Global build rules and macros.
 #
-#   Copyright (C) 2011, 2013-2014, 2018-2019 Gregory Nutt. All rights
+#   Copyright (C) 2011, 2013-2014, 2018-2019, 2020 Gregory Nutt. All rights
 #     reserved.
 #   Author: Richard Cochran
 #           Gregory Nutt <gnutt@nuttx.org>
@@ -47,6 +47,19 @@ ifeq ($(CONFIG_WINDOWS_NATIVE),y)
 export SHELL=cmd
 endif
 
+# Control build verbosity
+#
+#  V=1,2: Enable echo of commands
+#  V=2:   Enable bug/verbose options in tools and scripts
+
+ifeq ($(V),1)
+export Q :=
+else ifeq ($(V),2)
+export Q :=
+else
+export Q := @
+endif
+
 # These are configuration variables that are quoted by configuration tool
 # but which must be unquoted when used in the build system.
 
@@ -54,11 +67,32 @@ CONFIG_ARCH       := $(patsubst "%",%,$(strip $(CONFIG_ARCH)))
 CONFIG_ARCH_CHIP  := $(patsubst "%",%,$(strip $(CONFIG_ARCH_CHIP)))
 CONFIG_ARCH_BOARD := $(patsubst "%",%,$(strip $(CONFIG_ARCH_BOARD)))
 
+# Some defaults.
+# $(TOPDIR)/Make.defs can override these appropriately.
+
+MODULECC ?= $(CC)
+MODULELD ?= $(LD)
+MODULESTRIP ?= $(STRIP)
+
 # Some defaults just to prohibit some bad behavior if for some reason they
 # are not defined
 
+ASMEXT ?= .S
 OBJEXT ?= .o
 LIBEXT ?= .a
+
+ifeq ($(HOSTOS),Cygwin)
+  EXEEXT ?= .exe
+endif
+
+ifeq ($(CONFIG_HOST_WINDOWS),y)
+  HOSTEXEEXT ?= .exe
+endif
+
+# This define is passed as EXTRAFLAGS for kernel-mode builds.  It is also passed
+# during PASS1 (but not PASS2) context and depend targets.
+
+KDEFINE ?= ${shell $(DEFINE) "$(CC)" __KERNEL__}
 
 # DELIM - Path segment delimiter character
 #
@@ -68,9 +102,57 @@ LIBEXT ?= .a
 #   CONFIG_WINDOWS_NATIVE - Defined for a Windows native build
 
 ifeq ($(CONFIG_WINDOWS_NATIVE),y)
-  DELIM = $(strip \)
+  DELIM ?= $(strip \)
 else
-  DELIM = $(strip /)
+  DELIM ?= $(strip /)
+endif
+
+# Process board-specific directories
+
+ifeq ($(CONFIG_ARCH_BOARD_CUSTOM),y)
+ifeq ($(CONFIG_ARCH_BOARD_CUSTOM_DIR_RELPATH),y)
+  BOARD_DIR ?= $(TOPDIR)$(DELIM)$(CONFIG_ARCH_BOARD_CUSTOM_DIR)$(DELIM)$(CONFIG_ARCH_BOARD)
+else
+  BOARD_DIR ?= $(CONFIG_ARCH_BOARD_CUSTOM_DIR)$(DELIM)$(CONFIG_ARCH_BOARD)
+endif
+else
+  BOARD_DIR ?= $(TOPDIR)$(DELIM)boards$(DELIM)$(CONFIG_ARCH)$(DELIM)$(CONFIG_ARCH_CHIP)$(DELIM)$(CONFIG_ARCH_BOARD)
+endif
+
+BOARD_COMMON_DIR ?= $(wildcard $(BOARD_DIR)$(DELIM)..$(DELIM)common)
+BOARD_DRIVERS_DIR ?= $(wildcard $(BOARD_DIR)$(DELIM)..$(DELIM)drivers)
+ifeq ($(BOARD_DRIVERS_DIR),)
+  BOARD_DRIVERS_DIR = $(TOPDIR)$(DELIM)drivers$(DELIM)dummy
+endif
+
+# DIRLINK - Create a directory link in the portable way
+
+ifeq ($(CONFIG_WINDOWS_NATIVE),y)
+ifeq ($(CONFIG_WINDOWS_MKLINK),y)
+  DIRLINK   ?= $(TOPDIR)$(DELIM)tools$(DELIM)link.bat
+else
+  DIRLINK   ?= $(TOPDIR)$(DELIM)tools$(DELIM)copydir.bat
+endif
+  DIRUNLINK ?= $(TOPDIR)$(DELIM)tools$(DELIM)unlink.bat
+else
+ifeq ($(CONFIG_CYGWIN_WINTOOL),y)
+  DIRLINK   ?= $(TOPDIR)$(DELIM)tools$(DELIM)copydir.sh
+else ifeq ($(CONFIG_WINDOWS_MSYS),y)
+  DIRLINK   ?= $(TOPDIR)$(DELIM)tools$(DELIM)copydir.sh
+else
+  DIRLINK   ?= $(TOPDIR)$(DELIM)tools$(DELIM)link.sh
+endif
+  DIRUNLINK ?= $(TOPDIR)$(DELIM)tools$(DELIM)unlink.sh
+endif
+
+# MKDEP - Create the depend rule in the portable way
+
+ifeq ($(CONFIG_WINDOWS_NATIVE),y)
+  MKDEP ?= $(TOPDIR)$(DELIM)tools$(DELIM)mkdeps$(HOSTEXEEXT) --winnative
+else ifeq ($(CONFIG_CYGWIN_WINTOOL),y)
+  MKDEP ?= $(TOPDIR)$(DELIM)tools$(DELIM)mkwindeps.sh
+else
+  MKDEP ?= $(TOPDIR)$(DELIM)tools$(DELIM)mkdeps$(HOSTEXEEXT)
 endif
 
 # INCDIR - Convert a list of directory paths to a list of compiler include
@@ -93,9 +175,14 @@ endif
 #   CONFIG_WINDOWS_NATIVE - Defined for a Windows native build
 
 ifeq ($(CONFIG_WINDOWS_NATIVE),y)
-  INCDIR = "$(TOPDIR)\tools\incdir.bat"
+  DEFINE ?= "$(TOPDIR)\tools\define.bat"
+  INCDIR ?= "$(TOPDIR)\tools\incdir.bat"
+else ifeq ($(CONFIG_CYGWIN_WINTOOL),y)
+  DEFINE ?= "$(TOPDIR)/tools/define.sh" -w
+  INCDIR ?= "$(TOPDIR)/tools/incdir.sh" -w
 else
-  INCDIR = "$(TOPDIR)/tools/incdir.sh"
+  DEFINE ?= "$(TOPDIR)/tools/define.sh"
+  INCDIR ?= "$(TOPDIR)/tools/incdir.sh"
 endif
 
 # PREPROCESS - Default macro to run the C pre-processor
@@ -184,17 +271,6 @@ define INSTALL_LIB
 	$(Q) install -m 0644 $1 $2
 endef
 
-# MOVEOBJ - Default macro to move an object file to the correct location
-# Example: $(call MOVEOBJ, prefix, directory)
-#
-# This is only used in directories that keep object files in sub-directories.
-# Certain compilers (ZDS-II) always place the resulting files in the
-# directory where the compiler was invoked with not option to generate objects
-# in a different location.
-
-define MOVEOBJ
-endef
-
 # ARCHIVE - Add a list of files to an archive
 # Example: $(call ARCHIVE, archive-file, "file1 file2 file3 ...")
 #
@@ -211,17 +287,9 @@ endef
 #
 #   CONFIG_WINDOWS_NATIVE - Defined for a Windows native build
 
-ifeq ($(CONFIG_WINDOWS_NATIVE),y)
 define ARCHIVE
-	@echo AR: $2
-	$(Q) $(AR) $1 $(2)
+	$(AR) $1 $(2)
 endef
-else
-define ARCHIVE
-	@echo "AR: $2"
-	$(Q) $(AR) $1 $(2) || { echo "$(AR) $1 FAILED!" ; exit 1 ; }
-endef
-endif
 
 # PRELINK - Prelink a list of files
 # This is useful when files were compiled with fvisibility=hidden.
@@ -255,6 +323,15 @@ define PRELINK
 	$(Q) $(LD) -Ur -o $1 $2 && $(OBJCOPY) --localize-hidden $1
 endef
 endif
+
+# POSTBUILD -- Perform post build operations
+# Some architectures require the use of special tools and special handling
+# AFTER building the NuttX binary.  Make.defs files for thos architectures
+# should override the following define with the correct operations for
+# that platform
+
+define POSTBUILD
+endef
 
 # DELFILE - Delete one file
 
@@ -304,17 +381,17 @@ define COPYFILE
 endef
 endif
 
-# CATFILE - Cat and append a list of files
+# CATFILE - Cat a list of files
 #
 # USAGE: $(call CATFILE,dest,src1,src2,src3,...)
 
 ifeq ($(CONFIG_WINDOWS_NATIVE),y)
 define CATFILE
-	$(Q) type $(2) >> $1
+	$(Q) type $(2) > $1
 endef
 else
 define CATFILE
-	$(Q) cat $(2) >> $1
+	$(Q) cat $(2) > $1
 endef
 endif
 
@@ -354,7 +431,11 @@ endif
 # args: $1 - newfile:  Temporary file to test
 #       $2 - oldfile:  File to replace
 
-ifneq ($(CONFIG_WINDOWS_NATIVE),y)
+ifeq ($(CONFIG_WINDOWS_NATIVE),y)
+define TESTANDREPLACEFILE
+	$(Q) move /Y $1 $2
+endef
+else
 define TESTANDREPLACEFILE
 	if [ -f $2 ]; then \
 		if cmp $1 $2; then \
@@ -367,3 +448,16 @@ define TESTANDREPLACEFILE
 	fi
 endef
 endif
+
+# Invoke make
+
+define MAKE_template
+	+$(Q) $(MAKE) -C $(1) $(2) TOPDIR="$(TOPDIR)" APPDIR="$(APPDIR)"
+
+endef
+
+define SDIR_template
+$(1)_$(2):
+	+$(Q) $(MAKE) -C $(1) $(2) TOPDIR="$(TOPDIR)" APPDIR="$(APPDIR)"
+
+endef

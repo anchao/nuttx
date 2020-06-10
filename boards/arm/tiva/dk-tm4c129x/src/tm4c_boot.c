@@ -44,8 +44,8 @@
 #include <nuttx/board.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 #include "dk-tm4c129x.h"
 
 /****************************************************************************
@@ -112,6 +112,6 @@ void board_late_initialize(void)
 {
   /* Perform board initialization */
 
-  (void)tm4c_bringup();
+  tm4c_bringup();
 }
 #endif /* CONFIG_BOARD_LATE_INITIALIZE */

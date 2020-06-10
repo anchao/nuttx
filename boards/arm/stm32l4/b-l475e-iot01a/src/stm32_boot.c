@@ -42,7 +42,7 @@
 #include <nuttx/board.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "stm32l4_start.h"
 #include "b-l475e-iot01a.h"
 
@@ -98,6 +98,6 @@ void board_late_initialize(void)
 {
   /* Perform board initialization */
 
-  (void)stm32l4_bringup();
+  stm32l4_bringup();
 }
 #endif /* CONFIG_BOARD_LATE_INITIALIZE */

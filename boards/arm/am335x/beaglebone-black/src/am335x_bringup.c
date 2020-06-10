@@ -48,6 +48,83 @@
 
 #include "beaglebone-black.h"
 
+#include "am335x_i2c.h"
+#include "am335x_can.h"
+
+/****************************************************************************
+ * Private Functions
+ ****************************************************************************/
+
+#if defined(CONFIG_I2C_DRIVER) && (defined(CONFIG_AM335X_I2C0) || \
+    defined(CONFIG_AM335X_I2C1) || defined(CONFIG_AM335X_I2C2))
+static void am335x_i2c_register(int bus)
+{
+  FAR struct i2c_master_s *i2c;
+  int ret;
+
+  i2c = am335x_i2cbus_initialize(bus);
+  if (i2c == NULL)
+    {
+      syslog(LOG_ERR, "Failed to get I2C%d interface\n", bus);
+    }
+  else
+    {
+      ret = i2c_register(i2c, bus);
+      if (ret < 0)
+        {
+          syslog(LOG_ERR, "Failed to register I2C%d driver: %d\n", bus, ret);
+          am335x_i2cbus_uninitialize(i2c);
+        }
+    }
+}
+#endif
+
+#if defined(CONFIG_CAN) && (defined(CONFIG_AM335X_CAN0) || defined(CONFIG_AM335X_CAN1))
+static void am335x_can_register(void)
+{
+  FAR struct can_dev_s *can;
+  int ret;
+
+#ifdef CONFIG_AM335X_CAN0
+  can = am335x_can_initialize(0);
+  if (can == NULL)
+    {
+      syslog(LOG_ERR, "Failed to get DCAN0 interface\n");
+    }
+  else
+    {
+      ret = can_register("/dev/can0", can);
+      if (ret < 0)
+        {
+          syslog(LOG_ERR, "can_register failed: %d\n", ret);
+          am335x_can_uninitialize(can);
+        }
+    }
+#endif
+
+#ifdef CONFIG_AM335X_CAN1
+  can = am335x_can_initialize(1);
+  if (can == NULL)
+    {
+      syslog(LOG_ERR, "Failed to get DCAN1 interface\n");
+    }
+  else
+    {
+#ifdef CONFIG_AM335X_CAN0
+      ret = can_register("/dev/can1", can);
+#else
+      ret = can_register("/dev/can0", can);
+#endif
+      if (ret < 0)
+        {
+          syslog(LOG_ERR, "can_register failed: %d\n", ret);
+          am335x_can_uninitialize(can);
+        }
+    }
+#endif
+}
+#endif
+
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -88,6 +165,22 @@ int am335x_bringup(void)
     {
       syslog(LOG_ERR, "ERROR: Failed to mount procfs at /proc: %d\n", ret);
     }
+#endif
+
+#if defined(CONFIG_I2C_DRIVER) && defined(CONFIG_AM335X_I2C0)
+  am335x_i2c_register(0);
+#endif
+
+#if defined(CONFIG_I2C_DRIVER) && defined(CONFIG_AM335X_I2C1)
+  am335x_i2c_register(1);
+#endif
+
+#if defined(CONFIG_I2C_DRIVER) && defined(CONFIG_AM335X_I2C2)
+  am335x_i2c_register(2);
+#endif
+
+#if defined(CONFIG_CAN) && (defined(CONFIG_AM335X_CAN0) || defined(CONFIG_AM335X_CAN1))
+  am335x_can_register();
 #endif
 
   UNUSED(ret);

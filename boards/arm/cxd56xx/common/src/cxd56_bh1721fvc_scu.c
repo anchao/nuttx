@@ -50,6 +50,10 @@
 
 #include "cxd56_i2c.h"
 
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
+
 #ifdef CONFIG_SENSORS_BH1721FVC_SCU
 int board_bh1721fvc_initialize(FAR const char *devpath, int bus)
 {
@@ -58,7 +62,7 @@ int board_bh1721fvc_initialize(FAR const char *devpath, int bus)
 
   sninfo("Initializing BH1721FVC...\n");
 
-  /* Initialize i2c deivce */
+  /* Initialize i2c device */
 
   i2c = cxd56_i2cbus_initialize(bus);
   if (!i2c)

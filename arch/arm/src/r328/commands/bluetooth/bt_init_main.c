@@ -8,6 +8,7 @@ int main(int argc, FAR char *argv[])
 {
 	cmd_bt_init();
 	bt_example();
+	mesh_node_test();
 	return 0;
 }
 

@@ -50,7 +50,7 @@
 
 #include <nuttx/irq.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "l2cc.h"
 #include "l2cc_pl310.h"
 
@@ -179,7 +179,7 @@
 
 /* Bit 26: Non-Secure Lockdown Enable
  *
- * Default: 0=Lockdown registers cannot be modified using non-secure acceses
+ * Default: 0=Lockdown registers cannot be modified using non-secure accesses
  */
 
 #define L2CC_ACR_NSLEN_CONFIG      (0) /* 0=Secure access only */
@@ -293,7 +293,7 @@ static void pl310_flush_all(void)
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_l2ccinitialize
+ * Name: arm_l2ccinitialize
  *
  * Description:
  *   One time configuration of the L2 cache.  The L2 cache will be enabled
@@ -308,7 +308,7 @@ static void pl310_flush_all(void)
  *
  ****************************************************************************/
 
-void up_l2ccinitialize(void)
+void arm_l2ccinitialize(void)
 {
   uint32_t regval;
   int i;

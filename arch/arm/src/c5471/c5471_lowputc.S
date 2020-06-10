@@ -40,8 +40,8 @@
 #include <nuttx/config.h>
 
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 /**************************************************************************
  * Pre-processor Definitions
@@ -72,7 +72,7 @@
  **************************************************************************/
 
 /**************************************************************************
- * Name: up_lowputc
+ * Name: arm_lowputc
  **************************************************************************/
 
 /* This assembly language version has the advantage that it can does not
@@ -81,9 +81,9 @@
  */
 
 	.text
-	.global	up_lowputc
-	.type	up_lowputc, function
-up_lowputc:
+	.global	arm_lowputc
+	.type	arm_lowputc, function
+arm_lowputc:
 	/* On entry, r0 holds the character to be printed */
 
 #ifdef CONFIG_SERIAL_IRDA_CONSOLE
@@ -106,8 +106,8 @@ up_lowputc:
 
 	str     r0, [r2, #UART_THR_OFFS]
 
-	/* Wait for the tranmsit holding regiser (THR) to be
-	 * emptied. This is detemined when bit 6 of the LSR
+	/* Wait for the tranmsit holding register (THR) to be
+	 * emptied. This is determined when bit 6 of the LSR
 	 * is set.
 	 */
 
@@ -126,4 +126,3 @@ up_lowputc:
 	/* And return */
 
 	mov     pc, lr
-

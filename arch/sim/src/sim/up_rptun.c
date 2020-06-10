@@ -94,7 +94,8 @@ static const char *sim_rptun_get_firmware(struct rptun_dev_s *dev)
   return NULL;
 }
 
-static const struct rptun_addrenv_s *sim_rptun_get_addrenv(struct rptun_dev_s *dev)
+static const struct rptun_addrenv_s *
+  sim_rptun_get_addrenv(struct rptun_dev_s *dev)
 {
   return NULL;
 }
@@ -205,18 +206,20 @@ int up_rptun_init(void)
 
       rsc->rsc_tbl_hdr.ver          = 1;
       rsc->rsc_tbl_hdr.num          = 1;
-      rsc->offset[0]                = offsetof(struct rptun_rsc_s, rpmsg_vdev);
+      rsc->offset[0]                = offsetof(struct rptun_rsc_s,
+                                               rpmsg_vdev);
       rsc->rpmsg_vdev.type          = RSC_VDEV;
       rsc->rpmsg_vdev.id            = VIRTIO_ID_RPMSG;
       rsc->rpmsg_vdev.dfeatures     = 1 << VIRTIO_RPMSG_F_NS
-                                    | 1 << VIRTIO_RPMSG_F_BIND
+                                    | 1 << VIRTIO_RPMSG_F_ACK
                                     | 1 << VIRTIO_RPMSG_F_BUFSZ;
       rsc->rpmsg_vdev.num_of_vrings = 2;
       rsc->rpmsg_vring0.align       = 8;
       rsc->rpmsg_vring0.num         = 8;
       rsc->rpmsg_vring1.align       = 8;
       rsc->rpmsg_vring1.num         = 8;
-      rsc->buf_size                 = 0x800;
+      rsc->config.rxbuf_size        = 0x800;
+      rsc->config.txbuf_size        = 0x800;
 
       g_dev.shmem->base             = (uintptr_t)g_dev.shmem;
     }
@@ -228,7 +231,7 @@ int up_rptun_init(void)
 
       while (g_dev.shmem->base == 0)
         {
-          up_hostusleep(1000);
+          host_sleep(1000);
         }
 
       s_addrenv[0].va               = (uintptr_t)g_dev.shmem;
@@ -244,10 +247,6 @@ int up_rptun_init(void)
       shmem_close(g_dev.shmem);
       return ret;
     }
-
-#ifdef CONFIG_SYSLOG_RPMSG
-  syslog_rpmsg_init();
-#endif
 
 #ifdef CONFIG_SYSLOG_RPMSG_SERVER
   syslog_rpmsg_server_init();

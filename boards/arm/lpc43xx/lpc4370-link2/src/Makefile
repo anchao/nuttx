@@ -33,9 +33,8 @@
 #
 ############################################################################
 
--include $(TOPDIR)/Make.defs
+include $(TOPDIR)/Make.defs
 
-ASRCS =
 CSRCS = lpc43_boot.c
 
 ifeq ($(CONFIG_LIB_BOARDCTL),y)
@@ -65,4 +64,3 @@ CSRCS += lpc43_spifilib_init.c
 endif
 
 include $(TOPDIR)/boards/Board.mk
-

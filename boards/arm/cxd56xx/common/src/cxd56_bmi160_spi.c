@@ -61,6 +61,10 @@
 #  define ACCEL_NR_SEQS 1
 #endif
 
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
+
 #if defined(CONFIG_CXD56_SPI) && defined(CONFIG_SENSORS_BMI160)
 
 int board_bmi160_initialize(int bus)
@@ -70,7 +74,7 @@ int board_bmi160_initialize(int bus)
 
   sninfo("Initializing BMI160..\n");
 
-  /* Initialize spi deivce */
+  /* Initialize spi device */
 
   spi = cxd56_spibus_initialize(bus);
   if (!spi)

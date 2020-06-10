@@ -72,7 +72,7 @@
  *                The argument has no meaning to NuttX; the meaning of the
  *                argument is a contract between the board-specific
  *                initialization logic and the matching application logic.
- *                The value cold be such things as a mode enumeration value,
+ *                The value could be such things as a mode enumeration value,
  *                a set of DIP switch switch settings, a pointer to
  *                configuration data read from a file or serial FLASH, or
  *                whatever you would like to do with it.  Every
@@ -113,7 +113,7 @@
  * DEPENDENCIES:  None
  *
  * CMD:           BOARDIOC_ROMDISK
- * DESCRIPTION:   Reigster
+ * DESCRIPTION:   Register
  * ARG:           Pointer to read-only instance of struct boardioc_romdisk_s.
  * CONFIGURATION: CONFIG_BOARDCTL_ROMDISK
  * DEPENDENCIES:  None

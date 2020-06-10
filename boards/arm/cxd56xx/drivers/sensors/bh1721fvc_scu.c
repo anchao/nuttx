@@ -1,5 +1,5 @@
 /****************************************************************************
- * drivers/platform/sensors/bh1721fvc_scu.c
+ * boards/arm/cxd56xx/drivers/sensors/bh1721fvc_scu.c
  *
  *   Copyright 2018 Sony Semiconductor Solutions Corporation
  *
@@ -44,7 +44,6 @@
 #include <fixedmath.h>
 #include <errno.h>
 #include <debug.h>
-#include <semaphore.h>
 #include <arch/types.h>
 #include <nuttx/kmalloc.h>
 #include <nuttx/fs/fs.h>
@@ -76,6 +75,7 @@
 /****************************************************************************
  * Private Type Definitions
  ****************************************************************************/
+
 /**
  * @brief Structure for bh1721fvc device
  */
@@ -97,11 +97,15 @@ struct bh1721fvc_dev_s
 
 static int bh1721fvc_open(FAR struct file *filep);
 static int bh1721fvc_close(FAR struct file *filep);
-static ssize_t bh1721fvc_read(FAR struct file *filep, FAR char *buffer,
+static ssize_t bh1721fvc_read(FAR struct file *filep,
+                              FAR char *buffer,
                               size_t buflen);
-static ssize_t bh1721fvc_write(FAR struct file *filep, FAR const char *buffer,
+static ssize_t bh1721fvc_write(FAR struct file *filep,
+                               FAR const char *buffer,
                                size_t buflen);
-static int bh1721fvc_ioctl(FAR struct file *filep, int cmd, unsigned long arg);
+static int bh1721fvc_ioctl(FAR struct file *filep,
+                           int cmd,
+                           unsigned long arg);
 
 /****************************************************************************
  * Private Data
@@ -177,14 +181,20 @@ static int bh1721fvc_seqinit(FAR struct bh1721fvc_dev_s *priv)
     {
       return -ENOENT;
     }
+
   priv->seq = g_seq;
 
   seq_setaddress(priv->seq, priv->addr);
 
   /* Set instruction and sample data information to sequencer */
 
-  seq_setinstruction(priv->seq, g_bh1721fvcinst, itemsof(g_bh1721fvcinst));
-  seq_setsample(priv->seq, BH1721FVC_BYTESPERSAMPLE, 0, BH1721FVC_ELEMENTSIZE,
+  seq_setinstruction(priv->seq,
+                     g_bh1721fvcinst,
+                     itemsof(g_bh1721fvcinst));
+  seq_setsample(priv->seq,
+                BH1721FVC_BYTESPERSAMPLE,
+                0,
+                BH1721FVC_ELEMENTSIZE,
                 false);
 
   return OK;
@@ -216,6 +226,7 @@ static int bh1721fvc_open(FAR struct file *filep)
       bh1721fvc_writeopecode(priv, BH1721FVC_POWERON);
       bh1721fvc_writeopecode(priv, BH1721FVC_AUTORESOLUTION);
     }
+
   g_refcnt++;
 
   return OK;
@@ -236,7 +247,7 @@ static int bh1721fvc_close(FAR struct file *filep)
 
   g_refcnt--;
 
-  (void) seq_ioctl(priv->seq, priv->minor, SCUIOC_STOP, 0);
+  seq_ioctl(priv->seq, priv->minor, SCUIOC_STOP, 0);
 
   if (g_refcnt == 0)
     {
@@ -247,7 +258,7 @@ static int bh1721fvc_close(FAR struct file *filep)
     }
   else
     {
-      (void) seq_ioctl(priv->seq, priv->minor, SCUIOC_FREEFIFO, 0);
+      seq_ioctl(priv->seq, priv->minor, SCUIOC_FREEFIFO, 0);
     }
 
   return OK;
@@ -273,7 +284,8 @@ static ssize_t bh1721fvc_read(FAR struct file *filep, FAR char *buffer,
  * Name: bh1721fvc_write
  ****************************************************************************/
 
-static ssize_t bh1721fvc_write(FAR struct file *filep, FAR const char *buffer,
+static ssize_t bh1721fvc_write(FAR struct file *filep,
+                               FAR const char *buffer,
                                size_t buflen)
 {
   return -ENOSYS;
@@ -341,7 +353,8 @@ int bh1721fvc_init(FAR struct i2c_master_s *i2c, int port)
  * Name: bh1721fvc_register
  *
  * Description:
- *   Register the BH1721FVC ambient light sensor character device as 'devpath'
+ *   Register the BH1721FVC ambient light sensor character device as
+ *   'devpath'
  *
  * Input Parameters:
  *   devpath - The full path to the driver to register. E.g., "/dev/light0"
@@ -380,7 +393,7 @@ int bh1721fvc_register(FAR const char *devpath, int minor,
 
   /* Register the character driver */
 
-  (void) snprintf(path, sizeof(path), "%s%d", devpath, minor);
+  snprintf(path, sizeof(path), "%s%d", devpath, minor);
   ret = register_driver(path, &g_bh1721fvcfops, 0666, priv);
   if (ret < 0)
     {

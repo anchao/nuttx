@@ -52,8 +52,8 @@
 #include <nuttx/arch.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "hardware/lpc54_syscon.h"
 #include "lpc54_power.h"
@@ -297,7 +297,7 @@ void lpc54_clockconfig(FAR const struct pll_setup_s *pllsetup)
   putreg32(SYSCON_MAINCLKSELB_MAINCLKSELA, LPC54_SYSCON_MAINCLKSELB);
 
   /* Set the voltage for the find PLL output frequency.  This assumes
-   * that the PLL output frequncy is >=12MHz.
+   * that the PLL output frequency is >=12MHz.
    */
 
   lpc54_setvoltage(pllsetup->pllfout);

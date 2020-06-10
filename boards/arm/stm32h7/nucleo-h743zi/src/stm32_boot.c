@@ -44,7 +44,7 @@
 #include <nuttx/board.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "stm32_start.h"
 #include "nucleo-h743zi.h"
 
@@ -87,12 +87,13 @@ void stm32_boardinitialize(void)
  * Name: board_late_initialize
  *
  * Description:
- *   If CONFIG_BOARD_LATE_INITIALIZE is selected, then an additional initialization call
- *   will be performed in the boot-up sequence to a function called
- *   board_late_initialize().  board_late_initialize() will be called immediately after
- *   up_initialize() is called and just before the initial application is started.
- *   This additional initialization phase may be used, for example, to initialize
- *   board-specific device drivers.
+ *   If CONFIG_BOARD_LATE_INITIALIZE is selected, then an additional
+ *   initialization call will be performed in the boot-up sequence to a
+ *   function called board_late_initialize().  board_late_initialize()
+ *   will be called immediately after up_initialize() is called and just
+ *   before the initial application is started.  This additional
+ *   initialization phase may be used, for example, to initialize board-
+ *   specific device drivers.
  *
  ****************************************************************************/
 
@@ -102,7 +103,7 @@ void board_late_initialize(void)
 #if defined(CONFIG_NSH_LIBRARY) && !defined(CONFIG_LIB_BOARDCTL)
   /* Perform board bring-up here instead of from the board_app_initialize(). */
 
-  (void)stm32_bringup();
+  stm32_bringup();
 #endif
 }
 #endif

@@ -47,7 +47,7 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 
 #include "sam_config.h"
 
@@ -213,7 +213,7 @@ void sercom_slowclk_configure(int sercom, int gclkgen)
         }
 #endif
       break;
-#endif  /* HAVE_SERCOM0_4 */
+#endif /* HAVE_SERCOM0_4 */
 
 #ifdef CONFIG_SAMD2L2_SERCOM5
     case 5:

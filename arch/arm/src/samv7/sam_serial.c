@@ -43,7 +43,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <semaphore.h>
 #include <string.h>
 #include <errno.h>
 #include <debug.h>
@@ -59,8 +58,8 @@
 
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 #include "sam_config.h"
 #include "hardware/sam_uart.h"
 
@@ -295,7 +294,7 @@
 
 /* Pick ttys7. This could be one of USART1-2. It can't be UART0-4
  * or USART 1 because those have already been assigned to ttsyS0-6.
- * One of of USART1-2 could also be the console.
+ * One of USART1-2 could also be the console.
  */
 
 #if defined(CONFIG_SAMV7_USART1) && defined(CONFIG_USART1_SERIALDRIVER) && \
@@ -1391,17 +1390,17 @@ static bool sam_txempty(struct uart_dev_s *dev)
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_earlyserialinit
+ * Name: arm_earlyserialinit
  *
  * Description:
  *   Performs the low level USART initialization early in debug so that the
  *   serial console will be available during bootup.  This must be called
- *   before up_serialinit.
+ *   before arm_serialinit.
  *
  ****************************************************************************/
 
 #ifdef USE_EARLYSERIALINIT
-void up_earlyserialinit(void)
+void arm_earlyserialinit(void)
 {
   /* NOTE:  All GPIO configuration for the USARTs was performed in
    * sam_lowsetup
@@ -1444,47 +1443,47 @@ void up_earlyserialinit(void)
 #endif
 
 /****************************************************************************
- * Name: up_serialinit
+ * Name: arm_serialinit
  *
  * Description:
  *   Register serial console and serial ports.  This assumes
- *   that up_earlyserialinit was called previously.
+ *   that arm_earlyserialinit was called previously.
  *
  ****************************************************************************/
 
-void up_serialinit(void)
+void arm_serialinit(void)
 {
   /* Register the console */
 
 #ifdef HAVE_SERIAL_CONSOLE
-  (void)uart_register("/dev/console", &CONSOLE_DEV);
+  uart_register("/dev/console", &CONSOLE_DEV);
 #endif
 
   /* Register all USARTs */
 
 #ifdef TTYS0_DEV
-  (void)uart_register("/dev/ttyS0", &TTYS0_DEV);
+  uart_register("/dev/ttyS0", &TTYS0_DEV);
 #endif
 #ifdef TTYS1_DEV
-  (void)uart_register("/dev/ttyS1", &TTYS1_DEV);
+  uart_register("/dev/ttyS1", &TTYS1_DEV);
 #endif
 #ifdef TTYS2_DEV
-  (void)uart_register("/dev/ttyS2", &TTYS2_DEV);
+  uart_register("/dev/ttyS2", &TTYS2_DEV);
 #endif
 #ifdef TTYS3_DEV
-  (void)uart_register("/dev/ttyS3", &TTYS3_DEV);
+  uart_register("/dev/ttyS3", &TTYS3_DEV);
 #endif
 #ifdef TTYS4_DEV
-  (void)uart_register("/dev/ttyS4", &TTYS4_DEV);
+  uart_register("/dev/ttyS4", &TTYS4_DEV);
 #endif
 #ifdef TTYS5_DEV
-  (void)uart_register("/dev/ttyS5", &TTYS5_DEV);
+  uart_register("/dev/ttyS5", &TTYS5_DEV);
 #endif
 #ifdef TTYS6_DEV
-  (void)uart_register("/dev/ttyS6", &TTYS6_DEV);
+  uart_register("/dev/ttyS6", &TTYS6_DEV);
 #endif
 #ifdef TTYS7_DEV
-  (void)uart_register("/dev/ttyS7", &TTYS7_DEV);
+  uart_register("/dev/ttyS7", &TTYS7_DEV);
 #endif
 }
 

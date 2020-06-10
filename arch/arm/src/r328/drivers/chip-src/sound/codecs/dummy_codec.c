@@ -49,7 +49,7 @@ static struct snd_dai dummy_codec_dai[] = {
 		.playback	= {
 			.stream_name	= "Playback",
 			.channels_min	= 1,
-			.channels_max	= 2,
+			.channels_max	= 8,
 			.rates		= SNDRV_PCM_RATE_8000_192000
 					| SNDRV_PCM_RATE_KNOT,
 			.formats	= SNDRV_PCM_FMTBIT_S16_LE
@@ -61,7 +61,7 @@ static struct snd_dai dummy_codec_dai[] = {
 		.capture	= {
 			.stream_name	= "Capture",
 			.channels_min	= 1,
-			.channels_max	= 2,
+			.channels_max	= 8,
 			.rates		= SNDRV_PCM_RATE_8000_48000
 					| SNDRV_PCM_RATE_KNOT,
 			.formats	= SNDRV_PCM_FMTBIT_S16_LE

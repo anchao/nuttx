@@ -46,7 +46,7 @@
 #include <nuttx/lcd/lcd.h>
 #include <nuttx/lcd/ug-2864ambag01.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "chip.h"
 #include "lpc214x_pinsel.h"
 #include "lpc214x_spi.h"
@@ -59,7 +59,7 @@
 
 /* Configuration ************************************************************/
 
-/* The pin configurations here requires that SPI1 is avaialable */
+/* The pin configurations here requires that SPI1 is available */
 
 /* SPI should be configured with CMD/DATA support (and no transfer methods) */
 
@@ -170,7 +170,7 @@ FAR struct lcd_dev_s *board_graphics_setup(unsigned int devno)
 
           /* And turn the OLED on */
 
-          (void)dev->setpower(dev, CONFIG_LCD_MAXPOWER);
+          dev->setpower(dev, CONFIG_LCD_MAXPOWER);
           return dev;
         }
     }

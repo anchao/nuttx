@@ -45,9 +45,10 @@
 
 #if defined(CONFIG_STM32H7_STM32H7X3XX)
 #  include "hardware/stm32h7x3xx_pinmap.h"
+#elif defined(CONFIG_STM32H7_STM32H7X7XX)
+#  include "hardware/stm32h7x3xx_pinmap.h"
 #else
 #  error "Unsupported STM32 H7 Pin map"
 #endif
 
 #endif /* __ARCH_ARM_SRC_STM32H7_HARDWARE_STM32_PINMAP_H */
-

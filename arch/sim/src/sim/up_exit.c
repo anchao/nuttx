@@ -71,11 +71,11 @@ void _exit(int status)
 
   /* Update scheduler parameters */
 
-  sched_suspend_scheduler(tcb);
+  nxsched_suspend_scheduler(tcb);
 
   /* Destroy the task at the head of the ready to run list. */
 
-  (void)nxtask_exit();
+  nxtask_exit();
 
   /* Now, perform the context switch to the new ready-to-run task at the
    * head of the list.
@@ -86,7 +86,7 @@ void _exit(int status)
 
   /* Reset scheduler parameters */
 
-  sched_resume_scheduler(tcb);
+  nxsched_resume_scheduler(tcb);
 
   /* The way that we handle signals in the simulation is kind of
    * a kludge.  This would be unsafe in a truly multi-threaded, interrupt

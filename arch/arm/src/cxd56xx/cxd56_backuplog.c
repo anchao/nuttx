@@ -143,6 +143,7 @@ static void *get_allocated_memory(const char *name, size_t size)
           up_backuplog_free(name);
         }
     }
+
   return NULL;
 }
 
@@ -163,6 +164,7 @@ static int allocate_memory(size_t size)
           allocated = i;
           break;
         }
+
       alloc_bits <<= 1;
     }
 
@@ -183,7 +185,7 @@ static int allocate_memory(size_t size)
  *
  * Description:
  *   Initialize the log header where the address and size of each log area
- *   are decribed. If the log header has been already configured in a wakeup
+ *   are described. If the log header has been already configured in a wakeup
  *   from sleeping or reboot case, then do nothing and return OK.
  *
  * Returned Value:

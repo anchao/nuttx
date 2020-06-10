@@ -48,8 +48,8 @@
 #include <arch/irq.h>
 
 #include "nvic.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 //#include "stm32_irq.h"
 
@@ -128,7 +128,7 @@ static void stm32_dumpnvic(const char *msg, int irq)
  *       stm32_dbgmonitor, stm32_pendsv, stm32_reserved
  *
  * Description:
- *   Handlers for various execptions.  None are handled and all are fatal
+ *   Handlers for various exceptions.  None are handled and all are fatal
  *   error conditions.  The only advantage these provided over the default
  *   unexpected interrupt handler is that they provide a diagnostic output.
  *
@@ -137,7 +137,7 @@ static void stm32_dumpnvic(const char *msg, int irq)
 #ifdef CONFIG_DEBUG_FEATURES
 static int stm32_nmi(int irq, FAR void *context, FAR void *arg)
 {
-  (void)up_irq_save();
+  up_irq_save();
   _err("PANIC!!! NMI received\n");
   PANIC();
   return 0;
@@ -145,7 +145,7 @@ static int stm32_nmi(int irq, FAR void *context, FAR void *arg)
 
 static int stm32_pendsv(int irq, FAR void *context, FAR void *arg)
 {
-  (void)up_irq_save();
+  up_irq_save();
   _err("PANIC!!! PendSV received\n");
   PANIC();
   return 0;
@@ -153,7 +153,7 @@ static int stm32_pendsv(int irq, FAR void *context, FAR void *arg)
 
 static int stm32_reserved(int irq, FAR void *context, FAR void *arg)
 {
-  (void)up_irq_save();
+  up_irq_save();
   _err("PANIC!!! Reserved interrupt\n");
   PANIC();
   return 0;
@@ -228,8 +228,8 @@ void up_irqinitialize(void)
    * under certain conditions.
    */
 
-  irq_attach(STM32_IRQ_SVCALL, up_svcall, NULL);
-  irq_attach(STM32_IRQ_HARDFAULT, up_hardfault, NULL);
+  irq_attach(STM32_IRQ_SVCALL, arm_svcall, NULL);
+  irq_attach(STM32_IRQ_HARDFAULT, arm_hardfault, NULL);
 
   /* Attach all other processor exceptions (except reset and sys tick) */
 
@@ -328,14 +328,14 @@ void up_enable_irq(int irq)
 }
 
 /****************************************************************************
- * Name: up_ack_irq
+ * Name: arm_ack_irq
  *
  * Description:
  *   Acknowledge the IRQ
  *
  ****************************************************************************/
 
-void up_ack_irq(int irq)
+void arm_ack_irq(int irq)
 {
   stm32_clrpend(irq);
 }

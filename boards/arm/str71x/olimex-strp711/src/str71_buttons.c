@@ -44,14 +44,14 @@
 #include <arch/board/board.h>
 
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
 
-/* The Olimex board has two buttons, one labled "BUT" and the other "WAKEUP"
+/* The Olimex board has two buttons, one labeled "BUT" and the other "WAKEUP"
  *
  * P0.15: WAKEUP button
  * P1.13: BUT button

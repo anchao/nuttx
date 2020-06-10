@@ -40,12 +40,11 @@
 #include <nuttx/config.h>
 
 #include <nuttx/sched.h>
+#include <nuttx/sched_note.h>
 #include <nuttx/spinlock.h>
 
 #include "sched/sched.h"
 #include "up_internal.h"
-
-#ifdef CONFIG_SMP
 
 /****************************************************************************
  * Public Functions
@@ -104,7 +103,7 @@ int up_cpu_paused(int cpu)
 
   /* Update scheduler parameters */
 
-  sched_suspend_scheduler(rtcb);
+  nxsched_suspend_scheduler(rtcb);
 
   /* Copy the exception context into the TCB at the (old) head of the
    * CPUs assigned task list. if up_setjmp returns a non-zero value, then
@@ -148,7 +147,7 @@ int up_cpu_paused(int cpu)
 
       /* Reset scheduler parameters */
 
-      sched_resume_scheduler(rtcb);
+      nxsched_resume_scheduler(rtcb);
 
       /* Then switch contexts */
 
@@ -158,4 +157,21 @@ int up_cpu_paused(int cpu)
   return OK;
 }
 
-#endif /* CONFIG_SMP */
+/****************************************************************************
+ * Name: up_cpu_started
+ *
+ * Description:
+ *   Notify the current cpu start successfully.
+ *
+ ****************************************************************************/
+
+void up_cpu_started(void)
+{
+#ifdef CONFIG_SCHED_INSTRUMENTATION
+  FAR struct tcb_s *tcb = this_task();
+
+  /* Announce that the IDLE task has started */
+
+  sched_note_start(tcb);
+#endif
+}

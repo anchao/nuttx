@@ -47,7 +47,7 @@ int hal_kthread_create(hal_kthread_t *thread, hal_kthread_fn_t entry,
 	}
 	arg->entry = entry;
 	arg->data = data;
-	snprintf(pointer_str, len, "%lu", (_uintptr_t)arg);
+	snprintf(pointer_str, len, "%lu", (uintptr_t)arg);
 	arg->argv[0] = pointer_str;
 	arg->argv[1] = NULL;
 

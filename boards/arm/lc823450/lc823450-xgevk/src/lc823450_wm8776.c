@@ -51,7 +51,7 @@
 
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "lc823450_i2c.h"
 #include "lc823450_i2s.h"
 #include "lc823450-xgevk.h"
@@ -130,4 +130,3 @@ int lc823450_wm8776initialize(int minor)
 
   return 0;
 }
-

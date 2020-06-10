@@ -1,5 +1,5 @@
 /****************************************************************************
- * fs/spiffs.h/spiffs_cache.h
+ * fs/spiffs/src/spiffs_cache.h
  *
  *   Copyright (C) 2018 Gregory Nutt. All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
@@ -77,17 +77,9 @@ extern "C"
 /* Debug */
 
 #ifdef CONFIG_SPIFFS_CACHEDBG
-#  ifdef CONFIG_CPP_HAVE_VARARGS
-#    define spiffs_cacheinfo(format, ...)   _info(format, ##__VA_ARGS__)
-#  else
-#    define spiffs_cacheinfo                _info
-#  endif
+#  define spiffs_cacheinfo                _info
 #else
-#  ifdef CONFIG_CPP_HAVE_VARARGS
-#    define spiffs_cacheinfo(format, ...)
-#  else
-#    define spiffs_cacheinfo                (void)
-#  endif
+#  define spiffs_cacheinfo                _none
 #endif
 
 /****************************************************************************
@@ -279,4 +271,4 @@ void spiffs_cache_page_release(FAR struct spiffs_s *fs,
 }
 #endif
 
-#endif  /* __FS_SPIFFS_SRC_SPIFFS_CACHE_H */
+#endif /* __FS_SPIFFS_SRC_SPIFFS_CACHE_H */

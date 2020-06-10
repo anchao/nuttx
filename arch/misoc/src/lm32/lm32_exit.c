@@ -142,22 +142,22 @@ void _exit(int status)
    * The IRQ state will be restored when the next task is started.
    */
 
-  (void)enter_critical_section();
+  enter_critical_section();
 
   sinfo("TCB=%p exiting\n", tcb);
 
 #ifdef CONFIG_DUMP_ON_EXIT
   sinfo("Other tasks:\n");
-  sched_foreach(_up_dumponexit, NULL);
+  nxsched_foreach(_up_dumponexit, NULL);
 #endif
 
   /* Update scheduler parameters */
 
-  sched_suspend_scheduler(tcb);
+  nxsched_suspend_scheduler(tcb);
 
   /* Destroy the task at the head of the ready to run list. */
 
-  (void)nxtask_exit();
+  nxtask_exit();
 
   /* Now, perform the context switch to the new ready-to-run task at the
    * head of the list.
@@ -172,12 +172,12 @@ void _exit(int status)
    * the ready-to-run list.
    */
 
-  (void)group_addrenv(tcb);
+  group_addrenv(tcb);
 #endif
 
   /* Reset scheduler parameters */
 
-  sched_resume_scheduler(tcb);
+  nxsched_resume_scheduler(tcb);
 
   /* Then switch contexts */
 

@@ -51,7 +51,7 @@
 #include <nuttx/input/touchscreen.h>
 #include <nuttx/input/ads7843e.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "sam_gpio.h"
 #include "hardware/sam3u_pio.h"
 
@@ -364,7 +364,7 @@ int sam_tsc_setup(int minor)
 
   /* Configure and enable the XPT2046 interrupt pin as an input */
 
-  (void)sam_configgpio(GPIO_TSC_IRQ);
+  sam_configgpio(GPIO_TSC_IRQ);
 
   /* Configure the PIO interrupt */
 

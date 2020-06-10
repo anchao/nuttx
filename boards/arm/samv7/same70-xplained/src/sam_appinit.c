@@ -41,8 +41,11 @@
 
 #include <sys/types.h>
 
+#include <nuttx/arch.h>
 #include <nuttx/board.h>
+#include <arch/board/board.h>
 
+#include "sam_uid.h"
 #include "same70-xplained.h"
 
 #ifdef CONFIG_LIB_BOARDCTL
@@ -64,7 +67,7 @@
  *         implementation without modification.  The argument has no
  *         meaning to NuttX; the meaning of the argument is a contract
  *         between the board-specific initialization logic and the
- *         matching application logic.  The value cold be such things as a
+ *         matching application logic.  The value could be such things as a
  *         mode enumeration value, a set of DIP switch switch settings, a
  *         pointer to configuration data read from a file or serial FLASH,
  *         or whatever you would like to do with it.  Every implementation
@@ -86,5 +89,32 @@ int board_app_initialize(uintptr_t arg)
   return OK;
 #endif
 }
+
+#ifdef CONFIG_BOARDCTL_IOCTL
+int board_ioctl(unsigned int cmd, uintptr_t arg)
+{
+  switch (cmd)
+    {
+      default:
+        return -ENOTTY;  /* Standard return for command not supported */
+        break;
+    }
+
+  return OK;
+}
+#endif
+
+#if defined(CONFIG_BOARDCTL_UNIQUEID)
+int board_uniqueid(uint8_t *uniqueid)
+{
+  if (uniqueid == NULL)
+    {
+      return -EINVAL;
+    }
+
+  sam_get_uniqueid(uniqueid);
+  return OK;
+}
+#endif
 
 #endif /* CONFIG_LIB_BOARDCTL */

@@ -1,7 +1,8 @@
 ############################################################################
 # arch/z80/src/Makefile.zdsiil
 #
-#   Copyright (C) 2008, 2011-2012, 2014 Gregory Nutt. All rights reserved.
+#   Copyright (C) 2008, 2011-2012, 2014, 2020 Gregory Nutt. All rights
+#     reserved.
 #   Author: Gregory Nutt <gnutt@nuttx.org>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,7 +34,7 @@
 #
 ############################################################################
 
--include $(TOPDIR)\Make.defs
+include $(TOPDIR)\Make.defs
 
 ############################################################################
 # Tools
@@ -46,10 +47,10 @@ ARCHCMDDIR = $(ARCHSRCDIR)$(DELIM)common
 WSCHEDSRCDIR = ${shell cygpath -w $(SCHEDSRCDIR)}
 WARCHCHIPDIR = ${shell cygpath -w $(ARCHCHIPDIR)}
 WARCHCMNDIR = ${shell cygpath -w $(ARCHCMDDIR)}
-USRINCLUDES = -usrinc:'.;$(WSCHEDSRCDIR);$(WARCHCHIPDIR);$(WARCHCMNDIR)'
+USRINCLUDES = -usrinc:'$(WSCHEDSRCDIR);$(WARCHCHIPDIR);$(WARCHCMNDIR)'
 
 INCLUDES = $(ARCHSTDINCLUDES) $(USRINCLUDES)
-CFLAGS = $(ARCHWARNINGS) $(ARCHOPTIMIZATION) $(ARCHCPUFLAGS) $(INCLUDES) $(ARCHDEFINES) $(EXTRADEFINES)
+CFLAGS = $(ARCHWARNINGS) $(ARCHOPTIMIZATION) $(ARCHCPUFLAGS) $(INCLUDES) $(ARCHDEFINES) $(EXTRAFLAGS)
 CPPFLAGS += -I$(ARCHSRCDIR) -I$(ZDSSTDINCDIR) -I$(ZDSZILOGINCDIR)
 LDFLAGS  += @nuttx.linkcmd
 
@@ -76,8 +77,6 @@ COBJS = $(CSRCS:.c=$(OBJEXT))
 DEPSRCS  = $(SSRCS) $(CSRCS)
 OBJS = $(AOBJS) $(COBJS)
 
-BOARDDIR = $(TOPDIR)$(DELIM)arch$(DELIM)$(CONFIG_ARCH)$(DELIM)src$(DELIM)board
-
 VPATH = chip:common
 
 ############################################################################
@@ -102,7 +101,7 @@ libarch$(LIBEXT): $(OBJS)
 	$(call ARCHIVE, $@, $(OBJS))
 
 board$(DELIM)libboard$(LIBEXT):
-	$(Q) $(MAKE) -C board TOPDIR="$(TOPDIR)" libboard$(LIBEXT) EXTRADEFINES=$(EXTRADEFINES)
+	$(Q) $(MAKE) -C board TOPDIR="$(TOPDIR)" libboard$(LIBEXT) EXTRAFLAGS="$(EXTRAFLAGS)"
 
 nuttx.linkcmd: $(LINKCMDTEMPLATE)
 	$(Q) cp -f $(LINKCMDTEMPLATE) nuttx.linkcmd
@@ -126,7 +125,7 @@ ifeq ($(CONFIG_ARCH_CHIP_Z8F642X),y)
 	@echo "  \"${shell cygpath -w "$(ZDSZILOGLIBDIR)/csioLDD$(LIBEXT)"}\", \\"  >>nuttx.linkcmd
 	@echo "  \"${shell cygpath -w "$(ZDSZILOGLIBDIR)/zsldevinitdummy$(LIBEXT)"}\""  >>nuttx.linkcmd
 endif
-ifeq ($(CONFIG_ARCH_CHIP_EZ80F91),y)
+ifeq ($(CONFIG_ARCH_CHIP_EZ80),y)  # EZ80F91 and EZ80F92
 	@echo "  \"${shell cygpath -w "$(ZDSSTDLIBDIR)/chelp$(LIBEXT)"}\", \\"  >>nuttx.linkcmd
 	@echo "  \"${shell cygpath -w "$(ZDSSTDLIBDIR)/crt$(LIBEXT)"}\", \\"  >>nuttx.linkcmd
 	@echo "  \"${shell cygpath -w "$(ZDSSTDLIBDIR)/fplib$(LIBEXT)"}\", \\"  >>nuttx.linkcmd

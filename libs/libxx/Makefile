@@ -33,18 +33,7 @@
 #
 ###########################################################################
 
--include $(TOPDIR)/Make.defs
-
-ifeq ($(CONFIG_LIBCXX),y)
-LIBXX=libcxx
-else
-LIBXX=libxx
-endif
-
-# Sources
-
-ASRCS =
-CSRCS =
+include $(TOPDIR)/Make.defs
 
 CXXSRCS  = libxx_cxapurevirtual.cxx libxx_eabi_atexit.cxx libxx_cxa_atexit.cxx
 CXXSRCS += libxx_cxa_guard.cxx
@@ -60,11 +49,6 @@ CXXSRCS += libxx_delete.cxx libxx_delete_sized.cxx libxx_deletea.cxx
 CXXSRCS += libxx_deletea_sized.cxx libxx_new.cxx libxx_newa.cxx
 CXXSRCS += libxx_stdthrow.cxx
 endif
-
-# Paths
-
-DEPPATH = --dep-path .
-VPATH = .
 
 # Include the uClibc++ Make.defs file if selected.  If it is included,
 # the uClibc++/Make.defs file will add its files to the source file list,
@@ -89,11 +73,12 @@ endif
 AOBJS = $(ASRCS:.S=$(OBJEXT))
 COBJS = $(CSRCS:.c=$(OBJEXT))
 CXXOBJS = $(CXXSRCS:.cxx=$(OBJEXT))
+CPPOBJS = $(CPPSRCS:.cpp=$(OBJEXT))
 
-SRCS = $(ASRCS) $(CSRCS) $(CXXSRCS)
-OBJS = $(AOBJS) $(COBJS) $(CXXOBJS)
+SRCS = $(ASRCS) $(CSRCS) $(CXXSRCS) $(CPPSRCS)
+OBJS = $(AOBJS) $(COBJS) $(CXXOBJS) $(CPPOBJS)
 
-BIN = $(LIBXX)$(LIBEXT)
+BIN = libxx$(LIBEXT)
 
 all: $(BIN)
 .PHONY: depend clean distclean
@@ -105,6 +90,9 @@ $(COBJS): %$(OBJEXT): %.c
 	$(call COMPILE, $<, $@)
 
 $(CXXOBJS): %$(OBJEXT): %.cxx
+	$(call COMPILEXX, $<, $@)
+
+$(CPPOBJS): %$(OBJEXT): %.cpp
 	$(call COMPILEXX, $<, $@)
 
 $(BIN):	$(OBJS)

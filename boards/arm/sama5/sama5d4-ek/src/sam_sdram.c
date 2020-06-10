@@ -144,7 +144,7 @@
 
 #include <nuttx/arch.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 
 #include "sam_periphclks.h"
 #include "hardware/sam_memorymap.h"
@@ -437,7 +437,7 @@ void sam_sdram_config(void)
            MPDDRC_CR_UNAL;      /* upport Unaligned Access */
 
 #else
-#  error Unknwon SDRAM type
+#  error Unknown SDRAM type
 #endif
 
   putreg32(regval, SAM_MPDDRC_CR);

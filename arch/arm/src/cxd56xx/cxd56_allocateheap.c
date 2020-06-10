@@ -52,15 +52,15 @@
 #include <arch/board/board.h>
 
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 /****************************************************************************
  * Public Data
  ****************************************************************************/
 
 /* _sbss is the start of the BSS region (see the linker script) _ebss is the
- * end of the BSS regsion (see the linker script). The idle task stack starts
+ * end of the BSS region (see the linker script). The idle task stack starts
  * at the end of BSS and is of size CONFIG_IDLETHREAD_STACKSIZE.  The IDLE
  * thread is the thread that the system boots on and, eventually, becomes the
  * idle, do nothing task that runs only when there is nothing else to run.

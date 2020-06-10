@@ -33,8 +33,8 @@
  *
  ****************************************************************************/
 
-#ifndef __ARCH_ARM_SRC_CXD56XX_CHIP_CXD56_EMMC_H
-#define __ARCH_ARM_SRC_CXD56XX_CHIP_CXD56_EMMC_H
+#ifndef __ARCH_ARM_SRC_CXD56XX_HARDWARE_CXD56_EMMC_H
+#define __ARCH_ARM_SRC_CXD56XX_HARDWARE_CXD56_EMMC_H
 
 #define EMMC_CTRL           (CXD56_EMMC_BASE + 0x00u)
 #define EMMC_PWREN          (CXD56_EMMC_BASE + 0x04u)
@@ -181,15 +181,15 @@
 
 #define EMMC_IDSTS_INT_CLEAR (0x000003FFu)
 #define EMMC_IDSTS_FSM       (0xFu << 13) /* DMAC FSM present state */
-#define EMMC_IDSTS_EB_RESP   (1u << 11) /* This bit valids when EMMC_IDSTS_FBE */
-#define EMMC_IDSTS_EB_TRANS  (1u << 10) /* This bit valids when EMMC_IDSTS_FBE */
-#define EMMC_IDSTS_AIS       (1u <<  9) /* Abnormal Interrupt Summary */
-#define EMMC_IDSTS_NIS       (1u <<  8) /* Normal Interrupt Summary */
-#define EMMC_IDSTS_CES       (1u <<  5) /* Card Error Summary */
-#define EMMC_IDSTS_DU        (1u <<  4) /* Descriptor Unavailable Interrupt */
-#define EMMC_IDSTS_FBE       (1u <<  2) /* Fatal Bus Error Interrupt */
-#define EMMC_IDSTS_RI        (1u <<  1) /* Receive Interrupt */
-#define EMMC_IDSTS_TI        (1u <<  0) /* Transmit Interrupt */
+#define EMMC_IDSTS_EB_RESP   (1u << 11)   /* This bit valids when EMMC_IDSTS_FBE */
+#define EMMC_IDSTS_EB_TRANS  (1u << 10)   /* This bit valids when EMMC_IDSTS_FBE */
+#define EMMC_IDSTS_AIS       (1u <<  9)   /* Abnormal Interrupt Summary */
+#define EMMC_IDSTS_NIS       (1u <<  8)   /* Normal Interrupt Summary */
+#define EMMC_IDSTS_CES       (1u <<  5)   /* Card Error Summary */
+#define EMMC_IDSTS_DU        (1u <<  4)   /* Descriptor Unavailable Interrupt */
+#define EMMC_IDSTS_FBE       (1u <<  2)   /* Fatal Bus Error Interrupt */
+#define EMMC_IDSTS_RI        (1u <<  1)   /* Receive Interrupt */
+#define EMMC_IDSTS_TI        (1u <<  0)   /* Transmit Interrupt */
 
 /* EMMC_IDINTEN */
 
@@ -287,7 +287,7 @@
 
 /* 4bit: Reserved.
  * 3-2bit: Reserved for application specific command
- * 1-0bit: Reserved for manifacturer testmode
+ * 1-0bit: Reserved for manufacturer testmode
  */
 
 #define R1STATUS_ALL_ERR                        \
@@ -343,4 +343,4 @@
 #define EXTCSD_PON_POWERED_ON       (0x01u)
 #define EXTCSD_PON_POWERED_OFF_LONG (0x03u)
 
-#endif /* __ARCH_ARM_SRC_CXD56XX_CHIP_CXD56_EMMC_H */
+#endif /* __ARCH_ARM_SRC_CXD56XX_HARDWARE_CXD56_EMMC_H */

@@ -44,13 +44,13 @@
 
 #include <sys/types.h>
 #include <stdint.h>
-#include <semaphore.h>
 #include <queue.h>
 #include <assert.h>
 
 #include <nuttx/mm/iob.h>
 #include <nuttx/net/ip.h>
 #include <nuttx/net/netdev.h>
+#include <nuttx/semaphore.h>
 
 #if defined(CONFIG_NET_ICMPv6) && !defined(CONFIG_NET_ICMPv6_NO_STACK)
 
@@ -71,10 +71,24 @@
  * Public Type Definitions
  ****************************************************************************/
 
+struct net_driver_s; /* Forward reference */
+struct socket;       /* Forward reference */
+struct sockaddr;     /* Forward reference */
+struct pollfd;       /* Forward reference */
+
 #ifdef CONFIG_NET_ICMPv6_SOCKET
 /* Representation of a IPPROTO_ICMP socket connection */
 
 struct devif_callback_s; /* Forward reference */
+
+/* This is a container that holds the poll-related information */
+
+struct icmpv6_poll_s
+{
+  FAR struct socket *psock;        /* IPPROTO_ICMP6 socket structure */
+  FAR struct pollfd *fds;          /* Needed to handle poll events */
+  FAR struct devif_callback_s *cb; /* Needed to teardown the poll */
+};
 
 struct icmpv6_conn_s
 {
@@ -98,14 +112,18 @@ struct icmpv6_conn_s
 
   FAR struct net_driver_s *dev;  /* Needed to free the callback structure */
 
-#ifdef CONFIG_MM_IOB
   /* ICMPv6 response read-ahead list.  A singly linked list of type struct
    * iob_qentry_s where the ICMPv6 read-ahead data for the current ID is
    * retained.
    */
 
   struct iob_queue_s readahead;  /* Read-ahead buffering */
-#endif
+
+  /* The following is a list of poll structures of threads waiting for
+   * socket events.
+   */
+
+  struct icmpv6_poll_s pollinfo[CONFIG_NET_ICMPv6_NPOLLWAITERS];
 };
 #endif
 
@@ -154,12 +172,6 @@ EXTERN const struct sock_intf_s g_icmpv6_sockif;
 /****************************************************************************
  * Public Function Prototypes
  ****************************************************************************/
-
-struct timespec;     /* Forward reference */
-struct net_driver_s; /* Forward reference */
-struct socket;       /* Forward reference */
-struct sockaddr;     /* Forward reference */
-struct pollfd;       /* Forward reference */
 
 /****************************************************************************
  * Name: icmpv6_input
@@ -386,8 +398,7 @@ int icmpv6_wait_cancel(FAR struct icmpv6_notify_s *notify);
  ****************************************************************************/
 
 #ifdef CONFIG_NET_ICMPv6_NEIGHBOR
-int icmpv6_wait(FAR struct icmpv6_notify_s *notify,
-                FAR struct timespec *timeout);
+int icmpv6_wait(FAR struct icmpv6_notify_s *notify, unsigned int timeout);
 #else
 #  define icmpv6_wait(n,t) (0)
 #endif
@@ -490,8 +501,7 @@ int icmpv6_rwait_cancel(FAR struct icmpv6_rnotify_s *notify);
  ****************************************************************************/
 
 #ifdef CONFIG_NET_ICMPv6_AUTOCONF
-int icmpv6_rwait(FAR struct icmpv6_rnotify_s *notify,
-                 FAR struct timespec *timeout);
+int icmpv6_rwait(FAR struct icmpv6_rnotify_s *notify, unsigned int timeout);
 #else
 #  define icmpv6_rwait(n,t) (0)
 #endif
@@ -741,4 +751,3 @@ void icmpv6_linkipaddr(FAR struct net_driver_s *dev, net_ipv6addr_t ipaddr);
 
 #endif /* CONFIG_NET_ICMPv6 && !CONFIG_NET_ICMPv6_NO_STACK */
 #endif /* __NET_ICMPv6_ICMPv6_H */
-

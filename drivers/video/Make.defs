@@ -49,10 +49,6 @@ endif
 
 ifeq ($(CONFIG_I2C),y)
 
-ifeq ($(CONFIG_VIDEO_ISX012),y)
-CSRCS += isx012.c
-endif
-
 ifeq ($(CONFIG_VIDEO_OV2640),y)
   CSRCS += ov2640.c
 endif
@@ -73,6 +69,6 @@ endif
 
 DEPPATH += --dep-path video
 VPATH += :video
-CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(TOPDIR)$(DELIM)drivers$(DELIM)video}
+CFLAGS += ${shell $(INCDIR) "$(CC)" $(TOPDIR)$(DELIM)drivers$(DELIM)video}
 
 endif

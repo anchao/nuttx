@@ -45,7 +45,7 @@
 #include <nuttx/sched.h>
 #include <nuttx/sched_note.h>
 
-#include "up_internal.h"
+#include "arm_internal.h"
 #include "cp15_cacheops.h"
 #include "gic.h"
 #include "sched/sched.h"
@@ -117,7 +117,7 @@ int arm_start_handler(int irq, FAR void *context, FAR void *arg)
 
   /* Reset scheduler parameters */
 
-  sched_resume_scheduler(tcb);
+  nxsched_resume_scheduler(tcb);
 
   /* Dump registers so that we can see what is going to happen on return */
 
@@ -128,7 +128,7 @@ int arm_start_handler(int irq, FAR void *context, FAR void *arg)
    * be the CPUs NULL task.
    */
 
-  up_restorestate(tcb->xcp.regs);
+  arm_restorestate(tcb->xcp.regs);
   return OK;
 }
 
@@ -143,7 +143,7 @@ int arm_start_handler(int irq, FAR void *context, FAR void *arg)
  *
  *   Each CPU is provided the entry point to is IDLE task when started.  A
  *   TCB for each CPU's IDLE task has been initialized and placed in the
- *   CPU's g_assignedtasks[cpu] list.  Not stack has been alloced or
+ *   CPU's g_assignedtasks[cpu] list.  Not stack has been allocated or
  *   initialized.
  *
  *   The OS initialization logic calls this function repeatedly until each

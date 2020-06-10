@@ -46,8 +46,8 @@
 #include <nuttx/arch.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 #include "stm32_rcc.h"
 #include "hardware/stm32_syscfg.h"
 #include "hardware/stm32_flash.h"
@@ -287,13 +287,13 @@ static inline void rcc_enableapb1(void)
 #endif
 
 #ifdef CONFIG_STM32F0L0G0_CRS
-  /*  Clock recovery system clock enable */
+  /* Clock recovery system clock enable */
 
   regval |= RCC_APB1ENR_CRSEN;
 #endif
 
 #ifdef CONFIG_STM32F0L0G0_PWR
-  /*  Power interface clock enable */
+  /* Power interface clock enable */
 
   regval |= RCC_APB1ENR_PWREN;
 #endif

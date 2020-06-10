@@ -46,8 +46,8 @@
 #include <nuttx/init.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 #include "chip.h"
 #include "tiva_sysctrl.h"
 
@@ -371,7 +371,7 @@ uint32_t tiva_clock_reconfigure(uint32_t pllfreq0, uint32_t pllfreq1,
         }
     }
 
-  /* We get here on a timout, failing to get the PLL lock indication */
+  /* We get here on a timeout, failing to get the PLL lock indication */
 
   DEBUGPANIC();
   return 0;

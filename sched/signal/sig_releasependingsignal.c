@@ -1,7 +1,8 @@
 /****************************************************************************
  * sched/signal/sig_releasependingsignal.c
  *
- *   Copyright (C) 2007, 2009, 2014, 2016-2017 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2007, 2009, 2014, 2016-2017 Gregory Nutt.
+ *   All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -106,6 +107,6 @@ void nxsig_release_pendingsignal(FAR sigpendq_t *sigpend)
 
   else if (sigpend->type == SIG_ALLOC_DYN)
     {
-      sched_kfree(sigpend);
+      kmm_free(sigpend);
     }
 }

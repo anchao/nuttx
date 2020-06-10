@@ -43,7 +43,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <semaphore.h>
 #include <string.h>
 #include <errno.h>
 #include <debug.h>
@@ -52,11 +51,12 @@
 #include <nuttx/arch.h>
 #include <nuttx/init.h>
 #include <nuttx/fs/ioctl.h>
+#include <nuttx/semaphore.h>
 #include <nuttx/serial/serial.h>
 
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "gic.h"
 #include "hardware/imx_uart.h"
@@ -188,7 +188,7 @@
 #  define UART5_ASSIGNED      1
 #endif
 
-/* UART, if avaialble, should have been assigned to ttyS0-4. */
+/* UART, if available, should have been assigned to ttyS0-4. */
 
 #if defined(CONFIG_IMX6_UART5) && !defined(UART5_ASSIGNED)
 #  errnor UART5 was not assigned to a TTY.
@@ -601,7 +601,7 @@ static int imx_attach(struct uart_dev_s *dev)
     {
       /* Configure as a (high) level interrupt */
 
-      (void)arm_gic_irq_trigger(priv->irq, false);
+      arm_gic_irq_trigger(priv->irq, false);
 
       /* Enable the interrupt (RX and TX interrupts are still disabled
        * in the UART
@@ -880,7 +880,7 @@ static bool imx_txempty(struct uart_dev_s *dev)
 }
 
 /****************************************************************************
- * Public Funtions
+ * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
@@ -889,14 +889,14 @@ static bool imx_txempty(struct uart_dev_s *dev)
  * Description:
  *   Performs the low level UART initialization early in
  *   debug so that the serial console will be available
- *   during bootup.  This must be called before up_serialinit.
+ *   during bootup.  This must be called before arm_serialinit.
  *
  ****************************************************************************/
 
 void imx_earlyserialinit(void)
 {
   /* NOTE: This function assumes that low level hardware configuration
-   * -- including all clocking and pin configuration -- was perfomed by the
+   * -- including all clocking and pin configuration -- was performed by the
    * function imx_lowsetup() earlier in the boot sequence.
    */
 
@@ -911,7 +911,7 @@ void imx_earlyserialinit(void)
 }
 
 /****************************************************************************
- * Name: up_serialinit
+ * Name: arm_serialinit
  *
  * Description:
  *   Register serial console and serial ports.  This assumes
@@ -919,22 +919,22 @@ void imx_earlyserialinit(void)
  *
  ****************************************************************************/
 
-void up_serialinit(void)
+void arm_serialinit(void)
 {
 #ifdef CONSOLE_DEV
-  (void)uart_register("/dev/console", &CONSOLE_DEV);
+  uart_register("/dev/console", &CONSOLE_DEV);
 #endif
 
 #ifdef TTYS0_DEV
-  (void)uart_register("/dev/ttyS0", &TTYS0_DEV);
+  uart_register("/dev/ttyS0", &TTYS0_DEV);
 # ifdef TTYS1_DEV
-  (void)uart_register("/dev/ttyS1", &TTYS1_DEV);
+  uart_register("/dev/ttyS1", &TTYS1_DEV);
 #  ifdef TTYS2_DEV
-  (void)uart_register("/dev/ttyS2", &TTYS2_DEV);
+  uart_register("/dev/ttyS2", &TTYS2_DEV);
 #    ifdef TTYS3_DEV
-  (void)uart_register("/dev/ttyS3", &TTYS2_DEV);
+  uart_register("/dev/ttyS3", &TTYS2_DEV);
 #      ifdef TTYS4_DEV
-  (void)uart_register("/dev/ttyS4", &TTYS2_DEV);
+  uart_register("/dev/ttyS4", &TTYS2_DEV);
 #      endif
 #    endif
 #  endif

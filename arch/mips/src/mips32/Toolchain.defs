@@ -122,11 +122,14 @@ endif
 
 # Pick correct MIPS architecture selection
 
-ifeq ($(CONFIG_ARCH_MIPS_M14K),y)
-  MIPS_MARCH = m14k
+ifeq ($(CONFIG_ARCH_MIPS_M5150),y)
+  MIPS_MARCH = mips32r2
+  MIPS_MPROCESSOR = elf32pic32mz
+else ifeq ($(CONFIG_ARCH_MIPS_MICROAPTIV), y)
+  MIPS_MARCH = mips32r2
   MIPS_MPROCESSOR = elf32pic32mz
 else
-  MIPS_MARCH = 24kc
+  MIPS_MARCH = m4k
   MIPS_MPROCESSOR = elf32pic32mx
 endif
 
@@ -141,7 +144,7 @@ else
   MIPS_MICROMIPS =
 endif
 
-# Generic GNU mip32 toolchain on OS X or Linux
+# Generic GNU mip32 toolchain on macOS or Linux
 
 ifeq ($(CONFIG_MIPS32_TOOLCHAIN),GNU_ELF)
   CROSSDEV ?= mips-elf-
@@ -191,9 +194,6 @@ endif
 
 ifeq ($(CONFIG_MIPS32_TOOLCHAIN),MICROCHIPW_XC32)
   CROSSDEV ?= xc32-
-  ifeq ($(CONFIG_WINDOWS_CYGWIN),y)
-    WINTOOL = y
-  endif
 ifeq ($(CONFIG_MIPS32_TOOLCHAIN_MICROCHIP_XC32_LICENSED),y)
   MAXOPTIMIZATION ?= -O2
 endif
@@ -206,9 +206,6 @@ endif
 
 ifeq ($(CONFIG_MIPS32_TOOLCHAIN),MICROCHIPW)
   CROSSDEV ?= pic32-
-  ifeq ($(CONFIG_WINDOWS_CYGWIN),y)
-    WINTOOL = y
-  endif
   MAXOPTIMIZATION ?= -O2
   ARCHCPUFLAGS = -mprocessor=$(MIPS_MPROCESSOR) $(MIPS_MICROMIPS) -mno-float -mlong32 -membedded-data
   ARCHPICFLAGS = -fpic -membedded-pic
@@ -232,9 +229,6 @@ endif
 ifeq ($(CONFIG_MIPS32_TOOLCHAIN),MICROCHIPW_LITE)
   CROSSDEV ?= pic32-
   # CROSSDEV ?= xc32-
-  ifeq ($(CONFIG_WINDOWS_CYGWIN),y)
-    WINTOOL = y
-  endif
   # MAXOPTIMIZATION ?= -O2
   ARCHCPUFLAGS = -mprocessor=$(MIPS_MPROCESSOR) $(MIPS_MICROMIPS) -mno-float -mlong32 -membedded-data
   ARCHPICFLAGS = -fpic -membedded-pic
@@ -258,9 +252,6 @@ endif
 ifeq ($(CONFIG_MIPS32_TOOLCHAIN),PINGUINOW)
   #CROSSDEV ?= mips-
   CROSSDEV ?= p32-
-  ifeq ($(CONFIG_WINDOWS_CYGWIN),y)
-    WINTOOL = y
-  endif
   MAXOPTIMIZATION ?= -O2
   ARCHCPUFLAGS = -mlong32 -membedded-data -msoft-float -march=$(MIPS_MARCH) $(MIPS_MICROMIPS) -EL
   ARCHPICFLAGS = -fpic -membedded-pic

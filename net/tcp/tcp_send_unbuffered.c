@@ -1,7 +1,8 @@
 /****************************************************************************
  * net/tcp/tcp_send_unbuffered.c
  *
- *   Copyright (C) 2007-2014, 2016-2017 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2007-2014, 2016-2017, 2019 Gregory Nutt. All rights
+ *     reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,7 +54,6 @@
 
 #include <arch/irq.h>
 
-#include <nuttx/clock.h>
 #include <nuttx/semaphore.h>
 #include <nuttx/net/net.h>
 #include <nuttx/net/netdev.h>
@@ -73,6 +73,7 @@
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
+
 /* If both IPv4 and IPv6 support are both enabled, then we will need to build
  * in some additional domain selection support.
  */
@@ -106,9 +107,6 @@ struct send_s
   ssize_t                 snd_sent;    /* The number of bytes sent */
   uint32_t                snd_isn;     /* Initial sequence number */
   uint32_t                snd_acked;   /* The number of bytes acked */
-#ifdef CONFIG_NET_SOCKOPTS
-  clock_t                 snd_time;    /* Last send time for determining timeout */
-#endif
 #if defined(CONFIG_NET_TCP_SPLIT)
   bool                    snd_odd;     /* True: Odd packet in pair transaction */
 #endif
@@ -117,46 +115,6 @@ struct send_s
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
-
-/****************************************************************************
- * Name: send_timeout
- *
- * Description:
- *   Check for send timeout.
- *
- * Input Parameters:
- *   pstate   send state structure
- *
- * Returned Value:
- *   TRUE:timeout FALSE:no timeout
- *
- * Assumptions:
- *   The network is locked.
- *
- ****************************************************************************/
-
-#ifdef CONFIG_NET_SOCKOPTS
-static inline int send_timeout(FAR struct send_s *pstate)
-{
-  FAR struct socket *psock;
-
-  /* Check for a timeout configured via setsockopts(SO_SNDTIMEO).
-   * If none... we will let the send wait forever.
-   */
-
-  psock = pstate->snd_sock;
-  if (psock && psock->s_sndtimeo != 0)
-    {
-      /* Check if the configured timeout has elapsed */
-
-      return net_timeo(pstate->snd_time, psock->s_sndtimeo);
-    }
-
-  /* No timeout */
-
-  return FALSE;
-}
-#endif /* CONFIG_NET_SOCKOPTS */
 
 /****************************************************************************
  * Name: tcpsend_ipselect
@@ -248,12 +206,6 @@ static uint16_t tcpsend_eventhandler(FAR struct net_driver_s *dev,
   if ((flags & TCP_ACKDATA) != 0)
     {
       FAR struct tcp_hdr_s *tcp;
-
-      /* Update the timeout */
-
-#ifdef CONFIG_NET_SOCKOPTS
-      pstate->snd_time = clock_systimer();
-#endif
 
       /* Get the offset address of the TCP header */
 
@@ -432,7 +384,7 @@ static uint16_t tcpsend_eventhandler(FAR struct net_driver_s *dev,
 
           else
             {
-              /* Will there be another (even) packet afer this one?
+              /* Will there be another (even) packet after this one?
                * (next_sndlen > 0)  Will the split condition occur on that
                * next, even packet? ((next_sndlen - conn->mss) < 0) If
                * so, then perform the split now to avoid the case where the
@@ -501,21 +453,6 @@ static uint16_t tcpsend_eventhandler(FAR struct net_driver_s *dev,
         }
     }
 
-#ifdef CONFIG_NET_SOCKOPTS
-  /* All data has been sent and we are just waiting for ACK or re-transmit
-   * indications to complete the send.  Check for a timeout.
-   */
-
-  if (send_timeout(pstate))
-    {
-      /* Yes.. report the timeout */
-
-      nwarn("WARNING: SEND timeout\n");
-      pstate->snd_sent = -ETIMEDOUT;
-      goto end_wait;
-    }
-#endif /* CONFIG_NET_SOCKOPTS */
-
   /* Continue waiting */
 
   return flags;
@@ -530,7 +467,7 @@ end_wait:
 
   /* There are no outstanding, unacknowledged bytes */
 
-  conn->unacked           = 0;
+  conn->tx_unacked        = 0;
 
   /* Wake up the waiting thread */
 
@@ -600,6 +537,7 @@ static inline void send_txnotify(FAR struct socket *psock,
  *   psock    An instance of the internal socket structure.
  *   buf      Data to send
  *   len      Length of data to send
+ *   flags    Send flags
  *
  * Returned Value:
  *   On success, returns the number of characters sent.  On  error,
@@ -645,7 +583,7 @@ static inline void send_txnotify(FAR struct socket *psock,
  ****************************************************************************/
 
 ssize_t psock_tcp_send(FAR struct socket *psock,
-                       FAR const void *buf, size_t len)
+                       FAR const void *buf, size_t len, int flags)
 {
   FAR struct tcp_conn_s *conn;
   struct send_s state;
@@ -707,10 +645,6 @@ ssize_t psock_tcp_send(FAR struct socket *psock,
     }
 #endif /* CONFIG_NET_ARP_SEND || CONFIG_NET_ICMPv6_NEIGHBOR */
 
-  /* Set the socket state to sending */
-
-  psock->s_flags = _SS_SETSTATE(psock->s_flags, _SF_SEND);
-
   /* Perform the TCP send operation */
 
   /* Initialize the state structure.  This is done with the network
@@ -725,8 +659,8 @@ ssize_t psock_tcp_send(FAR struct socket *psock,
    * priority inheritance enabled.
    */
 
-  (void)nxsem_init(&state.snd_sem, 0, 0);    /* Doesn't really fail */
-  (void)nxsem_setprotocol(&state.snd_sem, SEM_PRIO_NONE);
+  nxsem_init(&state.snd_sem, 0, 0);    /* Doesn't really fail */
+  nxsem_set_protocol(&state.snd_sem, SEM_PRIO_NONE);
 
   state.snd_sock      = psock;             /* Socket descriptor to use */
   state.snd_buflen    = len;               /* Number of bytes to send */
@@ -736,6 +670,7 @@ ssize_t psock_tcp_send(FAR struct socket *psock,
     {
       /* Allocate resources to receive a callback */
 
+      ret = -ENOMEM; /* Assume allocation failure */
       state.snd_cb = tcp_callback_alloc(conn);
       if (state.snd_cb)
         {
@@ -747,13 +682,8 @@ ssize_t psock_tcp_send(FAR struct socket *psock,
            * initial sequence number.
            */
 
-          conn->unacked         = 0;
+          conn->tx_unacked      = 0;
 
-          /* Set the initial time for calculating timeouts */
-
-#ifdef CONFIG_NET_SOCKOPTS
-          state.snd_time        = clock_systimer();
-#endif
           /* Set up the callback in the connection */
 
           state.snd_cb->flags   = (TCP_ACKDATA | TCP_REXMIT | TCP_POLL |
@@ -769,7 +699,17 @@ ssize_t psock_tcp_send(FAR struct socket *psock,
            * net_lockedwait will also terminate if a signal is received.
            */
 
-          ret = net_lockedwait(&state.snd_sem);
+          for (; ; )
+            {
+              uint32_t acked = state.snd_acked;
+
+              ret = net_timedwait(&state.snd_sem,
+                                  _SO_TIMEOUT(psock->s_sndtimeo));
+              if (ret != -ETIMEDOUT || acked == state.snd_acked)
+                {
+                  break; /* Timeout without any progress */
+                }
+            }
 
           /* Make sure that no further events are processed */
 
@@ -779,10 +719,6 @@ ssize_t psock_tcp_send(FAR struct socket *psock,
 
   nxsem_destroy(&state.snd_sem);
   net_unlock();
-
-  /* Set the socket state to idle */
-
-  psock->s_flags = _SS_SETSTATE(psock->s_flags, _SF_IDLE);
 
   /* Check for a errors.  Errors are signalled by negative errno values
    * for the send length
@@ -794,8 +730,8 @@ ssize_t psock_tcp_send(FAR struct socket *psock,
       goto errout;
     }
 
-  /* If net_lockedwait failed, then we were probably reawakened by a signal.
-   * In this case, net_lockedwait will have returned negated errno
+  /* If net_timedwait failed, then we were probably reawakened by a signal.
+   * In this case, net_timedwait will have returned negated errno
    * appropriately.
    */
 
@@ -824,7 +760,7 @@ errout:
  *   psock    An instance of the internal socket structure.
  *
  * Returned Value:
- *   -ENOSYS (Function not implemented, always have to wait to send).
+ *   OK (Always can send).
  *
  * Assumptions:
  *   None
@@ -833,7 +769,7 @@ errout:
 
 int psock_tcp_cansend(FAR struct socket *psock)
 {
-  return -ENOSYS;
+  return OK;
 }
 
 #endif /* CONFIG_NET && CONFIG_NET_TCP && !CONFIG_NET_TCP_WRITE_BUFFERS */

@@ -1,5 +1,5 @@
 ############################################################################
-# Makefile.export
+# tools/Makefile.export
 #
 #   Copyright (C) 2011, 2014 Gregory Nutt. All rights reserved.
 #   Author: Gregory Nutt <gnutt@nuttx.org>
@@ -41,7 +41,7 @@ ifdef ARCHSCRIPT
 # ARCHSCRIPT may contain a leading -T; it must not be followed by a space
 # for this to work.
 
-ifeq ($(WINTOOL),y)
+ifeq ($(CONFIG_CYGWIN_WINTOOL),y)
 LDPATH = $(shell cygpath -u $(patsubst -T%,%,$(ARCHSCRIPT)))
 else
 LDPATH = $(patsubst -T%,%,$(ARCHSCRIPT))
@@ -74,7 +74,6 @@ endif
 	@echo "ARCHWARNINGS=\"$(ARCHWARNINGS)\"" >> $(EXPORTDIR)/makeinfo.sh
 	@echo "ARCHWARNINGSXX=\"$(ARCHWARNINGSXX)\"" >> $(EXPORTDIR)/makeinfo.sh
 	@echo "ARCHOPTIMIZATION=\"$(ARCHOPTIMIZATION)\"" >> $(EXPORTDIR)/makeinfo.sh
-	@echo "WINTOOL=\"$(WINTOOL)\"" >> $(EXPORTDIR)/makeinfo.sh
 	@echo "CROSSDEV=\"$(CROSSDEV)\"" >> $(EXPORTDIR)/makeinfo.sh
 	@echo "CC=\"$(CC)\"" >> $(EXPORTDIR)/makeinfo.sh
 	@echo "CXX=\"$(CXX)\"" >> $(EXPORTDIR)/makeinfo.sh
@@ -95,9 +94,6 @@ endif
 	@echo "HOSTCFLAGS=\"$(HOSTCFLAGS)\"" >> $(EXPORTDIR)/makeinfo.sh
 	@echo "HOSTLDFLAGS=\"$(HOSTLDFLAGS)\"" >> $(EXPORTDIR)/makeinfo.sh
 	@echo "HOSTEXEEXT=\"$(HOSTEXEEXT)\"" >> $(EXPORTDIR)/makeinfo.sh
-	@echo "DIRLINK=\"$(DIRLINK)\"" >> $(EXPORTDIR)/makeinfo.sh
-	@echo "DIRUNLINK=\"$(DIRUNLINK)\"" >> $(EXPORTDIR)/makeinfo.sh
-	@echo "MKDEP=\"$(MKDEP)\"" >> $(EXPORTDIR)/makeinfo.sh
 	@echo "LDSCRIPT=\"$(LDSCRIPT)\"" >> $(EXPORTDIR)/makeinfo.sh
 	$(Q) chmod 755 $(EXPORTDIR)/makeinfo.sh
 

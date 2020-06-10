@@ -53,7 +53,7 @@
  *
  * Description:
  *   All STM32 architectures must provide the following entry point.  This
- *   entry point is called early in the intitialization -- after all memory
+ *   entry point is called early in the initialization -- after all memory
  *   has been configured and mapped but before any devices have been
  *   initialized.
  *
@@ -93,7 +93,7 @@ void board_late_initialize(void)
 #if defined(CONFIG_NSH_LIBRARY) && !defined(CONFIG_LIB_BOARDCTL)
   /* Perform board bring-up here instead of from the board_app_initialize(). */
 
-  (void)stm32_bringup();
+  stm32_bringup();
 #endif
 }
 #endif

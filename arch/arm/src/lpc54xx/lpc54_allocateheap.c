@@ -49,8 +49,8 @@
 #include <nuttx/kmalloc.h>
 #include <nuttx/userspace.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "hardware/lpc54_memorymap.h"
 #include "lpc54_mpuinit.h"
@@ -132,7 +132,7 @@
  ****************************************************************************/
 
 /* _sbss is the start of the BSS region (see the linker script) _ebss is the
- * end of the BSS regsion (see the linker script). The idle task stack starts
+ * end of the BSS region (see the linker script). The idle task stack starts
  * at the end of BSS and is of size CONFIG_IDLETHREAD_STACKSIZE.  The IDLE
  * thread is the thread that the system boots on and, eventually, becomes the
  * idle, do nothing task that runs only when there is nothing else to run.
@@ -249,7 +249,7 @@ void up_allocate_kheap(FAR void **heap_start, size_t *heap_size)
 #endif
 
 /****************************************************************************
- * Name: up_addregion
+ * Name: arm_addregion
  *
  * Description:
  *   Memory may be added in non-contiguous chunks.  Additional chunks are
@@ -258,7 +258,7 @@ void up_allocate_kheap(FAR void **heap_start, size_t *heap_size)
  ****************************************************************************/
 
 #if CONFIG_MM_REGIONS > 1
-void up_addregion(void)
+void arm_addregion(void)
 {
   int remaining = CONFIG_MM_REGIONS;
   FAR void *heapstart;

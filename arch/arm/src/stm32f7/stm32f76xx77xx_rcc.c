@@ -246,7 +246,7 @@ static inline void rcc_enableahb1(void)
 
   regval |= RCC_AHB1ENR_OTGHSEN;
 #endif
-#endif  /* CONFIG_STM32F7_OTGFSHS */
+#endif /* CONFIG_STM32F7_OTGFSHS */
 
   putreg32(regval, STM32_RCC_AHB1ENR);   /* Enable peripherals */
 }
@@ -820,9 +820,9 @@ static void stm32_stdclockconfig(void)
 
       /* Over-drive is needed if
        *  - Voltage output scale 1 mode is selected and SYSCLK frequency is
-       *    over 180 Mhz.
+       *    over 180 MHz.
        *  - Voltage output scale 2 mode is selected and SYSCLK frequence is
-       *    over 168 Mhz.
+       *    over 168 MHz.
        */
 
       if ((STM32_PWR_VOS_SCALE == PWR_CR1_VOS_SCALE_1 &&
@@ -831,7 +831,7 @@ static void stm32_stdclockconfig(void)
            STM32_SYSCLK_FREQUENCY > 168000000))
         {
           /* Enable the Over-drive to extend the clock frequency up to
-           * 216 Mhz.
+           * 216 MHz.
            */
 
           regval  = getreg32(STM32_PWR_CR1);

@@ -1,36 +1,20 @@
 /****************************************************************************
  * sched/task/task_create.c
  *
- *   Copyright (C) 2007-2010, 2013-2014, 2016, 2018-2019 Gregory Nutt. All
- *     rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name NuttX nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  *
  ****************************************************************************/
 
@@ -47,6 +31,7 @@
 
 #include <nuttx/arch.h>
 #include <nuttx/kmalloc.h>
+#include <nuttx/sched.h>
 #include <nuttx/kthread.h>
 
 #include "sched/sched.h"
@@ -136,7 +121,7 @@ static int nxthread_create(FAR const char *name, uint8_t ttype,
 
   /* Initialize the task control block */
 
-  ret = nxtask_schedsetup(tcb, priority, nxtask_start, entry, ttype);
+  ret = nxtask_setup_scheduler(tcb, priority, nxtask_start, entry, ttype);
   if (ret < OK)
     {
       goto errout_with_tcb;
@@ -144,14 +129,14 @@ static int nxthread_create(FAR const char *name, uint8_t ttype,
 
   /* Setup to pass parameters to the new task */
 
-  (void)nxtask_argsetup(tcb, name, argv);
+  nxtask_setup_arguments(tcb, name, argv);
 
   /* Now we have enough in place that we can join the group */
 
   ret = group_initialize(tcb);
   if (ret < 0)
     {
-      goto errout_with_tcb;
+      goto errout_with_active;
     }
 
   /* Get the assigned pid before we start the task */
@@ -160,22 +145,23 @@ static int nxthread_create(FAR const char *name, uint8_t ttype,
 
   /* Activate the task */
 
-  ret = task_activate((FAR struct tcb_s *)tcb);
+  ret = nxtask_activate((FAR struct tcb_s *)tcb);
   if (ret < OK)
     {
-      ret = -get_errno();
-      DEBUGASSERT(ret < 0);
-
-      /* The TCB was added to the active task list by nxtask_schedsetup() */
-
-      dq_rem((FAR dq_entry_t *)tcb, (FAR dq_queue_t *)&g_inactivetasks);
-      goto errout_with_tcb;
+      goto errout_with_active;
     }
 
   return pid;
 
+errout_with_active:
+  /* The TCB was added to the inactive task list by
+   * nxtask_setup_scheduler().
+   */
+
+  dq_rem((FAR dq_entry_t *)tcb, (FAR dq_queue_t *)&g_inactivetasks);
+
 errout_with_tcb:
-  sched_releasetcb((FAR struct tcb_s *)tcb, ttype);
+  nxsched_release_tcb((FAR struct tcb_s *)tcb, ttype);
   return ret;
 }
 
@@ -300,7 +286,7 @@ int task_create(FAR const char *name, int priority,
  ****************************************************************************/
 
 int kthread_create(FAR const char *name, int priority,
-                   int stack_size, main_t entry, FAR char *const argv[])
+                   int stack_size, main_t entry, FAR char * const argv[])
 {
   return nxthread_create(name, TCB_FLAG_TTYPE_KERNEL, priority, stack_size,
                          entry, argv);

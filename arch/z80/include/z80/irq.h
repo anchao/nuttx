@@ -33,7 +33,7 @@
  *
  ****************************************************************************/
 
-/* This file should never be included directed but, rather,
+/* This file should never be included directly but, rather,
  * only indirectly through nuttx/irq.h (via arch/irq.h)
  */
 
@@ -163,4 +163,3 @@ irqstate_t up_irq_enable(void);
 #endif
 
 #endif /* __ARCH_Z80_INCLUDE_Z80_IRQ_H */
-

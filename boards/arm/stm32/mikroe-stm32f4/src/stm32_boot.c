@@ -43,7 +43,7 @@
 
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "mikroe-stm32f4.h"
 
 /****************************************************************************
@@ -63,7 +63,7 @@
  *
  * Description:
  *   All STM32 architectures must provide the following entry point.  This entry point
- *   is called early in the intitialization -- after all memory has been configured
+ *   is called early in the initialization -- after all memory has been configured
  *   and mapped but before any devices have been initialized.
  *
  ****************************************************************************/
@@ -73,7 +73,7 @@ void stm32_boardinitialize(void)
   /* First reset the VS1053 since it tends to produce noise out of power on reset */
 
 #ifdef CONFIG_AUDIO_VS1053
-  (void)stm32_configgpio(GPIO_VS1053_RST);
+  stm32_configgpio(GPIO_VS1053_RST);
 #endif
 
   /* Configure GPIOs for controlling the LCD */

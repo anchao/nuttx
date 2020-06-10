@@ -1,7 +1,7 @@
 /****************************************************************************
  * net/tcp/tcp_send_buffered.c
  *
- *   Copyright (C) 2007-2014, 2016-2018 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2007-2014, 2016-2019 Gregory Nutt. All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
  *           Jason Jiang  <jasonj@live.cn>
  *
@@ -62,7 +62,6 @@
 #include <debug.h>
 
 #include <arch/irq.h>
-#include <nuttx/clock.h>
 #include <nuttx/net/net.h>
 #include <nuttx/mm/iob.h>
 #include <nuttx/net/netdev.h>
@@ -84,6 +83,7 @@
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
+
 /* If both IPv4 and IPv6 support are both enabled, then we will need to build
  * in some additional domain selection support.
  */
@@ -173,7 +173,7 @@ static void psock_insert_segment(FAR struct tcp_wrbuffer_s *wrb,
  *
  ****************************************************************************/
 
-#ifdef CONFIG_TCP_NOTIFIER
+#ifdef CONFIG_NET_TCP_NOTIFIER
 static void psock_writebuffer_notify(FAR struct tcp_conn_s *conn)
 {
   /* Check if all write buffers have been sent and ACKed */
@@ -531,13 +531,13 @@ static uint16_t psock_send_eventhandler(FAR struct net_driver_s *dev,
           /* Yes.. Reset the number of bytes sent sent from the write buffer */
 
           sent = TCP_WBSENT(wrb);
-          if (conn->unacked > sent)
+          if (conn->tx_unacked > sent)
             {
-              conn->unacked -= sent;
+              conn->tx_unacked -= sent;
             }
           else
             {
-              conn->unacked = 0;
+              conn->tx_unacked = 0;
             }
 
           if (conn->sent > sent)
@@ -550,8 +550,8 @@ static uint16_t psock_send_eventhandler(FAR struct net_driver_s *dev,
             }
 
           TCP_WBSENT(wrb) = 0;
-          ninfo("REXMIT: wrb=%p sent=%u, conn unacked=%d sent=%d\n",
-                wrb, TCP_WBSENT(wrb), conn->unacked, conn->sent);
+          ninfo("REXMIT: wrb=%p sent=%u, conn tx_unacked=%d sent=%d\n",
+                wrb, TCP_WBSENT(wrb), conn->tx_unacked, conn->sent);
 
           /* Increment the retransmit count on this write buffer. */
 
@@ -603,13 +603,13 @@ static uint16_t psock_send_eventhandler(FAR struct net_driver_s *dev,
           /* Reset the number of bytes sent sent from the write buffer */
 
           sent = TCP_WBSENT(wrb);
-          if (conn->unacked > sent)
+          if (conn->tx_unacked > sent)
             {
-              conn->unacked -= sent;
+              conn->tx_unacked -= sent;
             }
           else
             {
-              conn->unacked = 0;
+              conn->tx_unacked = 0;
             }
 
           if (conn->sent > sent)
@@ -622,8 +622,8 @@ static uint16_t psock_send_eventhandler(FAR struct net_driver_s *dev,
             }
 
           TCP_WBSENT(wrb) = 0;
-          ninfo("REXMIT: wrb=%p sent=%u, conn unacked=%d sent=%d\n",
-                wrb, TCP_WBSENT(wrb), conn->unacked, conn->sent);
+          ninfo("REXMIT: wrb=%p sent=%u, conn tx_unacked=%d sent=%d\n",
+                wrb, TCP_WBSENT(wrb), conn->tx_unacked, conn->sent);
 
           /* Free any write buffers that have exceed the retry count */
 
@@ -767,8 +767,8 @@ static uint16_t psock_send_eventhandler(FAR struct net_driver_s *dev,
        * number calculations.
        */
 
-      conn->unacked += sndlen;
-      conn->sent    += sndlen;
+      conn->tx_unacked += sndlen;
+      conn->sent       += sndlen;
 
       /* Below prediction will become true, unless retransmission occurrence */
 
@@ -780,8 +780,8 @@ static uint16_t psock_send_eventhandler(FAR struct net_driver_s *dev,
            conn->sndseq_max = predicted_seqno;
         }
 
-      ninfo("SEND: wrb=%p nrtx=%u unacked=%u sent=%u\n",
-            wrb, TCP_WBNRTX(wrb), conn->unacked, conn->sent);
+      ninfo("SEND: wrb=%p nrtx=%u tx_unacked=%u sent=%u\n",
+            wrb, TCP_WBNRTX(wrb), conn->tx_unacked, conn->sent);
 
       /* Increment the count of bytes sent from this write buffer */
 
@@ -886,6 +886,7 @@ static inline void send_txnotify(FAR struct socket *psock,
  *   psock    An instance of the internal socket structure.
  *   buf      Data to send
  *   len      Length of data to send
+ *   flags    Send flags
  *
  * Returned Value:
  *   On success, returns the number of characters sent.  On  error,
@@ -931,11 +932,12 @@ static inline void send_txnotify(FAR struct socket *psock,
  ****************************************************************************/
 
 ssize_t psock_tcp_send(FAR struct socket *psock, FAR const void *buf,
-                       size_t len)
+                       size_t len, int flags)
 {
   FAR struct tcp_conn_s *conn;
   FAR struct tcp_wrbuffer_s *wrb;
   ssize_t    result = 0;
+  bool       nonblock;
   int        ret = OK;
 
   if (psock == NULL || psock->s_crefs <= 0)
@@ -990,13 +992,11 @@ ssize_t psock_tcp_send(FAR struct socket *psock, FAR const void *buf,
     }
 #endif /* CONFIG_NET_ARP_SEND || CONFIG_NET_ICMPv6_NEIGHBOR */
 
+  nonblock = _SS_ISNONBLOCK(psock->s_flags) || (flags & MSG_DONTWAIT) != 0;
+
   /* Dump the incoming buffer */
 
   BUF_DUMP("psock_tcp_send", buf, len);
-
-  /* Set the socket state to sending */
-
-  psock->s_flags = _SS_SETSTATE(psock->s_flags, _SF_SEND);
 
   if (len > 0)
     {
@@ -1005,7 +1005,7 @@ ssize_t psock_tcp_send(FAR struct socket *psock, FAR const void *buf,
        */
 
       net_lock();
-      if (_SS_ISNONBLOCK(psock->s_flags))
+      if (nonblock)
         {
           wrb = tcp_wrbuffer_tryalloc();
         }
@@ -1019,7 +1019,7 @@ ssize_t psock_tcp_send(FAR struct socket *psock, FAR const void *buf,
           /* A buffer allocation error occurred */
 
           nerr("ERROR: Failed to allocate write buffer\n");
-          ret = _SS_ISNONBLOCK(psock->s_flags) ? -EAGAIN : -ENOMEM;
+          ret = nonblock ? -EAGAIN : -ENOMEM;
           goto errout_with_lock;
         }
 
@@ -1037,7 +1037,7 @@ ssize_t psock_tcp_send(FAR struct socket *psock, FAR const void *buf,
           /* A buffer allocation error occurred */
 
           nerr("ERROR: Failed to allocate callback\n");
-          ret = _SS_ISNONBLOCK(psock->s_flags) ? -EAGAIN : -ENOMEM;
+          ret = nonblock ? -EAGAIN : -ENOMEM;
           goto errout_with_wrb;
         }
 
@@ -1057,7 +1057,7 @@ ssize_t psock_tcp_send(FAR struct socket *psock, FAR const void *buf,
        * buffer space if the socket was opened non-blocking.
        */
 
-      if (_SS_ISNONBLOCK(psock->s_flags))
+      if (nonblock)
         {
           /* The return value from TCP_WBTRYCOPYIN is either OK or
            * -ENOMEM if less than the entire data chunk could be allocated.
@@ -1123,10 +1123,6 @@ ssize_t psock_tcp_send(FAR struct socket *psock, FAR const void *buf,
       send_txnotify(psock, conn);
       net_unlock();
     }
-
-  /* Set the socket state to idle */
-
-  psock->s_flags = _SS_SETSTATE(psock->s_flags, _SF_IDLE);
 
   /* Check for errors.  Errors are signaled by negative errno values
    * for the send length

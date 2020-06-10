@@ -42,8 +42,6 @@
 #include <assert.h>
 #include <errno.h>
 
-#include <nuttx/semaphore.h>
-
 #include "semaphore/semaphore.h"
 
 #ifdef CONFIG_PRIORITY_INHERITANCE
@@ -53,7 +51,7 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: nxsem_setprotocol
+ * Name: nxsem_set_protocol
  *
  * Description:
  *    Set semaphore protocol attribute.
@@ -73,7 +71,7 @@
  *    becomes *permanently* a holder of the semaphore and may have its
  *    priority boosted when any other task tries to acquire the semaphore.
  *
- *    The fix is to call nxsem_setprotocol(SEM_PRIO_NONE) immediately after
+ *    The fix is to call nxsem_set_protocol(SEM_PRIO_NONE) immediately after
  *    the sem_init() call so that there will be no priority inheritance
  *    operations on this semaphore.
  *
@@ -89,7 +87,7 @@
  *
  ****************************************************************************/
 
-int nxsem_setprotocol(FAR sem_t *sem, int protocol)
+int nxsem_set_protocol(FAR sem_t *sem, int protocol)
 {
   DEBUGASSERT(sem != NULL);
 
@@ -167,7 +165,7 @@ int sem_setprotocol(FAR sem_t *sem, int protocol)
 {
   int ret;
 
-  ret = nxsem_setprotocol(sem, protocol);
+  ret = nxsem_set_protocol(sem, protocol);
   if (ret < 0)
     {
       set_errno(-ret);

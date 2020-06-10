@@ -79,8 +79,8 @@
 #include <nuttx/board.h>
 #include <nuttx/power/pm.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 #include "sam_port.h"
 #include "metro-m4.h"
 
@@ -203,7 +203,7 @@ static int led_pm_prepare(struct pm_callback_s *cb, int domain,
 
 void board_autoled_initialize(void)
 {
-  (void)sam_portconfig(PORT_RED_LED);
+  sam_portconfig(PORT_RED_LED);
 }
 
 /****************************************************************************

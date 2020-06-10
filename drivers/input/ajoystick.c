@@ -172,18 +172,7 @@ static const struct file_operations ajoy_fops =
 
 static inline int ajoy_takesem(sem_t *sem)
 {
-  int ret;
-
-  /* Take a count from the semaphore, possibly waiting */
-
-  ret = nxsem_wait(sem);
-
-  /* The only case that an error should occur here is if the wait
-   * was awakened by a signal
-   */
-
-  DEBUGASSERT(ret == OK || ret == -EINTR);
-  return ret;
+  return nxsem_wait(sem);
 }
 
 /****************************************************************************
@@ -393,7 +382,7 @@ static int ajoy_open(FAR struct file *filep)
   opriv = (FAR struct ajoy_open_s *)kmm_zalloc(sizeof(struct ajoy_open_s));
   if (!opriv)
     {
-      ierr("ERROR: Failled to allocate open structure\n");
+      ierr("ERROR: Failed to allocate open structure\n");
       ret = -ENOMEM;
       goto errout_with_sem;
     }

@@ -48,8 +48,14 @@
  * Pre-processor Definitions
  ************************************************************************************/
 
-#define NRF52_GPIO_PORT0            0
-#define NRF52_GPIO_NPORTS           1
+#ifdef CONFIG_ARCH_CHIP_NRF52840
+#  define NRF52_GPIO_NPORTS         2
+#  define NRF52_GPIO_PORT0          0
+#  define NRF52_GPIO_PORT1          1
+#else
+#  define NRF52_GPIO_PORT0          0
+#  define NRF52_GPIO_NPORTS         1
+#endif
 
 /* Register offsets *****************************************************************/
 
@@ -76,12 +82,25 @@
 #define NRF52_GPIO0_DIRCLR           (NRF52_GPIO_P0_BASE + NRF52_GPIO_DIRCLR_OFFSET)
 #define NRF52_GPIO0_CNF(n)           (NRF52_GPIO_P0_BASE + NRF52_GPIO_PIN_CNF_OFFSET(n))
 
+#ifdef CONFIG_NRF52_HAVE_PORT1
+#  define NRF52_GPIO1_OUT            (NRF52_GPIO_P1_BASE + NRF52_GPIO_OUT_OFFSET)
+#  define NRF52_GPIO1_OUTSET         (NRF52_GPIO_P1_BASE + NRF52_GPIO_OUTSET_OFFSET)
+#  define NRF52_GPIO1_OUTCLR         (NRF52_GPIO_P1_BASE + NRF52_GPIO_OUTCLR_OFFSET)
+#  define NRF52_GPIO1_IN             (NRF52_GPIO_P1_BASE + NRF52_GPIO_IN_OFFSET)
+#  define NRF52_GPIO1_DIR            (NRF52_GPIO_P1_BASE + NRF52_GPIO_DIR_OFFSET)
+#  define NRF52_GPIO1_DIRSET         (NRF52_GPIO_P1_BASE + NRF52_GPIO_DIRSET_OFFSET)
+#  define NRF52_GPIO1_DIRCLR         (NRF52_GPIO_P1_BASE + NRF52_GPIO_DIRCLR_OFFSET)
+#  define NRF52_GPIO1_CNF(n)         (NRF52_GPIO_P1_BASE + NRF52_GPIO_PIN_CNF_OFFSET(n))
+#endif
+
 /* Register bit definitions *********************************************************/
 
-#define NRF52_GPIO_CNF_PULL_SHIFT       (2)
-#define NRF52_GPIO_CNF_PULL_MASK        (0x3 << NRF52_GPIO_CNF_PULL_SHIFT)
-#  define NRF52_GPIO_CNF_PULL_DISABLED  (0 << NRF52_GPIO_CNF_PULL_SHIFT)
-#  define NRF52_GPIO_CNF_PULL_DOWN      (1 << NRF52_GPIO_CNF_PULL_SHIFT)
-#  define NRF52_GPIO_CNF_PULL_UP        (3 << NRF52_GPIO_CNF_PULL_SHIFT)
+#define GPIO_CNF_DIR                    (1 << 0) /* Bit 0: Pin direction */
+#define GPIO_CNF_INPUT                  (1 << 1) /* Bit 1: Input buffer disconnect */
+#define GPIO_CNF_PULL_SHIFT             (2)
+#define GPIO_CNF_PULL_MASK              (0x3 << GPIO_CNF_PULL_SHIFT)
+#  define GPIO_CNF_PULL_DISABLED        (0 << GPIO_CNF_PULL_SHIFT)
+#  define GPIO_CNF_PULL_DOWN            (1 << GPIO_CNF_PULL_SHIFT)
+#  define GPIO_CNF_PULL_UP              (3 << GPIO_CNF_PULL_SHIFT)
 
 #endif /* __ARCH_ARM_SRC_NRF52_HARDWARE_NRF52_GPIO_H */

@@ -21,3 +21,7 @@ endif
 ifeq ($(CONFIG_DRIVERS_R328_GPIO_KEY),y)
 CHIP_CSRCS += drivers/board/input/keyboard/gpio_key_polled.c
 endif
+
+ifeq ($(CONFIG_DRIVERS_R328_GPIO_KEY_IRQ),y)
+CHIP_CSRCS += drivers/board/input/keyboard/gpio_key_irq.c
+endif

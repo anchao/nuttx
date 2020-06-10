@@ -43,7 +43,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <semaphore.h>
 #include <string.h>
 #include <errno.h>
 #include <debug.h>
@@ -54,8 +53,8 @@
 
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "hardware/efm32_leuart.h"
 #include "efm32_config.h"
@@ -749,19 +748,21 @@ static bool efm32_txempty(struct uart_dev_s *dev)
  * Public Functions
  ****************************************************************************/
 
+#ifdef USE_EARLYSERIALINIT
+
 /****************************************************************************
- * Name: up_earlyserialinit
+ * Name: arm_earlyserialinit
  *
  * Description:
  *   Performs the low level UART initialization early in debug so that the
  *   serial console will be available during bootup.  This must be called
- *   before up_serialinit.  NOTE:  This function depends on GPIO pin
+ *   before arm_serialinit.  NOTE:  This function depends on GPIO pin
  *   configuration performed in efm32_consoleinit() and main clock iniialization
  *   performed in efm32_clkinitialize().
  *
  ****************************************************************************/
 
-void up_earlyserialinit(void)
+void arm_earlyserialinit(void)
 {
   /* Disable interrupts from all UARTS.  The console is enabled in
    * pic32mx_consoleinit()
@@ -779,29 +780,30 @@ void up_earlyserialinit(void)
   efm32_setup(&CONSOLE_DEV);
 #endif
 }
+#endif
 
 /****************************************************************************
- * Name: up_serialinit
+ * Name: arm_serialinit
  *
  * Description:
  *   Register serial console and serial ports.  This assumes that
- *   up_earlyserialinit was called previously.
+ *   arm_earlyserialinit was called previously.
  *
  ****************************************************************************/
 
-void up_serialinit(void)
+void arm_serialinit(void)
 {
   /* Register the console */
 
 #ifdef CONSOLE_DEV
-  (void)uart_register("/dev/console", &CONSOLE_DEV);
+  uart_register("/dev/console", &CONSOLE_DEV);
 #endif
 
   /* Register all UARTs */
 
-  (void)uart_register("/dev/ttyLE0", &TTYLE0_DEV);
+  uart_register("/dev/ttyLE0", &TTYLE0_DEV);
 #ifdef TTYLE1_DEV
-  (void)uart_register("/dev/ttyLE1", &TTYLE1_DEV);
+  uart_register("/dev/ttyLE1", &TTYLE1_DEV);
 #endif
 }
 

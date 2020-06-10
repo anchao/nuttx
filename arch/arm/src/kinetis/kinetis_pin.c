@@ -45,8 +45,8 @@
 
 #include <nuttx/arch.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "kinetis.h"
 #include "hardware/kinetis_port.h"
@@ -61,7 +61,7 @@
  *
  * Description:
  *   Configure a PIN based on bit-encoded description of the pin.  NOTE that
- *   DMA/interrupts are disabled at the initial PIN configuratin.
+ *   DMA/interrupts are disabled at the initial PIN configuration.
  *
  ****************************************************************************/
 

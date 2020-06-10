@@ -33,9 +33,8 @@
 #
 ############################################################################
 
--include $(TOPDIR)/Make.defs
+include $(TOPDIR)/Make.defs
 
-ASRCS =
 CSRCS = sam_boot.c
 
 ifeq ($(CONFIG_SAMA5_SPI0),y)
@@ -86,6 +85,7 @@ endif
 
 ifeq ($(CONFIG_LIB_BOARDCTL),y)
 CSRCS += sam_appinit.c
+CSRCS += sam_bringup.c
 endif
 
 ifeq ($(CONFIG_ADC),y)

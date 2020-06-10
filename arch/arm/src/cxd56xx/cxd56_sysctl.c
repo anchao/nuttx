@@ -33,19 +33,28 @@
  *
  ****************************************************************************/
 
+/****************************************************************************
+ * Included Files
+ ****************************************************************************/
+
 #include <nuttx/config.h>
 
 #include <nuttx/arch.h>
 #include <nuttx/fs/fs.h>
 #include <nuttx/fs/ioctl.h>
+#include <nuttx/semaphore.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <debug.h>
 #include <errno.h>
-#include <semaphore.h>
 
 #include "cxd56_icc.h"
 #include "cxd56_sysctl.h"
+
+/****************************************************************************
+ * Pre-processor Definitions
+ ****************************************************************************/
 
 #ifdef CONFIG_CXD56_SYSCTL_TIMEOUT
 #  define SYSCTL_TIMEOUT CONFIG_CXD56_SYSCTL_TIMEOUT
@@ -53,7 +62,24 @@
 #  define SYSCTL_TIMEOUT 5000
 #endif
 
-static int sysctl_ioctl(FAR struct file *filep, int cmd, unsigned long arg);
+/****************************************************************************
+ * Private Types
+ ****************************************************************************/
+
+/****************************************************************************
+ * Private Function Prototypes
+ ****************************************************************************/
+
+static int  sysctl_ioctl(FAR struct file *filep, int cmd, unsigned long arg);
+static int  sysctl_semtake(sem_t *semid);
+static void sysctl_semgive(sem_t *semid);
+static int  sysctl_rxhandler(int cpuid, int protoid,
+                             uint32_t pdata, uint32_t data,
+                             FAR void *userdata);
+
+/****************************************************************************
+ * Private Data
+ ****************************************************************************/
 
 static sem_t g_exc;
 static sem_t g_sync;
@@ -63,6 +89,10 @@ static const struct file_operations g_sysctlfops =
 {
   .ioctl = sysctl_ioctl,
 };
+
+/****************************************************************************
+ * Private Functions
+ ****************************************************************************/
 
 static int sysctl_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
 {
@@ -84,17 +114,14 @@ static int sysctl_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
   return ret;
 }
 
-static void sysctl_semtake(sem_t *semid)
+static int sysctl_semtake(sem_t *semid)
 {
-  while (sem_wait(semid) != 0)
-    {
-      ASSERT(errno == EINTR);
-    }
+  return nxsem_wait_uninterruptible(semid);
 }
 
 static void sysctl_semgive(sem_t *semid)
 {
-  sem_post(semid);
+  nxsem_post(semid);
 }
 
 static int sysctl_rxhandler(int cpuid, int protoid,
@@ -111,6 +138,10 @@ static int sysctl_rxhandler(int cpuid, int protoid,
   return OK;
 }
 
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
+
 int cxd56_sysctlcmd(uint8_t id, uint32_t data)
 {
   iccmsg_t msg;
@@ -118,7 +149,11 @@ int cxd56_sysctlcmd(uint8_t id, uint32_t data)
 
   /* Get exclusive access */
 
-  sysctl_semtake(&g_exc);
+  ret = sysctl_semtake(&g_exc);
+  if (ret < 0)
+    {
+      return ret;
+    }
 
   msg.cpuid = 0;
   msg.msgid = id;
@@ -129,13 +164,19 @@ int cxd56_sysctlcmd(uint8_t id, uint32_t data)
   ret = cxd56_iccsend(CXD56_PROTO_SYSCTL, &msg, SYSCTL_TIMEOUT);
   if (ret < 0)
     {
+      sysctl_semgive(&g_exc);
       _err("Timeout.\n");
       return ret;
     }
 
   /* Wait for reply message from system CPU */
 
-  sysctl_semtake(&g_sync);
+  ret = sysctl_semtake(&g_sync);
+  if (ret < 0)
+    {
+      sysctl_semgive(&g_exc);
+      return ret;
+    }
 
   /* Get the error code returned from system cpu */
 
@@ -150,10 +191,10 @@ void cxd56_sysctlinitialize(void)
 {
   cxd56_iccinit(CXD56_PROTO_SYSCTL);
 
-  sem_init(&g_exc, 0, 1);
-  sem_init(&g_sync, 0, 0);
+  nxsem_init(&g_exc, 0, 1);
+  nxsem_init(&g_sync, 0, 0);
 
   cxd56_iccregisterhandler(CXD56_PROTO_SYSCTL, sysctl_rxhandler, NULL);
 
-  (void)register_driver("/dev/sysctl", &g_sysctlfops, 0666, NULL);
+  register_driver("/dev/sysctl", &g_sysctlfops, 0666, NULL);
 }

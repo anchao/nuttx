@@ -50,8 +50,8 @@
 #include "arm.h"
 #include "mmu.h"
 #include "fpu.h"
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 
 #include "r328_lowputc.h"
 #include "r328_boot.h"
@@ -368,6 +368,8 @@ void arm_boot(void)
 #ifdef CONFIG_DRIVERS_CCMU
   r328_clock_init();
 #endif
+
+ up_lowputc('F');
 
   //r328_boardinitialize();
 }

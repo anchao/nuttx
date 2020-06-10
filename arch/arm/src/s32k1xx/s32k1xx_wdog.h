@@ -42,7 +42,7 @@
 
 #include <nuttx/config.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "hardware/s32k1xx_wdog.h"
 
 /****************************************************************************
@@ -65,7 +65,7 @@
  * Description:
  *   Performs the low level UART initialization early in debug so that the
  *   serial console will be available during boot-up.  This must be called
- *   before up_serialinit.
+ *   before arm_serialinit.
  *
  *   REVISIT:  Hardcoded assumption that WDOG clock derives for LPO_CLK
  *
@@ -86,7 +86,7 @@ static inline void s32k1xx_wdog_disable(void)
    * completed.
    */
 
-  (void)getreg32(S32K1XX_WDOG_CNT);
+  getreg32(S32K1XX_WDOG_CNT);
 
   /* Initial write of WDOG configuration register:  Enables support for
    * 32-bit refresh/unlock command write words, clock select from LPO,

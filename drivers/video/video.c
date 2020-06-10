@@ -237,6 +237,7 @@ static const struct file_operations g_video_fops =
 };
 
 static bool is_initialized = false;
+static FAR void *video_handler;
 
 /****************************************************************************
  * Public Data
@@ -245,34 +246,15 @@ static bool is_initialized = false;
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
+
 static int video_lock(FAR sem_t *sem)
 {
-  int ret;
-  int l_errno;
-
   if (sem == NULL)
     {
       return -EINVAL;
     }
 
-  while (1)
-    {
-      ret = sem_wait(sem);
-      if (ret == ERROR)
-        {
-          l_errno = errno;
-          if (l_errno == EINTR)
-            {
-              continue;
-            }
-
-          videoerr("sem_wait() failed:%d\n", l_errno);
-        }
-
-      break;
-    }
-
-  return ret;
+  return nxsem_wait_uninterruptible(sem);
 }
 
 static int video_unlock(FAR sem_t *sem)
@@ -282,9 +264,7 @@ static int video_unlock(FAR sem_t *sem)
       return -EINVAL;
     }
 
-  sem_post(sem);
-
-  return OK;
+  return nxsem_post(sem);
 }
 
 static FAR video_type_inf_t *get_video_type_inf
@@ -421,8 +401,8 @@ static void initialize_streamresources(FAR video_type_inf_t *type_inf)
 {
   memset(type_inf, 0, sizeof(video_type_inf_t));
   type_inf->remaining_capnum = VIDEO_REMAINING_CAPNUM_INFINITY;
-  sem_init(&type_inf->lock_state, 0, 1);
-  sem_init(&type_inf->wait_dma.dqbuf_wait_flg, 0, 0);
+  nxsem_init(&type_inf->lock_state, 0, 1);
+  nxsem_init(&type_inf->wait_dma.dqbuf_wait_flg, 0, 0);
   video_framebuff_init(&type_inf->bufinf);
 
   return;
@@ -439,8 +419,8 @@ static void initialize_resources(FAR video_mng_t *vmng)
 static void cleanup_streamresources(FAR video_type_inf_t *type_inf)
 {
   video_framebuff_uninit(&type_inf->bufinf);
-  sem_destroy(&type_inf->wait_dma.dqbuf_wait_flg);
-  sem_destroy(&type_inf->lock_state);
+  nxsem_destroy(&type_inf->wait_dma.dqbuf_wait_flg);
+  nxsem_destroy(&type_inf->lock_state);
   memset(type_inf, 0, sizeof(video_type_inf_t));
   type_inf->remaining_capnum = VIDEO_REMAINING_CAPNUM_INFINITY;
 
@@ -470,7 +450,7 @@ static bool is_sem_waited(FAR sem_t *sem)
   int ret;
   int semcount;
 
-  ret = sem_getvalue(sem, &semcount);
+  ret = nxsem_get_value(sem, &semcount);
   if ((ret == OK) && (semcount < 0))
     {
       return true;
@@ -505,6 +485,7 @@ static int video_open(FAR struct file *filep)
     {
       priv->open_num++;
     }
+
   video_unlock(&priv->lock_open_num);
 
   return ret;
@@ -529,6 +510,7 @@ static int video_close(FAR struct file *filep)
       cleanup_resources(priv);
       g_video_devops->close();
     }
+
   video_unlock(&priv->lock_open_num);
 
   return ret;
@@ -684,7 +666,7 @@ static int video_dqbuf(FAR struct video_mng_s *vmng,
               leave_critical_section(flags);
             }
 
-          sem_wait(dqbuf_wait_flg);
+          nxsem_wait(dqbuf_wait_flg);
         }
       while (type_inf->wait_dma.waitend_cause ==
                    VIDEO_WAITEND_CAUSE_STILLSTOP);
@@ -734,9 +716,9 @@ static int video_cancel_dqbuf(FAR struct video_mng_s *vmng,
 
   type_inf->wait_dma.waitend_cause = VIDEO_WAITEND_CAUSE_DQCANCEL;
 
-  /* If DMA is done before sem_post, cause is overwritten */
+  /* If DMA is done before nxsem_post, cause is overwritten */
 
-  sem_post(&type_inf->wait_dma.dqbuf_wait_flg);
+  nxsem_post(&type_inf->wait_dma.dqbuf_wait_flg);
 
   return OK;
 }
@@ -949,39 +931,39 @@ static int video_takepict_start(FAR struct video_mng_s *vmng,
     }
   else
     {
-    if (capture_num > 0)
+      if (capture_num > 0)
         {
          vmng->still_inf.remaining_capnum = capture_num;
         }
-    else
+      else
         {
          vmng->still_inf.remaining_capnum = VIDEO_REMAINING_CAPNUM_INFINITY;
         }
 
-    /* Control video stream prior to still stream */
+      /* Control video stream prior to still stream */
 
-    flags = enter_critical_section();
+      flags = enter_critical_section();
 
-    next_video_state = estimate_next_video_state(vmng,
-                                               CAUSE_STILL_START);
-    change_video_state(vmng, next_video_state);
+      next_video_state = estimate_next_video_state(vmng,
+                                                   CAUSE_STILL_START);
+      change_video_state(vmng, next_video_state);
 
-    leave_critical_section(flags);
+      leave_critical_section(flags);
 
-    dma_container = video_framebuff_get_dma_container
-                             (&vmng->still_inf.bufinf);
-    if (dma_container)
+      dma_container = video_framebuff_get_dma_container
+                       (&vmng->still_inf.bufinf);
+      if (dma_container)
         {
-         /* Start video stream DMA */
+          /* Start video stream DMA */
 
-         g_video_devops->set_buftype(V4L2_BUF_TYPE_STILL_CAPTURE);
-         g_video_devops->set_buf(dma_container->buf.m.userptr,
-                              dma_container->buf.length);
-         vmng->still_inf.state = VIDEO_STATE_DMA;
+          g_video_devops->set_buftype(V4L2_BUF_TYPE_STILL_CAPTURE);
+          g_video_devops->set_buf(dma_container->buf.m.userptr,
+                                  dma_container->buf.length);
+          vmng->still_inf.state = VIDEO_STATE_DMA;
         }
-    else
+      else
         {
-         vmng->still_inf.state = VIDEO_STATE_STREAMON;
+          vmng->still_inf.state = VIDEO_STATE_STREAMON;
         }
     }
 
@@ -1015,6 +997,7 @@ static int video_takepict_stop(FAR struct video_mng_s *vmng, bool halfpush)
         {
           g_video_devops->cancel_dma();
         }
+
       leave_critical_section(flags);
 
       vmng->still_inf.state = VIDEO_STATE_STREAMOFF;
@@ -1191,7 +1174,7 @@ static int video_g_ext_ctrls(FAR struct video_mng_s *priv,
 
       if (ret < 0)
         {
-          /* Set cnt in that error occured */
+          /* Set cnt in that error occurred */
 
           ctrls->error_idx = cnt;
           return ret;
@@ -1221,7 +1204,7 @@ static int video_s_ext_ctrls(FAR struct video_mng_s *priv,
 
       if (ret < 0)
         {
-          /* Set cnt in that error occured */
+          /* Set cnt in that error occurred */
 
           ctrls->error_idx = cnt;
           return ret;
@@ -1380,7 +1363,7 @@ static int video_poll_setup(FAR struct video_mng_s *priv,
       return -EDEADLK;
     }
 
-  /* TODO: If data exists, get and sem_post If no data, wait dma */
+  /* TODO: If data exists, get and nxsem_post If no data, wait dma */
 
   return OK;
 }
@@ -1453,12 +1436,13 @@ static FAR void *video_register(FAR const char *devpath)
       kmm_free(priv);
       return NULL;
     }
+
   memcpy(priv->devpath, devpath, allocsize);
   priv->devpath[allocsize] = '\0';
 
   /* Initialize semaphore */
 
-  sem_init(&priv->lock_open_num, 0, 1);
+  nxsem_init(&priv->lock_open_num, 0, 1);
 
   /* Register the character driver */
 
@@ -1484,7 +1468,7 @@ static int video_unregister(FAR video_mng_t *v_mgr)
     }
   else
     {
-      sem_destroy(&v_mgr->lock_open_num);
+      nxsem_destroy(&v_mgr->lock_open_num);
 
       unregister_driver((const char *)v_mgr->devpath);
 
@@ -1498,7 +1482,6 @@ static int video_unregister(FAR video_mng_t *v_mgr)
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
-static FAR void *video_handler;
 
 int video_initialize(FAR const char *devpath)
 {
@@ -1520,6 +1503,7 @@ int video_uninitialize(void)
     {
       return OK;
     }
+
   video_unregister(video_handler);
 
   is_initialized = false;
@@ -1568,7 +1552,7 @@ int video_common_notify_dma_done(uint8_t  err_code,
         = video_framebuff_pop_curr_container(&type_inf->bufinf);
       type_inf->wait_dma.waitend_cause
         = VIDEO_WAITEND_CAUSE_DMADONE;
-      sem_post(&type_inf->wait_dma.dqbuf_wait_flg);
+      nxsem_post(&type_inf->wait_dma.dqbuf_wait_flg);
 
       /* TODO:  in poll wait, unlock wait */
     }
@@ -1585,7 +1569,7 @@ int video_common_notify_dma_done(uint8_t  err_code,
         {
           vmng->video_inf.wait_dma.waitend_cause
             = VIDEO_WAITEND_CAUSE_STILLSTOP;
-          sem_post(&vmng->video_inf.wait_dma.dqbuf_wait_flg);
+          nxsem_post(&vmng->video_inf.wait_dma.dqbuf_wait_flg);
         }
     }
   else

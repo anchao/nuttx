@@ -44,9 +44,9 @@
 #include <nuttx/board.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "chip.h"
-#include "up_internal.h"
+#include "arm_internal.h"
 #include "tiva_gpio.h"
 #include "lm3s6432-s2e.h"
 
@@ -71,7 +71,7 @@
  *
  * Description:
  *   All Stellaris architectures must provide the following entry point.
- *   This entry point is called early in the intitialization -- after all
+ *   This entry point is called early in the initialization -- after all
  *   memory has been configured and mapped but before any devices have been
  *   initialized.
  *
@@ -98,7 +98,7 @@ void tiva_boardinitialize(void)
   board_autoled_initialize();
 #endif
 
-  /* Configure serial transciever */
+  /* Configure serial transceiver */
 
   tiva_configgpio(XCVR_INV_GPIO);
   tiva_configgpio(XCVR_ENA_GPIO);

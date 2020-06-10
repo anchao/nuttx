@@ -45,8 +45,8 @@
 #include <arch/board/board.h>
 
 #include "tm4c1294-launchpad.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -114,6 +114,6 @@ void board_late_initialize(void)
 {
   /* Perform board initialization */
 
-  (void)tm4c_bringup();
+  tm4c_bringup();
 }
 #endif /* CONFIG_BOARD_LATE_INITIALIZE */

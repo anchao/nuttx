@@ -89,6 +89,7 @@
 #include "igmp/igmp.h"
 #include "icmpv6/icmpv6.h"
 #include "route/route.h"
+#include "netlink/netlink.h"
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -286,6 +287,7 @@ static void ioctl_get_ipv4addr(FAR struct sockaddr *outaddr,
   dest->sin_family              = AF_INET;
   dest->sin_port                = 0;
   dest->sin_addr.s_addr         = inaddr;
+  memset(dest->sin_zero, 0, sizeof(dest->sin_zero));
 }
 #endif
 
@@ -303,13 +305,14 @@ static void ioctl_get_ipv4addr(FAR struct sockaddr *outaddr,
  ****************************************************************************/
 
 #ifdef CONFIG_NET_IPv4
-static void inline ioctl_get_ipv4broadcast(FAR struct sockaddr *outaddr,
-                                           in_addr_t inaddr, in_addr_t netmask)
+static void ioctl_get_ipv4broadcast(FAR struct sockaddr *outaddr,
+                                    in_addr_t inaddr, in_addr_t netmask)
 {
   FAR struct sockaddr_in *dest  = (FAR struct sockaddr_in *)outaddr;
   dest->sin_family              = AF_INET;
   dest->sin_port                = 0;
   dest->sin_addr.s_addr         = net_ipv4addr_broadcast(inaddr, netmask);
+  memset(dest->sin_zero, 0, sizeof(dest->sin_zero));
 }
 #endif
 
@@ -321,7 +324,7 @@ static void inline ioctl_get_ipv4broadcast(FAR struct sockaddr *outaddr,
  *
  * Input Parameters:
  *   outaddr - Pointer to the user-provided memory to receive the address.
- *   inaddr - The source IP adress in the device structure.
+ *   inaddr - The source IP address in the device structure.
  *
  ****************************************************************************/
 
@@ -375,7 +378,8 @@ static void ioctl_set_ipv4addr(FAR in_addr_t *outaddr,
 static void ioctl_set_ipv6addr(FAR net_ipv6addr_t outaddr,
                                FAR const struct sockaddr_storage *inaddr)
 {
-  FAR const struct sockaddr_in6 *src = (FAR const struct sockaddr_in6 *)inaddr;
+  FAR const struct sockaddr_in6 *src =
+    (FAR const struct sockaddr_in6 *)inaddr;
   memcpy(outaddr, src->sin6_addr.in6_u.u6_addr8, 16);
 }
 #endif
@@ -508,7 +512,7 @@ static int netdev_iee802154_ioctl(FAR struct socket *psock, int cmd,
  * Name: netdev_pktradio_ioctl
  *
  * Description:
- *   Perform non-IEEE802.15.4 packet radio network device specific operations.
+ *   Perform non-IEEE802.15.4 packet radio network device specific operation.
  *
  * Input Parameters:
  *   psock  - Socket structure
@@ -602,7 +606,7 @@ static int netdev_wifr_ioctl(FAR struct socket *psock, int cmd,
         {
           /* Just forward the IOCTL to the wireless driver */
 
-          ret = dev->d_ioctl(dev, cmd, ((unsigned long)(uintptr_t)req));
+          ret = dev->d_ioctl(dev, cmd, (unsigned long)(uintptr_t)req);
         }
     }
 
@@ -976,7 +980,8 @@ static int netdev_ifr_ioctl(FAR struct socket *psock, int cmd,
           if (dev)
             {
 #ifdef CONFIG_NET_ETHERNET
-              if (dev->d_lltype == NET_LL_ETHERNET)
+              if (dev->d_lltype == NET_LL_ETHERNET ||
+                  dev->d_lltype == NET_LL_IEEE80211)
                 {
                   memcpy(dev->d_mac.ether.ether_addr_octet,
                          req->ifr_hwaddr.sa_data, IFHWADDRLEN);
@@ -1061,8 +1066,9 @@ static int netdev_ifr_ioctl(FAR struct socket *psock, int cmd,
           dev = netdev_ifr_dev(req);
           if (dev && dev->d_ioctl)
             {
-              struct mii_ioctl_notify_s *notify = &req->ifr_ifru.ifru_mii_notify;
-              ret = dev->d_ioctl(dev, cmd, ((unsigned long)(uintptr_t)notify));
+              struct mii_ioctl_notify_s *notify =
+                &req->ifr_ifru.ifru_mii_notify;
+              ret = dev->d_ioctl(dev, cmd, (unsigned long)(uintptr_t)notify);
             }
         }
         break;
@@ -1075,8 +1081,10 @@ static int netdev_ifr_ioctl(FAR struct socket *psock, int cmd,
           dev = netdev_ifr_dev(req);
           if (dev && dev->d_ioctl)
             {
-              struct mii_ioctl_data_s *mii_data = &req->ifr_ifru.ifru_mii_data;
-              ret = dev->d_ioctl(dev, cmd, ((unsigned long)(uintptr_t)mii_data));
+              struct mii_ioctl_data_s *mii_data =
+                &req->ifr_ifru.ifru_mii_data;
+              ret = dev->d_ioctl(dev, cmd,
+                                 (unsigned long)(uintptr_t)mii_data);
             }
         }
         break;
@@ -1239,9 +1247,10 @@ static int netdev_arp_ioctl(FAR struct socket *psock, int cmd,
               FAR struct sockaddr_in *addr =
                 (FAR struct sockaddr_in *)&req->arp_pa;
 
-              /* Find the existing ARP table entry for this protocol address. */
+              /* Find the existing ARP entry for this protocol address. */
 
-              FAR struct arp_entry_s *entry = arp_lookup(addr->sin_addr.s_addr);
+              FAR struct arp_entry_s *entry =
+                arp_lookup(addr->sin_addr.s_addr);
               if (entry != NULL)
                 {
                   /* The ARP table is fixed size; an entry is deleted
@@ -1568,7 +1577,7 @@ ssize_t net_ioctl_arglen(int cmd)
 #endif
 
 /****************************************************************************
- * Name: psock_ioctl
+ * Name: psock_ioctl and psock_vioctl
  *
  * Description:
  *   Perform network device specific operations.
@@ -1598,8 +1607,9 @@ ssize_t net_ioctl_arglen(int cmd)
  *
  ****************************************************************************/
 
-int psock_ioctl(FAR struct socket *psock, int cmd, unsigned long arg)
+int psock_vioctl(FAR struct socket *psock, int cmd, va_list ap)
 {
+  unsigned long arg;
   int ret;
 
   /* Verify that the psock corresponds to valid, allocated socket */
@@ -1609,7 +1619,7 @@ int psock_ioctl(FAR struct socket *psock, int cmd, unsigned long arg)
       return -EBADF;
     }
 
-  /* Execute the command.  First check for a standard network IOCTL command. */
+  arg = va_arg(ap, unsigned long);
 
 #ifdef CONFIG_NET_USRSOCK
   /* Check for a USRSOCK ioctl command */
@@ -1620,7 +1630,7 @@ int psock_ioctl(FAR struct socket *psock, int cmd, unsigned long arg)
     {
       /* Check for a standard network IOCTL command. */
 
-      ret = netdev_ifr_ioctl(psock, cmd, (FAR struct ifreq *)((uintptr_t)arg));
+      ret = netdev_ifr_ioctl(psock, cmd, (FAR struct ifreq *)(uintptr_t)arg);
     }
 
 #if defined(CONFIG_NETDEV_IOCTL) && defined(CONFIG_NETDEV_WIRELESS_IOCTL)
@@ -1668,7 +1678,7 @@ int psock_ioctl(FAR struct socket *psock, int cmd, unsigned long arg)
   if (ret == -ENOTTY)
     {
       ret = netdev_imsf_ioctl(psock, cmd,
-                              (FAR struct ip_msfilter *)((uintptr_t)arg));
+                              (FAR struct ip_msfilter *)(uintptr_t)arg);
     }
 #endif
 
@@ -1678,7 +1688,7 @@ int psock_ioctl(FAR struct socket *psock, int cmd, unsigned long arg)
   if (ret == -ENOTTY)
     {
       ret = netdev_arp_ioctl(psock, cmd,
-                             (FAR struct arpreq *)((uintptr_t)arg));
+                             (FAR struct arpreq *)(uintptr_t)arg);
     }
 #endif
 
@@ -1688,15 +1698,34 @@ int psock_ioctl(FAR struct socket *psock, int cmd, unsigned long arg)
   if (ret == -ENOTTY)
     {
       ret = netdev_rt_ioctl(psock, cmd,
-                            (FAR struct rtentry *)((uintptr_t)arg));
+                            (FAR struct rtentry *)(uintptr_t)arg);
     }
 #endif
 
   return ret;
 }
 
+int psock_ioctl(FAR struct socket *psock, int cmd, ...)
+{
+  va_list ap;
+  int ret;
+
+  /* Setup to access the variable argument list */
+
+  va_start(ap, cmd);
+
+  /* Let psock_vfcntl() do the real work.  The errno is not set on
+   * failures.
+   */
+
+  ret = psock_vioctl(psock, cmd, ap);
+
+  va_end(ap);
+  return ret;
+}
+
 /****************************************************************************
- * Name: netdev_ioctl
+ * Name: netdev_vioctl
  *
  * Description:
  *   Perform network device specific operations.
@@ -1704,7 +1733,7 @@ int psock_ioctl(FAR struct socket *psock, int cmd, unsigned long arg)
  * Input Parameters:
  *   sockfd   Socket descriptor of device
  *   cmd      The ioctl command
- *   arg      The argument of the ioctl cmd
+ *   ap       The argument of the ioctl cmd
  *
  * Returned Value:
  *   A non-negative value is returned on success; a negated errno value is
@@ -1726,11 +1755,11 @@ int psock_ioctl(FAR struct socket *psock, int cmd, unsigned long arg)
  *
  ****************************************************************************/
 
-int netdev_ioctl(int sockfd, int cmd, unsigned long arg)
+int netdev_vioctl(int sockfd, int cmd, va_list ap)
 {
   FAR struct socket *psock = sockfd_socket(sockfd);
 
-  return psock_ioctl(psock, cmd, arg);
+  return psock_vioctl(psock, cmd, ap);
 }
 
 /****************************************************************************
@@ -1758,6 +1787,10 @@ void netdev_ifup(FAR struct net_driver_s *dev)
               /* Mark the interface as up */
 
               dev->d_flags |= IFF_UP;
+
+              /* Update the driver status */
+
+              netlink_device_notify(dev);
             }
         }
     }
@@ -1780,12 +1813,16 @@ void netdev_ifdown(FAR struct net_driver_s *dev)
               /* Mark the interface as down */
 
               dev->d_flags &= ~IFF_UP;
+
+              /* Update the driver status */
+
+              netlink_device_notify(dev);
             }
         }
 
       /* Notify clients that the network has been taken down */
 
-      (void)devif_dev_event(dev, NULL, NETDEV_DOWN);
+      devif_dev_event(dev, NULL, NETDEV_DOWN);
 
 #ifdef CONFIG_NETDOWN_NOTIFIER
       /* Provide signal notifications to threads that want to be
@@ -1796,4 +1833,3 @@ void netdev_ifdown(FAR struct net_driver_s *dev)
 #endif
     }
 }
-

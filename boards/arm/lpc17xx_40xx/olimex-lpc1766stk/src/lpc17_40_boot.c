@@ -44,8 +44,8 @@
 #include <nuttx/board.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "lpc17_40_ssp.h"
 #include "lpc1766stk.h"
@@ -112,6 +112,6 @@ void board_late_initialize(void)
 {
   /* Perform board-specific initialization here if so configured */
 
-  (void)lpc17_40_bringup();
+  lpc17_40_bringup();
 }
 #endif

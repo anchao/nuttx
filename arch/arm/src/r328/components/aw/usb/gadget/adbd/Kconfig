@@ -7,3 +7,8 @@ config COMPONENTS_USB_GADGET_ADBD
     default n
     help
 	adbd service
+
+config COMPONENTS_USB_GADGET_ADB_FORWARD
+    bool "adb forward function"
+    default n
+    depends on  COMPONENTS_USB_GADGET_ADBD && NET

@@ -1,4 +1,4 @@
-/****************************************************************************
+/*******************************************************************************
  * sched/task/task_terminate.c
  *
  *   Copyright (C) 2007-2009, 2011-2014, 2016 Gregory Nutt. All rights reserved.
@@ -31,11 +31,11 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- ****************************************************************************/
+ *******************************************************************************/
 
-/****************************************************************************
+/*******************************************************************************
  * Included Files
- ****************************************************************************/
+ *******************************************************************************/
 
 #include <nuttx/config.h>
 
@@ -52,11 +52,11 @@
 #include "signal/signal.h"
 #include "task/task.h"
 
-/****************************************************************************
+/*******************************************************************************
  * Public Functions
- ****************************************************************************/
+ *******************************************************************************/
 
-/****************************************************************************
+/*******************************************************************************
  * Name: nxtask_terminate
  *
  * Description:
@@ -94,7 +94,7 @@
  *   This function can fail if the provided pid does not correspond to a
  *   task (errno is not set)
  *
- ****************************************************************************/
+ *******************************************************************************/
 
 int nxtask_terminate(pid_t pid, bool nonblocking)
 {
@@ -115,7 +115,7 @@ int nxtask_terminate(pid_t pid, bool nonblocking)
 
   /* Find for the TCB associated with matching PID */
 
-  dtcb = sched_gettcb(pid);
+  dtcb = nxsched_get_tcb(pid);
   if (!dtcb)
     {
       /* This PID does not correspond to any known task */
@@ -142,7 +142,7 @@ int nxtask_terminate(pid_t pid, bool nonblocking)
    * the case, then we will pause the CPU that the thread is running on.
    */
 
-  cpu = sched_cpu_pause(dtcb);
+  cpu = nxsched_pause_cpu(dtcb);
 
   /* Get the task list associated with the thread's state and CPU */
 
@@ -197,7 +197,7 @@ int nxtask_terminate(pid_t pid, bool nonblocking)
 
   /* Deallocate its TCB */
 
-  return sched_releasetcb(dtcb, dtcb->flags & TCB_FLAG_TTYPE_MASK);
+  return nxsched_release_tcb(dtcb, dtcb->flags & TCB_FLAG_TTYPE_MASK);
 
 errout_with_lock:
   leave_critical_section(flags);

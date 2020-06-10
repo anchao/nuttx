@@ -33,14 +33,7 @@
 #
 ############################################################################
 
--include $(TOPDIR)/Make.defs
-
-DELIM ?= $(strip /)
-
-ASRCS =
-CSRCS =
-DEPPATH := --dep-path .
-VPATH := .
+include $(TOPDIR)/Make.defs
 
 ifeq ($(CONFIG_LIBDSP),y)
 CSRCS += lib_pid.c

@@ -45,7 +45,7 @@
 #include <nuttx/board.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "stm32f103_minimum.h"
 
 /****************************************************************************
@@ -107,7 +107,7 @@ void board_late_initialize(void)
 #ifndef CONFIG_LIB_BOARDCTL
   /* Perform board initialization here instead of from the board_app_initialize(). */
 
-  (void)stm32_bringup();
+  stm32_bringup();
 #endif
 }
 #endif

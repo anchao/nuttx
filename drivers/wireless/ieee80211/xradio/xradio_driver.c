@@ -43,10 +43,11 @@
 #include <nuttx/net/arp.h>
 
 #include <xradio_netif.h>
-#include <xradio_driver.h>
 #include <net/wlan/wlan.h>
 #include <aw/wifi/wifi_adapter.h>
+#include <nuttx/wireless/wireless.h>
 
+#include "xradio_driver.h"
 #include "xradio_netdev.h"
 #include "xradio_wlan.h"
 
@@ -379,7 +380,7 @@ int xradio_wl_set_ssid(struct xradio_dev_s *priv,struct iwreq *iwr)
 {
 
 	FAR struct xradio_state_s *state = &priv->conn;
-	int ret;
+	int ret = -1;
 
 	if (!iwr->u.essid.flags) {
 	    return 0;

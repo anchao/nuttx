@@ -44,9 +44,9 @@
 #include <nuttx/arch.h>
 
 #include "chip.h"
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "clock/clock.h"
-#include "up_internal.h"
+#include "arm_internal.h"
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -95,7 +95,7 @@ static int c5471_timerisr(int irq, uint32_t *regs, FAR void *arg)
  ****************************************************************************/
 
 /****************************************************************************
- * Function:  arm_timer_initialize
+ * Function:  up_timer_initialize
  *
  * Description:
  *   This function is called during start-up to initialize
@@ -103,7 +103,7 @@ static int c5471_timerisr(int irq, uint32_t *regs, FAR void *arg)
  *
  ****************************************************************************/
 
-void arm_timer_initialize(void)
+void up_timer_initialize(void)
 {
   uint32_t val;
 

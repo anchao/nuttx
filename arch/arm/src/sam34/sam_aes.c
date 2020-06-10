@@ -43,16 +43,16 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <semaphore.h>
 #include <errno.h>
 #include <debug.h>
 
 #include <nuttx/crypto/crypto.h>
 #include <nuttx/arch.h>
+#include <nuttx/semaphore.h>
 #include <arch/board/board.h>
 
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 
 #include "chip.h"
 #include "sam_periphclks.h"

@@ -44,7 +44,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <semaphore.h>
 #include <string.h>
 #include <errno.h>
 #include <debug.h>
@@ -59,15 +58,15 @@
 #  include <termios.h>
 #endif
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 #include "chip.h"
 #include "stm32_gpio.h"
 #include "stm32_uart.h"
 #include "stm32_rcc.h"
 #include "hardware/stm32_pinmap.h"
 
-/* board.h should be included last.  It may depend on defintions from
+/* board.h should be included last.  It may depend on definitions from
  * previous header files and it may, in certain cases, override definitions
  * provided in previous header files.
  */
@@ -91,7 +90,7 @@
  *    5       X
  */
 
-#ifdef SERIAL_HAVE_DMA
+#ifdef SERIAL_HAVE_RXDMA
 
 /* Verify that DMA has been enabled and the DMA channel has been defined.
  */
@@ -146,11 +145,11 @@
 
 /* DMA priority */
 
-#  ifndef CONFIG_USART_DMAPRIO
-#    define CONFIG_USART_DMAPRIO  DMA_CCR_PRIMED
+#  ifndef CONFIG_USART_RXDMAPRIO
+#    define CONFIG_USART_RXDMAPRIO  DMA_CCR_PRIMED
 #  endif
-#  if (CONFIG_USART_DMAPRIO & ~DMA_CCR_PL_MASK) != 0
-#    error "Illegal value for CONFIG_USART_DMAPRIO"
+#  if (CONFIG_USART_RXDMAPRIO & ~DMA_CCR_PL_MASK) != 0
+#    error "Illegal value for CONFIG_USART_RXDMAPRIO"
 #  endif
 
 /* DMA control words */
@@ -160,13 +159,13 @@
                DMA_CCR_MINC          | \
                DMA_CCR_PSIZE_8BITS   | \
                DMA_CCR_MSIZE_8BITS   | \
-               CONFIG_USART_DMAPRIO)
+               CONFIG_USART_RXDMAPRIO)
 #  ifdef CONFIG_SERIAL_IFLOWCONTROL
 #    define SERIAL_DMA_IFLOW_CONTROL_WORD \
               (DMA_CCR_MINC          | \
                DMA_CCR_PSIZE_8BITS   | \
                DMA_CCR_MSIZE_8BITS   | \
-               CONFIG_USART_DMAPRIO)
+               CONFIG_USART_RXDMAPRIO)
 #  endif
 
 #endif
@@ -249,13 +248,13 @@ struct stm32_serial_s
   const uint32_t    cts_gpio;  /* U[S]ART CTS GPIO pin configuration */
 #endif
 
-#ifdef SERIAL_HAVE_DMA
+#ifdef SERIAL_HAVE_RXDMA
   const unsigned int rxdma_channel; /* DMA channel assigned */
 #endif
 
   /* RX DMA state */
 
-#ifdef SERIAL_HAVE_DMA
+#ifdef SERIAL_HAVE_RXDMA
   DMA_HANDLE        rxdma;     /* currently-open receive DMA stream */
   bool              rxenable;  /* DMA-based reception en/disable */
   uint32_t          rxdmanext; /* Next byte in the DMA buffer to be read */
@@ -296,7 +295,7 @@ static void stm32serial_send(FAR struct uart_dev_s *dev, int ch);
 static void stm32serial_txint(FAR struct uart_dev_s *dev, bool enable);
 static bool stm32serial_txready(FAR struct uart_dev_s *dev);
 
-#ifdef SERIAL_HAVE_DMA
+#ifdef SERIAL_HAVE_RXDMA
 static int  stm32serial_dmasetup(FAR struct uart_dev_s *dev);
 static void stm32serial_dmashutdown(FAR struct uart_dev_s *dev);
 static int  stm32serial_dmareceive(FAR struct uart_dev_s *dev,
@@ -340,7 +339,7 @@ static const struct uart_ops_s g_uart_ops =
 };
 #endif
 
-#ifdef SERIAL_HAVE_DMA
+#ifdef SERIAL_HAVE_RXDMA
 static const struct uart_ops_s g_uart_dma_ops =
 {
   .setup          = stm32serial_dmasetup,
@@ -872,7 +871,7 @@ static void stm32serial_disableusartint(FAR struct stm32_serial_s *priv,
  *
  ****************************************************************************/
 
-#ifdef SERIAL_HAVE_DMA
+#ifdef SERIAL_HAVE_RXDMA
 static int stm32serial_dmanextrx(FAR struct stm32_serial_s *priv)
 {
   size_t dmaresidual;
@@ -1212,7 +1211,7 @@ static int stm32serial_setup(FAR struct uart_dev_s *dev)
  *
  ****************************************************************************/
 
-#ifdef SERIAL_HAVE_DMA
+#ifdef SERIAL_HAVE_RXDMA
 static int stm32serial_dmasetup(FAR struct uart_dev_s *dev)
 {
   FAR struct stm32_serial_s *priv = (FAR struct stm32_serial_s *)dev->priv;
@@ -1366,7 +1365,7 @@ static void stm32serial_shutdown(FAR struct uart_dev_s *dev)
  *
  ****************************************************************************/
 
-#ifdef SERIAL_HAVE_DMA
+#ifdef SERIAL_HAVE_RXDMA
 static void stm32serial_dmashutdown(FAR struct uart_dev_s *dev)
 {
   FAR struct stm32_serial_s *priv = (FAR struct stm32_serial_s *)dev->priv;
@@ -1494,7 +1493,7 @@ static int up_interrupt(int irq, FAR void *context, FAR void *arg)
        * "           "      USART_ISR_ORE    Overrun Error Detected
        * USART_CR3_CTSIE    USART_ISR_CTS    CTS flag                        (not used)
        *
-       * NOTE: Some of these status bits must be cleared by explicity writing zero
+       * NOTE: Some of these status bits must be cleared by explicitly writing zero
        * to the SR register: USART_ISR_CTS, USART_ISR_LBD. Note of those are currently
        * being used.
        */
@@ -1990,7 +1989,7 @@ static bool stm32serial_rxflowcontrol(FAR struct uart_dev_s *dev,
  *
  ****************************************************************************/
 
-#ifdef SERIAL_HAVE_DMA
+#ifdef SERIAL_HAVE_RXDMA
 static int stm32serial_dmareceive(FAR struct uart_dev_s *dev,
                                   FAR unsigned int *status)
 {
@@ -2031,7 +2030,7 @@ static int stm32serial_dmareceive(FAR struct uart_dev_s *dev,
  *
  ****************************************************************************/
 
-#if defined(SERIAL_HAVE_DMA) && defined(CONFIG_SERIAL_IFLOWCONTROL)
+#if defined(SERIAL_HAVE_RXDMA) && defined(CONFIG_SERIAL_IFLOWCONTROL)
 static void stm32serial_dmareenable(FAR struct stm32_serial_s *priv)
 {
   /* Configure for non-circular DMA reception into the RX fifo */
@@ -2066,7 +2065,7 @@ static void stm32serial_dmareenable(FAR struct stm32_serial_s *priv)
  *
  ****************************************************************************/
 
-#ifdef SERIAL_HAVE_DMA
+#ifdef SERIAL_HAVE_RXDMA
 static void stm32serial_dmarxint(FAR struct uart_dev_s *dev, bool enable)
 {
   FAR struct stm32_serial_s *priv = (FAR struct stm32_serial_s *)dev->priv;
@@ -2100,7 +2099,7 @@ static void stm32serial_dmarxint(FAR struct uart_dev_s *dev, bool enable)
  *
  ****************************************************************************/
 
-#ifdef SERIAL_HAVE_DMA
+#ifdef SERIAL_HAVE_RXDMA
 static bool stm32serial_dmarxavailable(FAR struct uart_dev_s *dev)
 {
   FAR struct stm32_serial_s *priv = (FAR struct stm32_serial_s *)dev->priv;
@@ -2225,7 +2224,7 @@ static bool stm32serial_txready(FAR struct uart_dev_s *dev)
  *
  ****************************************************************************/
 
-#ifdef SERIAL_HAVE_DMA
+#ifdef SERIAL_HAVE_RXDMA
 static void stm32serial_dmarxcallback(DMA_HANDLE handle, uint8_t status,
                                         FAR void *arg)
 {
@@ -2363,7 +2362,7 @@ static int stm32serial_pmprepare(FAR struct pm_callback_s *cb, int domain,
 #ifdef USE_SERIALDRIVER
 
 /****************************************************************************
- * Name: up_earlyserialinit
+ * Name: arm_earlyserialinit
  *
  * Description:
  *   Performs the low level USART initialization early in debug so that the
@@ -2373,7 +2372,7 @@ static int stm32serial_pmprepare(FAR struct pm_callback_s *cb, int domain,
  ****************************************************************************/
 
 #ifdef USE_EARLYSERIALINIT
-void up_earlyserialinit(void)
+void arm_earlyserialinit(void)
 {
 #ifdef HAVE_USART
   unsigned i;
@@ -2402,11 +2401,11 @@ void up_earlyserialinit(void)
  *
  * Description:
  *   Register serial console and serial ports.  This assumes
- *   that up_earlyserialinit was called previously.
+ *   that arm_earlyserialinit was called previously.
  *
  ****************************************************************************/
 
-void up_serialinit(void)
+void arm_serialinit(void)
 {
 #ifdef HAVE_USART
   char devname[16];
@@ -2427,14 +2426,14 @@ void up_serialinit(void)
   /* Register the console */
 
 #if CONSOLE_USART > 0
-  (void)uart_register("/dev/console", &g_uart_devs[CONSOLE_USART - 1]->dev);
+  uart_register("/dev/console", &g_uart_devs[CONSOLE_USART - 1]->dev);
 
 #ifndef CONFIG_STM32F0L0G0_SERIAL_DISABLE_REORDERING
   /* If not disabled, register the console USART to ttyS0 and exclude
    * it from initializing it further down
    */
 
-  (void)uart_register("/dev/ttyS0", &g_uart_devs[CONSOLE_USART - 1]->dev);
+  uart_register("/dev/ttyS0", &g_uart_devs[CONSOLE_USART - 1]->dev);
   minor = 1;
 #endif
 
@@ -2470,7 +2469,7 @@ void up_serialinit(void)
       /* Register USARTs as devices in increasing order */
 
       devname[9] = '0' + minor++;
-      (void)uart_register(devname, &g_uart_devs[i]->dev);
+      uart_register(devname, &g_uart_devs[i]->dev);
     }
 #endif /* HAVE USART */
 }
@@ -2486,7 +2485,7 @@ void up_serialinit(void)
  *
  ****************************************************************************/
 
-#ifdef SERIAL_HAVE_DMA
+#ifdef SERIAL_HAVE_RXDMA
 void stm32serial_dmapoll(void)
 {
     irqstate_t flags;
@@ -2554,10 +2553,10 @@ int up_putc(int ch)
     {
       /* Add CR */
 
-      up_lowputc('\r');
+      arm_lowputc('\r');
     }
 
-  up_lowputc(ch);
+  arm_lowputc(ch);
   stm32serial_restoreusartint(priv, ie);
 #endif
   return ch;
@@ -2582,10 +2581,10 @@ int up_putc(int ch)
     {
       /* Add CR */
 
-      up_lowputc('\r');
+      arm_lowputc('\r');
     }
 
-  up_lowputc(ch);
+  arm_lowputc(ch);
 #endif
 
   return ch;

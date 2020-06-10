@@ -52,7 +52,7 @@
 #include <nuttx/usb/usbhost.h>
 #include <nuttx/usb/usbdev_trace.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "stm32l4.h"
 #include "stm32l4_otgfs.h"
 #include "stm32l476vg-disco.h"
@@ -117,7 +117,7 @@ static int usbhost_waiter(int argc, char *argv[])
         {
           /* Yes.. enumerate the newly connected device */
 
-          (void)CONN_ENUMERATE(g_usbconn, hport);
+          CONN_ENUMERATE(g_usbconn, hport);
         }
     }
 
@@ -313,7 +313,7 @@ void stm32l4_usbhost_vbusdrive(int iface, bool enable)
 #ifdef CONFIG_USBHOST
 xcpt_t stm32l4_setup_overcurrent(xcpt_t handler)
 {
-  (void)stm32l4_gpiosetevent(GPIO_OTGFS_OVER, true, true, true, handler, NULL);
+  stm32l4_gpiosetevent(GPIO_OTGFS_OVER, true, true, true, handler, NULL);
   return NULL;
 }
 #endif

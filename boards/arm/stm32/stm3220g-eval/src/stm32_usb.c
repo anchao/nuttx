@@ -52,7 +52,7 @@
 #include <nuttx/usb/usbhost.h>
 #include <nuttx/usb/usbdev_trace.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "stm32.h"
 #include "stm32_otgfs.h"
 #include "stm3220g-eval.h"
@@ -121,7 +121,7 @@ static int usbhost_waiter(int argc, char *argv[])
         {
           /* Yes.. enumerate the newly connected device */
 
-          (void)CONN_ENUMERATE(g_usbconn, hport);
+          CONN_ENUMERATE(g_usbconn, hport);
         }
     }
 
@@ -308,4 +308,3 @@ void stm32_usbsuspend(FAR struct usbdev_s *dev, bool resume)
 #endif
 
 #endif /* CONFIG_STM32_OTGFS */
-

@@ -48,7 +48,7 @@
 #include <nuttx/clock.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "max326_start.h"
 #include "max32660-evsys.h"
 
@@ -100,6 +100,6 @@ void board_late_initialize(void)
 {
   /* Perform board initialization */
 
-  (void)max326_bringup();
+  max326_bringup();
 }
 #endif /* CONFIG_BOARD_LATE_INITIALIZE */

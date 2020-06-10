@@ -64,7 +64,7 @@
 #  include <nuttx/net/pkt.h>
 #endif
 
-#include "up_internal.h"
+#include "arm_internal.h"
 
 #include "chip.h"
 #include "stm32_gpio.h"
@@ -1100,7 +1100,7 @@ static int stm32_transmit(FAR struct stm32_ethmac_s *priv)
 
               txdesc->tdes0 |= (ETH_TDES0_LS | ETH_TDES0_IC);
 
-              /* This segement is, most likely, of fractional buffersize */
+              /* This segment is, most likely, of fractional buffersize */
 
               txdesc->tdes1  = lastsize;
               buffer        += lastsize;
@@ -1211,7 +1211,7 @@ static int stm32_transmit(FAR struct stm32_ethmac_s *priv)
 
   /* Setup the TX timeout watchdog (perhaps restarting the timer) */
 
-  (void)wd_start(priv->txtimeout, STM32_TXTIMEOUT, stm32_txtimeout_expiry, 1, (uint32_t)priv);
+  wd_start(priv->txtimeout, STM32_TXTIMEOUT, stm32_txtimeout_expiry, 1, (uint32_t)priv);
   return OK;
 }
 
@@ -1375,7 +1375,7 @@ static void stm32_dopoll(FAR struct stm32_ethmac_s *priv)
 
       if (dev->d_buf)
         {
-          (void)devif_poll(dev, stm32_txpoll);
+          devif_poll(dev, stm32_txpoll);
 
           /* We will, most likely end up with a buffer to be freed.  But it
            * might not be the same one that we allocated above.
@@ -1492,7 +1492,7 @@ static void stm32_freesegment(FAR struct stm32_ethmac_s *priv,
       rxdesc = (struct eth_rxdesc_s *)rxdesc->rdes3;
     }
 
-  /* Reset the segment managment logic */
+  /* Reset the segment management logic */
 
   priv->rxcurr   = NULL;
   priv->segments = 0;
@@ -1637,7 +1637,7 @@ static int stm32_recvframe(FAR struct stm32_ethmac_s *priv)
               dev->d_buf    = (uint8_t *)rxcurr->rdes2;
               rxcurr->rdes2 = (uint32_t)buffer;
 
-              /* Return success, remebering where we should re-start scanning
+              /* Return success, remembering where we should re-start scanning
                * and resetting the segment scanning logic
                */
 
@@ -1775,7 +1775,7 @@ static void stm32_receive(FAR struct stm32_ethmac_s *priv)
 #ifdef CONFIG_NET_IPv6
       if (BUF->type == HTONS(ETHTYPE_IP6))
         {
-          ninfo("Iv6 frame\n");
+          ninfo("IPv6 frame\n");
 
           /* Give the IPv6 packet to the network layer */
 
@@ -1905,7 +1905,7 @@ static void stm32_freeframe(FAR struct stm32_ethmac_s *priv)
 
           txdesc->tdes2 = 0;
 
-          /* Check if this is the last segement of a TX frame */
+          /* Check if this is the last segment of a TX frame */
 
           if ((txdesc->tdes0 & ETH_TDES0_LS) != 0)
             {
@@ -2174,8 +2174,8 @@ static void stm32_txtimeout_work(FAR void *arg)
   /* Reset the hardware.  Just take the interface down, then back up again. */
 
   net_lock();
-  (void)stm32_ifdown(&priv->dev);
-  (void)stm32_ifup(&priv->dev);
+  stm32_ifdown(&priv->dev);
+  stm32_ifup(&priv->dev);
 
   /* Then poll for new XMIT data */
 
@@ -2275,7 +2275,7 @@ static void stm32_poll_work(FAR void *arg)
           /* Update TCP timing states and poll the network for new XMIT data.
            */
 
-          (void)devif_timer(dev, stm32_txpoll);
+          devif_timer(dev, STM32_WDDELAY, stm32_txpoll);
 
           /* We will, most likely end up with a buffer to be freed.  But it
            * might not be the same one that we allocated above.
@@ -2292,7 +2292,7 @@ static void stm32_poll_work(FAR void *arg)
 
   /* Setup the watchdog poll timer again */
 
-  (void)wd_start(priv->txpoll, STM32_WDDELAY, stm32_poll_expiry, 1, priv);
+  wd_start(priv->txpoll, STM32_WDDELAY, stm32_poll_expiry, 1, priv);
   net_unlock();
 }
 
@@ -2368,7 +2368,7 @@ static int stm32_ifup(struct net_driver_s *dev)
 
   /* Set and activate a timer process */
 
-  (void)wd_start(priv->txpoll, STM32_WDDELAY, stm32_poll_expiry, 1, (uint32_t)priv);
+  wd_start(priv->txpoll, STM32_WDDELAY, stm32_poll_expiry, 1, (uint32_t)priv);
 
   /* Enable the Ethernet interrupt */
 
@@ -2748,7 +2748,7 @@ static void stm32_txdescinit(FAR struct stm32_ethmac_s *priv)
         }
     }
 
-  /* Set Transmit Desciptor List Address Register */
+  /* Set Transmit Descriptor List Address Register */
 
   stm32_putreg((uint32_t)priv->txtable, STM32_ETH_DMATDLAR);
 }
@@ -3210,7 +3210,7 @@ static int stm32_phyinit(FAR struct stm32_ethmac_s *priv)
     }
 #endif
 
-  /* Perform auto-negotion if so configured */
+  /* Perform auto-negotiation if so configured */
 
 #ifdef CONFIG_STM32_AUTONEG
   /* Wait for link status */
@@ -3328,7 +3328,7 @@ static int stm32_phyinit(FAR struct stm32_ethmac_s *priv)
     }
 #endif
 
-#else /* Auto-negotion not selected */
+#else /* Auto-negotiation not selected */
 
   phyval = 0;
 #ifdef CONFIG_STM32_ETHFD
@@ -3367,7 +3367,7 @@ static int stm32_phyinit(FAR struct stm32_ethmac_s *priv)
  * Name: stm32_selectmii
  *
  * Description:
- *   Selects the MII inteface.
+ *   Selects the MII interface.
  *
  * Input Parameters:
  *   None
@@ -3398,7 +3398,7 @@ static inline void stm32_selectmii(void)
  * Name: stm32_selectrmii
  *
  * Description:
- *   Selects the RMII inteface.
+ *   Selects the RMII interface.
  *
  * Input Parameters:
  *   None
@@ -3821,7 +3821,7 @@ static void stm32_ipv6multicast(FAR struct stm32_ethmac_s *priv)
   ninfo("IPv6 Multicast: %02x:%02x:%02x:%02x:%02x:%02x\n",
         mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
-  (void)stm32_addmac(dev, mac);
+  stm32_addmac(dev, mac);
 
 #ifdef CONFIG_NET_ICMPv6_AUTOCONF
   /* Add the IPv6 all link-local nodes Ethernet address.  This is the
@@ -3829,7 +3829,7 @@ static void stm32_ipv6multicast(FAR struct stm32_ethmac_s *priv)
    * packets.
    */
 
-  (void)stm32_addmac(dev, g_ipv6_ethallnodes.ether_addr_octet);
+  stm32_addmac(dev, g_ipv6_ethallnodes.ether_addr_octet);
 
 #endif /* CONFIG_NET_ICMPv6_AUTOCONF */
 #ifdef CONFIG_NET_ICMPv6_ROUTER
@@ -3838,7 +3838,7 @@ static void stm32_ipv6multicast(FAR struct stm32_ethmac_s *priv)
    * packets.
    */
 
-  (void)stm32_addmac(dev, g_ipv6_ethallrouters.ether_addr_octet);
+  stm32_addmac(dev, g_ipv6_ethallrouters.ether_addr_octet);
 
 #endif /* CONFIG_NET_ICMPv6_ROUTER */
 }
@@ -4010,7 +4010,7 @@ static int stm32_ethconfig(FAR struct stm32_ethmac_s *priv)
  * Description:
  *   Initialize the Ethernet driver for one interface.  If the STM32 chip
  *   supports multiple Ethernet controllers, then board specific logic
- *   must implement up_netinitialize() and call this function to initialize
+ *   must implement arm_netinitialize() and call this function to initialize
  *   the desired interfaces.
  *
  * Input Parameters:
@@ -4083,18 +4083,18 @@ int stm32_ethinitialize(int intf)
 
   /* Register the device with the OS so that socket IOCTLs can be performed */
 
-  (void)netdev_register(&priv->dev, NET_LL_ETHERNET);
+  netdev_register(&priv->dev, NET_LL_ETHERNET);
   return OK;
 }
 
 /****************************************************************************
- * Function: up_netinitialize
+ * Function: arm_netinitialize
  *
  * Description:
  *   This is the "standard" network initialization logic called from the
- *   low-level initialization logic in up_initialize.c.  If STM32_NETHERNET
+ *   low-level initialization logic in arm_initialize.c.  If STM32_NETHERNET
  *   greater than one, then board specific logic will have to supply a
- *   version of up_netinitialize() that calls stm32_ethinitialize() with
+ *   version of arm_netinitialize() that calls stm32_ethinitialize() with
  *   the appropriate interface number.
  *
  * Input Parameters:
@@ -4108,9 +4108,9 @@ int stm32_ethinitialize(int intf)
  ****************************************************************************/
 
 #if STM32_NETHERNET == 1 && !defined(CONFIG_NETDEV_LATEINIT)
-void up_netinitialize(void)
+void arm_netinitialize(void)
 {
-  (void)stm32_ethinitialize(0);
+  stm32_ethinitialize(0);
 }
 #endif
 

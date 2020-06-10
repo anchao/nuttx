@@ -70,8 +70,8 @@
  * a KINETIS_MCG_PLL_REF_MIN >= PLLIN <= KINETIS_MCG_PLL_REF_MIN reference
  * clock to the PLL.
  *
- *   PLL Input frequency:   PLLIN  = REFCLK / PRDIV = 50  Mhz  / 20 = 2.5 MHz
- *   PLL Output frequency:  PLLOUT = PLLIN  * VDIV  = 2.5 Mhz  * 48 = 120 MHz
+ *   PLL Input frequency:   PLLIN  = REFCLK / PRDIV = 50  MHz  / 20 = 2.5 MHz
+ *   PLL Output frequency:  PLLOUT = PLLIN  * VDIV  = 2.5 MHz  * 48 = 120 MHz
  *   MCG Frequency:         PLLOUT = 120 MHz
  *
  * PRDIV register value is the divider minus KINETIS_MCG_C5_PRDIV_BASE.
@@ -249,7 +249,7 @@
 
 /* An alternative serial port might use a standard serial shield mounted
  * on the Freedom Board.  In this case, Arduino pin D1 provides UART TX and
- * pin D0 privides UART RX.
+ * pin D0 provides UART RX.
  *
  * The I/O headers on the FRDM-K64F board are arranged to enable
  * compatibility with Arduino shield. The outer rows of pins (even numbered
@@ -268,4 +268,4 @@
 #define PIN_UART3_RX      PIN_UART3_RX_2
 #define PIN_UART3_TX      PIN_UART3_TX_2
 
-#endif  /* __BOARDS_ARM_FREEDOM_K64F_INCLUDE_BOARD_H */
+#endif /* __BOARDS_ARM_FREEDOM_K64F_INCLUDE_BOARD_H */

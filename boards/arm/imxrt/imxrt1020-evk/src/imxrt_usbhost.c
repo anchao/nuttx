@@ -57,8 +57,8 @@
 #include <imxrt_ehci.h>
 
 #include "hardware/imxrt_pinmux.h"
+#include "hardware/imxrt_usbotg.h"
 #include "imxrt_periphclks.h"
-#include "imxrt_usbotg.h"
 #include "imxrt1020-evk.h"
 
 #include <arch/board/board.h>  /* Must always be included last */
@@ -120,7 +120,7 @@ static int ehci_waiter(int argc, char *argv[])
         {
           /* Yes.. enumerate the newly connected device */
 
-          (void)CONN_ENUMERATE(g_ehciconn, hport);
+          CONN_ENUMERATE(g_ehciconn, hport);
         }
     }
 
@@ -151,7 +151,7 @@ int imxrt_usbhost_initialize(void)
 
   imxrt_clockall_usboh3();
 
-  /* Make sure we don't accidentially switch on USB bus power */
+  /* Make sure we don't accidentally switch on USB bus power */
 
   *((uint32_t *)IMXRT_USBNC_USB_OTG1_CTRL) = USBNC_PWR_POL;
   *((uint32_t *)0x400d9030)                = (1 << 21);

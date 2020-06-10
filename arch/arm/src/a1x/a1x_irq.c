@@ -46,8 +46,8 @@
 #include <nuttx/irq.h>
 #include <nuttx/arch.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 #include "sctlr.h"
 
 #include "a1x_pio.h"
@@ -156,7 +156,7 @@ void up_irqinitialize(void)
     {
       putreg32(0x00000000, A1X_INTC_EN(i));   /* 0 disables corresponding interrupt */
       putreg32(0xffffffff, A1X_INTC_MASK(i)); /* 1 masks corresponding interrupt */
-      (void)getreg32(A1X_INTC_IRQ_PEND(i));   /* Reading status clears pending interrupts */
+      getreg32(A1X_INTC_IRQ_PEND(i));         /* Reading status clears pending interrupts */
     }
 
   /* Set the interrupt base address to zero.  We do not use the vectored
@@ -171,14 +171,16 @@ void up_irqinitialize(void)
 
 #ifndef CONFIG_SUPPRESS_INTERRUPTS
 #ifdef CONFIG_A1X_PIO_IRQ
-  /* Initialize logic to support a second level of interrupt decoding for PIO pins. */
+  /* Initialize logic to support a second level of interrupt decoding
+   * for PIO pins.
+   */
 
   a1x_pio_irqinitialize();
 #endif
 
   /* And finally, enable interrupts */
 
-  (void)up_irq_enable();
+  up_irq_enable();
 #endif
 
   a1x_dumpintc("initial", 0);
@@ -212,8 +214,8 @@ uint32_t *arm_decodeirq(uint32_t *regs)
   uint32_t regval;
 
   /* During initialization, the BASE address register was set to zero.
-   * Therefore, when we read the VECTOR address register, we get the IRQ number
-   * shifted left by two.
+   * Therefore, when we read the VECTOR address register, we get the IRQ
+   * number shifted left by two.
    */
 
   regval = getreg32(A1X_INTC_VECTOR);

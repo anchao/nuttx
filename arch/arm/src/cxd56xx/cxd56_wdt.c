@@ -50,7 +50,7 @@
 #include <nuttx/timers/watchdog.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "cxd56_clock.h"
 #include "cxd56_wdt.h"
 #include "cxd56_powermgr.h"
@@ -76,6 +76,7 @@
 /****************************************************************************
  * Private Types
  ****************************************************************************/
+
 /* This structure provides the private representation of the "lower-half"
  * driver state structure.  This structure must be cast-compatible with the
  * well-known watchdog_lowerhalf_s structure.
@@ -106,7 +107,7 @@ static void cxd56_putreg(uint32_t regval, uintptr_t regaddr);
 #  define cxd56_putreg(regval, regaddr) putreg32(regval, regaddr)
 #endif
 
-/* Interrupt hanlding *******************************************************/
+/* Interrupt handling *******************************************************/
 
 #ifdef CONFIG_CXD56_WDT_INTERRUPT
 static int cxd56_wdtinterrupt(int irq, FAR void *context, FAR void *arg);
@@ -175,8 +176,8 @@ static uint32_t cxd56_getreg(uintptr_t regaddr)
 
   uint32_t regval = getreg32(regaddr);
 
-  /* Is this the same value that we read from the same registe last time?  Are
-   * we polling the register?  If so, suppress some of the output.
+  /* Is this the same value that we read from the same register last time?
+   * Are we polling the register? If so, suppress some of the output.
    */
 
   if (regaddr == prevaddr && regval == preval)
@@ -282,8 +283,8 @@ static int cxd56_wdtinterrupt(int irq, FAR void *context, FAR void *arg)
  *   Start the watchdog timer, resetting the time to the current timeout,
  *
  * Input Parameters:
- *   lower - A pointer the publicly visible representation of the "lower-half"
- *           driver state structure.
+ *   lower - A pointer the publicly visible representation of the
+ *           "lower-half" driver state structure.
  *
  * Returned Values:
  *   Zero on success; a negated errno value on failure.
@@ -311,8 +312,8 @@ static int cxd56_start(FAR struct watchdog_lowerhalf_s *lower)
  *   Stop the watchdog timer
  *
  * Input Parameters:
- *   lower - A pointer the publicly visible representation of the "lower-half"
- *           driver state structure.
+ *   lower - A pointer the publicly visible representation of the
+ *           "lower-half" driver state structure.
  *
  * Returned Values:
  *   Zero on success; a negated errno value on failure.
@@ -339,8 +340,8 @@ static int cxd56_stop(FAR struct watchdog_lowerhalf_s *lower)
  *   the atchdog timer or "petting the dog".
  *
  * Input Parameters:
- *   lower - A pointer the publicly visible representation of the "lower-half"
- *           driver state structure.
+ *   lower - A pointer the publicly visible representation of the
+ *           "lower-half" driver state structure.
  *
  * Returned Values:
  *   Zero on success; a negated errno value on failure.
@@ -400,7 +401,7 @@ static int cxd56_getstatus(FAR struct watchdog_lowerhalf_s *lower,
 
   status->timeout = priv->timeout;
 
-  /* Get the time remaining until the watchdog expires (in miliseconds) */
+  /* Get the time remaining until the watchdog expires (in milliseconds) */
 
   remain           = (uint64_t)cxd56_getreg(CXD56_WDT_WDOGVALUE);
   status->timeleft = (uint32_t)(remain * 1000 / cxd56_get_cpu_baseclk());
@@ -448,7 +449,7 @@ static int cxd56_settimeout(FAR struct watchdog_lowerhalf_s *lower,
       return -EINVAL;
     }
 
-  /* Calculate the reload value to achiee this (appoximate) timeout. */
+  /* Calculate the reload value to achiee this (approximate) timeout. */
 
   freq = cxd56_get_cpu_baseclk();
 
@@ -481,7 +482,7 @@ static int cxd56_settimeout(FAR struct watchdog_lowerhalf_s *lower,
 
   priv->reload = reload;
 
-  wdinfo("reload=%u timout: %d->%d\n", reload, timeout, priv->timeout);
+  wdinfo("reload=%u timeout: %d->%d\n", reload, timeout, priv->timeout);
 
   /* Set the WDT register according to calculated value */
 
@@ -568,8 +569,8 @@ static xcpt_t cxd56_capture(FAR struct watchdog_lowerhalf_s *lower,
  *   are forwarded to the lower half driver through this method.
  *
  * Input Parameters:
- *   lower - A pointer the publicly visible representation of the "lower-half"
- *           driver state structure.
+ *   lower - A pointer the publicly visible representation of the
+ *           "lower-half" driver state structure.
  *   cmd   - The ioctol command value
  *   arg   - The optional argument that accompanies the 'cmd'.  The
  *           interpretation of this argument depends on the particular
@@ -619,9 +620,9 @@ static int cxd56_pm_event(uint8_t id)
 
       case CXD56_PM_CALLBACK_ID_CLK_CHG_END:
       case CXD56_PM_CALLBACK_ID_HOT_BOOT:
-        /* If watchdog has been already running before the clock is changed or
-         * entering in hot sleep , re-start the watchdog  timer with a timeout
-         * value based on the new watchdog timer clock.
+        /* If watchdog has been already running before the clock is changed
+         * or entering in hot sleep, re-start the watchdog timer with a
+         * timeout value based on the new watchdog timer clock.
          */
 
         if (priv->started)
@@ -634,6 +635,7 @@ static int cxd56_pm_event(uint8_t id)
       default:
         break;
     }
+
   return 0;
 }
 
@@ -673,12 +675,12 @@ int cxd56_wdt_initialize(void)
 #ifdef CONFIG_CXD56_WDT_INTERRUPT
   /* Attach our WDT interrupt handler (But don't enable it yet) */
 
-  (void)irq_attach(CXD56_IRQ_WDT_INT, cxd56_wdtinterrupt, priv);
+  irq_attach(CXD56_IRQ_WDT_INT, cxd56_wdtinterrupt, priv);
 #endif
 
   /* Register the watchdog driver as /dev/watchdog0 */
 
-  (void)watchdog_register(DEVPATH, (FAR struct watchdog_lowerhalf_s *)priv);
+  watchdog_register(DEVPATH, (FAR struct watchdog_lowerhalf_s *)priv);
 
   /* Register pm event callback */
 

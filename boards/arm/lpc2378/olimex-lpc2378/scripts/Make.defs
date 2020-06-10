@@ -38,24 +38,19 @@
 #
 ##############################################################################
 
-include ${TOPDIR}/.config
-include ${TOPDIR}/tools/Config.mk
-include ${TOPDIR}/arch/arm/src/arm/Toolchain.defs
+include $(TOPDIR)/.config
+include $(TOPDIR)/tools/Config.mk
+include $(TOPDIR)/arch/arm/src/arm/Toolchain.defs
 
-ifeq ($(WINTOOL),y)
-  # Windows-native toolchains
-  DIRLINK = $(TOPDIR)/tools/copydir.sh
-  DIRUNLINK = $(TOPDIR)/tools/unlink.sh
-  MKDEP = $(TOPDIR)/tools/mkwindeps.sh
-  ARCHINCLUDES = -I. -isystem "${shell cygpath -w $(TOPDIR)/include}"
-  ARCHXXINCLUDES = -I. -isystem "${shell cygpath -w $(TOPDIR)/include}" -isystem "${shell cygpath -w $(TOPDIR)/include/cxx}"
-  ARCHSCRIPT = -T "${shell cygpath -w $(TOPDIR)/boards/$(CONFIG_ARCH)/$(CONFIG_ARCH_CHIP)/$(CONFIG_ARCH_BOARD)/scripts/ld.script}"
+ARCHINCLUDES += ${shell $(INCDIR) -s "$(CC)" $(TOPDIR)$(DELIM)include}
+
+ARCHXXINCLUDES += ${shell $(INCDIR) -s "$(CC)" $(TOPDIR)$(DELIM)include}
+ARCHXXINCLUDES += ${shell $(INCDIR) -s "$(CC)" $(TOPDIR)$(DELIM)include$(DELIM)cxx}
+
+ifeq ($(CONFIG_CYGWIN_WINTOOL),y)
+  ARCHSCRIPT = -T "${shell cygpath -w $(BOARD_DIR)$(DELIM)scripts$(DELIM)ld.script}"
 else
-  # Linux/Cygwin-native toolchain
-  MKDEP = $(TOPDIR)/tools/mkdeps$(HOSTEXEEXT)
-  ARCHINCLUDES = -I. -isystem $(TOPDIR)/include
-  ARCHXXINCLUDES = -I. -isystem $(TOPDIR)/include -isystem $(TOPDIR)/include/cxx
-  ARCHSCRIPT = -T$(TOPDIR)/boards/$(CONFIG_ARCH)/$(CONFIG_ARCH_CHIP)/$(CONFIG_ARCH_BOARD)/scripts/ld.script
+  ARCHSCRIPT = -T$(BOARD_DIR)$(DELIM)scripts$(DELIM)ld.script
 endif
 
 CC = $(CROSSDEV)gcc
@@ -104,15 +99,14 @@ ARCHCXXFLAGS = -fno-builtin -fno-exceptions -fcheck-new
 ARCHPICFLAGS = -fpic -msingle-pic-base -mpic-register=r10
 ARCHWARNINGS = -Wall -Wstrict-prototypes -Wshadow -Wundef
 ARCHWARNINGSXX = -Wall -Wshadow -Wundef
-ARCHDEFINES =
 
 CFLAGS = $(ARCHCFLAGS) $(ARCHWARNINGS) $(ARCHOPTIMIZATION) \
-         $(ARCHCPUFLAGS) $(ARCHINCLUDES) $(ARCHDEFINES) $(EXTRADEFINES) -pipe
+         $(ARCHCPUFLAGS) $(ARCHINCLUDES) $(ARCHDEFINES) $(EXTRAFLAGS) -pipe
 CPICFLAGS = $(ARCHPICFLAGS) $(CFLAGS)
 CXXFLAGS = $(ARCHCXXFLAGS) $(ARCHWARNINGSXX) $(ARCHOPTIMIZATION) \
-           $(ARCHCPUFLAGS) $(ARCHXXINCLUDES) $(ARCHDEFINES) $(EXTRADEFINES) -pipe
+           $(ARCHCPUFLAGS) $(ARCHXXINCLUDES) $(ARCHDEFINES) $(EXTRAFLAGS) -pipe
 CXXPICFLAGS = $(ARCHPICFLAGS) $(CXXFLAGS)
-CPPFLAGS = $(ARCHINCLUDES) $(ARCHDEFINES) $(EXTRADEFINES)
+CPPFLAGS = $(ARCHINCLUDES) $(ARCHDEFINES) $(EXTRAFLAGS)
 AFLAGS = $(CFLAGS) -D__ASSEMBLY__
 
 NXFLATLDFLAGS1 = -r -d -warn-common
@@ -120,11 +114,6 @@ NXFLATLDFLAGS2 = $(NXFLATLDFLAGS1) \
                  -T$(TOPDIR)/binfmt/libnxflat/gnu-nxflat-gotoff.ld \
                  -no-check-sections
 LDNXFLATFLAGS = -e main -s 2048
-
-ASMEXT = .S
-OBJEXT = .o
-LIBEXT = .a
-EXEEXT =
 
 ifneq ($(CROSSDEV),arm-nuttx-elf-)
   LDFLAGS += -nostartfiles -nodefaultlibs
@@ -134,6 +123,4 @@ ifeq ($(CONFIG_DEBUG_FEATURES),y)
 endif
 
 HOSTCC = gcc
-HOSTINCLUDES = -I.
 HOSTCFLAGS = -Wall -Wstrict-prototypes -Wshadow -Wundef -g -pipe
-HOSTLDFLAGS =

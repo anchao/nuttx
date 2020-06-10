@@ -40,19 +40,6 @@
  ****************************************************************************/
 
 #include <nuttx/config.h>
-#include <nuttx/arch.h>
-
-#ifdef CONFIG_FS_EVFAT
-#  include <nuttx/fs/mkevfatfs.h>
-#endif
-
-#include <nuttx/usb/usbmsc.h>
-#include <nuttx/mtd/mtd.h>
-#include <nuttx/drivers/drivers.h>
-
-#ifdef CONFIG_I2C
-#  include <nuttx/i2c.h>
-#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -66,6 +53,21 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include <nuttx/arch.h>
+#include <nuttx/signal.h>
+
+#ifdef CONFIG_FS_EVFAT
+#  include <nuttx/fs/mkevfatfs.h>
+#endif
+
+#include <nuttx/usb/usbmsc.h>
+#include <nuttx/mtd/mtd.h>
+#include <nuttx/drivers/drivers.h>
+
+#ifdef CONFIG_I2C
+#  include <nuttx/i2c.h>
+#endif
+
 #ifdef CONFIG_LASTKMSG
 #  include <nuttx/lastkmsg.h>
 #endif /* CONFIG_LASTKMSG */
@@ -74,8 +76,8 @@
 
 #include <libgen.h>
 
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 
 #ifdef CONFIG_ADC
 #  include "lc823450_adc.h"
@@ -282,7 +284,7 @@ static void load_kernel(const char *name, const char *devname)
 
   tmp = (void *)0x02040000;
 
-  (void)blk_read(tmp, 512 * 1024, devname, 0);
+  blk_read(tmp, 512 * 1024, devname, 0);
 
   /* disable all IRQ */
 
@@ -330,7 +332,7 @@ static int check_diskformat(void)
       return 0;
     }
 
-  /* If part2 has MBR signature, this eMMC was formated by PC.
+  /* If part2 has MBR signature, this eMMC was formatted by PC.
    * This means the set is just after writing IPL2.
    */
 
@@ -371,7 +373,7 @@ static int check_forceusbboot(void)
   modifyreg32(MCLKCNTAPB, 0, MCLKCNTAPB_ADC_CLKEN);
   modifyreg32(MRSTCNTAPB, 0, MRSTCNTAPB_ADC_RSTB);
 
-  usleep(10000);
+  nxsig_usleep(10000);
 
   /* start ADC0,1 */
 
@@ -430,7 +432,7 @@ static void sysreset(void)
 {
   /* workaround to flush eMMC cache */
 
-  usleep(100000);
+  nxsig_usleep(100000);
 
   up_systemreset();
 }
@@ -534,7 +536,7 @@ static void chg_disable(void)
             }
           else
             {
-              usleep(20);
+              nxsig_usleep(20);
             }
         }
 
@@ -581,7 +583,8 @@ static int msc_enable(int forced)
           usbmsc_uninitialize(handle);
           return 0;
         }
-      usleep(10000);
+
+      nxsig_usleep(10000);
     }
 
 #else
@@ -589,7 +592,7 @@ static int msc_enable(int forced)
 
   while (g_update_flag == 0)
     {
-      usleep(10000);
+      nxsig_usleep(10000);
     }
 #endif
 
@@ -598,7 +601,7 @@ static int msc_enable(int forced)
   /* check recovery kernel update */
 
   mount(CONFIG_MTD_CP_DEVPATH, "/mnt/sd0", "evfat", 0, NULL);
-  usleep(10000);
+  nxsig_usleep(10000);
 
   /* recovery kernel install from UPG.img */
 
@@ -652,11 +655,11 @@ void check_lastkmsg(void)
 
   /* log rotate */
 
-  (void)unlink(LASTMSG_LOGPATH ".4");
-  (void)rename(LASTMSG_LOGPATH ".3", LASTMSG_LOGPATH ".4");
-  (void)rename(LASTMSG_LOGPATH ".2", LASTMSG_LOGPATH ".3");
-  (void)rename(LASTMSG_LOGPATH ".1", LASTMSG_LOGPATH ".2");
-  (void)rename(LASTMSG_LOGPATH ".0", LASTMSG_LOGPATH ".1");
+  unlink(LASTMSG_LOGPATH ".4");
+  rename(LASTMSG_LOGPATH ".3", LASTMSG_LOGPATH ".4");
+  rename(LASTMSG_LOGPATH ".2", LASTMSG_LOGPATH ".3");
+  rename(LASTMSG_LOGPATH ".1", LASTMSG_LOGPATH ".2");
+  rename(LASTMSG_LOGPATH ".0", LASTMSG_LOGPATH ".1");
 
   fp = fopen(LASTMSG_LOGPATH ".0", "w");
 
@@ -671,7 +674,7 @@ void check_lastkmsg(void)
 
   /* XXX: workaround for logfile size = 0 */
 
-  usleep(100000);
+  nxsig_usleep(100000);
 }
 #endif /* CONFIG_LASTKMSG */
 
@@ -740,7 +743,7 @@ int ipl2_main(int argc, char *argv[])
       /* check recovery kernel update */
 
       mount(CONFIG_MTD_CP_DEVPATH, "/mnt/sd0", "evfat", 0, NULL);
-      usleep(10000);
+      nxsig_usleep(10000);
 
       /* recovery kernel install from UPG.img */
 
@@ -757,4 +760,3 @@ int ipl2_main(int argc, char *argv[])
 
   return -1;
 }
-

@@ -41,7 +41,7 @@
 
 #include <stdbool.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "nvic.h"
 #include "stm32_pwr.h"
 #include "stm32_pm.h"
@@ -75,7 +75,7 @@
  *
  * Returned Value:
  *   Zero means that the STOP was successfully entered and the system has
- *   been re-awakened.  The internal volatage regulator is back to its
+ *   been re-awakened.  The internal voltage regulator is back to its
  *   original state.  Otherwise, STOP mode did not occur and a negated
  *   errno value is returned to indicate the cause of the failure.
  *

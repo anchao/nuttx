@@ -39,7 +39,7 @@
 
 #include <nuttx/config.h>
 #include <nuttx/irq.h>
-#include "up_internal.h"
+#include "arm_internal.h"
 #include "svcall.h"
 #include "arm.h"
 
@@ -49,29 +49,29 @@
  * Public Symbols
  ****************************************************************************/
 
-	.globl	up_fullcontextrestore
+	.globl	arm_fullcontextrestore
 
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_fullcontextrestore
+ * Name: arm_fullcontextrestore
  *
  * Description:
  *   Restore the specified task context. Full prototype is:
  *
- *     void up_fullcontextrestore(uint32_t *restoreregs) noreturn_function;
+ *     void arm_fullcontextrestore(uint32_t *restoreregs) noreturn_function;
  *
  * Returned Value:
  *   None
  *
  ****************************************************************************/
 
-	.globl	up_fullcontextrestore
-	.type	up_fullcontextrestore, function
+	.globl	arm_fullcontextrestore
+	.type	arm_fullcontextrestore, function
 
-up_fullcontextrestore:
+arm_fullcontextrestore:
 
 	/* On entry, a1 (r0) holds address of the register save area.  All other
 	 * registers are available for use.
@@ -118,7 +118,7 @@ up_fullcontextrestore:
 
 #else
 	/* For a flat build, we can do all of this here... Just think of this as
-	 * a longjmp() all on steriods.
+	 * a longjmp() all on steroids.
 	 */
 
 	/* Recover all registers except for r0, r1, r2, R15, and CPSR */
@@ -157,4 +157,4 @@ up_fullcontextrestore:
 
 #endif
 
-	.size up_fullcontextrestore, . - up_fullcontextrestore
+	.size arm_fullcontextrestore, . - arm_fullcontextrestore

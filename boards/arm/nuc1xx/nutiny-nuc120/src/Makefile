@@ -33,9 +33,8 @@
 #
 ############################################################################
 
--include $(TOPDIR)/Make.defs
+include $(TOPDIR)/Make.defs
 
-ASRCS =
 CSRCS = nuc_boardinitialize.c
 
 ifeq ($(CONFIG_HAVE_CXX),y)

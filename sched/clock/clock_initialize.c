@@ -65,9 +65,9 @@
 
 #ifndef CONFIG_SCHED_TICKLESS
 #ifdef CONFIG_SYSTEM_TIME64
-volatile uint64_t g_system_timer;
+volatile uint64_t g_system_timer = INITIAL_SYSTEM_TIMER_TICKS;
 #else
-volatile uint32_t g_system_timer;
+volatile uint32_t g_system_timer = INITIAL_SYSTEM_TIMER_TICKS;
 #endif
 #endif
 
@@ -170,39 +170,31 @@ int clock_basetime(FAR struct timespec *tp)
  *
  ****************************************************************************/
 
+#ifdef CONFIG_RTC
 static void clock_inittime(void)
 {
   /* (Re-)initialize the time value to match the RTC */
 
 #ifndef CONFIG_CLOCK_TIMEKEEPING
-#ifndef CONFIG_RTC_HIRES
+  struct timespec ts;
+
   clock_basetime(&g_basetime);
-#endif
+  clock_systime_timespec(&ts);
 
-#ifndef CONFIG_SCHED_TICKLESS
-  g_system_timer = INITIAL_SYSTEM_TIMER_TICKS;
-  if (g_system_timer > 0)
+  /* Adjust base time to hide initial timer ticks. */
+
+  g_basetime.tv_sec  -= ts.tv_sec;
+  g_basetime.tv_nsec -= ts.tv_nsec;
+  while (g_basetime.tv_nsec < 0)
     {
-      struct timespec ts;
-
-      (void)clock_ticks2time((sclock_t)g_system_timer, &ts);
-
-      /* Adjust base time to hide initial timer ticks. */
-
-      g_basetime.tv_sec  -= ts.tv_sec;
-      g_basetime.tv_nsec -= ts.tv_nsec;
-      while (g_basetime.tv_nsec < 0)
-        {
-          g_basetime.tv_nsec += NSEC_PER_SEC;
-          g_basetime.tv_sec--;
-        }
+      g_basetime.tv_nsec += NSEC_PER_SEC;
+      g_basetime.tv_sec--;
     }
-#endif /* !CONFIG_SCHED_TICKLESS */
-
 #else
   clock_inittimekeeping();
 #endif
 }
+#endif
 
 /****************************************************************************
  * Public Functions
@@ -218,17 +210,25 @@ static void clock_inittime(void)
 
 void clock_initialize(void)
 {
+#if !defined(CONFIG_SUPPRESS_INTERRUPTS) && \
+    !defined(CONFIG_SUPPRESS_TIMER_INTS) && \
+    !defined(CONFIG_SYSTEMTICK_EXTCLK)
+  /* Initialize the system timer interrupt */
+
+  up_timer_initialize();
+#endif
+
 #if defined(CONFIG_RTC) && !defined(CONFIG_RTC_EXTERNAL)
   /* Initialize the internal RTC hardware.  Initialization of external RTC
    * must be deferred until the system has booted.
    */
 
   up_rtc_initialize();
-#endif
 
   /* Initialize the time value to match the RTC */
 
   clock_inittime();
+#endif
 }
 
 /****************************************************************************
@@ -336,7 +336,7 @@ void clock_resynchronize(FAR struct timespec *rtc_diff)
    * bias value that we need to use to correct the base time.
    */
 
-  (void)clock_systimespec(&bias);
+  clock_systime_timespec(&bias);
 
   /* Add the base time to this.  The base time is the time-of-day
    * setting.  When added to the elapsed time since the time-of-day
@@ -358,7 +358,8 @@ void clock_resynchronize(FAR struct timespec *rtc_diff)
   /* Check if RTC has advanced past system time. */
 
   if (curr_ts.tv_sec > rtc_time.tv_sec ||
-      (curr_ts.tv_sec == rtc_time.tv_sec && curr_ts.tv_nsec >= rtc_time.tv_nsec))
+      (curr_ts.tv_sec == rtc_time.tv_sec &&
+       curr_ts.tv_nsec >= rtc_time.tv_nsec))
     {
       /* Setting system time with RTC now would result time going
        * backwards. Skip resynchronization.

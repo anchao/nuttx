@@ -1,5 +1,5 @@
 /****************************************************************************
- * include/arch/chip/battery_ioctl.h
+ * arch/arm/include/cxd56xx/battery_ioctl.h
  *
  *   Copyright 2018 Sony Semiconductor Solutions Corporation
  *
@@ -35,6 +35,10 @@
 
 #ifndef __ARCH_ARM_INCLUDE_CXD56XX_BATTERY_IOCTL_H
 #define __ARCH_ARM_INCLUDE_CXD56XX_BATTERY_IOCTL_H
+
+/****************************************************************************
+ * Included Files
+ ****************************************************************************/
 
 #include <nuttx/fs/ioctl.h>
 

@@ -42,7 +42,7 @@
 #include <nuttx/board.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "photon.h"
 
 /****************************************************************************
@@ -110,6 +110,6 @@ void board_late_initialize(void)
 {
   /* Perform board initialization */
 
-  (void)stm32_bringup();
+  stm32_bringup();
 }
 #endif /* CONFIG_BOARD_LATE_INITIALIZE */

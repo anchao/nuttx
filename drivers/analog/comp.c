@@ -42,14 +42,12 @@
 #include <sys/types.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <semaphore.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <debug.h>
 #include <poll.h>
 
 #include <nuttx/arch.h>
-#include <nuttx/semaphore.h>
 #include <nuttx/fs/fs.h>
 #include <nuttx/analog/comp.h>
 
@@ -63,7 +61,8 @@ static int     comp_open(FAR struct file *filep);
 static int     comp_close(FAR struct file *filep);
 static ssize_t comp_read(FAR struct file *filep, FAR char *buffer,
                          size_t buflen);
-static int     comp_ioctl(FAR struct file *filep, int cmd, unsigned long arg);
+static int     comp_ioctl(FAR struct file *filep, int cmd,
+                          unsigned long arg);
 static int     comp_poll(FAR struct file *filep, FAR struct pollfd *fds,
                          bool setup);
 static int     comp_notify(FAR struct comp_dev_s *dev, uint8_t val);
@@ -141,23 +140,9 @@ static void comp_pollnotify(FAR struct comp_dev_s *dev,
  * Name: comp_semtake
  ****************************************************************************/
 
-static void comp_semtake(FAR sem_t *sem)
+static int comp_semtake(FAR sem_t *sem)
 {
- int ret;
-
-  do
-    {
-      /* Take the semaphore (perhaps waiting) */
-
-      ret = nxsem_wait(sem);
-
-      /* The only case that an error should occur here is if the wait was
-       * awakened by a signal.
-       */
-
-      DEBUGASSERT(ret == OK || ret == -EINTR);
-    }
-  while (ret == -EINTR);
+  return nxsem_wait_uninterruptible(sem);
 }
 
 /****************************************************************************
@@ -176,7 +161,12 @@ static int comp_poll(FAR struct file *filep, FAR struct pollfd *fds,
 
   /* Are we setting up the poll?  Or tearing it down? */
 
-  comp_semtake(&dev->ad_sem);
+  ret = comp_semtake(&dev->ad_sem);
+  if (ret < 0)
+    {
+      return ret;
+    }
+
   if (setup)
     {
       /* This is a request to set up the poll.  Find an available
@@ -224,7 +214,7 @@ static int comp_poll(FAR struct file *filep, FAR struct pollfd *fds,
       fds->priv            = NULL;
     }
 
- errout:
+errout:
   nxsem_post(&dev->ad_sem);
   return ret;
 }
@@ -271,8 +261,8 @@ static int comp_open(FAR struct file *filep)
   if (ret >= 0)
     {
       /* Increment the count of references to the device.  If this the first
-       * time that the driver has been opened for this device, then initialize
-       * the device.
+       * time that the driver has been opened for this device, then
+       * initialize the device.
        */
 
       tmp = dev->ad_ocount + 1;
@@ -284,7 +274,9 @@ static int comp_open(FAR struct file *filep)
         }
       else
         {
-          /* Check if this is the first time that the driver has been opened. */
+          /* Check if this is the first time that the driver has been
+           * opened.
+           */
 
           if (tmp == 1)
             {
@@ -360,7 +352,8 @@ static int comp_close(FAR struct file *filep)
  * Name: comp_read
  ****************************************************************************/
 
-static ssize_t comp_read(FAR struct file *filep, FAR char *buffer, size_t buflen)
+static ssize_t comp_read(FAR struct file *filep, FAR char *buffer,
+                         size_t buflen)
 {
   FAR struct inode      *inode = filep->f_inode;
   FAR struct comp_dev_s *dev   = inode->i_private;
@@ -389,7 +382,7 @@ static ssize_t comp_read(FAR struct file *filep, FAR char *buffer, size_t buflen
 
 /****************************************************************************
  * Name: comp_ioctl
-****************************************************************************/
+ ****************************************************************************/
 
 static int comp_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
 {
@@ -420,10 +413,10 @@ int comp_register(FAR const char *path, FAR struct comp_dev_s *dev)
   /* Initialize semaphores */
 
   nxsem_init(&dev->ad_sem, 0, 1);
-  (void)nxsem_setprotocol(&dev->ad_sem, SEM_PRIO_NONE);
+  nxsem_set_protocol(&dev->ad_sem, SEM_PRIO_NONE);
 
   nxsem_init(&dev->ad_readsem, 0, 0);
-  (void)nxsem_setprotocol(&dev->ad_readsem, SEM_PRIO_NONE);
+  nxsem_set_protocol(&dev->ad_readsem, SEM_PRIO_NONE);
 
   /* Bind the upper-half callbacks to the lower half COMP driver */
 

@@ -43,7 +43,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <semaphore.h>
 #include <string.h>
 #include <errno.h>
 #include <debug.h>
@@ -62,8 +61,8 @@
 #include <arch/board/board.h>
 
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "hardware/s32k1xx_lpuart.h"
 #include "hardware/s32k1xx_pinmux.h"
@@ -1213,7 +1212,7 @@ static int up_pm_prepare(struct pm_callback_s *cb, int domain,
  * Description:
  *   Performs the low level UART initialization early in debug so that the
  *   serial console will be available during bootup.  This must be called
- *   before up_serialinit.
+ *   before arm_serialinit.
  *
  ****************************************************************************/
 
@@ -1235,7 +1234,7 @@ void s32k1xx_earlyserialinit(void)
 }
 
 /****************************************************************************
- * Name: up_serialinit
+ * Name: arm_serialinit
  *
  * Description:
  *   Register serial console and serial ports.  This assumes
@@ -1243,7 +1242,7 @@ void s32k1xx_earlyserialinit(void)
  *
  ****************************************************************************/
 
-void up_serialinit(void)
+void arm_serialinit(void)
 {
 #ifdef CONFIG_PM
   int ret;
@@ -1256,17 +1255,17 @@ void up_serialinit(void)
 #endif
 
 #ifdef CONSOLE_DEV
-  (void)uart_register("/dev/console", &CONSOLE_DEV);
+  uart_register("/dev/console", &CONSOLE_DEV);
 #endif
 
   /* Register all UARTs */
 
-  (void)uart_register("/dev/ttyS0", &TTYS0_DEV);
+  uart_register("/dev/ttyS0", &TTYS0_DEV);
 #ifdef TTYS1_DEV
-  (void)uart_register("/dev/ttyS1", &TTYS1_DEV);
+  uart_register("/dev/ttyS1", &TTYS1_DEV);
 #endif
 #ifdef TTYS2_DEV
-  (void)uart_register("/dev/ttyS2", &TTYS2_DEV);
+  uart_register("/dev/ttyS2", &TTYS2_DEV);
 #endif
 }
 
@@ -1321,10 +1320,10 @@ int up_putc(int ch)
     {
       /* Add CR */
 
-      up_lowputc('\r');
+      arm_lowputc('\r');
     }
 
-  up_lowputc(ch);
+  arm_lowputc(ch);
 #endif
 
   return ch;

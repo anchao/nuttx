@@ -54,6 +54,7 @@
 #include <nuttx/irq.h>
 #include <nuttx/arch.h>
 #include <nuttx/wqueue.h>
+#include <nuttx/signal.h>
 #include <nuttx/net/mii.h>
 #include <nuttx/net/netconfig.h>
 #include <nuttx/net/arp.h>
@@ -63,7 +64,7 @@
 #  include <nuttx/net/pkt.h>
 #endif
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "chip.h"
 #include "hardware/lpc17_40_syscon.h"
 #include "lpc17_40_gpio.h"
@@ -107,14 +108,15 @@
  * hardware!
  */
 
-#if !defined(CONFIG_LPC17_40_NINTERFACES) || CONFIG_LPC17_40_NINTERFACES > LPC17_40_NETHCONTROLLERS
+#if !defined(CONFIG_LPC17_40_NINTERFACES) || \
+    CONFIG_LPC17_40_NINTERFACES > LPC17_40_NETHCONTROLLERS
 #  undef CONFIG_LPC17_40_NINTERFACES
 #  define CONFIG_LPC17_40_NINTERFACES LPC17_40_NETHCONTROLLERS
 #endif
 
 /* The logic here has a few hooks for support for multiple interfaces, but
- * that capability is not yet in place (and I won't worry about it until I get
- * the first multi-interface LPC17xx/LPC40xx).
+ * that capability is not yet in place (and I won't worry about it until I
+ * get the first multi-interface LPC17xx/LPC40xx).
  */
 
 #if CONFIG_LPC17_40_NINTERFACES > 1
@@ -131,7 +133,7 @@
 
 #define PKTBUF_SIZE (MAX_NETDEV_PKTSIZE + CONFIG_NET_GUARDSIZE)
 
-/* Debug Configuration *****************************************************/
+/* Debug Configuration ******************************************************/
 
 /* Register debug -- can only happen of CONFIG_DEBUG_NET_INFO is selected */
 
@@ -170,7 +172,7 @@
 #define ETH_TXINTS           (ETH_INT_TXUNR | ETH_INT_TXERR | \
                               ETH_INT_TXFIN | ETH_INT_TXDONE)
 
-/* Misc. Helpers ***********************************************************/
+/* Misc. Helpers ************************************************************/
 
 /* This is a helper pointer for accessing the contents of the Ethernet header */
 
@@ -435,16 +437,14 @@ static inline int lpc17_40_phyreset(uint8_t phyaddr);
 static inline int lpc17_40_phyautoneg(uint8_t phyaddr);
 #  endif
 static int lpc17_40_phymode(uint8_t phyaddr, uint8_t mode);
-static inline int lpc17_40_phyinit(struct lpc17_40_driver_s *priv);
-#else
-#  define lpc17_40_phyinit(priv)
 #endif
+static inline int lpc17_40_phyinit(struct lpc17_40_driver_s *priv);
 
 /* EMAC Initialization functions */
 
 static inline void lpc17_40_txdescinit(struct lpc17_40_driver_s *priv);
 static inline void lpc17_40_rxdescinit(struct lpc17_40_driver_s *priv);
-static void lpc17_40_macmode(uint8_t mode);
+static inline void lpc17_40_macmode(uint8_t mode);
 static void lpc17_40_ethreset(struct lpc17_40_driver_s *priv);
 
 /****************************************************************************
@@ -658,8 +658,8 @@ static int lpc17_40_transmit(struct lpc17_40_driver_s *priv)
 
   prodidx = lpc17_40_getreg(LPC17_40_ETH_TXPRODIDX) & ETH_TXPRODIDX_MASK;
 
-  /* Get the packet address from the descriptor and set the descriptor control
-   * fields.
+  /* Get the packet address from the descriptor and set the descriptor
+   * control fields.
    */
 
   txdesc   = (uint32_t *)(LPC17_40_TXDESC_BASE + (prodidx << 3));
@@ -699,8 +699,8 @@ static int lpc17_40_transmit(struct lpc17_40_driver_s *priv)
 
   /* Setup the TX timeout watchdog (perhaps restarting the timer) */
 
-  (void)wd_start(priv->lp_txtimeout, LPC17_40_TXTIMEOUT,
-                 lpc17_40_txtimeout_expiry, 1, (uint32_t)priv);
+  wd_start(priv->lp_txtimeout, LPC17_40_TXTIMEOUT,
+           lpc17_40_txtimeout_expiry, 1, (uint32_t)priv);
   return OK;
 }
 
@@ -731,7 +731,8 @@ static int lpc17_40_transmit(struct lpc17_40_driver_s *priv)
 
 static int lpc17_40_txpoll(struct net_driver_s *dev)
 {
-  struct lpc17_40_driver_s *priv = (struct lpc17_40_driver_s *)dev->d_private;
+  struct lpc17_40_driver_s *priv =
+    (struct lpc17_40_driver_s *)dev->d_private;
   int ret = OK;
 
   /* If the polling resulted in data that should be sent out on the network,
@@ -778,8 +779,8 @@ static int lpc17_40_txpoll(struct net_driver_s *dev)
         }
     }
 
-  /* If zero is returned, the polling will continue until all connections have
-   * been examined.
+  /* If zero is returned, the polling will continue until all connections
+   * have been examined.
    */
 
   return ret;
@@ -892,8 +893,8 @@ static void lpc17_40_rxdone_work(FAR void *arg)
       rxstat   = (uint32_t *)(LPC17_40_RXSTAT_BASE + (considx << 3));
       pktlen   = (*rxstat & RXSTAT_INFO_RXSIZE_MASK) - 3;
 
-      /* Check for errors.  NOTE:  The DMA engine reports bogus length errors,
-       * making this a pretty useless (as well as annoying) check.
+      /* Check for errors.  NOTE:  The DMA engine reports bogus length
+       * errors, making this a pretty useless (as well as annoying) check.
        */
 
       if ((*rxstat & RXSTAT_INFO_ERROR) != 0)
@@ -909,7 +910,7 @@ static void lpc17_40_rxdone_work(FAR void *arg)
        * imply that the packet is too big.
        */
 
-      /* else */ if (pktlen > CONFIG_NET_ETH_PKTSIZE + CONFIG_NET_GUARDSIZE)
+      if (pktlen > CONFIG_NET_ETH_PKTSIZE + CONFIG_NET_GUARDSIZE)
         {
           nwarn("WARNING: Too big. considx: %08x prodidx: %08x pktlen: %d "
                 "rxstat: %08x\n",
@@ -1012,7 +1013,7 @@ static void lpc17_40_rxdone_work(FAR void *arg)
 #ifdef CONFIG_NET_IPv6
           if (BUF->type == HTONS(ETHTYPE_IP6))
             {
-              ninfo("Iv6 frame\n");
+              ninfo("IPv6 frame\n");
               NETDEV_RXIPV6(&priv->lp_dev);
 
               /* Give the IPv6 packet to the network layer */
@@ -1130,8 +1131,9 @@ static void lpc17_40_txdone_work(FAR void *arg)
   DEBUGASSERT(priv);
   DEBUGASSERT(lpc17_40_txdesc(priv) == OK);
 
-  /* Check if there is a pending Tx transfer that was scheduled by Rx handling
-   * while the Tx logic was busy.  If so, processing that pending Tx now.
+  /* Check if there is a pending Tx transfer that was scheduled by Rx
+   * handling while the Tx logic was busy.  If so, processing that pending
+   * Tx now.
    */
 
   net_lock();
@@ -1151,7 +1153,7 @@ static void lpc17_40_txdone_work(FAR void *arg)
 
   else
     {
-      (void)devif_poll(&priv->lp_dev, lpc17_40_txpoll);
+      devif_poll(&priv->lp_dev, lpc17_40_txpoll);
     }
 
   net_unlock();
@@ -1233,7 +1235,7 @@ static int lpc17_40_interrupt(int irq, void *context, FAR void *arg)
 
           /* ifup() will reset the EMAC and bring it back up */
 
-           (void)lpc17_40_ifup(&priv->lp_dev);
+           lpc17_40_ifup(&priv->lp_dev);
         }
       else
         {
@@ -1266,7 +1268,8 @@ static int lpc17_40_interrupt(int irq, void *context, FAR void *arg)
            * the descriptor was set.
            */
 
-          if ((status & ETH_INT_RXFIN) != 0 || (status & ETH_INT_RXDONE) != 0)
+          if ((status & ETH_INT_RXFIN) != 0 ||
+              (status & ETH_INT_RXDONE) != 0)
             {
               /* We have received at least one new incoming packet.
                * Disable further TX interrupts for now.  TX interrupts will
@@ -1332,8 +1335,8 @@ static int lpc17_40_interrupt(int irq, void *context, FAR void *arg)
               priv->lp_inten &= ~ETH_TXINTS;
               lpc17_40_putreg(priv->lp_inten, LPC17_40_ETH_INTEN);
 
-              /* Cancel any pending TX done work (to prevent overruns and also
-               * to avoid race conditions with the TX timeout work)
+              /* Cancel any pending TX done work (to prevent overruns and
+               * also to avoid race conditions with the TX timeout work)
                */
 
               work_cancel(ETHWORK, &priv->lp_txwork);
@@ -1392,11 +1395,11 @@ static void lpc17_40_txtimeout_work(FAR void *arg)
        * it back up.
        */
 
-      (void)lpc17_40_ifup(&priv->lp_dev);
+      lpc17_40_ifup(&priv->lp_dev);
 
       /* Then poll the network layer for new XMIT data */
 
-      (void)devif_poll(&priv->lp_dev, lpc17_40_txpoll);
+      devif_poll(&priv->lp_dev, lpc17_40_txpoll);
     }
 
   net_unlock();
@@ -1440,7 +1443,8 @@ static void lpc17_40_txtimeout_expiry(int argc, uint32_t arg, ...)
     {
       /* Schedule to perform the interrupt processing on the worker thread. */
 
-      work_queue(ETHWORK, &priv->lp_txwork, lpc17_40_txtimeout_work, priv, 0);
+      work_queue(ETHWORK, &priv->lp_txwork, lpc17_40_txtimeout_work,
+                 priv, 0);
     }
 }
 
@@ -1479,7 +1483,7 @@ static void lpc17_40_poll_work(FAR void *arg)
        * transmit in progress, we will missing TCP time state updates?
        */
 
-      (void)devif_timer(&priv->lp_dev, lpc17_40_txpoll);
+      devif_timer(&priv->lp_dev, LPC17_40_WDDELAY, lpc17_40_txpoll);
     }
 
   /* Simulate a fake receive to relaunch the data exchanges when a receive
@@ -1499,8 +1503,8 @@ static void lpc17_40_poll_work(FAR void *arg)
 
   /* Setup the watchdog poll timer again */
 
-  (void)wd_start(priv->lp_txpoll, LPC17_40_WDDELAY, lpc17_40_poll_expiry,
-                1, priv);
+  wd_start(priv->lp_txpoll, LPC17_40_WDDELAY, lpc17_40_poll_expiry,
+           1, priv);
   net_unlock();
 }
 
@@ -1583,7 +1587,7 @@ static void lpc17_40_ipv6multicast(FAR struct lpc17_40_driver_s *priv)
   ninfo("IPv6 Multicast: %02x:%02x:%02x:%02x:%02x:%02x\n",
         mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
-  (void)lpc17_40_addmac(dev, mac);
+  lpc17_40_addmac(dev, mac);
 
 #ifdef CONFIG_NET_ICMPv6_AUTOCONF
   /* Add the IPv6 all link-local nodes Ethernet address.  This is the
@@ -1591,7 +1595,7 @@ static void lpc17_40_ipv6multicast(FAR struct lpc17_40_driver_s *priv)
    * packets.
    */
 
-  (void)lpc17_40_addmac(dev, g_ipv6_ethallnodes.ether_addr_octet);
+  lpc17_40_addmac(dev, g_ipv6_ethallnodes.ether_addr_octet);
 
 #endif /* CONFIG_NET_ICMPv6_AUTOCONF */
 #ifdef CONFIG_NET_ICMPv6_ROUTER
@@ -1600,7 +1604,7 @@ static void lpc17_40_ipv6multicast(FAR struct lpc17_40_driver_s *priv)
    * packets.
    */
 
-  (void)lpc17_40_addmac(dev, g_ipv6_ethallrouters.ether_addr_octet);
+  lpc17_40_addmac(dev, g_ipv6_ethallrouters.ether_addr_octet);
 
 #endif /* CONFIG_NET_ICMPv6_ROUTER */
 }
@@ -1625,7 +1629,8 @@ static void lpc17_40_ipv6multicast(FAR struct lpc17_40_driver_s *priv)
 
 static int lpc17_40_ifup(struct net_driver_s *dev)
 {
-  struct lpc17_40_driver_s *priv = (struct lpc17_40_driver_s *)dev->d_private;
+  struct lpc17_40_driver_s *priv =
+    (struct lpc17_40_driver_s *)dev->d_private;
   uint32_t regval;
   int ret;
 
@@ -1751,8 +1756,8 @@ static int lpc17_40_ifup(struct net_driver_s *dev)
 
   /* Set and activate a timer process */
 
-  (void)wd_start(priv->lp_txpoll, LPC17_40_WDDELAY, lpc17_40_poll_expiry, 1,
-                (uint32_t)priv);
+  wd_start(priv->lp_txpoll, LPC17_40_WDDELAY, lpc17_40_poll_expiry, 1,
+           (uint32_t)priv);
 
   /* Finally, make the interface up and enable the Ethernet interrupt at
    * the interrupt controller
@@ -1785,7 +1790,8 @@ static int lpc17_40_ifup(struct net_driver_s *dev)
 
 static int lpc17_40_ifdown(struct net_driver_s *dev)
 {
-  struct lpc17_40_driver_s *priv = (struct lpc17_40_driver_s *)dev->d_private;
+  struct lpc17_40_driver_s *priv =
+    (struct lpc17_40_driver_s *)dev->d_private;
   irqstate_t flags;
 
   /* Disable the Ethernet interrupt */
@@ -1838,7 +1844,7 @@ static void lpc17_40_txavail_work(FAR void *arg)
         {
           /* If so, then poll the network layer for new XMIT data */
 
-          (void)devif_poll(&priv->lp_dev, lpc17_40_txpoll);
+          devif_poll(&priv->lp_dev, lpc17_40_txpoll);
         }
     }
 
@@ -1879,7 +1885,8 @@ static int lpc17_40_txavail(struct net_driver_s *dev)
     {
       /* Schedule to serialize the poll on the worker thread. */
 
-      work_queue(ETHWORK, &priv->lp_pollwork, lpc17_40_txavail_work, priv, 0);
+      work_queue(ETHWORK, &priv->lp_pollwork, lpc17_40_txavail_work,
+                 priv, 0);
     }
 
   return OK;
@@ -2013,8 +2020,8 @@ static int lpc17_40_addmac(struct net_driver_s *dev, const uint8_t *mac)
    * calculated from the 6 byte MAC address.  Bits [28:23] out of the 32-bit
    * CRC result are taken to form the hash. The 6-bit hash is used to access
    * the hash table: it is used as an index in the 64-bit HashFilter register
-   * that has been programmed with accept values. If the selected accept value
-   * is 1, the frame is accepted.
+   * that has been programmed with accept values. If the selected accept
+   * value is 1, the frame is accepted.
    */
 
   crc = lpc17_40_calcethcrc(mac, 6);
@@ -2089,8 +2096,8 @@ static int lpc17_40_rmmac(struct net_driver_s *dev, const uint8_t *mac)
    * calculated from the 6 byte MAC address.  Bits [28:23] out of the 32-bit
    * CRC result are taken to form the hash. The 6-bit hash is used to access
    * the hash table: it is used as an index in the 64-bit HashFilter register
-   * that has been programmed with accept values. If the selected accept value
-   * is 1, the frame is accepted.
+   * that has been programmed with accept values. If the selected accept
+   * value is 1, the frame is accepted.
    */
 
   crc = lpc17_40_calcethcrc(mac, 6);
@@ -2159,7 +2166,8 @@ static int lpc17_40_eth_ioctl(struct net_driver_s *dev, int cmd,
                            unsigned long arg)
 {
 #ifdef CONFIG_NETDEV_PHY_IOCTL
-  struct lpc17_40_driver_s *priv = (struct lpc17_40_driver_s *)dev->d_private;
+  struct lpc17_40_driver_s *priv =
+    (struct lpc17_40_driver_s *)dev->d_private;
 #endif
   int ret;
 
@@ -2470,7 +2478,7 @@ static inline int lpc17_40_phyreset(uint8_t phyaddr)
  *   None
  *
  * Assumptions:
- *   The adverisement regiser has already been configured.
+ *   The adverisement register has already been configured.
  *
  ****************************************************************************/
 
@@ -2670,6 +2678,7 @@ static inline int lpc17_40_phyinit(struct lpc17_40_driver_s *priv)
       nerr("ERROR: No PHY detected\n");
       return -ENODEV;
     }
+
   ninfo("phyaddr: %d\n", phyaddr);
 
   /* Save the discovered PHY device address */
@@ -2683,6 +2692,7 @@ static inline int lpc17_40_phyinit(struct lpc17_40_driver_s *priv)
     {
       return ret;
     }
+
   lpc17_40_showmii(phyaddr, "After reset");
 
   /* Check for preamble suppression support */
@@ -2741,7 +2751,7 @@ static inline int lpc17_40_phyinit(struct lpc17_40_driver_s *priv)
 
   while ((lpc17_40_phyread(phyaddr, MII_DP83848C_STS) & 0x0001) == 0)
     {
-      usleep(40000);
+      nxsig_usleep(40000);
     }
 #endif
 
@@ -2806,6 +2816,7 @@ static inline int lpc17_40_phyinit(struct lpc17_40_driver_s *priv)
         nerr("ERROR: Unrecognized mode: %04x\n", phyreg);
         return -ENODEV;
     }
+
 #elif defined(CONFIG_ETH0_PHY_KSZ8081)
   phyreg = lpc17_40_phyread(phyaddr, MII_KSZ8081_PHYCTRL1);
 
@@ -2833,6 +2844,7 @@ static inline int lpc17_40_phyinit(struct lpc17_40_driver_s *priv)
         nerr("ERROR: Unrecognized mode: %04x\n", phyreg);
         return -ENODEV;
     }
+
 #elif defined(CONFIG_ETH0_PHY_DP83848C)
   phyreg = lpc17_40_phyread(phyaddr, MII_DP83848C_STS);
 
@@ -2935,6 +2947,7 @@ static inline int lpc17_40_phyinit(struct lpc17_40_driver_s *priv)
   lpc17_40_showmii(phyaddr, "After final configuration");
   return ret;
 }
+
 #else
 static inline int lpc17_40_phyinit(struct lpc17_40_driver_s *priv)
 {
@@ -3073,7 +3086,7 @@ static inline void lpc17_40_rxdescinit(struct lpc17_40_driver_s *priv)
  ****************************************************************************/
 
 #ifdef LPC17_40_HAVE_PHY
-static void lpc17_40_macmode(uint8_t mode)
+static inline void lpc17_40_macmode(uint8_t mode)
 {
   uint32_t regval;
 
@@ -3132,8 +3145,14 @@ static void lpc17_40_macmode(uint8_t mode)
     {
       regval &= ~ETH_SUPP_SPEED;
     }
+
   lpc17_40_putreg(regval, LPC17_40_ETH_SUPP);
 #endif
+}
+
+#else
+static inline void lpc17_40_macmode(uint8_t mode)
+{
 }
 #endif
 
@@ -3257,7 +3276,7 @@ static inline int lpc17_40_ethinitialize(int intf)
 
   for (i = 0; i < GPIO_NENET_PINS; i++)
     {
-      (void)lpc17_40_configgpio(g_enetpins[i]);
+      lpc17_40_configgpio(g_enetpins[i]);
     }
 
   lpc17_40_showpins();
@@ -3316,12 +3335,12 @@ static inline int lpc17_40_ethinitialize(int intf)
 
   /* Register the device with the OS so that socket IOCTLs can be performed */
 
-  (void)netdev_register(&priv->lp_dev, NET_LL_ETHERNET);
+  netdev_register(&priv->lp_dev, NET_LL_ETHERNET);
   return OK;
 }
 
 /****************************************************************************
- * Name: up_netinitialize
+ * Name: arm_netinitialize
  *
  * Description:
  *   Initialize the first network interface.  If there are more than one
@@ -3332,9 +3351,9 @@ static inline int lpc17_40_ethinitialize(int intf)
  ****************************************************************************/
 
 #if CONFIG_LPC17_40_NINTERFACES == 1 && !defined(CONFIG_NETDEV_LATEINIT)
-void up_netinitialize(void)
+void arm_netinitialize(void)
 {
-  (void)lpc17_40_ethinitialize(0);
+  lpc17_40_ethinitialize(0);
 }
 #endif
 #endif /* LPC17_40_NETHCONTROLLERS > 0 */

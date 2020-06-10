@@ -57,8 +57,8 @@
 #include <nuttx/lcd/lcd.h>
 #include <nuttx/lcd/st7567.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "stm32_gpio.h"
 #include "stm32_spi.h"
@@ -129,11 +129,11 @@ FAR struct lcd_dev_s *board_lcd_getdev(int lcddev)
 
       /* And turn the LCD on (CONFIG_LCD_MAXPOWER should be 1) */
 
-      (void)g_lcddev->setpower(g_lcddev, CONFIG_LCD_MAXPOWER);
+      g_lcddev->setpower(g_lcddev, CONFIG_LCD_MAXPOWER);
 
       /* Set contrast to right value, otherwise background too dark */
 
-      (void)g_lcddev->setcontrast(g_lcddev, CONFIG_LCD_CONTRAST);
+      g_lcddev->setcontrast(g_lcddev, CONFIG_LCD_CONTRAST);
 
       return g_lcddev;
     }

@@ -52,11 +52,6 @@
 
 /* Configuration ************************************************************/
 
-/* Define what timer and channel to use as XEN1210 CLK */
-
-#define XEN1210_PWMTIMER   1
-#define XEN1210_PWMCHANNEL 1
-
 /* How many SPI modules does this chip support? */
 
 #if STM32_NSPI < 1
@@ -111,8 +106,8 @@
 #  undef HAVE_USBMONITOR
 #endif
 
-/* Can't support MMC/SD features if mountpoints are disabled or if SDIO support
- * is not enabled.
+/* Can't support MMC/SD features if mountpoints are disabled or if SDIO
+ * support is not enabled.
  */
 
 #if defined(CONFIG_DISABLE_MOUNTPOINT) || !defined(CONFIG_STM32_SDIO)
@@ -195,7 +190,7 @@
 #  endif
 #endif
 
-/* Check if we have the prequisites for an HCI UART */
+/* Check if we have the prerequisites for an HCI UART */
 
 #if !defined(CONFIG_STM32_HCIUART) || !defined(CONFIG_BLUETOOTH_UART)
 #  undef HAVE_HCIUART
@@ -236,16 +231,19 @@
 
 #define GPIO_BTN_USER   (GPIO_INPUT|GPIO_FLOAT|GPIO_EXTI|GPIO_PORTA|GPIO_PIN0)
 
-/* ZERO CROSS pin definition */
-
-#define GPIO_ZEROCROSS  (GPIO_INPUT|GPIO_FLOAT|GPIO_EXTI|GPIO_PORTD|GPIO_PIN0)
-
 #define GPIO_CS43L22_RESET  (GPIO_OUTPUT|GPIO_SPEED_50MHz|GPIO_PORTD|GPIO_PIN4)
+
+/* LoRa SX127x */
+
+#define GPIO_SX127X_DIO0    (GPIO_INPUT|GPIO_FLOAT|GPIO_EXTI|GPIO_PORTD|GPIO_PIN0)
+
+#define GPIO_SX127X_RESET   (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_OUTPUT_CLEAR|\
+                             GPIO_SPEED_50MHz|GPIO_PORTD|GPIO_PIN4)
 
 /* PWM
  *
- * The STM32F4 Discovery has no real on-board PWM devices, but the board can be
- * configured to output a pulse train using TIM4 CH2 on PD13.
+ * The STM32F4 Discovery has no real on-board PWM devices, but the board can
+ * be configured to output a pulse train using TIM4 CH2 on PD13.
  */
 
 #define STM32F4DISCOVERY_PWMTIMER   4
@@ -262,19 +260,23 @@
 #define GPIO_MAX6675_CS   (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|\
                            GPIO_OUTPUT_SET|GPIO_PORTD|GPIO_PIN8)
 
+#define GPIO_SX127X_CS    (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|\
+                           GPIO_OUTPUT_SET|GPIO_PORTD|GPIO_PIN8)
+
 #define GPIO_MAX7219_CS   (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|\
                            GPIO_OUTPUT_SET|GPIO_PORTC|GPIO_PIN3)
 
 #define GPIO_GS2200M_CS   (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|\
                            GPIO_OUTPUT_SET|GPIO_PORTE|GPIO_PIN5)
 
-/* XEN1210 magnetic sensor */
+#define GPIO_ENC28J60_CS    (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|\
+                             GPIO_OUTPUT_SET|GPIO_PORTA|GPIO_PIN4)
 
-#define GPIO_XEN1210_INT  (GPIO_INPUT|GPIO_FLOAT|GPIO_EXTI|\
-                           GPIO_OPENDRAIN|GPIO_PORTA|GPIO_PIN5)
+#define GPIO_ENC28J60_RESET (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|\
+                             GPIO_OUTPUT_CLEAR|GPIO_PORTE|GPIO_PIN1)
 
-#define GPIO_CS_XEN1210   (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|\
-                           GPIO_OUTPUT_SET|GPIO_PORTA|GPIO_PIN4)
+#define GPIO_ENC28J60_INTR  (GPIO_INPUT|GPIO_FLOAT|GPIO_EXTI|\
+                             GPIO_OPENDRAIN|GPIO_PORTE|GPIO_PIN4)
 
 /* USB OTG FS
  *
@@ -310,8 +312,8 @@
  * 7  A0|D/C     | 9 A0|D/C  | P2 PB8 (Arbitrary selection)
  * 9  LED+ (N/C) | -----     | -----
  * 2  5V Vcc     | 1,2 Vcc   | P2 5V
- * 4  DI         | 18 D1/SI  | P1 PA7 (GPIO_SPI1_MOSI == GPIO_SPI1_MOSI_1 (1))
- * 6  SCLK       | 19 D0/SCL | P1 PA5 (GPIO_SPI1_SCK == GPIO_SPI1_SCK_1 (1))
+ * 4  DI         | 18 D1/SI  | P1 PA7 (GPIO_SPI1_MOSI == GPIO_SPI1_MOSI_1(1))
+ * 6  SCLK       | 19 D0/SCL | P1 PA5 (GPIO_SPI1_SCK == GPIO_SPI1_SCK_1(1))
  * 8  LED- (N/C) | -----     | ------
  * 10 GND        | 20 GND    | P2 GND
  * --------------+-----------+----------------------------------------------
@@ -397,7 +399,7 @@
 #ifndef __ASSEMBLY__
 
 /****************************************************************************
- * Public Functions
+ * Public Function Prototypes
  ****************************************************************************/
 
 /****************************************************************************
@@ -452,29 +454,14 @@ int stm32_bh1750initialize(FAR const char *devpath);
 #endif
 
 /****************************************************************************
- * Name: stm32_bmp180initialize
+ * Name: stm32_lpwaninitialize
  *
  * Description:
- *   Called to configure an I2C and to register BMP180 for the
- *   stm32f4discovery board.
- *
+ *   Initialize SX127X LPWAN interaface.
  ****************************************************************************/
 
-#ifdef CONFIG_SENSORS_BMP180
-int stm32_bmp180initialize(FAR const char *devpath);
-#endif
-
-/****************************************************************************
- * Name: stm32_lis3dshinitialize
- *
- * Description:
- *   Called to configure SPI 1, and to register LIS3DSH and its external
- *   interrupt for the stm32f4discovery board.
- *
- ****************************************************************************/
-
-#ifdef CONFIG_STM32F4DISCO_LIS3DSH
-int stm32_lis3dshinitialize(FAR const char *devpath);
+#ifdef CONFIG_LPWAN_SX127X
+int stm32_lpwaninitialize(void);
 #endif
 
 /****************************************************************************
@@ -674,18 +661,6 @@ void weak_function stm32_netinitialize(void);
 #endif
 
 /****************************************************************************
- * Name: stm32_qencoder_initialize
- *
- * Description:
- *   Initialize and register a qencoder
- *
- ****************************************************************************/
-
-#ifdef CONFIG_SENSORS_QENCODER
-int stm32_qencoder_initialize(FAR const char *devpath, int timer);
-#endif
-
-/****************************************************************************
  * Name: stm32_zerocross_initialize
  *
  * Description:
@@ -722,8 +697,8 @@ int stm32_max31855initialize(FAR const char *devpath, int bus,
  * Name: stm32_mlx90614init
  *
  * Description:
- *   Called to configure an I2C and to register MLX90614 for the stm32f103-minimum
- *   board.
+ *   Called to configure an I2C and to register MLX90614 for the
+ *   stm32f103-minimum board.
  *
  ****************************************************************************/
 

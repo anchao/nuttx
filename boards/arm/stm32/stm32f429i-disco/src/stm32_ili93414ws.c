@@ -24,7 +24,7 @@
  *    distribution.
  * 3. Neither the name NuttX nor the names of its contributors may be
  *    used to endorse or promote products derived from this software
- *    without specific prior writen permission.
+ *    without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -141,7 +141,7 @@
 
 struct ili93414ws_lcd_s
 {
-  /* Publically visible device structure */
+  /* Publicly visible device structure */
 
   struct ili9341_lcd_s dev;
 
@@ -162,7 +162,7 @@ struct ili93414ws_lcd_s
 #ifndef CONFIG_STM32F429I_DISCO_ILI9341_SPIBITS16
   /* Marks current display operation mode (gram or command/parameter)
    * If 16-bit spi mode is enabled for pixel data operation, the flag is not
-   * neccessary. The pixel data operation mode can then be recognized by the
+   * necessary. The pixel data operation mode can then be recognized by the
    * DFF flag in the cr1 register.
    */
 
@@ -312,7 +312,7 @@ static void stm32_ili93414ws_spirecvmode(void)
    * broken transfer.
    */
 
-  (void)getreg16(ILI93414WS_SPI_DR);
+  getreg16(ILI93414WS_SPI_DR);
 }
 
 /****************************************************************************
@@ -486,7 +486,7 @@ static int stm32_ili93414ws_sendblock(FAR struct ili93414ws_lcd_s *lcd,
     }
 
   /* Wait until transmit is not busy after the last word is transmitted, marked
-   * by the BSY flag in the cr1 register. This is neccessary if entering in halt
+   * by the BSY flag in the cr1 register. This is necessary if entering in halt
    * mode or disable the spi periphery.
    */
 
@@ -542,7 +542,7 @@ static uint16_t stm32_ili93414ws_recvword(void)
   /* Enable spi device followed by disable the spi device.
    *
    * Ensure that the spi is disabled within 8 or 16 spi clock cycles depending
-   * on the configured spi bit mode. This is neccessary to prevent that the next
+   * on the configured spi bit mode. This is necessary to prevent that the next
    * data word is transmitted by the slave before the RX buffer is cleared.
    * Otherwise the RX buffer will be overwritten.
    *
@@ -565,7 +565,7 @@ static uint16_t stm32_ili93414ws_recvword(void)
   /* Waits until the RX buffer is filled with the received data word signalized
    * by the spi hardware through the RXNE flag.
    * A busy loop is preferred against interrupt driven receiving method here
-   * because this happend fairly often. Also we have to ensure to avoid a big
+   * because this happened fairly often. Also we have to ensure to avoid a big
    * lock if the lcd driver doesn't send data anymore.
    * A latency of CPU clock / SPI clock * 16 SPI clocks should be enough here.
    */
@@ -692,7 +692,7 @@ static int stm32_ili93414ws_recvblock(FAR struct ili93414ws_lcd_s *lcd,
 
       /* Dummy read to discard the first 8 bit. */
 
-      (void)stm32_ili93414ws_recvword();
+      stm32_ili93414ws_recvword();
 
       while (nwords--)
         {
@@ -817,7 +817,7 @@ static void stm32_ili93414ws_spiconfig(FAR struct ili9341_lcd_s *lcd)
 
 #ifdef ILI93414WS_SPI
   /* Backup cr1 and cr2 register to be sure they will be usable
-   * by default spi interface. Disable spi device here is neccessary at the time
+   * by default spi interface. Disable spi device here is necessary at the time
    * restoring the register during deselection.
    */
 
@@ -864,7 +864,7 @@ static inline void stm32_ili93414ws_cmddata(
 static inline void stm32_ili93414ws_cmddata(
                       FAR struct ili9341_lcd_s *lcd, bool cmd)
 {
-  (void)stm32_gpiowrite(GPIO_LCD_DC, !cmd);
+  stm32_gpiowrite(GPIO_LCD_DC, !cmd);
 }
 #endif
 
@@ -926,7 +926,7 @@ static void stm32_ili93414ws_select(FAR struct ili9341_lcd_s *lcd)
 {
   /* We own the spi bus, so just select the chip */
 
-  (void)stm32_gpiowrite(GPIO_CS_LCD, false);
+  stm32_gpiowrite(GPIO_CS_LCD, false);
 
   /* Disable spi */
 
@@ -956,7 +956,7 @@ static void stm32_ili93414ws_deselect(FAR struct ili9341_lcd_s *lcd)
   flags = enter_critical_section();
 
   /* Restore cr1 and cr2 register to be sure they will be usable
-   * by default spi interface structure. (This is an important workarround as
+   * by default spi interface structure. (This is an important workaround as
    * long as half duplex mode is not supported by the spi interface in
    * arch/arm/src/stm32/stm32_spi.c).
    */
@@ -980,7 +980,7 @@ static void stm32_ili93414ws_deselect(FAR struct ili9341_lcd_s *lcd)
 #else
 static void stm32_ili93414ws_deselect(FAR struct ili9341_lcd_s *lcd)
 {
-  (void)stm32_gpiowrite(GPIO_CS_LCD, true);
+  stm32_gpiowrite(GPIO_CS_LCD, true);
 }
 #endif
 
@@ -1200,11 +1200,11 @@ FAR struct ili9341_lcd_s *stm32_ili93414ws_initialize(void)
 
   /* Configure gpios */
 
-  (void)stm32_configgpio(GPIO_CS_LCD);     /* LCD chip select */
-  (void)stm32_configgpio(GPIO_LCD_DC);     /* LCD Data/Command select */
-  (void)stm32_configgpio(GPIO_LCD_ENABLE); /* LCD enable select */
-  (void)stm32_configgpio(GPIO_SPI5_SCK);   /* SPI clock */
-  (void)stm32_configgpio(GPIO_SPI5_MOSI);  /* SPI MOSI */
+  stm32_configgpio(GPIO_CS_LCD);     /* LCD chip select */
+  stm32_configgpio(GPIO_LCD_DC);     /* LCD Data/Command select */
+  stm32_configgpio(GPIO_LCD_ENABLE); /* LCD enable select */
+  stm32_configgpio(GPIO_SPI5_SCK);   /* SPI clock */
+  stm32_configgpio(GPIO_SPI5_MOSI);  /* SPI MOSI */
 
   /* Initialize structure */
 

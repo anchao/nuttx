@@ -49,7 +49,7 @@
 #include <nuttx/usb/usbdev.h>
 #include <nuttx/usb/usbdev_trace.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "stm32.h"
 #include "stm32f3discovery.h"
 
@@ -89,7 +89,7 @@
 
 void stm32_usbinitialize(void)
 {
-  /* Does the STM32 F3 hava an external soft pull-up? */
+  /* Does the STM32 F3 have an external soft pull-up? */
 }
 
 /****************************************************************************

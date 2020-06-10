@@ -51,7 +51,8 @@
  *              24xx128    16384     64   2     1010AAA
  *              24xx256    32768     64   2     1010AAA
  *              24xx512    65536    128   2     1010AAA
- *              24xx1025  131072    128   2     1010PAA Special case: address bit is shifted.
+ *              24xx1025  131072    128   2     1010PAA Special case: address
+ *                                                      bit is shifted.
  *              24xx1026  131072    128   2     1010AAP
  *
  * Atmel
@@ -73,7 +74,8 @@
  *              M24C04       512    16    1     1010AAP
  *              M24C08      1024    16    1     1010APP
  *              M24C16      2048    16    1     1010PPP
- *              M24C32      4096    32    2     1010AAA ID pages supported as a separate device
+ *              M24C32      4096    32    2     1010AAA ID pages supported
+ *                                                      as a separate device
  *              M24C64      8192    32    2     1010AAA
  *              M24128     16384    64    2     1010AAA
  *              M24256     32768    64    2     1010AAA
@@ -182,27 +184,62 @@ static const struct ee24xx_geom_s g_ee24xx_devices[] =
 {
   /* Microchip devices */
 
-/* by pg al ab sp      device     bytes page  alen */
-  { 0, 1, 1, 0, 1}, /* 24xx00        16    1     1 Ridiculously small device */
-  { 0, 0, 1, 0, 0}, /* 24xx01       128    8     1 */
-  { 1, 0, 1, 0, 0}, /* 24xx02       256    8     1 */
-  { 2, 1, 1, 1, 0}, /* 24xx04       512   16     1 */
-  { 3, 1, 1, 2, 0}, /* 24xx08      1024   16     1 */
-  { 4, 1, 1, 3, 0}, /* 24xx16      2048   16     1 */
-  { 5, 2, 2, 0, 0}, /* 24xx32      4096   32     2 */
-  { 6, 2, 2, 0, 0}, /* 24xx64      8192   32     2 */
-  { 7, 3, 2, 0, 0}, /* 24xx128    16384   64     2 */
-  { 8, 3, 2, 0, 0}, /* 24xx256    32768   64     2 */
-  { 9, 4, 2, 0, 0}, /* 24xx512    65536  128     2 */
-  {10, 4, 2, 1, 1}, /* 24xx1025  131072  128     2 Shifted address, todo */
-  {10, 4, 2, 1, 0}, /* 24xx1026  131072  128     2 */
-  {11, 5, 2, 2, 0}, /* AT24CM02  262144  256     2 */
+  /* by pg al ab sp  device bytes page  alen */
+
+  {
+    0, 1, 1, 0, 1
+  }, /* 24xx00        16    1     1 Ridiculously small device */
+  {
+    0, 0, 1, 0, 0
+  }, /* 24xx01       128    8     1 */
+  {
+    1, 0, 1, 0, 0
+  }, /* 24xx02       256    8     1 */
+  {
+    2, 1, 1, 1, 0
+  }, /* 24xx04       512   16     1 */
+  {
+    3, 1, 1, 2, 0
+  }, /* 24xx08      1024   16     1 */
+  {
+    4, 1, 1, 3, 0
+  }, /* 24xx16      2048   16     1 */
+  {
+    5, 2, 2, 0, 0
+  }, /* 24xx32      4096   32     2 */
+  {
+    6, 2, 2, 0, 0
+  }, /* 24xx64      8192   32     2 */
+  {
+    7, 3, 2, 0, 0
+  }, /* 24xx128    16384   64     2 */
+  {
+    8, 3, 2, 0, 0
+  }, /* 24xx256    32768   64     2 */
+  {
+    9, 4, 2, 0, 0
+  }, /* 24xx512    65536  128     2 */
+  {
+    10, 4, 2, 1, 1
+  }, /* 24xx1025  131072  128     2 Shifted address, todo */
+  {
+    10, 4, 2, 1, 0
+  }, /* 24xx1026  131072  128     2 */
+  {
+    11, 5, 2, 2, 0
+  }, /* AT24CM02  262144  256     2 */
 
   /* STM devices */
 
-  { 0, 1, 1, 0, 0}, /* M24C01       128   16     1 */
-  { 1, 1, 1, 0, 0}, /* M24C02       256   16     1 */
-  {11, 5, 2, 2, 0}, /* M24M02    262144  256     2 */
+  {
+    0, 1, 1, 0, 0
+  }, /* M24C01       128   16     1 */
+  {
+    1, 1, 1, 0, 0
+  }, /* M24C02       256   16     1 */
+  {
+    11, 5, 2, 2, 0
+  }, /* M24M02    262144  256     2 */
 };
 
 /* Driver operations */
@@ -240,11 +277,6 @@ static const struct file_operations at24cs_uuid_fops =
  *
  * Use ACK polling to detect the completion of the write operation.
  * Returns TRUE if write is complete (device replies to ACK).
- * Note: The device always replies an ACK for the control byte, the polling
- * shall be done using the ACK for the memory address byte. Read or write does
- * not matter.
- * Note: We should sleep a bit between retries, the write time is around 5 ms,
- * but the bus is slow, so, a few retries at most will happen.
  *
  ****************************************************************************/
 
@@ -253,12 +285,13 @@ static int ee24xx_waitwritecomplete(FAR struct ee24xx_dev_s *eedev,
 {
   struct i2c_msg_s msgs[1];
   int ret;
-  int retries = 100;
+  int retries = 500;
   uint8_t adr;
   uint32_t addr_hi = (memaddr >> (eedev->addrlen << 3));
 
   msgs[0].frequency = eedev->freq;
-  msgs[0].addr      = eedev->addr | (addr_hi & ((1 << eedev->haddrbits) - 1));
+  msgs[0].addr      = eedev->addr |
+                      (addr_hi & ((1 << eedev->haddrbits) - 1));
   msgs[0].flags     = I2C_M_READ;
   msgs[0].buffer    = &adr;
   msgs[0].length    = 1;
@@ -285,7 +318,6 @@ static int ee24xx_waitwritecomplete(FAR struct ee24xx_dev_s *eedev,
 static int ee24xx_writepage(FAR struct ee24xx_dev_s *eedev, uint32_t memaddr,
                             FAR const char *buffer, size_t len)
 {
-
   struct i2c_msg_s msgs[2];
   uint8_t maddr[2];
   uint32_t addr_hi = (memaddr >> (eedev->addrlen << 3));
@@ -296,7 +328,8 @@ static int ee24xx_writepage(FAR struct ee24xx_dev_s *eedev, uint32_t memaddr,
   maddr[1] = memaddr &  0xff;
 
   msgs[0].frequency = eedev->freq;
-  msgs[0].addr      = eedev->addr | (addr_hi & ((1 << eedev->haddrbits) - 1));
+  msgs[0].addr      = eedev->addr |
+                      (addr_hi & ((1 << eedev->haddrbits) - 1));
   msgs[0].flags     = 0;
   msgs[0].buffer    = eedev->addrlen == 2 ? &maddr[0] : &maddr[1];
   msgs[0].length    = eedev->addrlen;
@@ -321,18 +354,9 @@ static int ee24xx_writepage(FAR struct ee24xx_dev_s *eedev, uint32_t memaddr,
  *
  ****************************************************************************/
 
-static void ee24xx_semtake(FAR struct ee24xx_dev_s *eedev)
+static int ee24xx_semtake(FAR struct ee24xx_dev_s *eedev)
 {
-  /* Take the semaphore (perhaps waiting) */
-
-  while (sem_wait(&eedev->sem) != 0)
-    {
-      /* The only case that an error should occur here is if
-       * the wait was awakened by a signal.
-       */
-
-      DEBUGASSERT(errno == EINTR || errno == ECANCELED);
-    }
+  return nxsem_wait_uninterruptible(&eedev->sem);
 }
 
 /****************************************************************************
@@ -344,7 +368,7 @@ static void ee24xx_semtake(FAR struct ee24xx_dev_s *eedev)
 
 static inline void ee24xx_semgive(FAR struct ee24xx_dev_s *eedev)
 {
-  sem_post(&eedev->sem);
+  nxsem_post(&eedev->sem);
 }
 
 /****************************************************************************
@@ -366,7 +390,12 @@ static int ee24xx_open(FAR struct file *filep)
 
   DEBUGASSERT(inode && inode->i_private);
   eedev = (FAR struct ee24xx_dev_s *)inode->i_private;
-  ee24xx_semtake(eedev);
+
+  ret = ee24xx_semtake(eedev);
+  if (ret < 0)
+    {
+      return ret;
+    }
 
   /* Increment the reference count */
 
@@ -398,7 +427,12 @@ static int ee24xx_close(FAR struct file *filep)
 
   DEBUGASSERT(inode && inode->i_private);
   eedev = (FAR struct ee24xx_dev_s *)inode->i_private;
-  ee24xx_semtake(eedev);
+
+  ret = ee24xx_semtake(eedev);
+  if (ret < 0)
+    {
+      return ret;
+    }
 
   /* Decrement the reference count. I want the entire close operation
    * to be atomic wrt other driver operations.
@@ -433,7 +467,12 @@ static off_t ee24xx_seek(FAR struct file *filep, off_t offset, int whence)
 
   DEBUGASSERT(inode && inode->i_private);
   eedev = (FAR struct ee24xx_dev_s *)inode->i_private;
-  ee24xx_semtake(eedev);
+
+  ret = ee24xx_semtake(eedev);
+  if (ret < 0)
+    {
+      return ret;
+    }
 
   /* Determine the new, requested file position */
 
@@ -452,6 +491,7 @@ static off_t ee24xx_seek(FAR struct file *filep, off_t offset, int whence)
       break;
 
     default:
+
       /* Return EINVAL if the whence argument is invalid */
 
       ee24xx_semgive(eedev);
@@ -504,7 +544,11 @@ static ssize_t ee24xx_read(FAR struct file *filep, FAR char *buffer,
   DEBUGASSERT(inode && inode->i_private);
   eedev = (FAR struct ee24xx_dev_s *)inode->i_private;
 
-  ee24xx_semtake(eedev);
+  ret = ee24xx_semtake(eedev);
+  if (ret < 0)
+    {
+      return ret;
+    }
 
   /* trim len if read would go beyond end of device */
 
@@ -531,7 +575,8 @@ static ssize_t ee24xx_read(FAR struct file *filep, FAR char *buffer,
   addr[1]           = (filep->f_pos) &  0xff;
 
   msgs[0].frequency = eedev->freq;
-  msgs[0].addr      = eedev->addr | (addr_hi & ((1 << eedev->haddrbits) - 1));
+  msgs[0].addr      = eedev->addr |
+                      (addr_hi & ((1 << eedev->haddrbits) - 1));
   msgs[0].flags     = 0;
   msgs[0].buffer    = eedev->addrlen == 2 ? &addr[0] : &addr[1];
   msgs[0].length    = eedev->addrlen;
@@ -578,7 +623,11 @@ static ssize_t at24cs_read_uuid(FAR struct file *filep, FAR char *buffer,
   DEBUGASSERT(inode && inode->i_private);
   eedev = (FAR struct ee24xx_dev_s *)inode->i_private;
 
-  ee24xx_semtake(eedev);
+  ret = ee24xx_semtake(eedev);
+  if (ret < 0)
+    {
+      return ret;
+    }
 
   /* trim len if read would go beyond end of device */
 
@@ -674,7 +723,11 @@ static ssize_t ee24xx_write(FAR struct file *filep, FAR const char *buffer,
 
   savelen = len; /* save number of bytes written */
 
-  ee24xx_semtake(eedev);
+  ret = ee24xx_semtake(eedev);
+  if (ret < 0)
+    {
+      return ret;
+    }
 
   /* Writes can't happen in a row like the read does.
    * The EEPROM is made of pages, and write sequences
@@ -770,11 +823,11 @@ static int ee24xx_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
 
   DEBUGASSERT(inode && inode->i_private);
   eedev = (FAR struct ee24xx_dev_s *)inode->i_private;
+  UNUSED(eedev);
 
   switch (cmd)
     {
       default:
-        (void)eedev;
         ret = -EINVAL;
     }
 
@@ -818,7 +871,7 @@ int ee24xx_initialize(FAR struct i2c_master_s *bus, uint8_t devaddr,
       return -ENOMEM;
     }
 
-  sem_init(&eedev->sem, 0, 1);
+  nxsem_init(&eedev->sem, 0, 1);
 
   eedev->freq     = CONFIG_EE24XX_FREQUENCY;
   eedev->i2c      = bus;
@@ -837,7 +890,7 @@ int ee24xx_initialize(FAR struct i2c_master_s *bus, uint8_t devaddr,
 
   if (g_ee24xx_devices[devtype].special)
     {
-      if (devtype == EEPROM_24xx00)
+      if (devtype == EEPROM_24XX00)
         {
           /* Ultra small 16-byte EEPROM */
 
@@ -849,7 +902,7 @@ int ee24xx_initialize(FAR struct i2c_master_s *bus, uint8_t devaddr,
 
           eedev->pgsize = 1;
         }
-      else if (devtype == EEPROM_24xx1025)
+      else if (devtype == EEPROM_24XX1025)
         {
           /* Microchip alien part where the address MSB is << 2 bits */
 

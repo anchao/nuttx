@@ -47,8 +47,8 @@
 #include <nuttx/init.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 #include "nvic.h"
 #include "barriers.h"
 
@@ -383,13 +383,13 @@ void __start(void)
   /* Perform early serial initialization */
 
 #ifdef USE_EARLYSERIALINIT
-  up_earlyserialinit();
+  arm_earlyserialinit();
 #endif
 
   /* For the case of the separate user-/kernel-space build, perform whatever
    * platform specific initialization of the user memory is required.
    * Normally this just means initializing the user space .data and .bss
-   * segements.
+   * segments.
    */
 
 #ifdef CONFIG_BUILD_PROTECTED

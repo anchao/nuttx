@@ -46,8 +46,8 @@
 #include <nuttx/arch.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 #include "lpc17_40_clockconfig.h"
 #include "hardware/lpc17_40_syscon.h"
 
@@ -238,4 +238,3 @@ void lpc17_40_clockconfig(void)
   putreg32(BOARD_FLASHCFG_VALUE, LPC17_40_SYSCON_FLASHCFG);
 #endif
 }
-

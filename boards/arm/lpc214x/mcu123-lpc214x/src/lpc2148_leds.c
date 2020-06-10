@@ -41,8 +41,8 @@
 #include <nuttx/board.h>
 
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -79,7 +79,7 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Public Funtions
+ * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
@@ -89,7 +89,7 @@
 #ifdef CONFIG_ARCH_LEDS
 void board_autoled_initialize(void)
 {
-  /* Initilize GIOs P1.16-P1.23 */
+  /* Initialize GIOs P1.16-P1.23 */
 
   putled(ALLLEDS, LED_DIR_OFFSET);
   putled(ALLLEDS, LED_SET_OFFSET);

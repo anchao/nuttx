@@ -48,7 +48,7 @@
 #include <nuttx/power/pm.h>
 #include <arch/irq.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "nvic.h"
 #include "stm32_pwr.h"
 #include "stm32_pm.h"
@@ -130,7 +130,7 @@ void stm32_pm_buttons(void)
   board_button_initialize();
 
 #ifdef CONFIG_ARCH_IRQBUTTONS
-  (void)board_button_irq(0, button_handler, NULL);
+  board_button_irq(0, button_handler, NULL);
 #endif
 }
 

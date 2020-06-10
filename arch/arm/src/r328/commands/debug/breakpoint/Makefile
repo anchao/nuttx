@@ -37,7 +37,7 @@
 PROGNAME  = breakpoint
 PRIORITY  = 100
 STACKSIZE = 8192
-MODULE    = watchpoint
+MODULE    = breakpoint
 
 AW_SRCDIR=$(TOPDIR)/arch/arm/src/r328
 CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)include}

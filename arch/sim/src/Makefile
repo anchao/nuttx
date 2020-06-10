@@ -34,14 +34,26 @@
 #
 ############################################################################
 
--include $(TOPDIR)/Make.defs
+include $(TOPDIR)/Make.defs
 
-ARCH_SRCDIR = $(TOPDIR)/arch/$(CONFIG_ARCH)/src
-CPPFLAGS += -I$(ARCH_SRCDIR)/chip -I$(TOPDIR)/sched $(EXTRADEFINES)
-CFLAGS += -I$(ARCH_SRCDIR)/chip -I$(TOPDIR)/sched $(EXTRADEFINES)
-CXXFLAGS += -I$(ARCH_SRCDIR)/chip -I$(TOPDIR)/sched $(EXTRADEFINES)
+ARCH_SRCDIR = $(TOPDIR)$(DELIM)arch$(DELIM)$(CONFIG_ARCH)$(DELIM)src
 
-ASRCS =
+INCLUDES += ${shell $(INCDIR) "$(CC)" $(ARCH_SRCDIR)}
+INCLUDES += ${shell $(INCDIR) "$(CC)" $(ARCH_SRCDIR)$(DELIM)chip}
+INCLUDES += ${shell $(INCDIR) "$(CC)" $(TOPDIR)$(DELIM)sched}
+
+CPPFLAGS += $(INCLUDES) $(EXTRAFLAGS)
+CFLAGS += $(INCLUDES) $(EXTRAFLAGS)
+CXXFLAGS += $(INCLUDES) $(EXTRAFLAGS)
+AFLAGS += $(INCLUDES) $(EXTRAFLAGS)
+
+# Determine which objects are required in the link.The
+# up_head object normally draws in all that is needed, but
+# there are a fews that must be included because they
+# are called only from the host OS-specific logic(HOSTOBJS)
+
+LINKOBJS = up_head$(OBJEXT)
+REQUIREDOBJS = $(LINKOBJS)
 
 ifeq ($(CONFIG_HOST_X86_64),y)
 ifeq ($(CONFIG_SIM_M32),y)
@@ -60,20 +72,23 @@ AOBJS = $(ASRCS:.S=$(OBJEXT))
 CSRCS  = up_initialize.c up_idle.c up_interruptcontext.c up_initialstate.c
 CSRCS += up_createstack.c up_usestack.c up_releasestack.c up_stackframe.c
 CSRCS += up_unblocktask.c up_blocktask.c up_releasepending.c
-CSRCS += up_reprioritizertr.c up_exit.c up_schedulesigaction.c up_spiflash.c
-CSRCS += up_allocateheap.c up_qspiflash.c
+CSRCS += up_reprioritizertr.c up_exit.c up_schedulesigaction.c
+CSRCS += up_allocateheap.c
 
 VPATH = sim
 DEPPATH = $(patsubst %,--dep-path %,$(subst :, ,$(VPATH)))
 
-HOSTSRCS = up_hostusleep.c
+HOSTCFLAGS += ${shell $(INCDIR) "$(CC)" $(ARCH_SRCDIR)}
+HOSTSRCS = up_hosttime.c
+
+ifeq ($(CONFIG_LIBC_MODLIB),y)
+  HOSTSRCS += up_hostmemory.c
+else ifeq ($(CONFIG_BINFMT_LOADABLE),y)
+  HOSTSRCS += up_hostmemory.c
+endif
 
 ifeq ($(CONFIG_STACK_COLORATION),y)
   CSRCS += up_checkstack.c
-endif
-
-ifeq ($(CONFIG_SCHED_TICKLESS),y)
-  CSRCS += up_tickless.c
 endif
 
 ifeq ($(CONFIG_SPINLOCK),y)
@@ -81,9 +96,15 @@ ifeq ($(CONFIG_SPINLOCK),y)
 endif
 
 ifeq ($(CONFIG_SMP),y)
-  CSRCS += up_smpsignal.c up_smphook.c up_cpuidlestack.c
+  CSRCS += up_smpsignal.c up_cpuidlestack.c
+  REQUIREDOBJS += up_smpsignal$(OBJEXT)
   HOSTCFLAGS += -DCONFIG_SMP=1 -DCONFIG_SMP_NCPUS=$(CONFIG_SMP_NCPUS)
+  HOSTCFLAGS += -DCONFIG_USEC_PER_TICK=$(CONFIG_USEC_PER_TICK)
+ifeq ($(CONFIG_SIM_WALLTIME),y)
+  HOSTCFLAGS += -DCONFIG_SIM_WALLTIME=1
+endif
   HOSTSRCS += up_simsmp.c
+  STDLIBS += -lpthread
 endif
 
 ifeq ($(CONFIG_SCHED_INSTRUMENTATION),y)
@@ -94,7 +115,7 @@ endif
 
 ifeq ($(CONFIG_DEV_CONSOLE),y)
 ifneq ($(CONFIG_SYSLOG_RPMSG),y)
-  CSRCS += up_devconsole.c up_uartwait.c
+  CSRCS += up_devconsole.c
   HOSTSRCS += up_simuart.c
 endif
 endif
@@ -103,28 +124,29 @@ ifeq ($(CONFIG_ONESHOT),y)
   CSRCS += up_oneshot.c
 endif
 
-ifeq ($(CONFIG_PM),y)
-  CSRCS += up_pminitialize.c
-endif
-
-ifeq ($(CONFIG_SCHED_CRITMONITOR),y)
-  HOSTSRCS += up_critmon.c
+ifeq ($(CONFIG_RTC_DRIVER),y)
+  CSRCS += up_rtc.c
 endif
 
 ifeq ($(CONFIG_NX_LCDDRIVER),y)
-  CSRCS += board_lcd.c
+  CSRCS += up_lcd.c
 else
   CSRCS += up_framebuffer.c
 ifeq ($(CONFIG_SIM_X11FB),y)
+ifeq ($(CONFIG_SIM_X11NOSHM),y)
+  HOSTCFLAGS += -DCONFIG_SIM_X11NOSHM=1
+endif
   HOSTSRCS += up_x11framebuffer.c
+  STDLIBS += -lX11 -lXext
 ifeq ($(CONFIG_SIM_TOUCHSCREEN),y)
   CSRCS += up_touchscreen.c
+  REQUIREDOBJS += up_touchscreen$(OBJEXT)
+  HOSTCFLAGS += -DCONFIG_SIM_TOUCHSCREEN=1
   HOSTSRCS += up_x11eventloop.c
-else
-ifeq ($(CONFIG_SIM_AJOYSTICK),y)
+else ifeq ($(CONFIG_SIM_AJOYSTICK),y)
   CSRCS += up_ajoystick.c
+  HOSTCFLAGS += -DCONFIG_SIM_AJOYSTICK=1
   HOSTSRCS += up_x11eventloop.c
-endif
 endif
 endif
 endif
@@ -133,20 +155,28 @@ ifeq ($(CONFIG_SIM_IOEXPANDER),y)
   CSRCS += up_ioexpander.c
 endif
 
+ifeq ($(CONFIG_SIM_SPIFLASH),y)
+  CSRCS += up_spiflash.c
+endif
+
+ifeq ($(CONFIG_SIM_QSPIFLASH),y)
+  CSRCS += up_qspiflash.c
+endif
+
 ifeq ($(CONFIG_FS_FAT),y)
   CSRCS += up_blockdevice.c up_deviceimage.c
+  STDLIBS += -lz
 endif
 
 ifeq ($(CONFIG_ARCH_ROMGETC),y)
   CSRCS += up_romgetc.c
 endif
 
-ifeq ($(CONFIG_SIM_NETDEV),y)
-ifeq ($(CONFIG_NET_ETHERNET),y)
+ifeq ($(CONFIG_SIM_NETDEV_TAP),y)
   CSRCS += up_netdriver.c
   HOSTCFLAGS += -DNETDEV_BUFSIZE=$(CONFIG_NET_ETH_PKTSIZE)
 ifneq ($(HOSTOS),Cygwin)
-  HOSTSRCS += up_tapdev.c up_netdev.c
+  HOSTSRCS += up_tapdev.c
 ifeq ($(CONFIG_SIM_NET_BRIDGE),y)
   HOSTCFLAGS += -DCONFIG_SIM_NET_BRIDGE
   HOSTCFLAGS += -DCONFIG_SIM_NET_BRIDGE_DEVICE=\"$(CONFIG_SIM_NET_BRIDGE_DEVICE)\"
@@ -155,21 +185,29 @@ ifeq ($(CONFIG_SIM_NET_HOST_ROUTE),y)
   HOSTCFLAGS += -DCONFIG_SIM_NET_HOST_ROUTE
 endif
 else # HOSTOS != Cygwin
-  HOSTSRCS += up_wpcap.c up_netdev.c
+  HOSTSRCS += up_wpcap.c
   DRVLIB = /lib/w32api/libws2_32.a /lib/w32api/libiphlpapi.a
 endif # HOSTOS != Cygwin
-endif # CONFIG_NET_ETHERNET
-endif # CONFIG_SIM_NETDEV
+else ifeq ($(CONFIG_SIM_NETDEV_VPNKIT),y)
+  CSRCS += up_netdriver.c
+  HOSTCFLAGS += -DCONFIG_SIM_NETDEV_VPNKIT_PATH=\"$(CONFIG_SIM_NETDEV_VPNKIT_PATH)\"
+  HOSTSRCS += up_vpnkit.c
+  VPATH += :sim/vpnkit
+  HOSTSRCS += protocol.c negotiate.c
+endif
 
 ifeq ($(CONFIG_RPTUN),y)
   CSRCS += up_rptun.c
   HOSTSRCS += up_shmem.c
+ifneq ($(CONFIG_HOST_MACOS),y)
   STDLIBS += -lrt
+endif
 endif
 
 ifeq ($(CONFIG_FS_HOSTFS),y)
 ifneq ($(CONFIG_FS_HOSTFS_RPMSG),y)
   HOSTSRCS += up_hostfs.c
+  HOSTCFLAGS += -DCONFIG_NAME_MAX=$(CONFIG_NAME_MAX)
 
 up_hostfs.c: hostfs.h
 
@@ -187,55 +225,18 @@ HOSTOBJS = $(HOSTSRCS:.c=$(OBJEXT))
 SRCS = $(ASRCS) $(CSRCS) $(HOSTSRCS)
 OBJS = $(AOBJS) $(COBJS) $(HOSTOBJS)
 
-# Determine which standard libraries will need to be linked in
-
-ifeq ($(CONFIG_SIM_X11FB),y)
-  STDLIBS += -lX11 -lXext
-endif
-
 # Override in Make.defs if linker is not 'ld'
 
-LDSTARTGROUP ?= --start-group
-LDENDGROUP ?= --end-group
-
-EXTRA_LIBS ?=
-EXTRA_LIBPATHS ?=
-
-ifeq ($(CONFIG_FS_FAT),y)
-STDLIBS += -lz
-endif
-
-STDLIBS += -lc
-STDLIBS += -lpthread
-
-# Determine which objects are required in the link.  The
-# up_head object normally draws in all that is needed, but
-# there are a fews that must be included because they
-# are called only from the host OS-specific logic (HOSTOBJS)
-
-LINKOBJS = up_head$(OBJEXT)
-REQUIREDOBJS = $(LINKOBJS)
-
-ifeq ($(CONFIG_DEV_CONSOLE),y)
-ifneq ($(CONFIG_SYSLOG_RPMSG),y)
-  REQUIREDOBJS += up_uartwait$(OBJEXT)
-endif
-endif
-
-ifeq ($(CONFIG_SIM_X11FB),y)
-ifeq ($(CONFIG_SIM_TOUCHSCREEN),y)
-  REQUIREDOBJS += up_touchscreen$(OBJEXT)
-endif
-endif
-
-ifeq ($(CONFIG_SMP),y)
-  REQUIREDOBJS += up_smpsignal$(OBJEXT) up_smphook$(OBJEXT)
+ifeq ($(HOSTOS),Darwin)
+  LDUNEXPORTSYMBOLS ?= -unexported_symbols_list $(HOSTOS)-names.dat
+else
+  LDSTARTGROUP ?= --start-group
+  LDENDGROUP ?= --end-group
 endif
 
 # Determine which NuttX libraries will need to be linked in
 # Most are provided by LINKLIBS on the MAKE command line
 
-LINKLIBS ?=
 RELLIBS = $(patsubst %.a,%,$(patsubst lib%,-l%,$(LINKLIBS)))
 RELPATHS += -L"$(TOPDIR)/staging"
 
@@ -271,7 +272,7 @@ libarch$(LIBEXT): $(NUTTXOBJS)
 # that are not hardware-related.
 
 board/libboard$(LIBEXT):
-	$(Q) $(MAKE) -C board TOPDIR="$(TOPDIR)" libboard$(LIBEXT) EXTRADEFINES=$(EXTRADEFINES)
+	$(Q) $(MAKE) -C board TOPDIR="$(TOPDIR)" libboard$(LIBEXT) EXTRAFLAGS="$(EXTRAFLAGS)"
 
 # A partially linked object containing only NuttX code (no interface to host OS)
 # Change the names of most symbols that conflict with libc symbols.
@@ -292,10 +293,15 @@ else
 	$(Q) cp nuttx-names.dat $@
 endif
 
+Darwin-names.dat: nuttx-names.dat
+	$(Q) cat $^ | sed -e "s/^\([^[:space:]][^[:space:]]*\)[[:space:]].*/_\1/g" >$@
+
 nuttx.rel : libarch$(LIBEXT) board/libboard$(LIBEXT) $(HOSTOS)-names.dat $(LINKOBJS)
 	$(Q) echo "LD:  nuttx.rel"
-	$(Q) $(LD) -r $(LDLINKFLAGS) $(RELPATHS) $(EXTRA_LIBPATHS) -o $@ $(REQUIREDOBJS) $(LDSTARTGROUP) $(RELLIBS) $(EXTRA_LIBS) $(LDENDGROUP)
+	$(Q) $(LD) -r $(LDLINKFLAGS) $(RELPATHS) $(EXTRA_LIBPATHS) -o $@ $(REQUIREDOBJS) $(LDSTARTGROUP) $(RELLIBS) $(EXTRA_LIBS) $(LDENDGROUP) $(LDUNEXPORTSYMBOLS)
+ifneq ($(HOSTOS),Darwin)
 	$(Q) $(OBJCOPY) --redefine-syms=$(HOSTOS)-names.dat $@
+endif
 
 # Generate the final NuttX binary by linking the host-specific objects with the NuttX
 # specific objects (with munged names)
@@ -306,7 +312,6 @@ nuttx$(EXEEXT): cleanrel nuttx.rel $(HOSTOBJS)
 	$(Q) $(NM) $(TOPDIR)/$@ | \
 		grep -v '\(compiled\)\|\(\.o$$\)\|\( [aUw] \)\|\(\.\.ng$$\)\|\(LASH[RL]DI\)' | \
 		sort > $(TOPDIR)/System.map
-	$(Q) rm -f nuttx.rel
 
 # This is part of the top-level export target
 
@@ -327,7 +332,7 @@ export_startup: board/libboard$(LIBEXT) up_head.o $(HOSTOBJS)
 depend: .depend
 
 cleanrel:
-	$(Q) rm -f nuttx.rel GNU/Linux-names.dat Cygwin-names.dat
+	$(Q) rm -f nuttx.rel $(HOSTOS)-names.dat
 
 clean: cleanrel
 	$(Q) if [ -e board/Makefile ]; then \

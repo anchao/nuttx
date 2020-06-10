@@ -1,35 +1,20 @@
 /****************************************************************************
  * sched/pthread/pthread_join.c
  *
- *   Copyright (C) 2007, 2008, 2011, 2013, 2016 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name NuttX nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  *
  ****************************************************************************/
 
@@ -96,7 +81,7 @@ int pthread_join(pthread_t thread, FAR pthread_addr_t *pexit_value)
 
   /* pthread_join() is a cancellation point */
 
-  (void)enter_cancellation_point();
+  enter_cancellation_point();
 
   /* First make sure that this is not an attempt to join to
    * ourself.
@@ -114,7 +99,7 @@ int pthread_join(pthread_t thread, FAR pthread_addr_t *pexit_value)
    * because it will also attempt to get this semaphore.
    */
 
-  (void)pthread_sem_take(&group->tg_joinsem, NULL, false);
+  pthread_sem_take(&group->tg_joinsem, NULL, false);
 
   /* Find the join information associated with this thread.
    * This can fail for one of three reasons:  (1) There is no
@@ -128,7 +113,7 @@ int pthread_join(pthread_t thread, FAR pthread_addr_t *pexit_value)
     {
       /* Determine what kind of error to return */
 
-      FAR struct tcb_s *tcb = sched_gettcb((pthread_t)thread);
+      FAR struct tcb_s *tcb = nxsched_get_tcb((pthread_t)thread);
 
       swarn("WARNING: Could not find thread data\n");
 
@@ -148,7 +133,7 @@ int pthread_join(pthread_t thread, FAR pthread_addr_t *pexit_value)
           ret = EINVAL;
         }
 
-      (void)pthread_sem_give(&group->tg_joinsem);
+      pthread_sem_give(&group->tg_joinsem);
     }
   else
     {
@@ -189,7 +174,7 @@ int pthread_join(pthread_t thread, FAR pthread_addr_t *pexit_value)
            * semaphore.
            */
 
-          (void)pthread_sem_give(&group->tg_joinsem);
+          pthread_sem_give(&group->tg_joinsem);
 
           /* Take the thread's thread exit semaphore.  We will sleep here
            * until the thread exits.  We need to exercise caution because
@@ -197,7 +182,7 @@ int pthread_join(pthread_t thread, FAR pthread_addr_t *pexit_value)
            * pthread to exit.
            */
 
-          (void)pthread_sem_take(&pjoin->exit_sem, NULL, false);
+          pthread_sem_take(&pjoin->exit_sem, NULL, false);
 
           /* The thread has exited! Get the thread exit value */
 
@@ -211,13 +196,13 @@ int pthread_join(pthread_t thread, FAR pthread_addr_t *pexit_value)
            * will know that we have received the data.
            */
 
-          (void)pthread_sem_give(&pjoin->data_sem);
+          pthread_sem_give(&pjoin->data_sem);
 
           /* Retake the join semaphore, we need to hold this when
            * pthread_destroyjoin is called.
            */
 
-          (void)pthread_sem_take(&group->tg_joinsem, NULL, false);
+          pthread_sem_take(&group->tg_joinsem, NULL, false);
         }
 
       /* Pre-emption is okay now. The logic still cannot be re-entered
@@ -232,10 +217,10 @@ int pthread_join(pthread_t thread, FAR pthread_addr_t *pexit_value)
 
       if (--pjoin->crefs <= 0)
         {
-          (void)pthread_destroyjoin(group, pjoin);
+          pthread_destroyjoin(group, pjoin);
         }
 
-      (void)pthread_sem_give(&group->tg_joinsem);
+      pthread_sem_give(&group->tg_joinsem);
       ret = OK;
     }
 

@@ -130,6 +130,22 @@
  *                                      PR1_PRU1_PRU_R31_15/GPIO1_11
  */
 
+/* I2Cs *********************************************************************/
+
+#define GPIO_I2C1_SCL       GPIO_I2C1_SCL_2
+#define GPIO_I2C1_SCL       GPIO_I2C1_SDA_2
+
+#define GPIO_I2C2_SCL       GPIO_I2C2_SCL_1
+#define GPIO_I2C2_SCL       GPIO_I2C2_SDA_1
+
+/* CANs *********************************************************************/
+
+#define GPIO_DCAN0_RX       GPIO_DCAN0_RX_3
+#define GPIO_DCAN0_TX       GPIO_DCAN0_TX_3
+
+#define GPIO_DCAN1_RX       GPIO_DCAN1_RX_3
+#define GPIO_DCAN1_TX       GPIO_DCAN1_TX_3
+
 /****************************************************************************
  * Assembly Language Macros
  ****************************************************************************/
@@ -138,4 +154,5 @@
   .macro  config_sdram
   .endm
 #endif /* __ASSEMBLY__ */
-#endif  /* __BOARDS_ARM_AM335X_BEAGLEBONE_BLACK_INCLUDE_BOARD_H */
+
+#endif /* __BOARDS_ARM_AM335X_BEAGLEBONE_BLACK_INCLUDE_BOARD_H */

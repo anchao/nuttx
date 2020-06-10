@@ -45,9 +45,9 @@
 #include <nuttx/arch.h>
 
 #include "chip.h"
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "clock/clock.h"
-#include "up_internal.h"
+#include "arm_internal.h"
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -122,7 +122,7 @@ static int dm320_timerisr(int irq, uint32_t *regs, FAR void *arg)
  ****************************************************************************/
 
 /****************************************************************************
- * Function:  arm_timer_initialize
+ * Function:  up_timer_initialize
  *
  * Description:
  *   This function is called during start-up to initialize the timer
@@ -130,7 +130,7 @@ static int dm320_timerisr(int irq, uint32_t *regs, FAR void *arg)
  *
  ****************************************************************************/
 
-void arm_timer_initialize(void)
+void up_timer_initialize(void)
 {
   up_disable_irq(DM320_IRQ_SYSTIMER);
 
@@ -150,4 +150,3 @@ void arm_timer_initialize(void)
   irq_attach(DM320_IRQ_SYSTIMER, (xcpt_t)dm320_timerisr, NULL);
   up_enable_irq(DM320_IRQ_SYSTIMER);
 }
-

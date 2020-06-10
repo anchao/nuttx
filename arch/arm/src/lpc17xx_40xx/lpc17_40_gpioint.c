@@ -47,7 +47,7 @@
 #include <nuttx/irq.h>
 #include <nuttx/arch.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "chip.h"
 #include "lpc17_40_gpio.h"
 
@@ -237,7 +237,7 @@ static int lpc17_40_irq2pin(int irq)
    *   LPC18x: 16 interrupts p0.0-p0.15
    *
    * See arch/arm/include/lpc17xx_40xx/irq.h:
-   * LPC17_40_VALID_SHIFT0L   0     - Bit 0 is thre first bit in the group of
+   * LPC17_40_VALID_SHIFT0L   0     - Bit 0 is the first bit in the group of
    *                               12/16 interrupts
    * LPC17_40_VALID_FIRST0L   irq   - IRQ number associated with p0.0
    * LPC17_40_VALID_NIRQS0L   12/16 - Number of interrupt bits in the group
@@ -468,7 +468,7 @@ void lpc17_40_gpioirqinitialize(void)
    * position in the NVIC with External Interrupt 3
    */
 
-  (void)irq_attach(LPC17_40_IRQ_EINT3, lpc17_40_gpiointerrupt, NULL);
+  irq_attach(LPC17_40_IRQ_EINT3, lpc17_40_gpiointerrupt, NULL);
   up_enable_irq(LPC17_40_IRQ_EINT3);
 
 #elif defined(LPC178x_40xx)
@@ -476,7 +476,7 @@ void lpc17_40_gpioirqinitialize(void)
    * GPIO2.
    */
 
-  (void)irq_attach(LPC17_40_IRQ_GPIO, lpc17_40_gpiointerrupt, NULL);
+  irq_attach(LPC17_40_IRQ_GPIO, lpc17_40_gpiointerrupt, NULL);
   up_enable_irq(LPC17_40_IRQ_GPIO);
 
 #endif

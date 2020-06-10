@@ -39,6 +39,8 @@ PRIORITY  = 100
 STACKSIZE = 8192
 MODULE    = watchpoint
 
+AW_SRCDIR=$(TOPDIR)/arch/arm/src/r328
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)include}
 MAINSRC = watchpoint_main.c
 
 include $(APPDIR)/Application.mk

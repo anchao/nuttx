@@ -42,7 +42,7 @@
 
 #include <nuttx/config.h>
 
-#include "up_internal.h"
+#include "arm_internal.h"
 
 #ifdef CONFIG_SAMA5_DBGU
 
@@ -105,5 +105,5 @@ void sam_dbgu_register(void);
 #endif
 
 #endif /* __ASSEMBLY__ */
-#endif /*  CONFIG_SAMA5_DBGU */
+#endif /* CONFIG_SAMA5_DBGU */
 #endif /* __ARCH_ARM_SRC_SAMA5_SAM_DBGU_H */

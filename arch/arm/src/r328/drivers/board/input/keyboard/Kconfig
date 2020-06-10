@@ -6,7 +6,7 @@ if DRIVERS_KEYBOARD
 
 config DRIVERS_R328_KEYBOARD
 	bool "enable lradc keyboard driver"
-	default n
+	default y
 
 config DRIVERS_R328_GPADC_KEY
 	bool "enable gpadc keyboard driver"
@@ -15,4 +15,9 @@ config DRIVERS_R328_GPADC_KEY
 config DRIVERS_R328_GPIO_KEY
 	bool "enable gpio keyboard driver"
 	default n
+
+config DRIVERS_R328_GPIO_KEY_IRQ
+        bool "enable gpio irq keyboard driver"
+        default n
+
 endif

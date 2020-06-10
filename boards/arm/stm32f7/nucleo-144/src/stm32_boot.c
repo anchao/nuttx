@@ -45,7 +45,7 @@
 #include <nuttx/board.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "nucleo-144.h"
 
 /****************************************************************************
@@ -103,7 +103,7 @@ void board_late_initialize(void)
    * but the initialization function must run in kernel space.
    */
 
-  (void)board_app_initialize(0);
+  board_app_initialize(0);
 #endif
 }
 #endif

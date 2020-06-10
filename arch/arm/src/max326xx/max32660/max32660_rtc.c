@@ -51,7 +51,7 @@
 #include <nuttx/clock.h>
 #include <nuttx/timers/rtc.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 
 #include "hardware/max326_rtc.h"
 #include "max326_rtc.h"
@@ -334,7 +334,7 @@ int up_rtc_initialize(void)
   /* Attach the ALARM interrupt handler */
 
   up_disable_irq(MAX326_IRQ_RTC);
-  (void)irq_attach(MAX326_IRQ_RTC, max326_rtc_interrupt, NULL);
+  irq_attach(MAX326_IRQ_RTC, max326_rtc_interrupt, NULL);
 #endif
 
   /* Enable the RTC */
@@ -384,7 +384,7 @@ time_t up_rtc_time(void)
   while (verify != sec);
 
   /* Round */
- 
+
   if (ssec > 128)
     {
       sec++;
@@ -562,7 +562,7 @@ int max326_rtc_setalarm(FAR struct timespec *ts, alm_callback_t cb, FAR void *ar
           goto errout_with_lock;
         }
 
-      /* Get the ALARM delay betwen now and the alarm time */
+      /* Get the ALARM delay between now and the alarm time */
 
       b32delay = b32alarm - b32now;
 

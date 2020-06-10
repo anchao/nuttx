@@ -49,8 +49,8 @@
 #include <nuttx/arch.h>
 #include <arch/board/board.h>
 
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 
 #include "chip.h"
 #include "sam_gpio.h"
@@ -322,7 +322,7 @@ static inline int sam_configoutput(uintptr_t base, uint32_t pin,
     }
 #endif
 
-  /* Enable the open drain driver if requrested */
+  /* Enable the open drain driver if requested */
 
   if ((cfgset & GPIO_CFG_OPENDRAIN) != 0)
     {

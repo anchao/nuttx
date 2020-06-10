@@ -33,9 +33,8 @@
 #
 ############################################################################
 
--include $(TOPDIR)/Make.defs
+include $(TOPDIR)/Make.defs
 
-ASRCS =
 CSRCS = stm32_boot.c stm32_spi.c stm32_bringup.c
 
 ifeq ($(CONFIG_ARCH_LEDS),y)
@@ -74,6 +73,14 @@ endif
 
 ifeq ($(CONFIG_INPUT_FT5X06),y)
 CSRCS += stm32_touchscreen.c
+endif
+
+ifeq ($(CONFIG_MTD_N25QXXX),y)
+CSRCS += stm32_n25q.c
+endif
+
+ifeq ($(CONFIG_STM32F7_SDMMC), y)
+CSRCS += stm32_sdmmc.c
 endif
 
 include $(TOPDIR)/boards/Board.mk

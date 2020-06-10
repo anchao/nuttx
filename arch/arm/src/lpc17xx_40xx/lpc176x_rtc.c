@@ -48,8 +48,8 @@
 
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "chip.h"
 #include "hardware/lpc17_40_syscon.h"
@@ -362,7 +362,7 @@ int up_rtc_settime(FAR const struct timespec *tp)
 
   /* Break out the time values (not that the time is set only to units of seconds) */
 
-  (void)gmtime_r(&tp->tv_sec, &newtime);
+  gmtime_r(&tp->tv_sec, &newtime);
   rtc_dumptime(&newtime, "Setting time");
 
   /* Then write the broken out values to the RTC */

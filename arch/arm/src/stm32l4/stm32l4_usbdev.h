@@ -48,7 +48,7 @@
 #include "hardware/stm32l4_usbdev.h"
 
 /************************************************************************************
- * Public Functions
+ * Public Function Prototypes
  ************************************************************************************/
 
 #ifndef __ASSEMBLY__
@@ -82,4 +82,3 @@ void stm32l4_usbsuspend(FAR struct usbdev_s *dev, bool resume);
 
 #endif /* __ASSEMBLY__ */
 #endif /* __ARCH_ARM_SRC_STM32L4_STM32L4_USBDEV_H */
-

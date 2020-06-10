@@ -43,11 +43,11 @@
 
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "mips_arch.h"
+#include "mips_internal.h"
 
 #include "pic32mx.h"
-#include "pic32mx-pps.h"
+#include "pic32mx_pps.h"
 #include "mirtoo.h"
 
 /****************************************************************************
@@ -134,7 +134,7 @@ static inline void pic32mx_uartinitialize(void)
  *
  * Description:
  *   All PIC32MX architectures must provide the following entry point.
- *   This entry point is called early in the intitialization -- after all
+ *   This entry point is called early in the initialization -- after all
  *   memory has been configured and mapped but before any devices have been
  *   initialized.
  *

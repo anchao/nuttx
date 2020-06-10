@@ -46,7 +46,7 @@
 
 #include <nuttx/spi/spi.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "chip.h"
 #include "stm32_gpio.h"
 #include "stm32_spi.h"
@@ -171,6 +171,7 @@ uint8_t stm32_spi3status(FAR struct spi_dev_s *dev, uint32_t devid)
       default:
         break;
     }
+
   return status;
 }
 #endif

@@ -43,7 +43,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <semaphore.h>
 #include <string.h>
 #include <errno.h>
 #include <debug.h>
@@ -54,8 +53,8 @@
 
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "chip.h"
 #include "lpc54_config.h"
@@ -1077,7 +1076,7 @@ static void lpc54_detach(struct uart_dev_s *dev)
  *   interrupt received on the 'irq'  It should call uart_transmitchars or
  *   uart_receivechar to perform the appropriate data transfers.  The
  *   interrupt handling logic must be able to map the 'irq' number into the
- *   approprite uart_dev_s structure in order to call these functions.
+ *   appropriate uart_dev_s structure in order to call these functions.
  *
  ****************************************************************************/
 
@@ -1412,7 +1411,7 @@ void lpc54_earlyserialinit(void)
 #endif
 
 /****************************************************************************
- * Name: up_serialinit
+ * Name: arm_serialinit
  *
  * Description:
  *   Register serial console and serial ports.  This assumes
@@ -1426,43 +1425,43 @@ void lpc54_earlyserialinit(void)
  *
  ****************************************************************************/
 
-void up_serialinit(void)
+void arm_serialinit(void)
 {
 #ifdef HAVE_USART_CONSOLE
   /* Register the serial console */
 
-  (void)uart_register("/dev/console", &CONSOLE_DEV);
+  uart_register("/dev/console", &CONSOLE_DEV);
 #endif
 
   /* Register all USARTs */
 
-  (void)uart_register("/dev/ttyS0", &TTYS0_DEV);
+  uart_register("/dev/ttyS0", &TTYS0_DEV);
 #ifdef TTYS1_DEV
-  (void)uart_register("/dev/ttyS1", &TTYS1_DEV);
+  uart_register("/dev/ttyS1", &TTYS1_DEV);
 #endif
 #ifdef TTYS2_DEV
-  (void)uart_register("/dev/ttyS2", &TTYS2_DEV);
+  uart_register("/dev/ttyS2", &TTYS2_DEV);
 #endif
 #ifdef TTYS3_DEV
-  (void)uart_register("/dev/ttyS3", &TTYS3_DEV);
+  uart_register("/dev/ttyS3", &TTYS3_DEV);
 #endif
 #ifdef TTYS4_DEV
-  (void)uart_register("/dev/ttyS4", &TTYS4_DEV);
+  uart_register("/dev/ttyS4", &TTYS4_DEV);
 #endif
 #ifdef TTYS5_DEV
-  (void)uart_register("/dev/ttyS5", &TTYS5_DEV);
+  uart_register("/dev/ttyS5", &TTYS5_DEV);
 #endif
 #ifdef TTYS6_DEV
-  (void)uart_register("/dev/ttyS6", &TTYS6_DEV);
+  uart_register("/dev/ttyS6", &TTYS6_DEV);
 #endif
 #ifdef TTYS7_DEV
-  (void)uart_register("/dev/ttyS7", &TTYS7_DEV);
+  uart_register("/dev/ttyS7", &TTYS7_DEV);
 #endif
 #ifdef TTYS8_DEV
-  (void)uart_register("/dev/ttyS8", &TTYS8_DEV);
+  uart_register("/dev/ttyS8", &TTYS8_DEV);
 #endif
 #ifdef TTYS9_DEV
-  (void)uart_register("/dev/ttyS9", &TTYS9_DEV);
+  uart_register("/dev/ttyS9", &TTYS9_DEV);
 #endif
 }
 
@@ -1488,10 +1487,10 @@ int up_putc(int ch)
     {
       /* Add CR */
 
-      up_lowputc('\r');
+      arm_lowputc('\r');
     }
 
-  up_lowputc(ch);
+  arm_lowputc(ch);
   lpc54_fifoint_enable(priv, intset);
 #endif
 
@@ -1517,10 +1516,10 @@ int up_putc(int ch)
     {
       /* Add CR */
 
-      up_lowputc('\r');
+      arm_lowputc('\r');
     }
 
-  up_lowputc(ch);
+  arm_lowputc(ch);
   return ch;
 }
 #endif

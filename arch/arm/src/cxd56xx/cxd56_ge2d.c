@@ -42,15 +42,16 @@
 #include <nuttx/kmalloc.h>
 #include <nuttx/fs/fs.h>
 #include <nuttx/irq.h>
+#include <nuttx/semaphore.h>
+
 #include <queue.h>
-#include <semaphore.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <debug.h>
 #include <errno.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "chip.h"
 #include "cxd56_clock.h"
 
@@ -98,11 +99,7 @@ static sem_t g_lock;
 
 static int ge2d_semtake(sem_t *id)
 {
-  while (sem_wait(id) != 0)
-    {
-      ASSERT(errno == EINTR);
-    }
-  return OK;
+  return nxsem_wait_uninterruptible(id);
 }
 
 /****************************************************************************
@@ -111,7 +108,7 @@ static int ge2d_semtake(sem_t *id)
 
 static void ge2d_semgive(sem_t *id)
 {
-  sem_post(id);
+  nxsem_post(id);
 }
 
 /****************************************************************************
@@ -136,7 +133,9 @@ static int ge2d_close(FAR struct file *filep)
  * Name: ge2d_read
  ****************************************************************************/
 
-static ssize_t ge2d_read(FAR struct file *filep, FAR char *buffer, size_t len)
+static ssize_t ge2d_read(FAR struct file *filep,
+                         FAR char *buffer,
+                         size_t len)
 {
   return 0;
 }
@@ -173,8 +172,12 @@ static ssize_t ge2d_write(FAR struct file *filep,
 
   /* Enable error and completion interrupts. */
 
-  bits = GE2D_INTR_WR_ERR | GE2D_INTR_RD_ERR | GE2D_INTR_NDE | GE2D_INTR_DSD |
-    GE2D_INTR_NDF;
+  bits = GE2D_INTR_WR_ERR |
+         GE2D_INTR_RD_ERR |
+         GE2D_INTR_NDE |
+         GE2D_INTR_DSD |
+         GE2D_INTR_NDF;
+
   putreg32(bits, GE2D_INTR_ENABLE);
 
   /* Wait for interrupts for processing done. */
@@ -243,9 +246,9 @@ int cxd56_ge2dinitialize(FAR const char *devname)
 {
   int ret;
 
-  sem_init(&g_lock, 0, 1);
-  sem_init(&g_wait, 0, 0);
-  sem_setprotocol(&g_wait, SEM_PRIO_NONE);
+  nxsem_init(&g_lock, 0, 1);
+  nxsem_init(&g_wait, 0, 0);
+  nxsem_set_protocol(&g_wait, SEM_PRIO_NONE);
 
   ret = register_driver(devname, &g_ge2dfops, 0666, NULL);
   if (ret != 0)
@@ -276,8 +279,8 @@ void cxd56_ge2duninitialize(FAR const char *devname)
 
   cxd56_img_ge2d_clock_disable();
 
-  sem_destroy(&g_lock);
-  sem_destroy(&g_wait);
+  nxsem_destroy(&g_lock);
+  nxsem_destroy(&g_wait);
 
   unregister_driver(devname);
 }

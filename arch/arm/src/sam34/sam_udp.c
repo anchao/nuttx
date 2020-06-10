@@ -68,8 +68,8 @@
 
 #include <arch/irq.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "sam_periphclks.h"
 #include "hardware/sam_udp.h"
@@ -962,7 +962,7 @@ static int sam_req_write(struct sam_usbdev_s *priv, struct sam_ep_s *privep)
             {
               /* Yes... stall the endpoint now */
 
-              (void)sam_ep_stall(privep);
+              sam_ep_stall(privep);
             }
 
           return -ENOENT;
@@ -1318,7 +1318,7 @@ static void sam_ep0_dispatch(struct sam_usbdev_s *priv)
           /* Stall on failure */
 
           usbtrace(TRACE_DEVERROR(SAM_TRACEERR_DISPATCHSTALL), 0);
-          (void)sam_ep_stall(&priv->eplist[EP0]);
+          sam_ep_stall(&priv->eplist[EP0]);
         }
     }
 }
@@ -1828,7 +1828,7 @@ static void sam_ep0_setup(struct sam_usbdev_s *priv)
           usbtrace(TRACE_DEVERROR(SAM_TRACEERR_EP0SETUPSTALLED),
                    priv->ctrl.req);
 
-          (void)sam_ep_stall(&priv->eplist[EP0]);
+          sam_ep_stall(&priv->eplist[EP0]);
         }
         break;
 
@@ -1875,7 +1875,7 @@ static void sam_ep_bankinterrupt(struct sam_usbdev_s *priv,
        * transferred from the FIFO.
        */
 
-      (void)sam_req_read(priv, privep, pktsize, bank);
+      sam_req_read(priv, privep, pktsize, bank);
     }
 
   /* Did we just receive the data associated with an OUT SETUP command? */
@@ -1920,7 +1920,7 @@ static void sam_ep_bankinterrupt(struct sam_usbdev_s *priv,
 
           usbtrace(TRACE_DEVERROR(SAM_TRACEERR_EP0SETUPOUTSIZE), pktsize);
           sam_csr_clrbits(EP0, UDPEP_CSR_RXDATABK0);
-          (void)sam_ep_stall(privep);
+          sam_ep_stall(privep);
         }
     }
 
@@ -1995,7 +1995,7 @@ static void sam_ep_interrupt(struct sam_usbdev_s *priv, int epno)
           /* Continue/resume processing the write requests */
 
           privep->epstate = UDP_EPSTATE_IDLE;
-          (void)sam_req_write(priv, privep);
+          sam_req_write(priv, privep);
         }
 
       /* Setting of the device address is a special case.  The address was
@@ -2706,7 +2706,7 @@ static int sam_ep_resume(struct sam_ep_s *privep)
         {
           /* IN endpoint (or EP0).  Restart any queued write requests */
 
-          (void)sam_req_write(priv, privep);
+          sam_req_write(priv, privep);
         }
     }
 
@@ -3877,7 +3877,7 @@ static void sam_sw_shutdown(struct sam_usbdev_s *priv)
  * Public Functions
  ****************************************************************************/
 /****************************************************************************
- * Name: up_usbinitialize
+ * Name: arm_usbinitialize
  * Description:
  *   Initialize the USB driver
  * Input Parameters:
@@ -3888,7 +3888,7 @@ static void sam_sw_shutdown(struct sam_usbdev_s *priv)
  *
  ****************************************************************************/
 
-void up_usbinitialize(void)
+void arm_usbinitialize(void)
 {
   /* For now there is only one USB controller, but we will always refer to
    * it using a pointer to make any future ports to multiple USB controllers
@@ -3926,11 +3926,11 @@ void up_usbinitialize(void)
   return;
 
 errout:
-  up_usbuninitialize();
+  arm_usbuninitialize();
 }
 
 /****************************************************************************
- * Name: up_usbuninitialize
+ * Name: arm_usbuninitialize
  * Description:
  *   Initialize the USB driver
  * Input Parameters:
@@ -3941,7 +3941,7 @@ errout:
  *
  ****************************************************************************/
 
-void up_usbuninitialize(void)
+void arm_usbuninitialize(void)
 {
   /* For now there is only one USB controller, but we will always refer to
    * it using a pointer to make any future ports to multiple USB controllers
@@ -4091,7 +4091,7 @@ int usbdev_unregister(struct usbdevclass_driver_s *driver)
 
   /* Put the hardware in an inactive state.  Then bring the hardware back up
    * in the initial state.  This is essentially the same state as we were
-   * in when up_usbinitialize() was first called.
+   * in when arm_usbinitialize() was first called.
    */
 
   sam_hw_shutdown(priv);

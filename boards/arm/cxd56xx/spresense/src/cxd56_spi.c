@@ -47,17 +47,11 @@
 #include <nuttx/spi/spi.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "chip.h"
 #include "hardware/cxd56_spi.h"
 #include "cxd56_clock.h"
 #include "cxd56_gpio.h"
-
-/****************************************************************************
- * Pre-processor Definitions
- ****************************************************************************/
-
-#define MMCSD_DETECT    PIN_AP_CLK
 
 /****************************************************************************
  * Public Functions
@@ -80,8 +74,8 @@
  *      functions in your board-specific logic.
  *      These functions will perform chip selection and status operations
  *      using GPIOs in the way your board is configured.
- *   3. Add a calls to cxd56_spibus_initialize() in your low level application
- *      initialization logic
+ *   3. Add a calls to cxd56_spibus_initialize() in your low level
+ *      application initialization logic
  *   4. The handle returned by cxd56_spibus_initialize() may then be used to
  *      bind the SPI driver to higher level logic (e.g., calling
  *      mmcsd_spislotinitialize(), for example, will bind the SPI driver to

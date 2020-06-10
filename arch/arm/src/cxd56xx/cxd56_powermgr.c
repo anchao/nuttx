@@ -33,6 +33,10 @@
  *
  ****************************************************************************/
 
+/****************************************************************************
+ * Included Files
+ ****************************************************************************/
+
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -48,13 +52,17 @@
 
 #include <arch/chip/pm.h>
 
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 #include "cxd56_powermgr.h"
 #include "cxd56_icc.h"
 #include "cxd56_pmic.h"
 #include "chip.h"
 #include "hardware/cxd5602_backupmem.h"
+
+/****************************************************************************
+ * Pre-processor Definitions
+ ****************************************************************************/
 
 #define INTC_REG_INV(n) (CXD56_INTC_BASE + 0x20 + ((n) << 2))
 #define INTC_REG_EN(n)  (CXD56_INTC_BASE + 0x10 + ((n) << 2))
@@ -177,16 +185,12 @@ static struct pm_cpu_wakelock_s g_wlock =
 
 static int cxd56_pm_semtake(FAR sem_t *id)
 {
-  while (sem_wait(id) != 0)
-    {
-      if (errno != EINTR)
-        {
-          pmerr("ERR:sem_wait\n");
-          return errno;
-        }
-    }
-  return OK;
+  return nxsem_wait_uninterruptible(id);
 }
+
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
 
 static int cxd56_pm_needcallback(uint32_t target,
                                  FAR struct cxd56_pm_target_id_s *table)
@@ -225,7 +229,7 @@ static int cxd56_pmsendmsg(int mid, uint32_t data)
   iccmsg_t msg;
 
   msg.cpuid     = 0;
-  msg.msgid     = 0; /* Power manger message does not used this field. */
+  msg.msgid     = 0; /* Power manager message does not used this field. */
   msg.protodata = mid;
   msg.data      = data;
   return cxd56_iccsend(CXD56_PROTO_PM, &msg, 0);
@@ -253,8 +257,8 @@ static int cxd56_pm_do_callback(uint8_t id,
         }
     }
 
-  /* If one of the callbacks has been failed, then recovery call to previously
-   * called entries.
+  /* If one of the callbacks has been failed, then recovery call to
+   * previously called entries.
    */
 
   if (ret != 0)
@@ -265,6 +269,7 @@ static int cxd56_pm_do_callback(uint8_t id,
         {
           id = CXD56_PM_CALLBACK_ID_CLK_CHG_END;
         }
+
       if (id == CXD56_PM_CALLBACK_ID_HOT_SLEEP)
         {
           id = CXD56_PM_CALLBACK_ID_HOT_BOOT;
@@ -301,6 +306,7 @@ static void cxd56_pm_clkchange(struct cxd56_pm_message_s *message)
         {
           return;
         }
+
       id = CXD56_PM_CALLBACK_ID_CLK_CHG_END;
       mid = MSGID_CLK_CHG_END;
       g_clockcange_start = 0;
@@ -315,7 +321,7 @@ static void cxd56_pm_clkchange(struct cxd56_pm_message_s *message)
 
   cxd56_pmsendmsg(mid, ret);
 
-  sem_post(&g_regcblock);
+  nxsem_post(&g_regcblock);
 }
 
 static void cxd56_pm_checkfreqlock(void)
@@ -463,7 +469,7 @@ FAR void *cxd56_pm_register_callback(uint32_t target,
   entry = (struct pm_cbentry_s *)kmm_malloc(sizeof(struct pm_cbentry_s));
   if (entry == NULL)
     {
-      sem_post(&g_regcblock);
+      nxsem_post(&g_regcblock);
       return NULL;
     }
 
@@ -471,7 +477,7 @@ FAR void *cxd56_pm_register_callback(uint32_t target,
   entry->callback = callback;
 
   dq_addlast((FAR dq_entry_t *)entry, &g_cbqueue);
-  sem_post(&g_regcblock);
+  nxsem_post(&g_regcblock);
 
   return (void *)entry;
 }
@@ -483,7 +489,7 @@ void cxd56_pm_unregister_callback(FAR void *handle)
   dq_rem((FAR dq_entry_t *)handle, &g_cbqueue);
   kmm_free(handle);
 
-  sem_post(&g_regcblock);
+  nxsem_post(&g_regcblock);
 }
 
 static int cxd56_pmmsghandler(int cpuid, int protoid, uint32_t pdata,
@@ -517,7 +523,7 @@ static int cxd56_pmmsghandler(int cpuid, int protoid, uint32_t pdata,
     }
   else if (msgid == MSGID_FREQLOCK)
     {
-      sem_post(&g_freqlockwait);
+      nxsem_post(&g_freqlockwait);
     }
   else
     {
@@ -573,7 +579,7 @@ void up_pm_acquire_freqlock(struct pm_cpu_freqlock_s *lock)
 
   lock->count++;
 
-  sem_post(&g_freqlock);
+  nxsem_post(&g_freqlock);
 
   up_pm_release_wakelock(&g_wlock);
 }
@@ -614,7 +620,7 @@ void up_pm_release_freqlock(struct pm_cpu_freqlock_s *lock)
         }
     }
 
-  sem_post(&g_freqlock);
+  nxsem_post(&g_freqlock);
 
   up_pm_release_wakelock(&g_wlock);
 }
@@ -651,7 +657,7 @@ int up_pm_get_freqlock_count(struct pm_cpu_freqlock_s *lock)
         }
     }
 
-  sem_post(&g_freqlock);
+  nxsem_post(&g_freqlock);
   return count;
 }
 
@@ -795,22 +801,22 @@ int cxd56_pm_initialize(void)
   sq_init(&g_freqlockqueue);
   sq_init(&g_wakelockqueue);
 
-  ret = sem_init(&g_regcblock, 0, 1);
+  ret = nxsem_init(&g_regcblock, 0, 1);
   if (ret < 0)
     {
-      return -EPERM;
+      return ret;
     }
 
-  ret = sem_init(&g_freqlock, 0, 1);
+  ret = nxsem_init(&g_freqlock, 0, 1);
   if (ret < 0)
     {
-      return -EPERM;
+      return ret;
     }
 
-  ret = sem_init(&g_freqlockwait, 0, 0);
+  ret = nxsem_init(&g_freqlockwait, 0, 0);
   if (ret < 0)
     {
-      return -EPERM;
+      return ret;
     }
 
   attr.mq_maxmsg  = 8;
@@ -839,7 +845,8 @@ int cxd56_pm_initialize(void)
  *
  * Description:
  *   Get the system boot cause. This boot cause indicates the cause why the
- *   system is launched from the state of power-off, deep sleep or cold sleep.
+ *   system is launched from the state of power-off,
+ *   deep sleep or cold sleep.
  *   Each boot cause is defined as PM_BOOT_XXX.
  *
  * Return:
@@ -877,7 +884,7 @@ uint32_t up_pm_get_bootmask(void)
  *   Enable the boot cause of the specified bit.
  *
  * Parameter:
- *   mask - OR of Boot mask definied as PM_BOOT_XXX
+ *   mask - OR of Boot mask defined as PM_BOOT_XXX
  *
  * Return:
  *   Updated boot mask
@@ -916,7 +923,7 @@ uint32_t up_pm_set_bootmask(uint32_t mask)
  *   Disable the boot cause of the specified bit.
  *
  * Parameter:
- *   mask - OR of Boot mask definied as PM_BOOT_XXX
+ *   mask - OR of Boot mask defined as PM_BOOT_XXX
  *
  * Return:
  *   Updated boot mask
@@ -990,6 +997,7 @@ int up_pm_sleep(enum pm_sleepmode_e mode)
       PM_ColdSleep(NULL);
       break;
     }
+
   __asm volatile ("dsb");
   for (; ; );
 }

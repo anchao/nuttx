@@ -42,7 +42,7 @@
 
 #include <nuttx/config.h>
 
-#include "up_internal.h"
+#include "arm_internal.h"
 #include "sam_config.h"
 
 /****************************************************************************
@@ -82,7 +82,7 @@ extern "C"
  * Description:
  *   Performs the low level USART initialization early in debug so that the
  *   serial console will be available during bootup.  This must be called
- *   before up_serialinit.
+ *   before arm_serialinit.
  *
  ****************************************************************************/
 
@@ -96,7 +96,7 @@ void sam_earlyserialinit(void);
  * Description:
  *   Performs the low level USART initialization early in debug so that the
  *   serial console will be available during bootup.  This must be called
- *   before up_serialinit.
+ *   before arm_serialinit.
  *
  ****************************************************************************/
 
@@ -127,7 +127,7 @@ void flexus_earlyserialinit(void);
  *
  ****************************************************************************/
 
-#if defined(SAMA5_HAVE_UART) || defined(SAMA5_HAVE_USART)
+#if defined(USE_SERIALDRIVER) && (defined(SAMA5_HAVE_UART) || defined(SAMA5_HAVE_USART))
 void uart_serialinit(void);
 #endif
 
@@ -140,7 +140,7 @@ void uart_serialinit(void);
  *
  ****************************************************************************/
 
-#if defined(USE_EARLYSERIALINIT) && defined(SAMA5_HAVE_FLEXCOM_USART)
+#if defined(USE_SERIALDRIVER) && defined(SAMA5_HAVE_FLEXCOM_USART)
 void flexus_serialinit(void);
 #endif
 

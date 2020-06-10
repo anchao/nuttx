@@ -53,6 +53,7 @@
 
 #ifdef CONFIG_NET_6LOWPAN
 
+#ifdef CONFIG_WIRELESS_IEEE802154
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -143,14 +144,13 @@ static inline bool sixlowpan_eaddrnull(FAR const uint8_t *eaddr)
  *   meta    - Location to return the corresponding meta data.
  *
  * Returned Value:
- *   Ok is returned on success; Othewise a negated errno value is returned.
+ *   Ok is returned on success; Otherwise a negated errno value is returned.
  *
  * Assumptions:
  *   Called with the network locked.
  *
  ****************************************************************************/
 
-#ifdef CONFIG_WIRELESS_IEEE802154
 int sixlowpan_meta_data(FAR struct radio_driver_s *radio,
                         FAR const struct ieee802_txmetadata_s *pktmeta,
                         FAR struct ieee802154_frame_meta_s *meta)
@@ -226,7 +226,7 @@ int sixlowpan_meta_data(FAR struct radio_driver_s *radio,
   meta->destaddr.panid[1] = pktmeta->dpanid[0];
 
   /* Handle associated with MSDU.  Will increment once per packet, not
-   * necesarily per frame:  The same MSDU handle will be used for each
+   * necessarily per frame:  The same MSDU handle will be used for each
    * fragment of a disassembled packet.
    */
 
@@ -259,7 +259,7 @@ int sixlowpan_meta_data(FAR struct radio_driver_s *radio,
  *   meta - Meta data that describes the MAC header
  *
  * Returned Value:
- *   The frame header length is returnd on success; otherwise, a negated
+ *   The frame header length is returned on success; otherwise, a negated
  *   errno value is return on failure.
  *
  ****************************************************************************/

@@ -41,7 +41,6 @@
 
 #include <nuttx/binfmt/binfmt.h>
 #include <nuttx/binfmt/elf.h>
-#include <nuttx/binfmt/pcode.h>
 #include <nuttx/binfmt/nxflat.h>
 #include <nuttx/lib/builtin.h>
 
@@ -65,7 +64,7 @@ void binfmt_initialize(void)
 {
   int ret;
 
-#if defined(CONFIG_FS_BINFS) && defined(HAVE_BUILTIN_CONTEXT)
+#ifdef CONFIG_FS_BINFS
   ret = builtin_initialize();
   if (ret < 0)
     {
@@ -78,14 +77,6 @@ void binfmt_initialize(void)
   if (ret < 0)
     {
       berr("ERROR: elf_initialize failed: %d\n", ret);
-    }
-#endif
-
-#ifdef CONFIG_BINFMT_PCODE
-  ret = pcode_initialize();
-  if (ret < 0)
-    {
-      berr("ERROR: pcode_initialize failed: %d\n", ret);
     }
 #endif
 

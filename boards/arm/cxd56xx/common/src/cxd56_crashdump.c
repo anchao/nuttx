@@ -51,8 +51,8 @@
 #include <arch/chip/crashdump.h>
 #include "cxd56_wdt.h"
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 /****************************************************************************
  * Private Functions
@@ -119,7 +119,7 @@ void board_crashdump(uintptr_t currentsp, FAR void *tcb,
   FAR struct tcb_s *rtcb;
   fullcontext_t *pdump;
 
-  (void)enter_critical_section();
+  enter_critical_section();
 
   rtcb = (FAR struct tcb_s *)tcb;
 #ifdef CONFIG_CXD56_BACKUPLOG
@@ -225,9 +225,9 @@ void board_crashdump(uintptr_t currentsp, FAR void *tcb,
 
   /* Is it Invalid? */
 
-  if (!(pdump->info.stacks.interrupt.sp <= pdump->info.stacks.interrupt.top &&
-        pdump->info.stacks.interrupt.sp > pdump->info.stacks.interrupt.top -
-        pdump->info.stacks.interrupt.size))
+  if (!(pdump->info.stacks.interrupt.sp <= pdump->info.stacks.interrupt.top
+      && pdump->info.stacks.interrupt.sp > pdump->info.stacks.interrupt.top
+       - pdump->info.stacks.interrupt.size))
     {
       pdump->info.flags |= INVALID_INTSTACK_PTR;
     }

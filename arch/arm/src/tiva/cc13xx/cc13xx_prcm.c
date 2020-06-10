@@ -48,7 +48,7 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "hardware/tiva_prcm.h"
 #include "cc13xx/cc13xx_prcm.h"
 
@@ -345,7 +345,7 @@ void prcm_audioclock_configure(uint32_t clkconfig,
  *   - SERIAL power domain:
  *     - Power on  : Domain is powered on.
  *     - Power off : Domain is powered off.
- *   - PERIPHERIAL power domain:
+ *   - PERIPHERAL power domain:
  *     - Power on  : Domain is powered on.
  *     - Power off : Domain is powered off.
  *   - VIMS power domain:

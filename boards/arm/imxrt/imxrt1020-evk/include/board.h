@@ -1,7 +1,7 @@
 /*****************************************************************************
  * boards/arm/imxrt/imxrt1020-evk/include/board.h
  *
- *   Copyright (C) 2018 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2018-2019 Gregory Nutt. All rights reserved.
  *   Authors: Gregory Nutt <gnutt@nuttx.org>
  *            David Sidrane <david_s5@nscdg.com>
  *            Dave Marples <dave@marples.net>
@@ -63,7 +63,7 @@
  *                        528Mhz  = (24Mhz * 22) / 1
  *
  *     AHB_CLOCK_ROOT             = PLL6fOut / IMXRT_AHB_PODF_DIVIDER
- *     1Hz to 500 Mhz             = Mhz / IMXRT_ARM_CLOCK_DIVIDER
+ *     1Hz to 500 MHz             = MHz / IMXRT_ARM_CLOCK_DIVIDER
  *                        IMXRT_ARM_CLOCK_DIVIDER = 1
  *                        500Mhz  = 500Mhz / 1
  *
@@ -85,6 +85,14 @@
  * Set USB1 PLL (PLL3) to fOut    = (24Mhz * 20)
  *                         480Mhz = (24Mhz * 20)
  *
+ * Set LPSPI PLL3 PFD0 to fOut    = (480Mhz / 12 * 18)
+ *                        720Mhz  = (480Mhz / 12 * 18)
+ *                         90Mhz  = (720Mhz / LSPI_PODF_DIVIDER)
+ *
+ * Set LPI2C PLL3 / 8 to   fOut   = (480Mhz / 8)
+ *                         60Mhz  = (480Mhz / 8)
+ *                         12Mhz  = (60Mhz / LSPI_PODF_DIVIDER)
+ *
  * These clock frequencies can be verified via the CCM_CLKO1 pin and sending
  * the appropriate clock to it with something like;
  *
@@ -92,29 +100,39 @@
  *   imxrt_config_gpio(GPIO_CCM_CLKO1);
  */
 
-#define BOARD_XTAL_FREQUENCY      24000000
-#define BOARD_CPU_FREQUENCY       500000000U
+#define BOARD_XTAL_FREQUENCY       24000000
+#define BOARD_CPU_FREQUENCY        500000000U
 
-#define IMXRT_PRE_PERIPH_CLK_SEL  CCM_CBCMR_PRE_PERIPH_CLK_SEL_PLL6
-#define IMXRT_PERIPH_CLK_SEL      CCM_CBCDR_PERIPH_CLK_SEL_PRE_PERIPH
-#define IMXRT_ARM_PODF_DIVIDER    1
-#define IMXRT_AHB_PODF_DIVIDER    1
-#define IMXRT_IPG_PODF_DIVIDER    4
-#define IMXRT_PERCLK_CLK_SEL      CCM_CSCMR1_PERCLK_CLK_SEL_IPG_CLK_ROOT
-#define IMXRT_PERCLK_PODF_DIVIDER 2
-#define IMXRT_SEMC_PODF_DIVIDER   4
-#define IMXRT_LPSPI_CLK_SELECT    CCM_CBCMR_LPSPI_CLK_SEL_PLL3_PFD0
-#define IMXRT_LSPI_PODF_DIVIDER   8
+#define IMXRT_PRE_PERIPH_CLK_SEL   CCM_CBCMR_PRE_PERIPH_CLK_SEL_PLL6
+#define IMXRT_PERIPH_CLK_SEL       CCM_CBCDR_PERIPH_CLK_SEL_PRE_PERIPH
+#define IMXRT_ARM_PODF_DIVIDER     1
+#define IMXRT_AHB_PODF_DIVIDER     1
+#define IMXRT_IPG_PODF_DIVIDER     4
+#define IMXRT_PERCLK_CLK_SEL       CCM_CSCMR1_PERCLK_CLK_SEL_IPG_CLK_ROOT
+#define IMXRT_PERCLK_PODF_DIVIDER  2
+#define IMXRT_SEMC_PODF_DIVIDER    4
+
+#define IMXRT_LPSPI_CLK_SELECT     CCM_CBCMR_LPSPI_CLK_SEL_PLL3_PFD0
+#define IMXRT_LSPI_PODF_DIVIDER    8
+
+#define IMXRT_LPI2C_CLK_SELECT     CCM_CSCDR2_LPI2C_CLK_SEL_PLL3_60M
+#define IMXRT_LSI2C_PODF_DIVIDER   5
+
 #define IMXRT_USDHC1_CLK_SELECT    CCM_CSCMR1_USDHC1_CLK_SEL_PLL2_PFD0
-#define IMXRT_USDHC1_PODF_DIVIDER 1
-#define IMXRT_USDHC1_CLK_SELECT    CCM_CSCMR1_USDHC2_CLK_SEL_PLL2_PFD0
-#define IMXRT_USDHC2_PODF_DIVIDER 4
+#define IMXRT_USDHC1_PODF_DIVIDER  1
+#define IMXRT_USDHC2_CLK_SELECT    CCM_CSCMR1_USDHC2_CLK_SEL_PLL2_PFD0
+#define IMXRT_USDHC2_PODF_DIVIDER  4
 
-#define IMXRT_SYS_PLL_DIV_SELECT    CCM_ANALOG_PLL_SYS_DIV_SELECT_22
+#define IMXRT_SYS_PLL_DIV_SELECT   CCM_ANALOG_PLL_SYS_DIV_SELECT_22
 #define IMXRT_USB1_PLL_DIV_SELECT  CCM_ANALOG_PLL_USB1_DIV_SELECT_20
 #define IMXRT_AUDIO_PLL_DIV_SELECT (45)
 
-#define IMXRT_TRACE_PODF_DIVIDER  1
+/* Define this to enable tracing */
+
+#if 0
+#  define IMXRT_TRACE_PODF_DIVIDER 1
+#  define IMXRT_TRACE_CLK_SELECT   CCM_CBCMR_TRACE_CLK_SEL_PLL2_PFD0
+#endif
 
 /* LED definitions ***********************************************************/
 
@@ -196,25 +214,9 @@
 
 /* Pinning ******************************************************************/
 
-/* LEDs *********************************************************************/
-
-#define GPIO_USERLED    (IOMUX_LED_DEFAULT | GPIO_OUTPUT | \
-                         GPIO_OUTPUT_ZERO | GPIO_PORT1 | GPIO_PIN5)  /* AD_B0_05 */
-
-/* Buttons ******************************************************************/
-
-#define GPIO_SWWAKE     (GPIO_INTERRUPT | GPIO_INT_FALLINGEDGE | \
-                         IOMUX_SWWAKE_DEFAULT | GPIO_PORT5 | GPIO_PIN0)  /* WAKE */
-
-/* ETH Disambiguation ********************************************************/
-
-#define GPIO_ENET_INT   (IOMUX_ENET_INT_DEFAULT | GPIO_INTERRUPT | \
-                         GPIO_INT_FALLINGEDGE |	GPIO_PORT1 | GPIO_PIN22) /* AD_B1_06 */
-#define GPIO_ENET_IRQ   IMXRT_IRQ_GPIO1_12
-
 /* Make sure these entries match to allow interrupts to be present */
 
-#define GPIO_ENET_GRP   IMXRT_GPIO1_16_31_IRQ
+#define GPIO_ENET_GRP       IMXRT_GPIO1_16_31_IRQ
 
 #ifndef GPIO_ENET_GRP
 #  ifdef CONFIG_IMXRT_ENET
@@ -231,8 +233,6 @@
 #define GPIO_ENET_RX_DATA01  GPIO_ENET_RX_DATA01_2 | IOMUX_ENET_DATA_DEFAULT
 #define GPIO_ENET_TX_DATA00  GPIO_ENET_TX_DATA00_2 | IOMUX_ENET_DATA_DEFAULT
 #define GPIO_ENET_TX_DATA01  GPIO_ENET_TX_DATA01_2 | IOMUX_ENET_DATA_DEFAULT
-#define GPIO_ENET_RST       (GPIO_OUTPUT | IOMUX_ENET_RST_DEFAULT | \
-                             GPIO_OUTPUT_ZERO | GPIO_PORT1 | GPIO_PIN4 )  /* AD_B0_04, Inverted logic */
 
 /* LPI2Cs *******************************************************************/
 
@@ -263,18 +263,13 @@
 #define PIN_USDHC1_D3       (GPIO_USDHC1_DATA3_1 | IOMUX_USDHC1_DATAX_DEFAULT) /* SD_B0_01 */
 #define PIN_USDHC1_DCLK     (GPIO_USDHC1_CLK_1   | IOMUX_USDHC1_CLK_DEFAULT)   /* SD_B0_03 */
 #define PIN_USDHC1_CMD      (GPIO_USDHC1_CMD_1   | IOMUX_USDHC1_CMD_DEFAULT)   /* SD_B0_02 */
-#define PIN_USDHC1_CD       (IOMUX_VSD_DEFAULT | \
+
+/* N.B. This is not using a USDHC CD_B input but a regular GPIO.  The
+ * post-fix _GPIO enables GPIO testing logic in the USDHC driver.
+ */
+
+#define PIN_USDHC1_CD_GPIO  (IOMUX_VSD_DEFAULT | \
                              GPIO_PORT3 | GPIO_PIN19 )                        /* SD_B0_06 */
-#define GPIO_VSDHIGH        (GPIO_OUTPUT | IOMUX_VSD_DEFAULT | GPIO_OUTPUT_ONE | \
-                             GPIO_PORT1 | GPIO_PIN22)                          /* AD_B1_07 */
-#define PIN_USDHC1_PWREN    (GPIO_OUTPUT | IOMUX_VSD_DEFAULT | GPIO_OUTPUT_ONE | \
-                             GPIO_PORT3 | GPIO_PIN24  )                        /* SD_B1_04 */
-
-/* USBOTG *********************************************************************/
-
-#define GPIO_USBOTG_ID      (GPIO_USB_OTG_ID_1 | GPIO_USBOTG_ID_DEFAULT)       /* AD_B1_11 */
-#define GPIO_USBOTG_PWR     (GPIO_USB_OTG_PWR_1 |IOMUX_USBOTG_PWR_DEFAULT)     /* AD_B1_10 */
-#define GPIO_USBOTG_OC      (GPIO_USB_OTG_OC_1 | IOMUX_USBOTG_OC_DEFAULT)      /* AD_B1_12 */
 
 /*****************************************************************************
  * Public Types

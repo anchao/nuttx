@@ -1,6 +1,7 @@
 #ifndef __XRADIO_DRVER_H__
 #define __XRADIO_DRVER_H__
 
+#include <nuttx/wireless/wireless.h>
 #include <nuttx/config.h>
 #include <semaphore.h>
 #include <nuttx/wdog.h>

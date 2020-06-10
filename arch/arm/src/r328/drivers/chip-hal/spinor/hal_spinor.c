@@ -114,7 +114,13 @@ static ssize_t sunxi_spinor_bread(FAR struct mtd_dev_s *mtd_dev, off_t startbloc
         return -EIO;
     }
 
-    return MTD_READ(mtd_dev, startblock * geo.blocksize, nblocks * geo.blocksize, buffer);
+    ret = MTD_READ(mtd_dev, startblock * geo.blocksize, nblocks * geo.blocksize, buffer);
+    if (ret == nblocks * geo.blocksize)
+    {
+        return nblocks;
+    }
+
+    return -EIO;
 }
 
 static ssize_t sunxi_spinor_bwrite(FAR struct mtd_dev_s *mtd_dev, off_t startblock, size_t nblocks, const uint8_t *buffer)
@@ -135,12 +141,13 @@ static ssize_t sunxi_spinor_bwrite(FAR struct mtd_dev_s *mtd_dev, off_t startblo
         return -EIO;
     }
 
-    if (spinor_driver && spinor_driver->program_data)
+    ret = MTD_WRITE(mtd_dev, startblock * geo.blocksize, nblocks * geo.blocksize, buffer);
+    if (ret == nblocks * geo.blocksize)
     {
-        ret = spinor_driver->program_data(startblock * geo.blocksize, buffer, nblocks * geo.blocksize);
+        return nblocks;
     }
 
-    return ret;
+    return -EIO;
 }
 
 static int sunxi_spinor_read(FAR struct mtd_dev_s *mtd_dev, off_t pos, size_t size, uint8_t *buffer)

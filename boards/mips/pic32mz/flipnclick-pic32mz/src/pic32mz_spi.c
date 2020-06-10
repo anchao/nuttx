@@ -47,8 +47,8 @@
 
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "pic32mz-gpio.h"
+#include "mips_arch.h"
+#include "pic32mz_gpio.h"
 
 #include "flipnclick-pic32mz.h"
 
@@ -71,8 +71,8 @@ void weak_function pic32mz_spidev_initialize(void)
 #ifdef HAVE_SSD1306
   /* Configure the SSD1306 chip select and command/data GPIOs */
 
-  (void)pic32mz_configgpio(GPIO_SSD1306_CS);
-  (void)pic32mz_configgpio(GPIO_SSD1306_DC);
+  pic32mz_configgpio(GPIO_SSD1306_CS);
+  pic32mz_configgpio(GPIO_SSD1306_DC);
 #endif
 }
 

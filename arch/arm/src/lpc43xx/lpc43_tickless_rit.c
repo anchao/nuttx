@@ -54,7 +54,7 @@
 #include <nuttx/clock.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "chip.h"
 #include "hardware/lpc43_rit.h"
 
@@ -595,7 +595,7 @@ static int lpc43_tl_isr(int irq, FAR void *context, FAR void *arg)
  * Public Functions
  ****************************************************************************/
 
-void arm_timer_initialize(void)
+void up_timer_initialize(void)
 {
   irqstate_t flags;
   flags = enter_critical_section();

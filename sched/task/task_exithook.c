@@ -228,7 +228,7 @@ static inline void nxtask_exitstatus(FAR struct task_group_s *group,
     {
       /* No.. Find the exit status entry for this task in the parent TCB */
 
-      child = group_findchild(group, getpid());
+      child = group_find_child(group, getpid());
       if (child)
         {
 #ifndef HAVE_GROUP_MEMBERS
@@ -272,7 +272,7 @@ static inline void nxtask_groupexit(FAR struct task_group_s *group)
     {
       /* No.. Find the exit status entry for this task in the parent TCB */
 
-      child = group_findchild(group, getpid());
+      child = group_find_child(group, getpid());
       if (child)
         {
           /* Mark that all members of the child task group has exited */
@@ -363,7 +363,7 @@ static inline void nxtask_sigchild(grpid_t pgrpid, FAR struct tcb_s *ctcb,
 
       /* Send the signal to one thread in the group */
 
-      (void)group_signal(pgrp, &info);
+      group_signal(pgrp, &info);
     }
 }
 
@@ -418,7 +418,7 @@ static inline void nxtask_sigchild(FAR struct tcb_s *ptcb,
        * can provide the correct si_code value with the signal.
        */
 
-      (void)nxsig_tcbdispatch(ptcb, &info);
+      nxsig_tcbdispatch(ptcb, &info);
     }
 }
 
@@ -462,7 +462,7 @@ static inline void nxtask_signalparent(FAR struct tcb_s *ctcb, int status)
    * handle multiple calls to nxtask_signalparent.
    */
 
-  ptcb = sched_gettcb(ctcb->group->tg_ppid);
+  ptcb = nxsched_get_tcb(ctcb->group->tg_ppid);
   if (ptcb == NULL)
     {
       /* The parent no longer exists... bail */
@@ -570,11 +570,10 @@ static inline void nxtask_flushstreams(FAR struct tcb_s *tcb)
 
   if (group && group->tg_nmembers == 1)
     {
-#if (defined(CONFIG_BUILD_PROTECTED) || defined(CONFIG_BUILD_KERNEL)) && \
-     defined(CONFIG_MM_KERNEL_HEAP)
-      (void)lib_flushall(tcb->group->tg_streamlist);
+#ifdef CONFIG_MM_KERNEL_HEAP
+      lib_flushall(tcb->group->tg_streamlist);
 #else
-      (void)lib_flushall(&tcb->group->tg_streamlist);
+      lib_flushall(&tcb->group->tg_streamlist);
 #endif
     }
 }
@@ -615,9 +614,9 @@ static inline void nxtask_flushstreams(FAR struct tcb_s *tcb)
 
 void nxtask_exithook(FAR struct tcb_s *tcb, int status, bool nonblocking)
 {
-  /* Under certain conditions, nxtask_exithook() can be called multiple times.
-   * A bit in the TCB was set the first time this function was called.  If
-   * that bit is set, then just exit doing nothing more..
+  /* Under certain conditions, nxtask_exithook() can be called multiple
+   * times.  A bit in the TCB was set the first time this function was
+   * called.  If that bit is set, then just exit doing nothing more..
    */
 
   if ((tcb->flags & TCB_FLAG_EXIT_PROCESSING) != 0)
@@ -647,7 +646,7 @@ void nxtask_exithook(FAR struct tcb_s *tcb, int status, bool nonblocking)
    *    a bug.
    * 2. We cannot call the exit functions if nonblocking is requested:  These
    *    functions might block.
-   * 3. This function will only be called with with non-blocking == true
+   * 3. This function will only be called with non-blocking == true
    *    only when called through _exit(). _exit() behaviors requires that
    *    the exit functions *not* be called.
    */
@@ -682,7 +681,7 @@ void nxtask_exithook(FAR struct tcb_s *tcb, int status, bool nonblocking)
    * NOTES:
    * 1. We cannot flush the buffered I/O if nonblocking is requested.
    *    that might cause this logic to block.
-   * 2. This function will only be called with with non-blocking == true
+   * 2. This function will only be called with non-blocking == true
    *    only when called through _exit(). _exit() behavior does not
    *    require that the streams be flushed
    */

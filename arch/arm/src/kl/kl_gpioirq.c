@@ -46,7 +46,7 @@
 #include <nuttx/irq.h>
 #include <nuttx/arch.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 
 #include "hardware/kl_port.h"
 #include "kl_gpio.h"
@@ -144,7 +144,7 @@ static int kl_portinterrupt(int irq, FAR void *context,
 
               /* There is a registered interrupt handler... invoke it */
 
-              (void)handler(irq, context, arg);
+              handler(irq, context, arg);
             }
 
           /* Writing a one to the ISFR register will clear the pending
@@ -202,13 +202,13 @@ static int kl_portdinterrupt(int irq, FAR void *context, FAR void *arg)
 void kl_gpioirqinitialize(void)
 {
 #ifdef CONFIG_KL_PORTAINTS
-  (void)irq_attach(KL_IRQ_PORTA, kl_portainterrupt, NULL);
+  irq_attach(KL_IRQ_PORTA, kl_portainterrupt, NULL);
   putreg32(0xffffffff, KL_PORTA_ISFR);
   up_enable_irq(KL_IRQ_PORTA);
 #endif
 
 #ifdef CONFIG_KL_PORTDINTS
-  (void)irq_attach(KL_IRQ_PORTD, kl_portdinterrupt, NULL);
+  irq_attach(KL_IRQ_PORTD, kl_portdinterrupt, NULL);
   putreg32(0xffffffff, KL_PORTD_ISFR);
   up_enable_irq(KL_IRQ_PORTD);
 #endif

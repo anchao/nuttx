@@ -64,7 +64,7 @@
  *
  ****************************************************************************/
 
-int elf_verifyheader(FAR const Elf32_Ehdr *header);
+int elf_verifyheader(FAR const Elf_Ehdr *header);
 
 /****************************************************************************
  * Name: elf_read
@@ -72,7 +72,7 @@ int elf_verifyheader(FAR const Elf32_Ehdr *header);
  * Description:
  *   Read 'readsize' bytes from the object file at 'offset'.  The data is
  *   read into 'buffer.' If 'buffer' is part of the ELF address environment,
- *   then the caller is responsibile for assuring that that address
+ *   then the caller is responsible for assuring that that address
  *   environment is in place before calling this function (i.e., that
  *   elf_addrenv_select() has been called if CONFIG_ARCH_ADDRENV=y).
  *
@@ -136,7 +136,7 @@ int elf_findsymtab(FAR struct elf_loadinfo_s *loadinfo);
  * Name: elf_readsym
  *
  * Description:
- *   Read the ELF symbol structure at the specfied index into memory.
+ *   Read the ELF symbol structure at the specified index into memory.
  *
  * Input Parameters:
  *   loadinfo - Load state information
@@ -150,7 +150,7 @@ int elf_findsymtab(FAR struct elf_loadinfo_s *loadinfo);
  ****************************************************************************/
 
 int elf_readsym(FAR struct elf_loadinfo_s *loadinfo, int index,
-                FAR Elf32_Sym *sym);
+                FAR Elf_Sym *sym);
 
 /****************************************************************************
  * Name: elf_symvalue
@@ -169,15 +169,15 @@ int elf_readsym(FAR struct elf_loadinfo_s *loadinfo, int index,
  *   0 (OK) is returned on success and a negated errno is returned on
  *   failure.
  *
- *   EINVAL - There is something inconsistent in the symbol table (should only
- *            happen if the file is corrupted)
+ *   EINVAL - There is something inconsistent in the symbol table (should
+ *            only happen if the file is corrupted)
  *   ENOSYS - Symbol lies in common
  *   ESRCH  - Symbol has no name
  *   ENOENT - Symbol undefined and not provided via a symbol table
  *
  ****************************************************************************/
 
-int elf_symvalue(FAR struct elf_loadinfo_s *loadinfo, FAR Elf32_Sym *sym,
+int elf_symvalue(FAR struct elf_loadinfo_s *loadinfo, FAR Elf_Sym *sym,
                  FAR const struct symtab_s *exports, int nexports);
 
 /****************************************************************************
@@ -265,12 +265,13 @@ int elf_loaddtors(FAR struct elf_loadinfo_s *loadinfo);
  * Name: elf_addrenv_alloc
  *
  * Description:
- *   Allocate memory for the ELF image (textalloc and dataalloc). If
- *   CONFIG_ARCH_ADDRENV=n, textalloc will be allocated using kmm_zalloc() and
- *   dataalloc will be a offset from textalloc.  If CONFIG_ARCH_ADDRENV-y, then
- *   textalloc and dataalloc will be allocated using up_addrenv_create().  In
- *   either case, there will be a unique instance of textalloc and dataalloc
- *   (and stack) for each instance of a process.
+ *   Allocate memory for the ELF image (textalloc and dataalloc).
+ *   If CONFIG_ARCH_ADDRENV=n, textalloc will be allocated using kmm_zalloc()
+ *   and dataalloc will be a offset from textalloc.
+ *   If CONFIG_ARCH_ADDRENV-y, then textalloc and dataalloc will be allocated
+ *   using up_addrenv_create().
+ *   In either case, there will be a unique instance of textalloc and
+ *   dataalloc (and stack) for each instance of a process.
  *
  * Input Parameters:
  *   loadinfo - Load state information

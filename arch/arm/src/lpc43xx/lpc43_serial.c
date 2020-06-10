@@ -43,7 +43,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <semaphore.h>
 #include <string.h>
 #include <errno.h>
 #include <debug.h>
@@ -60,8 +59,8 @@
 #include <arch/board/board.h>
 
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "lpc43_config.h"
 #include "lpc43_serial.h"
@@ -670,6 +669,7 @@ static int up_attach(struct uart_dev_s *dev)
 
       up_enable_irq(priv->irq);
     }
+
   return ret;
 }
 
@@ -789,6 +789,7 @@ static int up_interrupt(int irq, void *context, void *arg)
             }
         }
     }
+
     return OK;
 }
 
@@ -801,7 +802,7 @@ static int up_interrupt(int irq, void *context, void *arg)
  *
  *   Supported and un-supported LPC43 RS-485 features:
  *
- *     RS-485/EIA-485 Normal Multidrop Mode (NMM) -- NOT suppored
+ *     RS-485/EIA-485 Normal Multidrop Mode (NMM) -- NOT supported
  *
  *       In this mode, an address is detected when a received byte causes the
  *       USART to set the parity error and generate an interrupt.  When the
@@ -888,13 +889,13 @@ static inline int up_set_rs485_mode(struct up_dev_s *priv,
 
 #ifdef BOARD_LPC43_UART1_DTRDIR
       if (priv->dtrdir)
-      {
-         /* If we ar using DTR for direction then ensure the H/W is
-          * configured correctly.
-          */
+        {
+          /* If we are using DTR for direction then ensure the H/W is
+           * configured correctly.
+           */
 
-         regval |= UART_RS485CTRL_SEL;
-      }
+          regval |= UART_RS485CTRL_SEL;
+        }
 #endif
 
       up_serialout(priv, LPC43_UART_RS485CTRL_OFFSET, regval);
@@ -936,7 +937,6 @@ static inline int up_set_rs485_mode(struct up_dev_s *priv,
             }
         }
 
-
       up_serialout(priv, LPC43_UART_RS485DLY_OFFSET, regval);
     }
 
@@ -966,7 +966,7 @@ static inline int up_get_rs485_mode(struct up_dev_s *priv,
 
   /* Assume disabled */
 
-   memset(mode, 0, sizeof(struct serial_rs485));
+  memset(mode, 0, sizeof(struct serial_rs485));
 
   /* If RS-485 mode is enabled, then the DCTRL will be set in the RS485CTRL
    * register.
@@ -1226,6 +1226,7 @@ static void up_txint(struct uart_dev_s *dev, bool enable)
       priv->ier &= ~UART_IER_THREIE;
       up_serialout(priv, LPC43_UART_IER_OFFSET, priv->ier);
     }
+
   leave_critical_section(flags);
 }
 
@@ -1258,16 +1259,16 @@ static bool up_txempty(struct uart_dev_s *dev)
 }
 
 /****************************************************************************
- * Public Funtions
+ * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_serialinit
+ * Name: arm_serialinit
  *
  * Description:
  *   Performs the low level UART initialization early in debug so that the
  *   serial console will be available during bootup.  This must be called
- *   before up_serialinit.
+ *   before arm_serialinit.
  *
  *   NOTE: Configuration of the CONSOLE UART was performed by up_lowsetup()
  *   very early in the boot sequence.
@@ -1275,7 +1276,7 @@ static bool up_txempty(struct uart_dev_s *dev)
  ****************************************************************************/
 
 #ifdef USE_EARLYSERIALINIT
-void up_earlyserialinit(void)
+void arm_earlyserialinit(void)
 {
   /* Configure all UARTs (except the CONSOLE UART) and disable interrupts */
 
@@ -1317,30 +1318,30 @@ void up_earlyserialinit(void)
 #endif
 
 /****************************************************************************
- * Name: up_serialinit
+ * Name: arm_serialinit
  *
  * Description:
  *   Register serial console and serial ports.  This assumes that
- *   up_earlyserialinit was called previously.
+ *   arm_earlyserialinit was called previously.
  *
  ****************************************************************************/
 
-void up_serialinit(void)
+void arm_serialinit(void)
 {
 #ifdef CONSOLE_DEV
-  (void)uart_register("/dev/console", &CONSOLE_DEV);
+  uart_register("/dev/console", &CONSOLE_DEV);
 #endif
 #ifdef TTYS0_DEV
-  (void)uart_register("/dev/ttyS0", &TTYS0_DEV);
+  uart_register("/dev/ttyS0", &TTYS0_DEV);
 #endif
 #ifdef TTYS1_DEV
-  (void)uart_register("/dev/ttyS1", &TTYS1_DEV);
+  uart_register("/dev/ttyS1", &TTYS1_DEV);
 #endif
 #ifdef TTYS2_DEV
-  (void)uart_register("/dev/ttyS2", &TTYS2_DEV);
+  uart_register("/dev/ttyS2", &TTYS2_DEV);
 #endif
 #ifdef TTYS3_DEV
-  (void)uart_register("/dev/ttyS3", &TTYS3_DEV);
+  uart_register("/dev/ttyS3", &TTYS3_DEV);
 #endif
 }
 
@@ -1366,10 +1367,10 @@ int up_putc(int ch)
     {
       /* Add CR */
 
-      up_lowputc('\r');
+      arm_lowputc('\r');
     }
 
-  up_lowputc(ch);
+  arm_lowputc(ch);
 #ifdef HAVE_SERIAL_CONSOLE
   up_restoreuartint(priv, ier);
 #endif
@@ -1396,10 +1397,10 @@ int up_putc(int ch)
     {
       /* Add CR */
 
-      up_lowputc('\r');
+      arm_lowputc('\r');
     }
 
-  up_lowputc(ch);
+  arm_lowputc(ch);
 #endif
   return ch;
 }

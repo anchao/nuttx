@@ -44,6 +44,8 @@
 #include <errno.h>
 #include <debug.h>
 
+#include <nuttx/clock.h>
+#include <nuttx/wqueue.h>
 #include <nuttx/nx/nx.h>
 #include <nuttx/nx/nxglib.h>
 #include <nuttx/video/fb.h>
@@ -92,24 +94,34 @@
  * Private Function Prototypes
  ****************************************************************************/
 
-  /* Get information about the video controller configuration and the configuration
-   * of each color plane.
-   */
+/* Get information about the video controller configuration and the
+ * configuration of each color plane.
+ */
 
-static int up_getvideoinfo(FAR struct fb_vtable_s *vtable, FAR struct fb_videoinfo_s *vinfo);
-static int up_getplaneinfo(FAR struct fb_vtable_s *vtable, int planeno, FAR struct fb_planeinfo_s *pinfo);
+static int up_getvideoinfo(FAR struct fb_vtable_s *vtable,
+                           FAR struct fb_videoinfo_s *vinfo);
+static int up_getplaneinfo(FAR struct fb_vtable_s *vtable, int planeno,
+                           FAR struct fb_planeinfo_s *pinfo);
 
-  /* The following is provided only if the video hardware supports RGB color mapping */
+/* The following is provided only if the video hardware supports
+ * RGB color mapping.
+ */
 
 #ifdef CONFIG_FB_CMAP
-static int up_getcmap(FAR struct fb_vtable_s *vtable, FAR struct fb_cmap_s *cmap);
-static int up_putcmap(FAR struct fb_vtable_s *vtable, FAR const struct fb_cmap_s *cmap);
+static int up_getcmap(FAR struct fb_vtable_s *vtable,
+                      FAR struct fb_cmap_s *cmap);
+static int up_putcmap(FAR struct fb_vtable_s *vtable,
+                      FAR const struct fb_cmap_s *cmap);
 #endif
-  /* The following is provided only if the video hardware supports a hardware cursor */
+  /* The following is provided only if the video hardware supports
+   * a hardware cursor
+   */
 
 #ifdef CONFIG_FB_HWCURSOR
-static int up_getcursor(FAR struct fb_vtable_s *vtable, FAR struct fb_cursorattrib_s *attrib);
-static int up_setcursor(FAR struct fb_vtable_s *vtable, FAR struct fb_setcursor_s *setttings);
+static int up_getcursor(FAR struct fb_vtable_s *vtable,
+                        FAR struct fb_cursorattrib_s *attrib);
+static int up_setcursor(FAR struct fb_vtable_s *vtable,
+                        FAR struct fb_setcursor_s *settings);
 #endif
 
 /****************************************************************************
@@ -144,6 +156,8 @@ static const struct fb_planeinfo_s g_planeinfo =
   .bpp      = CONFIG_SIM_FBBPP,
 };
 #else
+static struct work_s g_updatework;
+
 /* This structure describes the single, X11 color plane */
 
 static struct fb_planeinfo_s g_planeinfo;
@@ -161,8 +175,8 @@ static struct fb_cursorsize_s g_csize;
 #endif
 #endif
 
-/* The framebuffer object -- There is no private state information in this simple
- * framebuffer simulation.
+/* The framebuffer object -- There is no private state information
+ * in this simple framebuffer simulation.
  */
 
 struct fb_vtable_s g_fbobject =
@@ -180,10 +194,6 @@ struct fb_vtable_s g_fbobject =
 };
 
 /****************************************************************************
- * Public Data
- ****************************************************************************/
-
-/****************************************************************************
  * Private Functions
  ****************************************************************************/
 
@@ -194,14 +204,14 @@ struct fb_vtable_s g_fbobject =
 static int up_getvideoinfo(FAR struct fb_vtable_s *vtable,
                            FAR struct fb_videoinfo_s *vinfo)
 {
-  _info("vtable=%p vinfo=%p\n", vtable, vinfo);
+  ginfo("vtable=%p vinfo=%p\n", vtable, vinfo);
   if (vtable && vinfo)
     {
       memcpy(vinfo, &g_videoinfo, sizeof(struct fb_videoinfo_s));
       return OK;
     }
 
-  _err("ERROR: Returning EINVAL\n");
+  gerr("ERROR: Returning EINVAL\n");
   return -EINVAL;
 }
 
@@ -212,14 +222,14 @@ static int up_getvideoinfo(FAR struct fb_vtable_s *vtable,
 static int up_getplaneinfo(FAR struct fb_vtable_s *vtable, int planeno,
                            FAR struct fb_planeinfo_s *pinfo)
 {
-  _info("vtable=%p planeno=%d pinfo=%p\n", vtable, planeno, pinfo);
+  ginfo("vtable=%p planeno=%d pinfo=%p\n", vtable, planeno, pinfo);
   if (vtable && planeno == 0 && pinfo)
     {
       memcpy(pinfo, &g_planeinfo, sizeof(struct fb_planeinfo_s));
       return OK;
     }
 
-  _err("ERROR: Returning EINVAL\n");
+  gerr("ERROR: Returning EINVAL\n");
   return -EINVAL;
 }
 
@@ -228,12 +238,13 @@ static int up_getplaneinfo(FAR struct fb_vtable_s *vtable, int planeno,
  ****************************************************************************/
 
 #ifdef CONFIG_FB_CMAP
-static int up_getcmap(FAR struct fb_vtable_s *vtable, FAR struct fb_cmap_s *cmap)
+static int up_getcmap(FAR struct fb_vtable_s *vtable,
+                      FAR struct fb_cmap_s *cmap)
 {
   int len;
   int i;
 
-  _info("vtable=%p cmap=%p len=%d\n", vtable, cmap, cmap->len);
+  ginfo("vtable=%p cmap=%p len=%d\n", vtable, cmap, cmap->len);
   if (vtable && cmap)
     {
       for (i = cmap->first, len = 0; i < 256 && len < cmap->len; i++, len++)
@@ -250,7 +261,7 @@ static int up_getcmap(FAR struct fb_vtable_s *vtable, FAR struct fb_cmap_s *cmap
       return OK;
     }
 
-  _err("ERROR: Returning EINVAL\n");
+  gerr("ERROR: Returning EINVAL\n");
   return -EINVAL;
 }
 #endif
@@ -260,18 +271,20 @@ static int up_getcmap(FAR struct fb_vtable_s *vtable, FAR struct fb_cmap_s *cmap
  ****************************************************************************/
 
 #ifdef CONFIG_FB_CMAP
-static int up_putcmap(FAR struct fb_vtable_s *vtable, FAR const struct fb_cmap_s *cmap)
+static int up_putcmap(FAR struct fb_vtable_s *vtable,
+                      FAR const struct fb_cmap_s *cmap)
 {
 #ifdef CONFIG_SIM_X11FB
-  return up_x11cmap(cmap->first, cmap->len, cmap->red, cmap->green, cmap->blue, NULL);
+  return up_x11cmap(cmap->first, cmap->len, cmap->red, cmap->green,
+                    cmap->blue, NULL);
 #else
-  _info("vtable=%p cmap=%p len=%d\n", vtable, cmap, cmap->len);
+  ginfo("vtable=%p cmap=%p len=%d\n", vtable, cmap, cmap->len);
   if (vtable && cmap)
     {
       return OK;
     }
 
-  _err("ERROR: Returning EINVAL\n");
+  gerr("ERROR: Returning EINVAL\n");
   return -EINVAL;
 #endif
 }
@@ -285,24 +298,24 @@ static int up_putcmap(FAR struct fb_vtable_s *vtable, FAR const struct fb_cmap_s
 static int up_getcursor(FAR struct fb_vtable_s *vtable,
                         FAR struct fb_cursorattrib_s *attrib)
 {
-  _info("vtable=%p attrib=%p\n", vtable, attrib);
+  ginfo("vtable=%p attrib=%p\n", vtable, attrib);
   if (vtable && attrib)
     {
 #ifdef CONFIG_FB_HWCURSORIMAGE
       attrib->fmt      = FB_FMT;
 #endif
-      _info("pos:      (x=%d, y=%d)\n", g_cpos.x, g_cpos.y);
+      ginfo("pos:      (x=%d, y=%d)\n", g_cpos.x, g_cpos.y);
       attrib->pos      = g_cpos;
 #ifdef CONFIG_FB_HWCURSORSIZE
       attrib->mxsize.h = CONFIG_SIM_FBHEIGHT;
       attrib->mxsize.w = CONFIG_SIM_FBWIDTH;
-      _info("size:     (h=%d, w=%d)\n", g_csize.h, g_csize.w);
+      ginfo("size:     (h=%d, w=%d)\n", g_csize.h, g_csize.w);
       attrib->size     = g_csize;
 #endif
       return OK;
     }
 
-  _err("ERROR: Returning EINVAL\n");
+  gerr("ERROR: Returning EINVAL\n");
   return -EINVAL;
 }
 #endif
@@ -313,36 +326,52 @@ static int up_getcursor(FAR struct fb_vtable_s *vtable,
 
 #ifdef CONFIG_FB_HWCURSOR
 static int up_setcursor(FAR struct fb_vtable_s *vtable,
-                       FAR struct fb_setcursor_s *setttings)
+                       FAR struct fb_setcursor_s *settings)
 {
-  _info("vtable=%p setttings=%p\n", vtable, setttings);
-  if (vtable && setttings)
+  ginfo("vtable=%p settings=%p\n", vtable, settings);
+  if (vtable && settings)
     {
-      _info("flags:   %02x\n", settings->flags);
+      ginfo("flags:   %02x\n", settings->flags);
       if ((flags & FB_CUR_SETPOSITION) != 0)
         {
           g_cpos = settings->pos;
-          _info("pos:     (h:%d, w:%d)\n", g_cpos.x, g_cpos.y);
+          ginfo("pos:     (h:%d, w:%d)\n", g_cpos.x, g_cpos.y);
         }
+
 #ifdef CONFIG_FB_HWCURSORSIZE
       if ((flags & FB_CUR_SETSIZE) != 0)
         {
           g_csize = settings->size;
-          _info("size:    (h:%d, w:%d)\n", g_csize.h, g_csize.w);
+          ginfo("size:    (h:%d, w:%d)\n", g_csize.h, g_csize.w);
         }
 #endif
+
 #ifdef CONFIG_FB_HWCURSORIMAGE
       if ((flags & FB_CUR_SETIMAGE) != 0)
         {
-          _info("image:   (h:%d, w:%d) @ %p\n",
-               settings->img.height, settings->img.width, settings->img.image);
+          ginfo("image:   (h:%d, w:%d) @ %p\n",
+               settings->img.height, settings->img.width,
+               settings->img.image);
         }
+
 #endif
       return OK;
     }
 
-  _err("ERROR: Returning EINVAL\n");
+  gerr("ERROR: Returning EINVAL\n");
   return -EINVAL;
+}
+#endif
+
+/****************************************************************************
+ * Name: up_updatework
+ ****************************************************************************/
+
+#ifdef CONFIG_SIM_X11FB
+static void up_updatework(FAR void *arg)
+{
+  work_queue(LPWORK, &g_updatework, up_updatework, NULL, MSEC2TICK(33));
+  up_x11update();
 }
 #endif
 
@@ -368,13 +397,19 @@ static int up_setcursor(FAR struct fb_vtable_s *vtable,
 
 int up_fbinitialize(int display)
 {
+  int ret = OK;
+
 #ifdef CONFIG_SIM_X11FB
-  return up_x11initialize(CONFIG_SIM_FBWIDTH, CONFIG_SIM_FBHEIGHT,
-                          &g_planeinfo.fbmem, &g_planeinfo.fblen,
-                          &g_planeinfo.bpp, &g_planeinfo.stride);
-#else
-  return OK;
+  ret = up_x11initialize(CONFIG_SIM_FBWIDTH, CONFIG_SIM_FBHEIGHT,
+                         &g_planeinfo.fbmem, &g_planeinfo.fblen,
+                         &g_planeinfo.bpp, &g_planeinfo.stride);
+  if (ret == OK)
+    {
+      work_queue(LPWORK, &g_updatework, up_updatework, NULL, MSEC2TICK(33));
+    }
 #endif
+
+  return ret;
 }
 
 /****************************************************************************
@@ -382,7 +417,8 @@ int up_fbinitialize(int display)
  *
  * Description:
  *   Return a a reference to the framebuffer object for the specified video
- *   plane of the specified plane.  Many OSDs support multiple planes of video.
+ *   plane of the specified plane.  Many OSDs support multiple planes of
+ *   video.
  *
  * Input Parameters:
  *   display - In the case of hardware with multiple displays, this

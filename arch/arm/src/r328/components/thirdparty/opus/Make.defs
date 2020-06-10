@@ -1,0 +1,218 @@
+############################################################################
+#
+#   Copyright (C) 2019 Gregory Nutt. All rights reserved.
+#   Author: Gregory Nutt <gnutt@nuttx.org>
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
+# 3. Neither the name NuttX nor the names of its contributors may be
+#    used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+# OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+# AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+############################################################################
+
+CHIP_CSRCS += \
+	components/thirdparty/opus/celt/bands.c \
+	components/thirdparty/opus/celt/celt.c \
+	components/thirdparty/opus/celt/celt_encoder.c \
+	components/thirdparty/opus/celt/celt_decoder.c \
+	components/thirdparty/opus/celt/cwrs.c  \
+	components/thirdparty/opus/celt/entcode.c \
+	components/thirdparty/opus/celt/entdec.c   \
+	components/thirdparty/opus/celt/entenc.c   \
+	components/thirdparty/opus/celt/kiss_fft.c  \
+	components/thirdparty/opus/celt/laplace.c  \
+	components/thirdparty/opus/celt/mathops.c  \
+	components/thirdparty/opus/celt/mdct.c   \
+	components/thirdparty/opus/celt/modes.c   \
+	components/thirdparty/opus/celt/pitch.c   \
+	components/thirdparty/opus/celt/celt_lpc.c \
+	components/thirdparty/opus/celt/quant_bands.c \
+	components/thirdparty/opus/celt/rate.c  \
+	components/thirdparty/opus/celt/vq.c  \
+	components/thirdparty/opus/celt/arm/armcpu.c \
+	components/thirdparty/opus/celt/arm/arm_celt_map.c  \
+	components/thirdparty/opus/celt/arm/celt_neon_intr.c  \
+	components/thirdparty/opus/celt/arm/pitch_neon_intr.c  \
+	components/thirdparty/opus/silk/CNG.c  \
+	components/thirdparty/opus/silk/code_signs.c  \
+	components/thirdparty/opus/silk/init_decoder.c  \
+	components/thirdparty/opus/silk/decode_core.c  \
+	components/thirdparty/opus/silk/decode_frame.c  \
+	components/thirdparty/opus/silk/decode_parameters.c \
+	components/thirdparty/opus/silk/decode_indices.c  \
+	components/thirdparty/opus/silk/decode_pulses.c  \
+	components/thirdparty/opus/silk/decoder_set_fs.c  \
+	components/thirdparty/opus/silk/dec_API.c  \
+	components/thirdparty/opus/silk/enc_API.c   \
+	components/thirdparty/opus/silk/encode_indices.c  \
+	components/thirdparty/opus/silk/encode_pulses.c  \
+	components/thirdparty/opus/silk/gain_quant.c  \
+	components/thirdparty/opus/silk/interpolate.c  \
+	components/thirdparty/opus/silk/LP_variable_cutoff.c \
+	components/thirdparty/opus/silk/NLSF_decode.c  \
+	components/thirdparty/opus/silk/NSQ.c   \
+	components/thirdparty/opus/silk/NSQ_del_dec.c \
+	components/thirdparty/opus/silk/PLC.c  \
+	components/thirdparty/opus/silk/shell_coder.c \
+	components/thirdparty/opus/silk/tables_gain.c  \
+	components/thirdparty/opus/silk/tables_LTP.c   \
+	components/thirdparty/opus/silk/tables_NLSF_CB_NB_MB.c \
+	components/thirdparty/opus/silk/tables_NLSF_CB_WB.c  \
+	components/thirdparty/opus/silk/tables_other.c  \
+	components/thirdparty/opus/silk/tables_pitch_lag.c  \
+	components/thirdparty/opus/silk/tables_pulses_per_block.c \
+	components/thirdparty/opus/silk/VAD.c  \
+	components/thirdparty/opus/silk/control_audio_bandwidth.c \
+	components/thirdparty/opus/silk/quant_LTP_gains.c   \
+	components/thirdparty/opus/silk/VQ_WMat_EC.c   \
+	components/thirdparty/opus/silk/HP_variable_cutoff.c \
+	components/thirdparty/opus/silk/NLSF_encode.c   \
+	components/thirdparty/opus/silk/NLSF_VQ.c   \
+	components/thirdparty/opus/silk/NLSF_unpack.c \
+	components/thirdparty/opus/silk/NLSF_del_dec_quant.c  \
+	components/thirdparty/opus/silk/process_NLSFs.c  \
+	components/thirdparty/opus/silk/stereo_LR_to_MS.c \
+	components/thirdparty/opus/silk/stereo_MS_to_LR.c  \
+	components/thirdparty/opus/silk/check_control_input.c  \
+	components/thirdparty/opus/silk/control_SNR.c  \
+	components/thirdparty/opus/silk/init_encoder.c  \
+	components/thirdparty/opus/silk/control_codec.c  \
+	components/thirdparty/opus/silk/A2NLSF.c  \
+	components/thirdparty/opus/silk/ana_filt_bank_1.c \
+	components/thirdparty/opus/silk/biquad_alt.c  \
+	components/thirdparty/opus/silk/bwexpander_32.c  \
+	components/thirdparty/opus/silk/bwexpander.c  \
+	components/thirdparty/opus/silk/debug.c  \
+	components/thirdparty/opus/silk/decode_pitch.c  \
+	components/thirdparty/opus/silk/inner_prod_aligned.c  \
+	components/thirdparty/opus/silk/lin2log.c \
+	components/thirdparty/opus/silk/log2lin.c  \
+	components/thirdparty/opus/silk/LPC_analysis_filter.c \
+	components/thirdparty/opus/silk/LPC_inv_pred_gain.c  \
+	components/thirdparty/opus/silk/table_LSF_cos.c  \
+	components/thirdparty/opus/silk/NLSF2A.c   \
+	components/thirdparty/opus/silk/NLSF_stabilize.c  \
+	components/thirdparty/opus/silk/NLSF_VQ_weights_laroia.c \
+	components/thirdparty/opus/silk/pitch_est_tables.c \
+	components/thirdparty/opus/silk/resampler.c  \
+	components/thirdparty/opus/silk/resampler_down2_3.c  \
+	components/thirdparty/opus/silk/resampler_down2.c  \
+	components/thirdparty/opus/silk/resampler_private_AR2.c \
+	components/thirdparty/opus/silk/resampler_private_down_FIR.c \
+	components/thirdparty/opus/silk/resampler_private_IIR_FIR.c  \
+	components/thirdparty/opus/silk/resampler_private_up2_HQ.c   \
+	components/thirdparty/opus/silk/resampler_rom.c  \
+	components/thirdparty/opus/silk/sigm_Q15.c  \
+	components/thirdparty/opus/silk/sort.c  \
+	components/thirdparty/opus/silk/sum_sqr_shift.c \
+	components/thirdparty/opus/silk/stereo_decode_pred.c \
+	components/thirdparty/opus/silk/stereo_encode_pred.c  \
+	components/thirdparty/opus/silk/stereo_find_predictor.c \
+	components/thirdparty/opus/silk/stereo_quant_pred.c  \
+	components/thirdparty/opus/silk/LPC_fit.c  \
+	components/thirdparty/opus/silk/fixed/LTP_analysis_filter_FIX.c  \
+	components/thirdparty/opus/silk/fixed/LTP_scale_ctrl_FIX.c  \
+	components/thirdparty/opus/silk/fixed/corrMatrix_FIX.c  \
+	components/thirdparty/opus/silk/fixed/encode_frame_FIX.c  \
+	components/thirdparty/opus/silk/fixed/find_LPC_FIX.c  \
+	components/thirdparty/opus/silk/fixed/find_LTP_FIX.c  \
+	components/thirdparty/opus/silk/fixed/find_pitch_lags_FIX.c \
+	components/thirdparty/opus/silk/fixed/find_pred_coefs_FIX.c  \
+	components/thirdparty/opus/silk/fixed/noise_shape_analysis_FIX.c  \
+	components/thirdparty/opus/silk/fixed/process_gains_FIX.c  \
+	components/thirdparty/opus/silk/fixed/regularize_correlations_FIX.c \
+	components/thirdparty/opus/silk/fixed/residual_energy16_FIX.c  \
+	components/thirdparty/opus/silk/fixed/residual_energy_FIX.c  \
+	components/thirdparty/opus/silk/fixed/warped_autocorrelation_FIX.c \
+	components/thirdparty/opus/silk/fixed/apply_sine_window_FIX.c  \
+	components/thirdparty/opus/silk/fixed/autocorr_FIX.c  \
+	components/thirdparty/opus/silk/fixed/burg_modified_FIX.c  \
+	components/thirdparty/opus/silk/fixed/k2a_FIX.c  \
+	components/thirdparty/opus/silk/fixed/k2a_Q16_FIX.c  \
+	components/thirdparty/opus/silk/fixed/pitch_analysis_core_FIX.c  \
+	components/thirdparty/opus/silk/fixed/vector_ops_FIX.c  \
+	components/thirdparty/opus/silk/fixed/schur64_FIX.c  \
+	components/thirdparty/opus/silk/fixed/schur_FIX.c  \
+	components/thirdparty/opus/silk/fixed/arm/warped_autocorrelation_FIX_neon_intr.c  \
+	components/thirdparty/opus/silk/arm/arm_silk_map.c   \
+	components/thirdparty/opus/silk/arm/biquad_alt_neon_intr.c  \
+	components/thirdparty/opus/silk/arm/LPC_inv_pred_gain_neon_intr.c  \
+	components/thirdparty/opus/silk/arm/NSQ_del_dec_neon_intr.c   \
+	components/thirdparty/opus/silk/arm/NSQ_neon.c  \
+	components/thirdparty/opus/src/opus.c  \
+	components/thirdparty/opus/src/opus_decoder.c \
+	components/thirdparty/opus/src/opus_encoder.c  \
+	components/thirdparty/opus/src/opus_multistream.c  \
+	components/thirdparty/opus/src/opus_multistream_encoder.c \
+	components/thirdparty/opus/src/opus_multistream_decoder.c  \
+	components/thirdparty/opus/src/repacketizer.c   \
+	components/thirdparty/opus/src/opus_projection_encoder.c  \
+	components/thirdparty/opus/src/opus_projection_decoder.c  \
+	components/thirdparty/opus/src/mapping_matrix.c \
+	components/thirdparty/opus/src/analysis.c \
+	components/thirdparty/opus/src/mlp.c \
+	components/thirdparty/opus/src/mlp_data.c \
+	components/thirdparty/opus/tests/opus_decode_fuzzer.c \
+	components/thirdparty/opus/tests/opus_encode_regressions.c
+
+CHIP_ASRCS +=  components/thirdparty/opus/celt/arm/celt_pitch_xcorr_arm.S \
+
+ifeq ($(CONFIG_COMPONENTS_OPUS_DECODE_TEST),y)
+	CHIP_CSRCS += components/thirdparty/opus/tests/test_opus_decode.c
+endif
+
+ifeq ($(CONFIG_COMPONENTS_OPUS_ENCODE_TEST),y)
+	CHIP_CSRCS += components/thirdparty/opus/tests/test_opus_encode.c
+endif
+
+CFLAGS += -DHAVE_CONFIG_H
+
+CFLAGS += -DFIXED_POINT=1
+#CC_FLAGS += -DDISABLE_FLOAT_API=1
+AFLAGS += -DOPUS_ARM_ASM
+
+AFLAGS += -DOPUS_ARM_INLINE_ASM=1
+AFLAGS += -DOPUS_ARM_INLINE_MEDIA=1
+AFLAGS += -DOPUS_ARM_INLINE_NEON=1
+AFLAGS += -DOPUS_ARM_MAY_HAVE_MEDIA=1
+AFLAGS += -DOPUS_ARM_MAY_HAVE_NEON=1
+
+#AFLAGS += -DOPUS_ARM_PRESUME_MEDIA=1
+AFLAGS += -DOPUS_ARM_PRESUME_NEON=1
+
+#CFLAGS += -I./
+#CFLAGS += -I./include/
+#CFLAGS += -I./celt/
+#CFLAGS += -I./sinlk/
+#CFLAGS += -I./silk/float/
+#CFLAGS += -I./silk/fixed/
+
+AW_SRCDIR = $(TOPDIR)/arch/arm/src/r328
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)components$(DELIM)thirdparty$(DELIM)opus}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)components$(DELIM)thirdparty$(DELIM)opus$(DELIM)include}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)components$(DELIM)thirdparty$(DELIM)opus$(DELIM)celt}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)components$(DELIM)thirdparty$(DELIM)opus$(DELIM)silk}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)components$(DELIM)thirdparty$(DELIM)opus$(DELIM)silk$(DELIM)float}
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(AW_SRCDIR)$(DELIM)components$(DELIM)thirdparty$(DELIM)opus$(DELIM)silk$(DELIM)fixed}

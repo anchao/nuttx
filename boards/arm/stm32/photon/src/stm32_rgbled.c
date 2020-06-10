@@ -50,7 +50,7 @@
 #include <arch/board/board.h>
 
 #include "chip.h"
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "stm32_pwm.h"
 #include "photon.h"
 
@@ -173,7 +173,7 @@ int stm32_rgbled_setup(void)
 
       /* Initialize led off */
 
-      (void)nx_write(fd, "#000000", 8);
+      nx_write(fd, "#000000", 8);
       close(fd);
 
       /* Now we are initialized */

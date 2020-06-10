@@ -44,7 +44,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <semaphore.h>
 #include <string.h>
 #include <errno.h>
 #include <debug.h>
@@ -60,8 +59,8 @@
 
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "kinetis.h"
 #include "hardware/kinetis_lpuart.h"
@@ -746,7 +745,7 @@ static int kinetis_interrupt(int irq, void *context, void *arg)
 
           if ((stat & LPUART_STAT_OR) != LPUART_STAT_OR)
             {
-              (void) kinetis_serialin(priv, KINETIS_LPUART_DATA_OFFSET);
+              kinetis_serialin(priv, KINETIS_LPUART_DATA_OFFSET);
             }
 
           /* Reset any Errors */
@@ -1309,7 +1308,7 @@ static bool kinetis_txready(struct uart_dev_s *dev)
  * Description:
  *   Performs the low level LPUART initialization early in debug so that the
  *   serial console will be available during bootup.  This must be called
- *   before up_serialinit.  NOTE:  This function depends on GPIO pin
+ *   before arm_serialinit.  NOTE:  This function depends on GPIO pin
  *   configuration performed in kinetis_lowsetup() and main clock
  *   initialization performed in up_clkinitialize().
  *
@@ -1348,7 +1347,7 @@ void kinetis_lpuart_earlyserialinit(void)
  *
  * Description:
  *   Register serial console and serial ports.  This assumes
- *   that up_earlyserialinit was called previously.
+ *   that arm_earlyserialinit was called previously.
  *
  * Input Parameters:
  *   first: - First TTY number to assign
@@ -1367,44 +1366,44 @@ unsigned int kinetis_lpuart_serialinit(unsigned int first)
 /* Register the console */
 
 #ifdef HAVE_LPUART_CONSOLE
-  (void)uart_register("/dev/console", &CONSOLE_DEV);
+  uart_register("/dev/console", &CONSOLE_DEV);
 #endif
 #if !defined(CONFIG_KINETIS_MERGE_TTY)
   /* Register all LPUARTs as LPn devices */
 
-  (void)uart_register("/dev/ttyLP0", &TTYS0_DEV);
+  uart_register("/dev/ttyLP0", &TTYS0_DEV);
 #ifdef TTYS1_DEV
-  (void)uart_register("/dev/ttyLP1", &TTYS1_DEV);
+  uart_register("/dev/ttyLP1", &TTYS1_DEV);
 #endif
 #ifdef TTYS2_DEV
-  (void)uart_register("/dev/ttyLP2", &TTYS2_DEV);
+  uart_register("/dev/ttyLP2", &TTYS2_DEV);
 #endif
 #ifdef TTYS3_DEV
-  (void)uart_register("/dev/ttyLP3", &TTYS3_DEV);
+  uart_register("/dev/ttyLP3", &TTYS3_DEV);
 #endif
 #ifdef TTYS4_DEV
-  (void)uart_register("/dev/ttyLP4", &TTYS4_DEV);
+  uart_register("/dev/ttyLP4", &TTYS4_DEV);
 #endif
 
 #else
 
   devname[(sizeof(devname)/sizeof(devname[0]))-2] = '0' + first++;
-  (void)uart_register(devname, &TTYS0_DEV);
+  uart_register(devname, &TTYS0_DEV);
 #ifdef TTYS1_DEV
   devname[(sizeof(devname)/sizeof(devname[0]))-2] = '0' + first++;
-  (void)uart_register(devname, &TTYS1_DEV);
+  uart_register(devname, &TTYS1_DEV);
 #endif
 #ifdef TTYS2_DEV
   devname[(sizeof(devname)/sizeof(devname[0]))-2] = '0' + first++;
-  (void)uart_register(devname, &TTYS2_DEV);
+  uart_register(devname, &TTYS2_DEV);
 #endif
 #ifdef TTYS3_DEV
   devname[(sizeof(devname)/sizeof(devname[0]))-2] = '0' + first++;
-  (void)uart_register(devname, &TTYS3_DEV);
+  uart_register(devname, &TTYS3_DEV);
 #endif
 #ifdef TTYS4_DEV
   devname[(sizeof(devname)/sizeof(devname[0]))-2] = '0' + first++;
-  (void)uart_register(devname, &TTYS4_DEV);
+  uart_register(devname, &TTYS4_DEV);
 #endif
 #endif
 
@@ -1434,10 +1433,10 @@ int up_putc(int ch)
     {
       /* Add CR */
 
-      up_lowputc('\r');
+      arm_lowputc('\r');
     }
 
-  up_lowputc(ch);
+  arm_lowputc(ch);
   kinetis_restoreuartint(priv, ie);
 #endif
   return ch;
@@ -1464,10 +1463,10 @@ int up_putc(int ch)
     {
       /* Add CR */
 
-      up_lowputc('\r');
+      arm_lowputc('\r');
     }
 
-  up_lowputc(ch);
+  arm_lowputc(ch);
 #endif
   return ch;
 }

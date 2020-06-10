@@ -43,8 +43,8 @@
 
 #include <nuttx/arch.h>
 
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 
 #include "hardware/tms570_rti.h"
 
@@ -147,7 +147,7 @@ static int tms570_timerisr(int irq, uint32_t *regs, void *arg)
  ****************************************************************************/
 
 /****************************************************************************
- * Name:  arm_timer_initialize
+ * Name:  up_timer_initialize
  *
  * Description:
  *   This function is called during start-up to initialize the timer
@@ -155,7 +155,7 @@ static int tms570_timerisr(int irq, uint32_t *regs, void *arg)
  *
  ****************************************************************************/
 
-void arm_timer_initialize(void)
+void up_timer_initialize(void)
 {
   /* Disable all RTI interrupts */
 

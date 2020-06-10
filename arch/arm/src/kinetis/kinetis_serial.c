@@ -45,7 +45,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <semaphore.h>
 #include <string.h>
 #include <errno.h>
 #include <debug.h>
@@ -61,8 +60,8 @@
 
 #include <arch/board/board.h>
 
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "kinetis_config.h"
 #include "chip.h"
@@ -137,7 +136,7 @@
 #  endif
 #elif defined(CONFIG_UART5_SERIAL_CONSOLE)
 #    define CONSOLE_DEV         g_uart5port /* UART5 is console */
-#    define TTYS5_DEV           g_uart5port /* UART5 is ttyS0 */
+#    define TTYS0_DEV           g_uart5port /* UART5 is ttyS0 */
 #    define UART5_ASSIGNED      1
 #  if defined(CONFIG_KINETIS_UART5_RXDMA)
 #    define SERIAL_HAVE_CONSOLE_DMA 1
@@ -881,7 +880,7 @@ static uint8_t get_and_clear_uart_status(struct up_dev_s *priv)
        * discarding the data.
        */
 
-      (void)up_serialin(priv, KINETIS_UART_D_OFFSET);
+      up_serialin(priv, KINETIS_UART_D_OFFSET);
     }
 
   return regval;
@@ -1163,7 +1162,7 @@ static int up_interrupt(int irq, void *context, FAR void *arg)
  *   interrupt received on the 'irq'  It should call uart_transmitchars or
  *   uart_receivechar to perform the appropriate data transfers.  The
  *   interrupt handling logic must be able to map the 'irq' number into the
- *   approprite uart_dev_s structure in order to call these functions.
+ *   appropriate uart_dev_s structure in order to call these functions.
  *
  ****************************************************************************/
 
@@ -1971,7 +1970,7 @@ static void up_dma_rxcallback(DMA_HANDLE handle, void *arg, int result)
  * Description:
  *   Performs the low level UART initialization early in debug so that the
  *   serial console will be available during bootup.  This must be called
- *   before up_serialinit.  NOTE:  This function depends on GPIO pin
+ *   before arm_serialinit.  NOTE:  This function depends on GPIO pin
  *   configuration performed in up_consoleinit() and main clock
  *   initialization performed in up_clkinitialize().
  *
@@ -2015,7 +2014,7 @@ void kinetis_uart_earlyserialinit(void)
  *
  * Description:
  *   Register serial console and serial ports.  This assumes
- *   that up_earlyserialinit was called previously.
+ *   that arm_earlyserialinit was called previously.
  *
  * Input Parameters:
  *   first: - First TTY number to assign
@@ -2032,7 +2031,7 @@ unsigned int kinetis_uart_serialinit(unsigned int first)
   /* Register the console */
 
 #ifdef HAVE_UART_CONSOLE
-  (void)uart_register("/dev/console", &CONSOLE_DEV);
+  uart_register("/dev/console", &CONSOLE_DEV);
 
 #  ifdef SERIAL_HAVE_CONSOLE_DMA
   /* If we need to re-initialise the console to enable DMA do that here. */
@@ -2044,26 +2043,26 @@ unsigned int kinetis_uart_serialinit(unsigned int first)
   /* Register all UARTs */
 
   devname[(sizeof(devname)/sizeof(devname[0]))-2] = '0' + first++;
-  (void)uart_register(devname, &TTYS0_DEV);
+  uart_register(devname, &TTYS0_DEV);
 #ifdef TTYS1_DEV
   devname[(sizeof(devname)/sizeof(devname[0]))-2] = '0' + first++;
-  (void)uart_register(devname, &TTYS1_DEV);
+  uart_register(devname, &TTYS1_DEV);
 #endif
 #ifdef TTYS2_DEV
   devname[(sizeof(devname)/sizeof(devname[0]))-2] = '0' + first++;
-  (void)uart_register(devname, &TTYS2_DEV);
+  uart_register(devname, &TTYS2_DEV);
 #endif
 #ifdef TTYS3_DEV
   devname[(sizeof(devname)/sizeof(devname[0]))-2] = '0' + first++;
-  (void)uart_register(devname, &TTYS3_DEV);
+  uart_register(devname, &TTYS3_DEV);
 #endif
 #ifdef TTYS4_DEV
   devname[(sizeof(devname)/sizeof(devname[0]))-2] = '0' + first++;
-  (void)uart_register(devname, &TTYS4_DEV);
+  uart_register(devname, &TTYS4_DEV);
 #endif
 #ifdef TTYS5_DEV
   devname[(sizeof(devname)/sizeof(devname[0]))-2] = '0' + first++;
-  (void)uart_register(devname, &TTYS5_DEV);
+  uart_register(devname, &TTYS5_DEV);
 #endif
   return first;
 }
@@ -2155,10 +2154,10 @@ int up_putc(int ch)
     {
       /* Add CR */
 
-      up_lowputc('\r');
+      arm_lowputc('\r');
     }
 
-  up_lowputc(ch);
+  arm_lowputc(ch);
   up_restoreuartint(priv, ie);
 #endif
   return ch;
@@ -2185,10 +2184,10 @@ int up_putc(int ch)
     {
       /* Add CR */
 
-      up_lowputc('\r');
+      arm_lowputc('\r');
     }
 
-  up_lowputc(ch);
+  arm_lowputc(ch);
 #endif
   return ch;
 }

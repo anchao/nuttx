@@ -1,35 +1,20 @@
 /****************************************************************************
  * net/socket/net_sockets.c
  *
- *   Copyright (C) 2007-2009, 2011-2014, 2016 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name NuttX nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  *
  ****************************************************************************/
 
@@ -40,7 +25,6 @@
 #include <nuttx/config.h>
 
 #include <string.h>
-#include <semaphore.h>
 #include <assert.h>
 #include <sched.h>
 #include <errno.h>
@@ -48,6 +32,7 @@
 
 #include <nuttx/net/net.h>
 #include <nuttx/kmalloc.h>
+#include <nuttx/semaphore.h>
 
 #include "socket/socket.h"
 
@@ -57,20 +42,7 @@
 
 static void _net_semtake(FAR struct socketlist *list)
 {
-  int ret;
-
-  /* Take the semaphore (perhaps waiting) */
-
-  while ((ret = net_lockedwait(&list->sl_sem)) < 0)
-    {
-      /* The only case that an error should occr here is if
-       * the wait was awakened by a signal.
-       */
-
-      DEBUGASSERT(ret == -EINTR || ret == -ECANCELED);
-    }
-
-  UNUSED(ret);
+  net_lockedwait_uninterruptible(&list->sl_sem);
 }
 
 #define _net_semgive(list) nxsem_post(&list->sl_sem)
@@ -97,7 +69,7 @@ void net_initlist(FAR struct socketlist *list)
 {
   /* Initialize the list access mutex */
 
-  (void)nxsem_init(&list->sl_sem, 0, 1);
+  nxsem_init(&list->sl_sem, 0, 1);
 }
 
 /****************************************************************************
@@ -107,7 +79,8 @@ void net_initlist(FAR struct socketlist *list)
  *   Release resources held by the socket list
  *
  * Input Parameters:
- *   list -- A reference to the pre-allocated socket list to be un-initialized.
+ *   list - A reference to the pre-allocated socket list to be un-
+ *          initialized.
  *
  * Returned Value:
  *   None
@@ -127,13 +100,13 @@ void net_releaselist(FAR struct socketlist *list)
       FAR struct socket *psock = &list->sl_sockets[ndx];
       if (psock->s_crefs > 0)
         {
-          (void)psock_close(psock);
+          psock_close(psock);
         }
     }
 
   /* Destroy the semaphore */
 
-  (void)nxsem_destroy(&list->sl_sem);
+  nxsem_destroy(&list->sl_sem);
 }
 
 /****************************************************************************
@@ -158,7 +131,7 @@ int sockfd_allocate(int minsd)
 
   /* Get the socket list for this task/thread */
 
-  list = sched_getsockets();
+  list = nxsched_get_sockets();
   if (list)
     {
       /* Search for a socket structure with no references */
@@ -205,30 +178,19 @@ void psock_release(FAR struct socket *psock)
 {
   if (psock != NULL)
     {
-      /* Take the list semaphore so that there will be no accesses
-       * to this socket structure.
+      /* Decrement the count if there the socket will persist
+       * after this.
        */
 
-      FAR struct socketlist *list = sched_getsockets();
-      if (list)
+      if (psock->s_crefs > 1)
         {
-          /* Decrement the count if there the socket will persist
-           * after this.
-           */
+          psock->s_crefs--;
+        }
+      else
+        {
+          /* The socket will not persist... reset it */
 
-          _net_semtake(list);
-          if (psock->s_crefs > 1)
-            {
-              psock->s_crefs--;
-            }
-          else
-            {
-              /* The socket will not persist... reset it */
-
-              memset(psock, 0, sizeof(struct socket));
-            }
-
-          _net_semgive(list);
+          memset(psock, 0, sizeof(struct socket));
         }
     }
 }
@@ -253,11 +215,19 @@ void sockfd_release(int sockfd)
 
   FAR struct socket *psock = sockfd_socket(sockfd);
 
-  /* Get the socket structure for this sockfd */
-
   if (psock)
     {
-      psock_release(psock);
+      /* Take the list semaphore so that there will be no accesses
+       * to this socket structure.
+       */
+
+      FAR struct socketlist *list = nxsched_get_sockets();
+      if (list)
+        {
+          _net_semtake(list);
+          psock_release(psock);
+          _net_semgive(list);
+        }
     }
 }
 
@@ -268,7 +238,7 @@ void sockfd_release(int sockfd)
  *   Given a socket descriptor, return the underlying socket structure.
  *
  * Input Parameters:
- *   sockfd - The socket descriptor index o use.
+ *   sockfd - The socket descriptor index to use.
  *
  * Returned Value:
  *   On success, a reference to the socket structure associated with the
@@ -283,7 +253,7 @@ FAR struct socket *sockfd_socket(int sockfd)
 
   if (ndx >= 0 && ndx < CONFIG_NSOCKET_DESCRIPTORS)
     {
-      list = sched_getsockets();
+      list = nxsched_get_sockets();
       if (list)
         {
           return &list->sl_sockets[ndx];
@@ -292,4 +262,3 @@ FAR struct socket *sockfd_socket(int sockfd)
 
   return NULL;
 }
-

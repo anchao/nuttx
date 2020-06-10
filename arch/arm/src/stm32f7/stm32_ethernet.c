@@ -53,6 +53,7 @@
 #include <nuttx/irq.h>
 #include <nuttx/wdog.h>
 #include <nuttx/wqueue.h>
+#include <nuttx/signal.h>
 #include <nuttx/net/mii.h>
 #include <nuttx/net/arp.h>
 #include <nuttx/net/netdev.h>
@@ -62,7 +63,7 @@
 #  include <nuttx/net/pkt.h>
 #endif
 
-#include "up_internal.h"
+#include "arm_internal.h"
 #include "barriers.h"
 
 #include "hardware/stm32_syscfg.h"
@@ -235,7 +236,7 @@
 
 #define STM32_ETH_NFREEBUFFERS (CONFIG_STM32F7_ETH_NTXDESC+1)
 
-/* Buffers use fro DMA access must begin on an address aligned with the
+/* Buffers use for DMA access must begin on an address aligned with the
  * D-Cache line and must be an even multiple of the D-Cache line size.
  * These size/alignment requirements are necessary so that D-Cache flush
  * and invalidate operations will not have any additional effects.
@@ -278,6 +279,7 @@
 #endif
 
 /* Clocking *****************************************************************/
+
 /* Set MACMIIAR CR bits depending on HCLK setting */
 
 #if STM32_HCLK_FREQUENCY >= 20000000 && STM32_HCLK_FREQUENCY < 35000000
@@ -295,6 +297,7 @@
 #endif
 
 /* Timing *******************************************************************/
+
 /* TX poll delay = 1 seconds. CLK_TCK is the number of clock ticks per
  * second
  */
@@ -314,7 +317,7 @@
 
 #define PHY_READ_TIMEOUT  (0x0004ffff)
 #define PHY_WRITE_TIMEOUT (0x0004ffff)
-#define PHY_RETRY_TIMEOUT (0x0004ffff)
+#define PHY_RETRY_TIMEOUT (0x00000ccc)
 
 /* MAC reset ready delays in loop counts */
 
@@ -556,6 +559,7 @@
 #endif
 
 /* Interrupt bit sets *******************************************************/
+
 /* All interrupts in the normal and abnormal interrupt summary.  Early transmit
  * interrupt (ETI) is excluded from the abnormal set because it causes too
  * many interrupts and is not interesting.
@@ -582,6 +586,7 @@
 #endif
 
 /* Helpers ******************************************************************/
+
 /* This is a helper pointer for accessing the contents of the Ethernet
  * header
  */
@@ -591,6 +596,7 @@
 /****************************************************************************
  * Private Types
  ****************************************************************************/
+
 /* This union type forces the allocated size of RX descriptors to be the
  * padded to a exact multiple of the Cortex-M7 D-Cache line size.
  */
@@ -675,6 +681,7 @@ static struct stm32_ethmac_s g_stm32ethmac[STM32F7_NETHERNET];
 /****************************************************************************
  * Private Function Prototypes
  ****************************************************************************/
+
 /* Register operations ******************************************************/
 
 #ifdef CONFIG_STM32F7_ETHMAC_REGDEBUG
@@ -786,6 +793,7 @@ static int  stm32_ethconfig(struct stm32_ethmac_s *priv);
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
+
 /****************************************************************************
  * Name: stm32_getreg
  *
@@ -840,7 +848,7 @@ static uint32_t stm32_getreg(uint32_t addr)
         {
           /* Yes.. then show how many times the value repeated */
 
-          ninfo("[repeats %d more times]\n", count-3);
+          ninfo("[repeats %d more times]\n", count - 3);
         }
 
       /* Save the new address, value, and count */
@@ -1086,7 +1094,7 @@ static int stm32_transmit(struct stm32_ethmac_s *priv)
     {
       /* Yes... how many buffers will be need to send the packet? */
 
-      bufcount = (priv->dev.d_len + (ALIGNED_BUFSIZE-1)) / ALIGNED_BUFSIZE;
+      bufcount = (priv->dev.d_len + (ALIGNED_BUFSIZE - 1)) / ALIGNED_BUFSIZE;
       lastsize = priv->dev.d_len - (bufcount - 1) * ALIGNED_BUFSIZE;
 
       ninfo("bufcount: %d lastsize: %d\n", bufcount, lastsize);
@@ -1111,7 +1119,7 @@ static int stm32_transmit(struct stm32_ethmac_s *priv)
 
           /* Set the buffer size in all TX descriptors */
 
-          if (i == (bufcount-1))
+          if (i == (bufcount - 1))
             {
               /* This is the last segment.  Set the last segment bit in the
                * last TX descriptor and ask for an interrupt when this
@@ -1120,7 +1128,7 @@ static int stm32_transmit(struct stm32_ethmac_s *priv)
 
               txdesc->tdes0 |= (ETH_TDES0_LS | ETH_TDES0_IC);
 
-              /* This segement is, most likely, of fractional buffersize */
+              /* This segment is, most likely, of fractional buffersize */
 
               txdesc->tdes1  = lastsize;
               buffer        += lastsize;
@@ -1250,7 +1258,7 @@ static int stm32_transmit(struct stm32_ethmac_s *priv)
 
   /* Setup the TX timeout watchdog (perhaps restarting the timer) */
 
-  (void)wd_start(priv->txtimeout, STM32_TXTIMEOUT, stm32_txtimeout_expiry, 1, (uint32_t)priv);
+  wd_start(priv->txtimeout, STM32_TXTIMEOUT, stm32_txtimeout_expiry, 1, (uint32_t)priv);
   return OK;
 }
 
@@ -1414,7 +1422,7 @@ static void stm32_dopoll(struct stm32_ethmac_s *priv)
 
       if (dev->d_buf)
         {
-          (void)devif_poll(dev, stm32_txpoll);
+          devif_poll(dev, stm32_txpoll);
 
           /* We will, most likely end up with a buffer to be freed.  But it
            * might not be the same one that we allocated above.
@@ -1855,7 +1863,7 @@ static void stm32_receive(struct stm32_ethmac_s *priv)
 #ifdef CONFIG_NET_IPv6
       if (BUF->type == HTONS(ETHTYPE_IP6))
         {
-          ninfo("Iv6 frame\n");
+          ninfo("IPv6 frame\n");
 
           /* Give the IPv6 packet to the network layer */
 
@@ -2372,7 +2380,7 @@ static void stm32_poll_work(void *arg)
           /* Update TCP timing states and poll the network for new XMIT data.
            */
 
-          (void)devif_timer(dev, stm32_txpoll);
+          devif_timer(dev, STM32_WDDELAY, stm32_txpoll);
 
           /* We will, most likely end up with a buffer to be freed.  But it
            * might not be the same one that we allocated above.
@@ -2389,7 +2397,7 @@ static void stm32_poll_work(void *arg)
 
   /* Setup the watchdog poll timer again */
 
-  (void)wd_start(priv->txpoll, STM32_WDDELAY, stm32_poll_expiry, 1, priv);
+  wd_start(priv->txpoll, STM32_WDDELAY, stm32_poll_expiry, 1, priv);
   net_unlock();
 }
 
@@ -2423,7 +2431,7 @@ static void stm32_poll_expiry(int argc, uint32_t arg, ...)
     }
   else
     {
-      (void)wd_start(priv->txpoll, STM32_WDDELAY, stm32_poll_expiry, 1, priv);
+      wd_start(priv->txpoll, STM32_WDDELAY, stm32_poll_expiry, 1, priv);
     }
 }
 
@@ -2471,7 +2479,7 @@ static int stm32_ifup(struct net_driver_s *dev)
 
   /* Set and activate a timer process */
 
-  (void)wd_start(priv->txpoll, STM32_WDDELAY, stm32_poll_expiry, 1, (uint32_t)priv);
+  wd_start(priv->txpoll, STM32_WDDELAY, stm32_poll_expiry, 1, (uint32_t)priv);
 
   /* Enable the Ethernet interrupt */
 
@@ -2634,6 +2642,7 @@ static uint32_t stm32_calcethcrc(const uint8_t *data, size_t length)
           if (((crc >> 31) ^ (data[i] >> j)) & 0x01)
             {
               /* x^26+x^23+x^22+x^16+x^12+x^11+x^10+x^8+x^7+x^5+x^4+x^2+x+1 */
+
               crc = (crc << 1) ^ 0x04c11db7;
             }
           else
@@ -2680,7 +2689,7 @@ static int stm32_addmac(struct net_driver_s *dev, const uint8_t *mac)
 
   crc = stm32_calcethcrc(mac, 6);
 
-  hashindex = (crc >> 26) & 0x3F;
+  hashindex = (crc >> 26) & 0x3f;
 
   if (hashindex > 31)
     {
@@ -2737,7 +2746,7 @@ static int stm32_rmmac(struct net_driver_s *dev, const uint8_t *mac)
 
   crc = stm32_calcethcrc(mac, 6);
 
-  hashindex = (crc >> 26) & 0x3F;
+  hashindex = (crc >> 26) & 0x3f;
 
   if (hashindex > 31)
     {
@@ -2803,8 +2812,8 @@ static void stm32_txdescinit(struct stm32_ethmac_s *priv,
    * transfers.
    */
 
-   priv->txtail   = NULL;
-   priv->inflight = 0;
+  priv->txtail   = NULL;
+  priv->inflight = 0;
 
   /* Initialize each TX descriptor */
 
@@ -2830,13 +2839,13 @@ static void stm32_txdescinit(struct stm32_ethmac_s *priv,
 
       /* Initialize the next descriptor with the Next Descriptor Polling Enable */
 
-      if (i < (CONFIG_STM32F7_ETH_NTXDESC-1))
+      if (i < (CONFIG_STM32F7_ETH_NTXDESC - 1))
         {
           /* Set next descriptor address register with next descriptor base
            * address
            */
 
-          txdesc->tdes3 = (uint32_t)&txtable[i+1].txdesc;
+          txdesc->tdes3 = (uint32_t)&txtable[i + 1].txdesc;
         }
       else
         {
@@ -2920,13 +2929,13 @@ static void stm32_rxdescinit(struct stm32_ethmac_s *priv,
 
       /* Initialize the next descriptor with the Next Descriptor Polling Enable */
 
-      if (i < (CONFIG_STM32F7_ETH_NRXDESC-1))
+      if (i < (CONFIG_STM32F7_ETH_NRXDESC - 1))
         {
           /* Set next descriptor address register with next descriptor base
            * address
            */
 
-          rxdesc->rdes3 = (uint32_t)&rxtable[i+1].rxdesc;
+          rxdesc->rdes3 = (uint32_t)&rxtable[i + 1].rxdesc;
         }
       else
         {
@@ -3287,6 +3296,7 @@ static int stm32_phyinit(struct stm32_ethmac_s *priv)
       nerr("ERROR: Failed to reset the PHY: %d\n", ret);
       return ret;
     }
+
   up_mdelay(PHY_RESET_DELAY);
 
   /* Perform any necessary, board-specific PHY initialization */
@@ -3327,6 +3337,8 @@ static int stm32_phyinit(struct stm32_ethmac_s *priv)
         {
           break;
         }
+
+      nxsig_usleep(100);
     }
 
   if (timeout >= PHY_RETRY_TIMEOUT)
@@ -3358,6 +3370,8 @@ static int stm32_phyinit(struct stm32_ethmac_s *priv)
         {
           break;
         }
+
+      nxsig_usleep(100);
     }
 
   if (timeout >= PHY_RETRY_TIMEOUT)
@@ -3432,7 +3446,7 @@ static int stm32_phyinit(struct stm32_ethmac_s *priv)
     }
 #endif
 
-#else /* Auto-negotion not selected */
+#else /* Auto-negotiation not selected */
 
   phyval = 0;
 #ifdef CONFIG_STM32F7_ETHFD
@@ -3472,7 +3486,7 @@ static int stm32_phyinit(struct stm32_ethmac_s *priv)
  * Name: stm32_selectmii
  *
  * Description:
- *   Selects the MII inteface.
+ *   Selects the MII interface.
  *
  * Input Parameters:
  *   None
@@ -3497,7 +3511,7 @@ static inline void stm32_selectmii(void)
  * Name: stm32_selectrmii
  *
  * Description:
- *   Selects the RMII inteface.
+ *   Selects the RMII interface.
  *
  * Input Parameters:
  *   None
@@ -3787,6 +3801,7 @@ static int stm32_macconfig(struct stm32_ethmac_s *priv)
   stm32_putreg(0, STM32_ETH_MACVLANTR);
 
   /* DMA Configuration */
+
   /* Set up the DMAOMR register */
 
   regval  = stm32_getreg(STM32_ETH_DMAOMR);
@@ -3896,7 +3911,7 @@ static void stm32_ipv6multicast(struct stm32_ethmac_s *priv)
   ninfo("IPv6 Multicast: %02x:%02x:%02x:%02x:%02x:%02x\n",
         mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
-  (void)stm32_addmac(dev, mac);
+  stm32_addmac(dev, mac);
 
 #ifdef CONFIG_NET_ICMPv6_AUTOCONF
   /* Add the IPv6 all link-local nodes Ethernet address.  This is the
@@ -3904,7 +3919,7 @@ static void stm32_ipv6multicast(struct stm32_ethmac_s *priv)
    * packets.
    */
 
-  (void)stm32_addmac(dev, g_ipv6_ethallnodes.ether_addr_octet);
+  stm32_addmac(dev, g_ipv6_ethallnodes.ether_addr_octet);
 
 #endif /* CONFIG_NET_ICMPv6_AUTOCONF */
 #ifdef CONFIG_NET_ICMPv6_ROUTER
@@ -3913,7 +3928,7 @@ static void stm32_ipv6multicast(struct stm32_ethmac_s *priv)
    * packets.
    */
 
-  (void)stm32_addmac(dev, g_ipv6_ethallrouters.ether_addr_octet);
+  stm32_addmac(dev, g_ipv6_ethallrouters.ether_addr_octet);
 
 #endif /* CONFIG_NET_ICMPv6_ROUTER */
 }
@@ -4083,7 +4098,7 @@ static int stm32_ethconfig(struct stm32_ethmac_s *priv)
  * Description:
  *   Initialize the Ethernet driver for one interface.  If the STM32 chip
  *   supports multiple Ethernet controllers, then board specific logic
- *   must implement up_netinitialize() and call this function to initialize
+ *   must implement arm_netinitialize() and call this function to initialize
  *   the desired interfaces.
  *
  * Input Parameters:
@@ -4167,18 +4182,18 @@ int stm32_ethinitialize(int intf)
 
   /* Register the device with the OS so that socket IOCTLs can be performed */
 
-  (void)netdev_register(&priv->dev, NET_LL_ETHERNET);
+  netdev_register(&priv->dev, NET_LL_ETHERNET);
   return OK;
 }
 
 /****************************************************************************
- * Function: up_netinitialize
+ * Function: arm_netinitialize
  *
  * Description:
  *   This is the "standard" network initialization logic called from the
- *   low-level initialization logic in up_initialize.c.  If STM32F7_NETHERNET
+ *   low-level initialization logic in arm_initialize.c.  If STM32F7_NETHERNET
  *   greater than one, then board specific logic will have to supply a
- *   version of up_netinitialize() that calls stm32_ethinitialize() with
+ *   version of arm_netinitialize() that calls stm32_ethinitialize() with
  *   the appropriate interface number.
  *
  * Input Parameters:
@@ -4192,9 +4207,9 @@ int stm32_ethinitialize(int intf)
  ****************************************************************************/
 
 #if STM32F7_NETHERNET == 1 && !defined(CONFIG_NETDEV_LATEINIT)
-void up_netinitialize(void)
+void arm_netinitialize(void)
 {
-  (void)stm32_ethinitialize(0);
+  stm32_ethinitialize(0);
 }
 #endif
 

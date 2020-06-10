@@ -140,6 +140,7 @@ static struct charger_dev_s g_chargerdev;
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
+
 /****************************************************************************
  * Name: charger_therm2temp
  *
@@ -167,11 +168,39 @@ static int charger_therm2temp(int val)
 
   return (int)f6;
 #else
-  static short T[29] =  /* -40,-35,..-20,-15,..,95,100 */
-    { 4020, 3986, 3939, 3877, 3759, 3691, 3562, 3405, 3222, 3015, /* -40,.. */
-      2787, 2545, 2296, 2048, 1808, 1582, 1374, 1186, 1020,  874, /*  10,.. */
-      747,  639 , 546,  467,  400,  343,  295,  254,  220
+  static short T[29] =
+    {
+      4020, /* -40,-35,..-20,-15,..,95,100 */
+      3986,
+      3939,
+      3877,
+      3759,
+      3691,
+      3562,
+      3405,
+      3222,
+      3015, /* -40,.. */
+      2787,
+      2545,
+      2296,
+      2048,
+      1808,
+      1582,
+      1374,
+      1186,
+      1020,
+       874, /*  10,.. */
+       747,
+       639,
+       546,
+       467,
+       400,
+       343,
+       295,
+       254,
+       220
     };      /*  60,..,100 */
+
   int i;
   int t0 = -45;
   int t1 = -40;
@@ -183,6 +212,7 @@ static int charger_therm2temp(int val)
         {
           break;
         }
+
       t0 += 5;
       t1 += 5;
     }
@@ -316,6 +346,7 @@ static int charger_online(FAR bool *online)
     {
       return -EINVAL;
     }
+
   *online = true;
   return OK;
 }
@@ -477,7 +508,7 @@ static int charger_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
   FAR struct charger_dev_s *priv  = inode->i_private;
   int ret = -ENOTTY;
 
-  sem_wait(&priv->batsem);
+  nxsem_wait(&priv->batsem);
 
   switch (cmd)
     {
@@ -621,7 +652,7 @@ static int charger_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
         break;
     }
 
-  sem_post(&priv->batsem);
+  nxsem_post(&priv->batsem);
 
   return ret;
 }
@@ -629,6 +660,7 @@ static int charger_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
+
 /****************************************************************************
  * Name: cxd56_charger_initialize
  *
@@ -650,7 +682,7 @@ int cxd56_charger_initialize(FAR const char *devpath)
 
   /* Initialize the CXD5247 device structure */
 
-  sem_init(&priv->batsem, 0, 1);
+  nxsem_init(&priv->batsem, 0, 1);
 
   /* Register battery driver */
 
@@ -680,8 +712,7 @@ int cxd56_charger_initialize(FAR const char *devpath)
 
 int cxd56_charger_uninitialize(FAR const char *devpath)
 {
-  (void) unregister_driver(devpath);
-
+  unregister_driver(devpath);
   return OK;
 }
 

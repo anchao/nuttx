@@ -45,7 +45,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <semaphore.h>
 #include <string.h>
 #include <errno.h>
 #include <debug.h>
@@ -61,8 +60,8 @@
 #include <arch/board/board.h>
 
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "cxd56_config.h"
 #include "cxd56_serial.h"
@@ -467,15 +466,16 @@ static void up_shutdown(FAR struct uart_dev_s *dev)
  * Name: up_attach
  *
  * Description:
- *   Configure the UART to operation in interrupt driven mode.  This method is
- *   called when the serial port is opened.  Normally, this is just after the
- *   the setup() method is called, however, the serial console may operate in
- *   a non-interrupt driven mode during the boot phase.
+ *   Configure the UART to operation in interrupt driven mode.
+ *   This method is called when the serial port is opened.
+ *   Normally, this is just after the the setup() method is called,
+ *   however, the serial console may operate in  a non-interrupt driven mode
+ *   during the boot phase.
  *
  *   RX and TX interrupts are not enabled when by the attach method (unless
- *   the hardware supports multiple levels of interrupt enabling).  The RX and
- *   TX interrupts are not enabled until the txint() and rxint() methods are
- *   called.
+ *   the hardware supports multiple levels of interrupt enabling).
+ *   The RX and TX interrupts are not enabled until the txint() and rxint()
+ *   methods are called.
  *
  ****************************************************************************/
 
@@ -504,8 +504,8 @@ static int up_attach(FAR struct uart_dev_s *dev)
  *
  * Description:
  *   Detach UART interrupts.  This method is called when the serial port is
- *   closed normally just before the shutdown method is called.  The exception
- *   is the serial console which is never shutdown.
+ *   closed normally just before the shutdown method is called.
+ *   The exception is the serial console which is never shutdown.
  *
  ****************************************************************************/
 
@@ -543,10 +543,7 @@ static void up_detach(FAR struct uart_dev_s *dev)
 static bool up_rxflowcontrol(FAR struct uart_dev_s *dev,
                              unsigned int nbuffered, bool upper)
 {
-  (void)nbuffered;
-
   up_rxint(dev, !upper);
-
   return true;
 }
 #endif /* CONFIG_SERIAL_IFLOWCONTROL */
@@ -884,16 +881,16 @@ static bool up_txempty(FAR struct uart_dev_s *dev)
 }
 
 /****************************************************************************
- * Public Funtions
+ * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Name: up_serialinit
+ * Name: arm_serialinit
  *
  * Description:
  *   Performs the low level UART initialization early in debug so that the
  *   serial console will be available during bootup.  This must be called
- *   before up_serialinit.
+ *   before arm_serialinit.
  *
  *   NOTE: Configuration of the CONSOLE UART was performed by up_lowsetup()
  *   very early in the boot sequence.
@@ -901,7 +898,7 @@ static bool up_txempty(FAR struct uart_dev_s *dev)
  ****************************************************************************/
 
 #ifdef USE_EARLYSERIALINIT
-void up_earlyserialinit(void)
+void arm_earlyserialinit(void)
 {
   /* Configuration whichever one is the console */
 
@@ -913,24 +910,24 @@ void up_earlyserialinit(void)
 #endif
 
 /****************************************************************************
- * Name: up_serialinit
+ * Name: arm_serialinit
  *
  * Description:
  *   Register serial console and serial ports.  This assumes that
- *   up_earlyserialinit was called previously.
+ *   arm_earlyserialinit was called previously.
  *
  ****************************************************************************/
 
-void up_serialinit(void)
+void arm_serialinit(void)
 {
 #ifdef CONSOLE_DEV
-  (void)uart_register("/dev/console", &CONSOLE_DEV);
+  uart_register("/dev/console", &CONSOLE_DEV);
 #endif
 #ifdef TTYS0_DEV
-  (void)uart_register("/dev/ttyS0", &TTYS0_DEV);
+  uart_register("/dev/ttyS0", &TTYS0_DEV);
 #endif
 #ifdef TTYS2_DEV
-  (void)uart_register("/dev/ttyS2", &TTYS2_DEV);
+  uart_register("/dev/ttyS2", &TTYS2_DEV);
 #endif
 }
 
@@ -956,10 +953,10 @@ int up_putc(int ch)
     {
       /* Add CR */
 
-      up_lowputc('\r');
+      arm_lowputc('\r');
     }
 
-  up_lowputc(ch);
+  arm_lowputc(ch);
 #ifdef HAVE_CONSOLE
   up_restoreuartint(priv, ier);
 #endif
@@ -986,10 +983,10 @@ int up_putc(int ch)
     {
       /* Add CR */
 
-      up_lowputc('\r');
+      arm_lowputc('\r');
     }
 
-  up_lowputc(ch);
+  arm_lowputc(ch);
 #endif
   return ch;
 }

@@ -43,12 +43,12 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include <semaphore.h>
 #include <fcntl.h>
 #include <errno.h>
 
 #include <nuttx/fs/fs.h>
 #include <nuttx/drivers/drivers.h>
+#include <nuttx/semaphore.h>
 
 #include "pipe_common.h"
 
@@ -130,7 +130,7 @@ static inline void pipe_free(int pipeno)
   if (ret == OK)
     {
       g_pipeset &= ~(1 << pipeno);
-      (void)nxsem_post(&g_pipesem);
+      nxsem_post(&g_pipesem);
     }
 }
 
@@ -164,14 +164,14 @@ static int pipe_close(FAR struct file *filep)
  ****************************************************************************/
 
 /****************************************************************************
- * Name: pipe2
+ * Name: nx_pipe
  *
  * Description:
- *   pipe() creates a pair of file descriptors, pointing to a pipe inode,
+ *   nx_pipe() creates a pair of file descriptors, pointing to a pipe inode,
  *   and  places them in the array pointed to by 'fd'. fd[0] is for reading,
  *   fd[1] is for writing.
  *
- *   NOTE: pipe2 is a special, non-standard, NuttX-only interface.  Since
+ *   NOTE: nx_pipe is a special, non-standard, NuttX-only interface.  Since
  *   the NuttX FIFOs are based in in-memory, circular buffers, the ability
  *   to control the size of those buffers is critical for system tuning.
  *
@@ -186,12 +186,11 @@ static int pipe_close(FAR struct file *filep)
  *
  ****************************************************************************/
 
-int pipe2(int fd[2], size_t bufsize)
+int nx_pipe(int fd[2], size_t bufsize)
 {
   FAR struct pipe_dev_s *dev = NULL;
   char devname[16];
   int pipeno;
-  int errcode;
   int ret;
 
   /* Get exclusive access to the pipe allocation data */
@@ -199,7 +198,6 @@ int pipe2(int fd[2], size_t bufsize)
   ret = nxsem_wait(&g_pipesem);
   if (ret < 0)
     {
-      errcode = -ret;
       goto errout;
     }
 
@@ -208,8 +206,8 @@ int pipe2(int fd[2], size_t bufsize)
   pipeno = pipe_allocate();
   if (pipeno < 0)
     {
-      (void)nxsem_post(&g_pipesem);
-      errcode = -pipeno;
+      nxsem_post(&g_pipesem);
+      ret = pipeno;
       goto errout;
     }
 
@@ -226,8 +224,8 @@ int pipe2(int fd[2], size_t bufsize)
       dev = pipecommon_allocdev(bufsize);
       if (!dev)
         {
-          (void)nxsem_post(&g_pipesem);
-          errcode = ENOMEM;
+          nxsem_post(&g_pipesem);
+          ret = -ENOMEM;
           goto errout_with_pipe;
         }
 
@@ -238,8 +236,7 @@ int pipe2(int fd[2], size_t bufsize)
       ret = register_driver(devname, &pipe_fops, 0666, (FAR void *)dev);
       if (ret != 0)
         {
-          (void)nxsem_post(&g_pipesem);
-          errcode = -ret;
+          nxsem_post(&g_pipesem);
           goto errout_with_dev;
         }
 
@@ -248,14 +245,14 @@ int pipe2(int fd[2], size_t bufsize)
        g_pipecreated |= (1 << pipeno);
     }
 
-  (void)nxsem_post(&g_pipesem);
+  nxsem_post(&g_pipesem);
 
   /* Get a write file descriptor */
 
   fd[1] = nx_open(devname, O_WRONLY);
   if (fd[1] < 0)
     {
-      errcode = -fd[1];
+      ret = fd[1];
       goto errout_with_driver;
     }
 
@@ -264,7 +261,7 @@ int pipe2(int fd[2], size_t bufsize)
   fd[0] = nx_open(devname, O_RDONLY);
   if (fd[0] < 0)
     {
-      errcode = -fd[0];
+      ret = fd[0];
       goto errout_with_wrfd;
     }
 
@@ -286,8 +283,7 @@ errout_with_pipe:
   pipe_free(pipeno);
 
 errout:
-  set_errno(errcode);
-  return ERROR;
+  return ret;
 }
 
 #endif /* CONFIG_DEV_PIPE_SIZE > 0 */

@@ -211,12 +211,14 @@ static int null_getcaps(FAR struct audio_lowerhalf_s *dev, int type,
 
               /* The types of audio units we implement */
 
-              caps->ac_controls.b[0] = AUDIO_TYPE_OUTPUT | AUDIO_TYPE_FEATURE |
+              caps->ac_controls.b[0] = AUDIO_TYPE_OUTPUT |
+                                       AUDIO_TYPE_FEATURE |
                                        AUDIO_TYPE_PROCESSING;
 
               break;
 
             case AUDIO_FMT_MIDI:
+
               /* We only support Format 0 */
 
               caps->ac_controls.b[0] = AUDIO_SUBFMT_END;
@@ -241,9 +243,12 @@ static int null_getcaps(FAR struct audio_lowerhalf_s *dev, int type,
 
               /* Report the Sample rates we support */
 
-              caps->ac_controls.b[0] = AUDIO_SAMP_RATE_8K | AUDIO_SAMP_RATE_11K |
-                                       AUDIO_SAMP_RATE_16K | AUDIO_SAMP_RATE_22K |
-                                       AUDIO_SAMP_RATE_32K | AUDIO_SAMP_RATE_44K |
+              caps->ac_controls.b[0] = AUDIO_SAMP_RATE_8K |
+                                       AUDIO_SAMP_RATE_11K |
+                                       AUDIO_SAMP_RATE_16K |
+                                       AUDIO_SAMP_RATE_22K |
+                                       AUDIO_SAMP_RATE_32K |
+                                       AUDIO_SAMP_RATE_44K |
                                        AUDIO_SAMP_RATE_48K;
               break;
 
@@ -262,19 +267,25 @@ static int null_getcaps(FAR struct audio_lowerhalf_s *dev, int type,
 
       case AUDIO_TYPE_FEATURE:
 
-        /* If the sub-type is UNDEF, then report the Feature Units we support */
+        /* If the sub-type is UNDEF,
+         * then report the Feature Units we support
+         */
 
         if (caps->ac_subtype == AUDIO_FU_UNDEF)
           {
-            /* Fill in the ac_controls section with the Feature Units we have */
+            /* Fill in the ac_controls section with
+             * the Feature Units we have
+             */
 
-            caps->ac_controls.b[0] = AUDIO_FU_VOLUME | AUDIO_FU_BASS | AUDIO_FU_TREBLE;
+            caps->ac_controls.b[0] = AUDIO_FU_VOLUME |
+                                     AUDIO_FU_BASS |
+                                     AUDIO_FU_TREBLE;
             caps->ac_controls.b[1] = AUDIO_FU_BALANCE >> 8;
           }
         else
           {
-            /* TODO:  Do we need to provide specific info for the Feature Units,
-             * such as volume setting ranges, etc.?
+            /* TODO:  Do we need to provide specific info for the
+             * Feature Units, such as volume setting ranges, etc.?
              */
           }
 
@@ -297,7 +308,8 @@ static int null_getcaps(FAR struct audio_lowerhalf_s *dev, int type,
 
               /* Provide capabilities of our Stereo Extender */
 
-              caps->ac_controls.b[0] = AUDIO_STEXT_ENABLE | AUDIO_STEXT_WIDTH;
+              caps->ac_controls.b[0] = AUDIO_STEXT_ENABLE |
+                                       AUDIO_STEXT_WIDTH;
               break;
 
             default:
@@ -363,7 +375,7 @@ static int null_configure(FAR struct audio_lowerhalf_s *dev,
         case AUDIO_FU_VOLUME:
           audinfo("    Volume: %d\n", caps->ac_controls.hw[0]);
           break;
-#endif  /* CONFIG_AUDIO_EXCLUDE_VOLUME */
+#endif /* CONFIG_AUDIO_EXCLUDE_VOLUME */
 
 #ifndef CONFIG_AUDIO_EXCLUDE_TONE
         case AUDIO_FU_BASS:
@@ -373,7 +385,7 @@ static int null_configure(FAR struct audio_lowerhalf_s *dev,
         case AUDIO_FU_TREBLE:
           audinfo("    Treble: %d\n", caps->ac_controls.b[0]);
           break;
-#endif  /* CONFIG_AUDIO_EXCLUDE_TONE */
+#endif /* CONFIG_AUDIO_EXCLUDE_TONE */
 
         default:
           auderr("    ERROR: Unrecognized feature unit\n");
@@ -450,7 +462,7 @@ static void *null_workerthread(pthread_addr_t pvarg)
 
       /* Process the message */
 
-      switch (msg.msgId)
+      switch (msg.msg_id)
         {
           case AUDIO_MSG_DATA_REQUEST:
             break;
@@ -468,7 +480,7 @@ static void *null_workerthread(pthread_addr_t pvarg)
             break;
 
           default:
-            auderr("ERROR: Ignoring message ID %d\n", msg.msgId);
+            auderr("ERROR: Ignoring message ID %d\n", msg.msg_id);
             break;
         }
     }
@@ -544,8 +556,8 @@ static int null_start(FAR struct audio_lowerhalf_s *dev)
 
   pthread_attr_init(&tattr);
   sparam.sched_priority = sched_get_priority_max(SCHED_FIFO) - 3;
-  (void)pthread_attr_setschedparam(&tattr, &sparam);
-  (void)pthread_attr_setstacksize(&tattr, CONFIG_AUDIO_NULL_WORKER_STACKSIZE);
+  pthread_attr_setschedparam(&tattr, &sparam);
+  pthread_attr_setstacksize(&tattr, CONFIG_AUDIO_NULL_WORKER_STACKSIZE);
 
   audinfo("Starting worker thread\n");
   ret = pthread_create(&priv->threadid, &tattr, null_workerthread,
@@ -584,14 +596,15 @@ static int null_stop(FAR struct audio_lowerhalf_s *dev)
   FAR void *value;
 
   /* Send a message to stop all audio streaming */
-  /* REVISIT: There should be a check to see if the worker thread is still
-   * running.
+
+  /* REVISIT:
+   * There should be a check to see if the worker thread is still  running.
    */
 
-  term_msg.msgId = AUDIO_MSG_STOP;
+  term_msg.msg_id = AUDIO_MSG_STOP;
   term_msg.u.data = 0;
-  (void)nxmq_send(priv->mq, (FAR const char *)&term_msg, sizeof(term_msg),
-                 CONFIG_AUDIO_NULL_MSG_PRIO);
+  nxmq_send(priv->mq, (FAR const char *)&term_msg, sizeof(term_msg),
+            CONFIG_AUDIO_NULL_MSG_PRIO);
 
   /* Join the worker thread */
 
@@ -681,9 +694,16 @@ static int null_enqueuebuffer(FAR struct audio_lowerhalf_s *dev,
   if (done)
     {
 #ifdef CONFIG_AUDIO_MULTI_SESSION
-      priv->dev.upper(priv->dev.priv, AUDIO_CALLBACK_COMPLETE, NULL, OK, NULL);
+      priv->dev.upper(priv->dev.priv,
+                      AUDIO_CALLBACK_COMPLETE,
+                      NULL,
+                      OK,
+                      NULL);
 #else
-      priv->dev.upper(priv->dev.priv, AUDIO_CALLBACK_COMPLETE, NULL, OK);
+      priv->dev.upper(priv->dev.priv,
+                      AUDIO_CALLBACK_COMPLETE,
+                      NULL,
+                      OK);
 #endif
     }
 
@@ -834,8 +854,9 @@ FAR struct audio_lowerhalf_s *audio_null_initialize(void)
   priv = (FAR struct null_dev_s *)kmm_zalloc(sizeof(struct null_dev_s));
   if (priv)
     {
-      /* Initialize the null audio device structure.  Since we used kmm_zalloc,
-       * only the non-zero elements of the structure need to be initialized.
+      /* Initialize the null audio device structure.
+       * Since we used kmm_zalloc, only the non-zero elements
+       * of the structure need to be initialized.
        */
 
       priv->dev.ops = &g_audioops;

@@ -43,7 +43,7 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 
 #include "hardware/sam_pm.h"
 #include "hardware/sam_supc.h"
@@ -456,7 +456,7 @@ static uint32_t sam_xoscctrl(const struct sam_xosc_config_s *config)
   /* Get the XOSCTCTL register *configuration */
 
   regval = OSCCTRL_XOSCCTRL_IPTAT(ipta) | OSCCTRL_XOSCCTRL_IMULT(imult) |
-           OSCCTRL_XOSCCTRL_STARTUP(config->starup) |
+           OSCCTRL_XOSCCTRL_STARTUP(config->startup) |
            OSCCTRL_XOSCCTRL_CFDPRESC(cfdpresc);
 
   if (config->enable)

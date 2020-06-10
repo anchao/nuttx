@@ -47,8 +47,8 @@
 
 #include <arch/board/board.h>
 
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 
 #include "hardware/stm32_flash.h"
 #include "stm32_gpio.h"
@@ -160,7 +160,7 @@ void stm32_clockconfig(void)
  *
  *   This functional performs a subset of the operations performed by
  *   stm32_clockconfig():  It does not reset any devices, and it does not reset the
- *   currenlty enabled peripheral clocks.
+ *   currently enabled peripheral clocks.
  *
  *   If CONFIG_STM32F7_CUSTOM_CLOCKCONFIG is defined, then clocking will be enabled
  *   by an externally provided, board-specific function called

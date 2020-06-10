@@ -54,7 +54,6 @@
 #include <nuttx/net/arp.h>
 #include <nuttx/net/dns.h>
 #include <nuttx/net/netdev.h>
-#include <nuttx/wireless/wireless.h>
 #include <nuttx/net/pkt.h>
 #include <nuttx/net/net.h>
 
@@ -68,6 +67,7 @@
 #define XR_DEV_DBG printf
 #define XR_DEV_ERR printf
 
+#define XRADIO_WDDELAY   (1*CLK_TCK)
 #if (USE_TX_GET_BUFF == 0)
 static uint8_t g_pktbuf[MAX_NETDEV_PKTSIZE + CONFIG_NET_GUARDSIZE];
 #endif
@@ -231,7 +231,7 @@ static void xradio_drv_poll_work(FAR void *arg)
        * progress, we will missing TCP time state updates?
        */
 
-			devif_timer(dev, xradio_drv_txpoll);
+			devif_timer(dev, XRADIO_WDDELAY,xradio_drv_txpoll);
   /* Setup the watchdog poll timer again */
 
 			wd_start(priv->xr_txpolldog, XRADIO_DRV_WDDELAY, xradio_drv_poll_expiry, 1,
@@ -664,7 +664,7 @@ static void xradio_mac_random(uint8_t mac_addr[6])
 {
 	int i;
 	for (i = 0; i < 6; ++i) {
-		mac_addr[i] = (uint8_t)((uint32_t)((rand() & 0xffffff) | (clock_systimer() << 24)));
+		mac_addr[i] = (uint8_t)((uint32_t)((rand() & 0xffffff) | ((uint32_t)(clock()) << 24)));
 	}
 	mac_addr[0] = 0xFC;
 }

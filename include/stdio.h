@@ -46,7 +46,6 @@
 #include <sys/types.h>
 #include <stdarg.h>
 #include <sched.h>
-#include <semaphore.h>
 #include <time.h>
 
 #include <nuttx/fs/fs.h>
@@ -79,9 +78,9 @@
 
 /* The first three _iob entries are reserved for standard I/O */
 
-#define stdin      (&sched_getstreams()->sl_streams[0])
-#define stdout     (&sched_getstreams()->sl_streams[1])
-#define stderr     (&sched_getstreams()->sl_streams[2])
+#define stdin      (&nxsched_get_streams()->sl_streams[0])
+#define stdout     (&nxsched_get_streams()->sl_streams[1])
+#define stderr     (&nxsched_get_streams()->sl_streams[2])
 
 /* These APIs are not implemented and/or can be synthesized from
  * supported APIs.
@@ -142,7 +141,7 @@ extern "C"
 
 /* Operations on streams (FILE) */
 
-void   clearerr(register FILE *stream);
+void   clearerr(FAR FILE *stream);
 int    fclose(FAR FILE *stream);
 int    fflush(FAR FILE *stream);
 int    feof(FAR FILE *stream);
@@ -150,7 +149,7 @@ int    ferror(FAR FILE *stream);
 int    fileno(FAR FILE *stream);
 int    fgetc(FAR FILE *stream);
 int    fgetpos(FAR FILE *stream, FAR fpos_t *pos);
-char  *fgets(FAR char *s, int n, FAR FILE *stream);
+FAR char *fgets(FAR char *s, int n, FAR FILE *stream);
 FAR FILE *fopen(FAR const char *path, FAR const char *type);
 int    fprintf(FAR FILE *stream, FAR const IPTR char *format, ...);
 int    fputc(int c, FAR FILE *stream);
@@ -173,14 +172,16 @@ void   setbuf(FAR FILE *stream, FAR char *buf);
 int    setvbuf(FAR FILE *stream, FAR char *buffer, int mode, size_t size);
 int    ungetc(int c, FAR FILE *stream);
 
-/* Operations on the stdout stream, buffers, paths, and the whole printf-family */
+/* Operations on the stdout stream, buffers, paths,
+ * and the whole printf-family
+ */
 
 void   perror(FAR const char *s);
 int    printf(FAR const IPTR char *fmt, ...);
 int    puts(FAR const char *s);
 int    rename(FAR const char *oldpath, FAR const char *newpath);
 int    sprintf(FAR char *buf, FAR const IPTR char *fmt, ...);
-int    asprintf (FAR char **ptr, FAR const IPTR char *fmt, ...);
+int    asprintf(FAR char **ptr, FAR const IPTR char *fmt, ...);
 int    snprintf(FAR char *buf, size_t size,
          FAR const IPTR char *fmt, ...);
 int    sscanf(FAR const char *buf, FAR const IPTR char *fmt, ...);
@@ -214,10 +215,10 @@ FAR char *tempnam(FAR const char *dir, FAR const char *pfx);
 int       remove(FAR const char *path);
 
 /* Shell operations.  These are not actually implemented in the OS.  See
- * apps/system/open for implementation.
+ * apps/system/popen for implementation.
  */
 
-#if !defined(CONFIG_BUILD_KERNEL) && !defined(__KERNEL__)
+#ifndef __KERNEL__
 FILE *popen(FAR const char *command, FAR const char *mode);
 int pclose(FILE *stream);
 #endif

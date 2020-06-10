@@ -19,7 +19,7 @@ void hal_free(void *p)
 void *hal_align_malloc(uint32_t size, uint32_t align)
 {
 	void *ptr;
-	_uintptr_t wrap_ptr;
+	uintptr_t wrap_ptr;
 
 	if (align < 4)
 		align = 4;
@@ -29,10 +29,10 @@ void *hal_align_malloc(uint32_t size, uint32_t align)
 	ptr = hal_malloc(size + align);
 	if (!ptr)
 		return NULL;
-	wrap_ptr = (_uintptr_t)(ptr + align);
-	wrap_ptr &= (~align);
+	wrap_ptr = (uintptr_t)(ptr + align);
+	wrap_ptr &= (~(align-1));
 	/* save actual pointer */
-	*((_uintptr_t *)(wrap_ptr - sizeof(_uintptr_t))) = (_uintptr_t)ptr;
+	*((uintptr_t *)(wrap_ptr - sizeof(uintptr_t))) = (uintptr_t)ptr;
 	return (void *)wrap_ptr;
 }
 
@@ -42,6 +42,6 @@ void hal_align_free(void *p)
 	if (!p)
 		return;
 	/* get actual pointer */
-	ptr = (void *)(*(_uintptr_t *)(p - sizeof(_uintptr_t)));
+	ptr = (void *)(*(uintptr_t *)(p - sizeof(uintptr_t)));
 	free(ptr);
 }

@@ -1,37 +1,22 @@
 /****************************************************************************
  * arch/renesas/src/rx65n/rx65n_serial.c
  *
- *   Copyright (C) 2008-2019 Gregory Nutt. All rights reserved.
- *   Author: Anjana <anjana@tataelxsi.co.in>
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name NuttX nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- ***************************************************************************/
+ ****************************************************************************/
 
 /****************************************************************************
  * Included Files
@@ -271,19 +256,19 @@
 
 struct up_dev_s
 {
-  uint32_t scibase;   /* Base address of SCI registers */
-  uint32_t baud;      /* Configured baud */
-  volatile  uint8_t scr;       /* Saved SCR value */
-  volatile  uint8_t ssr;       /* Saved SR value */
-  uint8_t xmitirq;   /* Base IRQ associated with xmit IRQ */
-  uint8_t recvirq;   /* Base IRQ associated with receive IRQ */
+  uint32_t scibase;      /* Base address of SCI registers */
+  uint32_t baud;         /* Configured baud */
+  volatile  uint8_t scr; /* Saved SCR value */
+  volatile  uint8_t ssr; /* Saved SR value */
+  uint8_t xmitirq;       /* Base IRQ associated with xmit IRQ */
+  uint8_t recvirq;       /* Base IRQ associated with receive IRQ */
   uint8_t eriirq;
   uint8_t teiirq;
   uint32_t grpibase;
   uint32_t erimask;
   uint32_t teimask;
-  uint8_t parity;    /* 0=none, 1=odd, 2=even */
-  uint8_t bits;      /* Number of bits (7 or 8) */
+  uint8_t parity; /* 0=none, 1=odd, 2=even */
+  uint8_t bits;   /* Number of bits (7 or 8) */
   bool stopbits2; /* true: Configure with 2 stop bits instead of 1 */
 };
 
@@ -307,7 +292,7 @@ static void up_txint(struct uart_dev_s *dev, bool enable);
 static bool up_txready(struct uart_dev_s *dev);
 
 /****************************************************************************
- * Public Function Prototypes
+ * Public Functions
  ****************************************************************************/
 
 void up_enable_irq(int irq);
@@ -410,15 +395,17 @@ static struct up_dev_s g_sci0priv =
 static uart_dev_t g_sci0port =
 {
   .recv     =
-  {
-    .size   = CONFIG_SCI0_RXBUFSIZE,
-    .buffer = g_sci0rxbuffer,
-  },
+    {
+      .size   = CONFIG_SCI0_RXBUFSIZE,
+      .buffer = g_sci0rxbuffer,
+    },
+
   .xmit     =
-  {
-    .size   = CONFIG_SCI0_TXBUFSIZE,
-    .buffer = g_sci0txbuffer,
-  },
+    {
+      .size   = CONFIG_SCI0_TXBUFSIZE,
+      .buffer = g_sci0txbuffer,
+    },
+
   .ops      = &g_sci_ops,
   .priv     = &g_sci0priv,
 };
@@ -444,15 +431,17 @@ static struct up_dev_s g_sci1priv =
 static uart_dev_t g_sci1port =
 {
   .recv     =
-  {
-   .size    = CONFIG_SCI1_RXBUFSIZE,
-   .buffer  = g_sci1rxbuffer,
-  },
+    {
+      .size    = CONFIG_SCI1_RXBUFSIZE,
+      .buffer  = g_sci1rxbuffer,
+    },
+
   .xmit     =
-  {
-    .size   = CONFIG_SCI1_TXBUFSIZE,
-    .buffer = g_sci1txbuffer,
-  },
+    {
+      .size   = CONFIG_SCI1_TXBUFSIZE,
+      .buffer = g_sci1txbuffer,
+    },
+
   .ops      = &g_sci_ops,
   .priv     = &g_sci1priv,
 };
@@ -478,15 +467,17 @@ static struct up_dev_s g_sci2priv =
 static uart_dev_t g_sci2port =
 {
   .recv     =
-  {
-   .size    = CONFIG_SCI2_RXBUFSIZE,
-   .buffer  = g_sci2rxbuffer,
-  },
+    {
+      .size    = CONFIG_SCI2_RXBUFSIZE,
+      .buffer  = g_sci2rxbuffer,
+    },
+
   .xmit     =
-  {
-    .size   = CONFIG_SCI2_TXBUFSIZE,
-    .buffer = g_sci2txbuffer,
-  },
+    {
+      .size   = CONFIG_SCI2_TXBUFSIZE,
+      .buffer = g_sci2txbuffer,
+    },
+
   .ops      = &g_sci_ops,
   .priv     = &g_sci2priv,
 };
@@ -512,15 +503,17 @@ static struct up_dev_s g_sci3priv =
 static uart_dev_t g_sci3port =
 {
   .recv     =
-  {
-   .size    = CONFIG_SCI3_RXBUFSIZE,
-   .buffer  = g_sci3rxbuffer,
-  },
+    {
+      .size    = CONFIG_SCI3_RXBUFSIZE,
+      .buffer  = g_sci3rxbuffer,
+    },
+
   .xmit     =
-  {
-    .size   = CONFIG_SCI3_TXBUFSIZE,
-    .buffer = g_sci3txbuffer,
-  },
+    {
+      .size   = CONFIG_SCI3_TXBUFSIZE,
+      .buffer = g_sci3txbuffer,
+    },
+
   .ops      = &g_sci_ops,
   .priv     = &g_sci3priv,
 };
@@ -546,15 +539,17 @@ static struct up_dev_s g_sci4priv =
 static uart_dev_t g_sci4port =
 {
   .recv     =
-  {
-   .size    = CONFIG_SCI4_RXBUFSIZE,
-   .buffer  = g_sci4rxbuffer,
-  },
+    {
+      .size    = CONFIG_SCI4_RXBUFSIZE,
+      .buffer  = g_sci4rxbuffer,
+    },
+
   .xmit     =
-  {
-    .size   = CONFIG_SCI4_TXBUFSIZE,
-    .buffer = g_sci4txbuffer,
-  },
+    {
+      .size   = CONFIG_SCI4_TXBUFSIZE,
+      .buffer = g_sci4txbuffer,
+    },
+
   .ops      = &g_sci_ops,
   .priv     = &g_sci4priv,
 };
@@ -580,15 +575,17 @@ static struct up_dev_s g_sci5priv =
 static uart_dev_t g_sci5port =
 {
   .recv     =
-  {
-   .size    = CONFIG_SCI5_RXBUFSIZE,
-   .buffer  = g_sci5rxbuffer,
-  },
+    {
+      .size    = CONFIG_SCI5_RXBUFSIZE,
+      .buffer  = g_sci5rxbuffer,
+    },
+
   .xmit     =
-  {
-    .size   = CONFIG_SCI5_TXBUFSIZE,
-    .buffer = g_sci5txbuffer,
-  },
+    {
+      .size   = CONFIG_SCI5_TXBUFSIZE,
+      .buffer = g_sci5txbuffer,
+    },
+
   .ops      = &g_sci_ops,
   .priv     = &g_sci5priv,
 };
@@ -614,15 +611,17 @@ static struct up_dev_s g_sci6priv =
 static uart_dev_t g_sci6port =
 {
   .recv     =
-  {
-   .size    = CONFIG_SCI6_RXBUFSIZE,
-   .buffer  = g_sci6rxbuffer,
-  },
+    {
+      .size    = CONFIG_SCI6_RXBUFSIZE,
+      .buffer  = g_sci6rxbuffer,
+    },
+
   .xmit     =
-  {
-    .size   = CONFIG_SCI6_TXBUFSIZE,
-    .buffer = g_sci6txbuffer,
-  },
+    {
+      .size   = CONFIG_SCI6_TXBUFSIZE,
+      .buffer = g_sci6txbuffer,
+    },
+
   .ops      = &g_sci_ops,
   .priv     = &g_sci6priv,
 };
@@ -648,15 +647,17 @@ static struct up_dev_s g_sci7priv =
 static uart_dev_t g_sci7port =
 {
   .recv     =
-  {
-   .size    = CONFIG_SCI7_RXBUFSIZE,
-   .buffer  = g_sci7rxbuffer,
-  },
+    {
+      .size    = CONFIG_SCI7_RXBUFSIZE,
+      .buffer  = g_sci7rxbuffer,
+    },
+
   .xmit     =
-  {
-    .size   = CONFIG_SCI7_TXBUFSIZE,
-    .buffer = g_sci7txbuffer,
-  },
+    {
+      .size   = CONFIG_SCI7_TXBUFSIZE,
+      .buffer = g_sci7txbuffer,
+    },
+
   .ops      = &g_sci_ops,
   .priv     = &g_sci7priv,
 };
@@ -671,7 +672,7 @@ static struct up_dev_s g_sci8priv =
   .xmitirq    =  RX65N_TXI8_IRQ,
   .eriirq     =  RX65N_ERI8_IRQ,
   .teiirq     =  RX65N_TEI8_IRQ,
-  .grpibase   =  RX65N_GRPBL6_ADDR,
+  .grpibase   =  RX65N_GRPBL1_ADDR,
   .erimask    =  RX65N_GRPBL1_ERI8_MASK,
   .teimask    =  RX65N_GRPBL1_TEI8_MASK,
   .parity     =  CONFIG_SCI8_PARITY,
@@ -682,15 +683,17 @@ static struct up_dev_s g_sci8priv =
 static uart_dev_t g_sci8port =
 {
   .recv     =
-  {
-   .size    = CONFIG_SCI8_RXBUFSIZE,
-   .buffer  = g_sci8rxbuffer,
-  },
+    {
+      .size    = CONFIG_SCI8_RXBUFSIZE,
+      .buffer  = g_sci8rxbuffer,
+    },
+
   .xmit     =
-  {
-    .size   = CONFIG_SCI8_TXBUFSIZE,
-    .buffer = g_sci8txbuffer,
-  },
+    {
+      .size   = CONFIG_SCI8_TXBUFSIZE,
+      .buffer = g_sci8txbuffer,
+    },
+
   .ops      = &g_sci_ops,
   .priv     = &g_sci8priv,
 };
@@ -716,15 +719,17 @@ static struct up_dev_s g_sci9priv =
 static uart_dev_t g_sci9port =
 {
   .recv     =
-  {
-   .size    = CONFIG_SCI9_RXBUFSIZE,
-   .buffer  = g_sci9rxbuffer,
-  },
+    {
+      .size    = CONFIG_SCI9_RXBUFSIZE,
+      .buffer  = g_sci9rxbuffer,
+    },
+
   .xmit     =
-  {
-    .size   = CONFIG_SCI9_TXBUFSIZE,
-    .buffer = g_sci9txbuffer,
-  },
+    {
+      .size   = CONFIG_SCI9_TXBUFSIZE,
+      .buffer = g_sci9txbuffer,
+    },
+
   .ops      = &g_sci_ops,
   .priv     = &g_sci9priv,
 };
@@ -750,15 +755,17 @@ static struct up_dev_s g_sci10priv =
 static uart_dev_t g_sci10port =
 {
   .recv     =
-  {
-   .size    = CONFIG_SCI10_RXBUFSIZE,
-   .buffer  = g_sci10rxbuffer,
-  },
+    {
+      .size    = CONFIG_SCI10_RXBUFSIZE,
+      .buffer  = g_sci10rxbuffer,
+    },
+
   .xmit     =
-  {
-    .size   = CONFIG_SCI10_TXBUFSIZE,
-    .buffer = g_sci10txbuffer,
-  },
+    {
+      .size   = CONFIG_SCI10_TXBUFSIZE,
+      .buffer = g_sci10txbuffer,
+    },
+
   .ops      = &g_sci_ops,
   .priv     = &g_sci10priv,
 };
@@ -784,15 +791,17 @@ static struct up_dev_s g_sci11priv =
 static uart_dev_t g_sci11port =
 {
   .recv     =
-  {
-   .size    = CONFIG_SCI11_RXBUFSIZE,
-   .buffer  = g_sci11rxbuffer,
-  },
+    {
+      .size    = CONFIG_SCI11_RXBUFSIZE,
+      .buffer  = g_sci11rxbuffer,
+    },
+
   .xmit     =
-  {
-    .size   = CONFIG_SCI11_TXBUFSIZE,
-    .buffer = g_sci11txbuffer,
-  },
+    {
+      .size   = CONFIG_SCI11_TXBUFSIZE,
+      .buffer = g_sci11txbuffer,
+    },
+
   .ops      = &g_sci_ops,
   .priv     = &g_sci11priv,
 };
@@ -818,15 +827,17 @@ static struct up_dev_s g_sci12priv =
 static uart_dev_t g_sci12port =
 {
   .recv     =
-  {
-   .size    = CONFIG_SCI12_RXBUFSIZE,
-   .buffer  = g_sci12rxbuffer,
-  },
+    {
+      .size    = CONFIG_SCI12_RXBUFSIZE,
+      .buffer  = g_sci12rxbuffer,
+    },
+
   .xmit     =
-  {
-    .size   = CONFIG_SCI12_TXBUFSIZE,
-    .buffer = g_sci12txbuffer,
-  },
+    {
+      .size   = CONFIG_SCI12_TXBUFSIZE,
+      .buffer = g_sci12txbuffer,
+    },
+
   .ops      = &g_sci_ops,
   .priv     = &g_sci12priv,
 };
@@ -1047,7 +1058,7 @@ static int up_setup(struct uart_dev_s *dev)
 
   up_setbrr(priv, priv->baud);
 
-  /* Then enable the transmitter and reciever */
+  /* Then enable the transmitter and receiver */
 
   priv->scr |= (RX_SCISCR_TE | RX_SCISCR_RE);
   up_serialout(priv, RX_SCI_SCR_OFFSET, priv->scr);
@@ -1139,9 +1150,9 @@ static int up_attach(struct uart_dev_s *dev)
       return OK;
     }
 
-  (void)irq_detach(priv->recvirq);
-  (void)irq_detach(priv->xmitirq);
-  (void)irq_detach(priv->eriirq);
+  irq_detach(priv->recvirq);
+  irq_detach(priv->xmitirq);
+  irq_detach(priv->eriirq);
   return ret;
 }
 
@@ -1169,8 +1180,8 @@ static void up_detach(struct uart_dev_s *dev)
 
   up_disable_irq(priv->recvirq);
   up_disable_irq(priv->xmitirq);
-  (void)irq_detach(priv->recvirq);
-  (void)irq_detach(priv->xmitirq);
+  irq_detach(priv->recvirq);
+  irq_detach(priv->xmitirq);
 }
 
 static int up_eriinterrupt(int irq, void *context, void *arg)
@@ -1188,7 +1199,9 @@ static int up_eriinterrupt(int irq, void *context, void *arg)
 
       priv->ssr = up_serialin(priv, RX_SCI_SSR_OFFSET);
 
-      /* Clear all read related events (probably already done in up_receive)) */
+      /* Clear all read related events (probably already done in
+       * up_receive))
+       */
 
       priv->ssr &= ~(RX_SCISSR_ORER | RX_SCISSR_FER | RX_SCISSR_PER);
       up_serialout(priv, RX_SCI_SSR_OFFSET, priv->ssr);
@@ -1213,7 +1226,9 @@ static int up_teiinterrupt(int irq, void *context, void *arg)
 
     priv->ssr = up_serialin(priv, RX_SCI_SSR_OFFSET);
 
-      /* Clear all read related events (probably already done in up_receive)) */
+      /* Clear all read related events (probably already done in
+       * up_receive))
+       */
 
      priv->ssr &= ~(RX_SCISSR_TEND);
      up_serialout(priv, RX_SCI_SSR_OFFSET, priv->ssr);
@@ -1246,7 +1261,7 @@ static int up_rcvinterrupt(int irq, void *context, void *arg)
  *   when an interrupt received on the 'irq'  It should call
  *   uart_transmitchars or uart_receivechar to perform the
  *   appropriate data transfers.  The interrupt handling logic\
- *   must be able to map the 'irq' number into the approprite
+ *   must be able to map the 'irq' number into the appropriate
  *   up_dev_s structure in order to call these functions.
  *
  ****************************************************************************/
@@ -1258,8 +1273,8 @@ static int  up_xmtinterrupt(int irq, void *context, FAR void *arg)
   DEBUGASSERT((NULL != dev));
 
   /* Handle outgoing, transmit bytes (TDRE: Transmit Data Register Empty)
-   * when TIE is enabled.  TIE is only enabled when the driver is waiting with
-   * buffered data.  Since TDRE is usually true,
+   * when TIE is enabled.  TIE is only enabled when the driver is waiting
+   * with buffered data.  Since TDRE is usually true,
    */
 
   uart_xmitchars(dev);
@@ -1287,8 +1302,8 @@ static int up_receive(struct uart_dev_s *dev, unsigned int *status)
 
   rdr  = up_serialin(priv, RX_SCI_RDR_OFFSET);
 
-  /* Clear all read related status in  real ssr (so that when when rxavailable
-   * is called again, it will return false.
+  /* Clear all read related status in  real ssr (so that when when
+   * rx available is called again, it will return false.
    */
 
   ssr = up_serialin(priv, RX_SCI_SSR_OFFSET);
@@ -1296,7 +1311,7 @@ static int up_receive(struct uart_dev_s *dev, unsigned int *status)
            RX_SCISSR_FER  | RX_SCISSR_PER) ;
   up_serialout(priv, RX_SCI_SSR_OFFSET, ssr);
 
-  /* For status, return the SSR at the time that the interrupt was received */
+  /* For status, return SSR at the time that the interrupt was received */
 
   *status = (uint32_t)priv->ssr << 8 | rdr;
 
@@ -1430,6 +1445,7 @@ static void up_txint(struct uart_dev_s *dev, bool enable)
            * in this event, priv->scr should hold the correct value upon
            * return from uuart_xmitchars().
            */
+
           uart_xmitchars(dev);
         }
     }
@@ -1598,47 +1614,47 @@ void up_serialinit(void)
 #endif
 
 #ifdef TTYS1_DEV
-  (void)uart_register("/dev/ttyS1", &TTYS1_DEV);
+  uart_register("/dev/ttyS1", &TTYS1_DEV);
 #endif
 #ifdef TTYS2_DEV
-  (void)uart_register("/dev/ttyS2", &TTYS2_DEV);
+  uart_register("/dev/ttyS2", &TTYS2_DEV);
 #endif
 #ifdef TTYS3_DEV
-  (void)uart_register("/dev/ttyS3", &TTYS3_DEV);
+  uart_register("/dev/ttyS3", &TTYS3_DEV);
 #endif
 #ifdef TTYS4_DEV
-  (void)uart_register("/dev/ttyS4", &TTYS4_DEV);
+  uart_register("/dev/ttyS4", &TTYS4_DEV);
 #endif
 #ifdef TTYS5_DEV
-  (void)uart_register("/dev/ttyS5", &TTYS5_DEV);
+  uart_register("/dev/ttyS5", &TTYS5_DEV);
 #endif
 #ifdef TTYS6_DEV
-  (void)uart_register("/dev/ttyS6", &TTYS6_DEV);
+  uart_register("/dev/ttyS6", &TTYS6_DEV);
 #endif
 #ifdef TTYS7_DEV
-  (void)uart_register("/dev/ttyS7", &TTYS7_DEV);
+  uart_register("/dev/ttyS7", &TTYS7_DEV);
 #endif
 #ifdef TTYS8_DEV
-  (void)uart_register("/dev/ttyS8", &TTYS8_DEV);
+  uart_register("/dev/ttyS8", &TTYS8_DEV);
 #endif
 #ifdef TTYS9_DEV
-  (void)uart_register("/dev/ttyS9", &TTYS9_DEV);
+  uart_register("/dev/ttyS9", &TTYS9_DEV);
 #endif
 #ifdef TTYS10_DEV
-  (void)uart_register("/dev/ttyS10", &TTYS10_DEV);
+  uart_register("/dev/ttyS10", &TTYS10_DEV);
 #endif
 #ifdef TTYS11_DEV
-  (void)uart_register("/dev/ttyS11", &TTYS11_DEV);
+  uart_register("/dev/ttyS11", &TTYS11_DEV);
 #endif
 #ifdef TTYS12_DEV
-  (void)uart_register("/dev/ttyS12", &TTYS12_DEV);
+  uart_register("/dev/ttyS12", &TTYS12_DEV);
 #endif
 
   /* Register the console */
 
 #ifdef HAVE_CONSOLE
   up_setup(&CONSOLE_DEV);
-  (void)uart_register("/dev/console", &CONSOLE_DEV);
+  uart_register("/dev/console", &CONSOLE_DEV);
 #endif
 }
 

@@ -174,7 +174,7 @@ static ssize_t devurand_read(FAR struct file *filep, FAR char *buffer,
 
   n = len;
 
-  /* Align buffer pointer to 4-byte boundry */
+  /* Align buffer pointer to 4-byte boundary */
 
   if (((uintptr_t)buffer & 0x03) != 0)
     {
@@ -344,7 +344,7 @@ void devurandom_register(void)
   g_prng.state.z = g_prng.state.x << 25;
 #endif
 
-  (void)register_driver("/dev/urandom", &g_urand_fops, 0666, NULL);
+  register_driver("/dev/urandom", &g_urand_fops, 0666, NULL);
 }
 
 #endif /* CONFIG_DEV_URANDOM && CONFIG_DEV_URANDOM_ARCH */

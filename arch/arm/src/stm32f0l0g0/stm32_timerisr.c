@@ -48,8 +48,8 @@
 
 #include "nvic.h"
 #include "clock/clock.h"
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 
 #include "chip.h"
 
@@ -120,7 +120,7 @@ static int stm32_timerisr(int irq, uint32_t *regs, FAR void *arg)
  ****************************************************************************/
 
 /****************************************************************************
- * Function:  arm_timer_initialize
+ * Function:  up_timer_initialize
  *
  * Description:
  *   This function is called during start-up to initialize
@@ -128,7 +128,7 @@ static int stm32_timerisr(int irq, uint32_t *regs, FAR void *arg)
  *
  ****************************************************************************/
 
-void arm_timer_initialize(void)
+void up_timer_initialize(void)
 {
   uint32_t regval;
 
@@ -145,7 +145,7 @@ void arm_timer_initialize(void)
 
   /* Attach the timer interrupt vector */
 
-  (void)irq_attach(STM32_IRQ_SYSTICK, (xcpt_t)stm32_timerisr, NULL);
+  irq_attach(STM32_IRQ_SYSTICK, (xcpt_t)stm32_timerisr, NULL);
 
   /* Enable SysTick interrupts.  "The CLKSOURCE bit in SysTick Control and
    * Status register selects either the core clock (when CLKSOURCE = 1) or

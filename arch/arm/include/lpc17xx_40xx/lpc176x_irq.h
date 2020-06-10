@@ -33,7 +33,7 @@
  *
  ****************************************************************************/
 
-/* This file should never be included directed but, rather, only indirectly
+/* This file should never be included directly but, rather, only indirectly
  * through nuttx/irq.h
  */
 
@@ -242,4 +242,3 @@
  ****************************************************************************/
 
 #endif /* __ARCH_ARM_INCLUDE_LPC17XX_40XX_LPC176X_IRQ_H */
-

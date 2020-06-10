@@ -1,7 +1,7 @@
 /****************************************************************************
  * boards/arm/stm32/clicker2-stm32/src/stm32_appinit.c
  *
- *   Copyright (C) 2017 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2017, 2019 Gregory Nutt. All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,8 +44,9 @@
 #include <unistd.h>
 #include <syslog.h>
 
-#include <nuttx/syslog/syslog.h>
 #include <nuttx/board.h>
+#include <nuttx/signal.h>
+#include <nuttx/syslog/syslog.h>
 
 #include "clicker2-stm32.h"
 
@@ -75,7 +76,7 @@
  *         implementation without modification.  The argument has no
  *         meaning to NuttX; the meaning of the argument is a contract
  *         between the board-specific initialization logic and the
- *         matching application logic.  The value cold be such things as a
+ *         matching application logic.  The value could be such things as a
  *         mode enumeration value, a set of DIP switch switch settings, a
  *         pointer to configuration data read from a file or serial FLASH,
  *         or whatever you would like to do with it.  Every implementation
@@ -108,7 +109,7 @@ int board_app_initialize(uintptr_t arg)
    * file syslog.
    */
 
-  usleep(CONFIG_CLICKER2_STM32_SYSLOG_FILE_DELAY * 1000);
+  nxsig_usleep(CONFIG_CLICKER2_STM32_SYSLOG_FILE_DELAY * 1000);
 
   ret = syslog_file_channel(CONFIG_CLICKER2_STM32_SYSLOG_FILE_PATH);
   if (ret < 0)

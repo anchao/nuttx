@@ -40,7 +40,6 @@
 #include <nuttx/config.h>
 
 #include <sys/types.h>
-#include <semaphore.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -50,6 +49,7 @@
 #include <nuttx/signal.h>
 #include <nuttx/clock.h>
 #include <nuttx/fs/fs.h>
+#include <nuttx/semaphore.h>
 #include <nuttx/timers/rtc.h>
 
 /****************************************************************************
@@ -234,10 +234,6 @@ static void rtc_periodic_callback(FAR void *priv, int alarmid)
       nxsig_notification(alarminfo->pid, &alarminfo->event,
                          SI_QUEUE, &alarminfo->work);
     }
-
-  /* The alarm is no longer active */
-
-  alarminfo->active = false;
 }
 #endif
 
@@ -471,7 +467,7 @@ static int rtc_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
 
             if (ops->cancelalarm)
               {
-                (void)ops->cancelalarm(upper->lower, alarmid);
+                ops->cancelalarm(upper->lower, alarmid);
               }
 
             upperinfo->active = false;
@@ -542,7 +538,7 @@ static int rtc_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
 
             if (ops->cancelalarm)
               {
-                (void)ops->cancelalarm(upper->lower, alarmid);
+                ops->cancelalarm(upper->lower, alarmid);
               }
 
             upperinfo->active = false;
@@ -676,7 +672,7 @@ static int rtc_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
 
             if (ops->cancelperiodic)
               {
-                (void)ops->cancelperiodic(upper->lower, id);
+                ops->cancelperiodic(upper->lower, id);
               }
 
             upperinfo->active = false;

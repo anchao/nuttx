@@ -48,7 +48,6 @@
 #include <sys/types.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <semaphore.h>
 #include <errno.h>
 #include <debug.h>
 
@@ -57,8 +56,8 @@
 #include <nuttx/arch.h>
 #include <nuttx/analog/dac.h>
 
-#include "up_internal.h"
-#include "up_arch.h"
+#include "arm_internal.h"
+#include "arm_arch.h"
 
 #include "chip.h"
 
@@ -197,4 +196,3 @@ FAR struct dac_dev_s *lpc17_40_dacinitialize(void)
 }
 
 #endif /* CONFIG_LPC17_40_DAC */
-

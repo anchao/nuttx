@@ -336,7 +336,7 @@
  * CPU frequency = 120MHz / 1 = 120MHz
  */
 
-#define BOARD_MCLK_CPUDIV       1         /* MCLK divder to get CPU frequency */
+#define BOARD_MCLK_CPUDIV       1         /* MCLK divider to get CPU frequency */
 
 /* Peripheral clocking */
 
@@ -465,4 +465,4 @@
 
 #define BOARD_USB_GCLKGEN            1                   /* GCLK1, 48MHz */
 
-#endif  /* __BOARDS_ARM_SAMD5E5_METRO_M4_INCLUDE_BOARD_H */
+#endif /* __BOARDS_ARM_SAMD5E5_METRO_M4_INCLUDE_BOARD_H */

@@ -1,5 +1,5 @@
 ############################################################################
-# drivers/Makefile
+# boards/arm/cxd56xx/drivers/Make.defs
 #
 #   Copyright 2018 Sony Semiconductor Solutions Corporation
 #
@@ -33,5 +33,6 @@
 #
 ############################################################################
 
-include platform$(DELIM)audio$(DELIM)Make.defs
-include platform$(DELIM)sensors$(DELIM)Make.defs
+include platform/audio/Make.defs
+include platform/sensors/Make.defs
+include platform/camera/Make.defs

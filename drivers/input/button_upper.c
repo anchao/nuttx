@@ -168,18 +168,7 @@ static const struct file_operations btn_fops =
 
 static inline int btn_takesem(sem_t *sem)
 {
-  int ret;
-
-  /* Take a count from the semaphore, possibly waiting */
-
-  ret = nxsem_wait(sem);
-
-  /* The only case that an error should occur here is if the wait
-   * was awakened by a signal
-   */
-
-  DEBUGASSERT(ret == OK || ret == -EINTR);
-  return ret;
+  return nxsem_wait(sem);
 }
 
 /****************************************************************************
@@ -377,7 +366,7 @@ static int btn_open(FAR struct file *filep)
   opriv = (FAR struct btn_open_s *)kmm_zalloc(sizeof(struct btn_open_s));
   if (!opriv)
     {
-      ierr("ERROR: Failled to allocate open structure\n");
+      ierr("ERROR: Failed to allocate open structure\n");
       ret = -ENOMEM;
       goto errout_with_sem;
     }

@@ -97,7 +97,7 @@
 struct sam_hsmci_state_s
 {
   struct sdio_dev_s *hsmci;   /* R/W device handle */
-  pio_pinset_t pincfg;        /* Card detect PIO pin configuratin */
+  pio_pinset_t pincfg;        /* Card detect PIO pin configuration */
   uint8_t irq;                /* Interrupt number (same as pid) */
   uint8_t slotno;             /* Slot number */
   bool cd;                    /* TRUE: card is inserted */
@@ -287,7 +287,7 @@ int sam_hsmci_initialize(int slotno, int minor)
   /* Configure card detect interrupts */
 
   sam_pioirq(state->pincfg);
-  (void)irq_attach(state->irq, state->handler, NULL);
+  irq_attach(state->irq, state->handler, NULL);
 
   /* Then inform the HSMCI driver if there is or is not a card in the slot. */
 

@@ -51,7 +51,7 @@
 
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "chip.h"
 #include "lpc17_40_gpio.h"
 #include "lpc17_40_ssp.h"
@@ -144,7 +144,7 @@ static void ssp_cdirqsetup(int irq, xcpt_t irqhandler)
     {
       /* Attach then enable the new interrupt handler */
 
-      (void)irq_attach(irq, irqhandler, NULL);
+      irq_attach(irq, irqhandler, NULL);
       up_enable_irq(irq);
     }
   else
@@ -152,7 +152,7 @@ static void ssp_cdirqsetup(int irq, xcpt_t irqhandler)
       /* Disable then detach the old interrupt handler */
 
       up_disable_irq(irq);
-      (void)irq_detach(irq);
+      irq_detach(irq);
     }
 
   leave_critical_section(flags);
@@ -321,14 +321,14 @@ uint8_t lpc17_40_ssp1status(FAR struct spi_dev_s *dev, uint32_t devid)
  *
  * Description:
  *   If the board supports a card detect callback to inform the SPI-based
- *   MMC/SD drvier when an SD card is inserted or removed, then
+ *   MMC/SD driver when an SD card is inserted or removed, then
  *   CONFIG_SPI_CALLBACK should be defined and the following function(s) must
- *   must be implemented.  These functiosn implements the registercallback
+ *   must be implemented.  These functions implements the registercallback
  *   method of the SPI interface (see include/nuttx/spi/spi.h for details)
  *
  * Input Parameters:
  *   dev -      Device-specific state data
- *   callback - The funtion to call on the media change
+ *   callback - The function to call on the media change
  *   arg -      A caller provided value to return with the callback
  *
  * Returned Value:

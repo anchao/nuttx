@@ -1,0 +1,5 @@
+
+config ENV_TEST
+	bool "enable env test"
+	default y
+

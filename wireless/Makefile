@@ -33,26 +33,13 @@
 #
 ############################################################################
 
--include $(TOPDIR)/Make.defs
-DELIM ?= $(strip /)
-
-ifeq ($(WINTOOL),y)
-INCDIROPT = -w
-endif
-
-# Add files to the build
-
-DEPPATH = --dep-path .
-
-ASRCS =
-CSRCS =
-VPATH = .
+include $(TOPDIR)/Make.defs
 
 # Add IEEE 802.15.4 files to the build
 
-include bluetooth$(DELIM)Make.defs
-include ieee802154$(DELIM)Make.defs
-include pktradio$(DELIM)Make.defs
+include bluetooth/Make.defs
+include ieee802154/Make.defs
+include pktradio/Make.defs
 
 AOBJS = $(ASRCS:.S=$(OBJEXT))
 COBJS = $(CSRCS:.c=$(OBJEXT))

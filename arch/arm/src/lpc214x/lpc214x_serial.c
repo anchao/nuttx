@@ -43,7 +43,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <semaphore.h>
 #include <string.h>
 #include <errno.h>
 #include <debug.h>
@@ -53,8 +52,8 @@
 #include <nuttx/serial/serial.h>
 
 #include "chip.h"
-#include "up_arch.h"
-#include "up_internal.h"
+#include "arm_arch.h"
+#include "arm_internal.h"
 
 #include "lpc214x_pinsel.h"
 #include "lpc214x_uart.h"
@@ -451,7 +450,7 @@ static void up_detach(struct uart_dev_s *dev)
  *   when an interrupt received on the 'irq'  It should call
  *   uart_transmitchars or uart_receivechar to perform the
  *   appropriate data transfers.  The interrupt handling logic\
- *   must be able to map the 'irq' number into the approprite
+ *   must be able to map the 'irq' number into the appropriate
  *   uart_dev_s structure in order to call these functions.
  *
  ****************************************************************************/
@@ -729,20 +728,22 @@ static bool up_txempty(struct uart_dev_s *dev)
 }
 
 /****************************************************************************
- * Public Funtions
+ * Public Functions
  ****************************************************************************/
 
+#ifdef USE_EARLYSERIALINIT
+
 /****************************************************************************
- * Name: up_serialinit
+ * Name: arm_earlyserialinit
  *
  * Description:
  *   Performs the low level UART initialization early in
  *   debug so that the serial console will be available
- *   during bootup.  This must be called before up_serialinit.
+ *   during bootup.  This must be called before arm_serialinit.
  *
  ****************************************************************************/
 
-void up_earlyserialinit(void)
+void arm_earlyserialinit(void)
 {
   /* Enable UART0 and 1 */
 
@@ -761,21 +762,22 @@ void up_earlyserialinit(void)
   CONSOLE_DEV.isconsole = true;
   up_setup(&CONSOLE_DEV);
 }
+#endif
 
 /****************************************************************************
- * Name: up_serialinit
+ * Name: arm_serialinit
  *
  * Description:
  *   Register serial console and serial ports.  This assumes
- *   that up_earlyserialinit was called previously.
+ *   that arm_earlyserialinit was called previously.
  *
  ****************************************************************************/
 
-void up_serialinit(void)
+void arm_serialinit(void)
 {
-  (void)uart_register("/dev/console", &CONSOLE_DEV);
-  (void)uart_register("/dev/ttyS0", &TTYS0_DEV);
-  (void)uart_register("/dev/ttyS1", &TTYS1_DEV);
+  uart_register("/dev/console", &CONSOLE_DEV);
+  uart_register("/dev/ttyS0", &TTYS0_DEV);
+  uart_register("/dev/ttyS1", &TTYS1_DEV);
 }
 
 /****************************************************************************
@@ -828,10 +830,10 @@ int up_putc(int ch)
     {
       /* Add CR */
 
-      up_lowputc('\r');
+      arm_lowputc('\r');
     }
 
-  up_lowputc(ch);
+  arm_lowputc(ch);
   return ch;
 }
 

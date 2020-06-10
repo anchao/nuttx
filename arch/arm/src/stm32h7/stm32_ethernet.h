@@ -48,7 +48,7 @@
 #ifndef __ASSEMBLY__
 
 /****************************************************************************
- * Public Functions
+ * Public Function Prototypes
  ****************************************************************************/
 
 #undef EXTERN
@@ -66,7 +66,7 @@ extern "C"
  * Description:
  *   Initialize the Ethernet driver for one interface.  If the STM32 chip
  *   supports multiple Ethernet controllers, then board specific logic must
- *   implement up_netinitialize() and call this function to initialize the
+ *   implement arm_netinitialize() and call this function to initialize the
  *   desired interfaces.
  *
  * Parameters:
@@ -80,7 +80,7 @@ extern "C"
  *
  ****************************************************************************/
 
-#if STM32H7_NETHERNET > 1
+#if STM32H7_NETHERNET > 1 || defined(CONFIG_NETDEV_LATEINIT)
 int stm32_ethinitialize(int intf);
 #endif
 
@@ -103,7 +103,7 @@ int stm32_ethinitialize(int intf);
  *
  * Assumptions:
  *
- ***************************************************************************/
+ ****************************************************************************/
 
 #ifdef CONFIG_STM32H7_PHYINIT
 int stm32_phy_boardinitialize(int intf);

@@ -105,11 +105,7 @@ static inline uint32_t get_free_ddr(void)
 
     memset(&info, 0, sizeof(struct mallinfo));
 
-#ifdef CONFIG_CAN_PASS_STRUCTS
     info = mallinfo();
-#else
-    mallinfo(&info);
-#endif
     return (uint32_t)(info.fordblks);
 }
 
@@ -119,11 +115,7 @@ static inline uint32_t get_total_ddr(void)
 
     memset(&info, 0, sizeof(struct mallinfo));
 
-#ifdef CONFIG_CAN_PASS_STRUCTS
     info = mallinfo();
-#else
-    mallinfo(&info);
-#endif
     return (uint32_t)info.arena;
 }
 

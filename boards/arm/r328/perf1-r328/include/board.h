@@ -42,8 +42,7 @@
 
 #include <nuttx/config.h>
 
-#include "hardware/r328_piocfg.h"
-
+#include "../../../../../arch/arm/src/r328/hardware/r328_piocfg.h"
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
@@ -123,7 +122,7 @@
 #define BUTTON_KEY_BACK     0
 #define BUTTON_KEY_HOME     1
 #define BUTTON_KEY_MENU     2
-#define NUM_BUTTONS         3
+#define NUM_BUTTONS         5
 
 #define BUTTON_KEY_BACK_BIT (1 << BUTTON_KEY_BACK)
 #define BUTTON_KEY_HOME_BIT (1 << BUTTON_KEY_HOME)

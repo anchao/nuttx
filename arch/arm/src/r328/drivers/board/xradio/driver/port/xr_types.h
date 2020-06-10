@@ -176,7 +176,7 @@ typedef __u32 __bitwise __wsum;
 /* microseconds per OS tick (1000000 / OS_HZ) */
 #define XR_OS_TICK             (OS_USEC_PER_SEC / OS_HZ)
 
-#define jiffies                 clock_systimer()
+#define jiffies                 clock()
 #define jiffies_to_msecs(t)     ((uint32_t)(t) / (XR_OS_USEC_PER_MSEC / XR_OS_TICK))
 #define	msecs_to_jiffies(msec)  ((uint32_t)(msec * (CONFIG_USEC_PER_TICK/1000)))
 #define jiffies_to_usecs(t)      ((uint32_t)(t) / (XR_OS_USEC_PER_SEC / OS_TICK))

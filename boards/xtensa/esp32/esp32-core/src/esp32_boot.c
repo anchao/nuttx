@@ -79,10 +79,11 @@ void esp32_board_initialize(void)
  * Description:
  *   If CONFIG_BOARD_LATE_INITIALIZE is selected, then an additional
  *   initialization call will be performed in the boot-up sequence to a
- *   function called board_late_initialize().  board_late_initialize() will be
- *   called immediately after up_initialize() is called and just before the
- *   initial application is started.  This additional initialization phase
- *   may be used, for example, to initialize board-specific device drivers.
+ *   function called board_late_initialize().  board_late_initialize() will
+ *   be called immediately after up_initialize() is called and just before
+ *   the initial application is started.  This additional initializationi
+ *   phase may be used, for example, to initialize board-specific device
+ *   drivers.
  *
  ****************************************************************************/
 
@@ -91,6 +92,6 @@ void board_late_initialize(void)
 {
   /* Perform board-specific initialization */
 
-  (void)esp32_bringup();
+  esp32_bringup();
 }
 #endif

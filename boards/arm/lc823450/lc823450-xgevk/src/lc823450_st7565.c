@@ -51,7 +51,7 @@
 #include <nuttx/lcd/lcd.h>
 #include <nuttx/lcd/st7565.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "lc823450_gpio.h"
 #include "lc823450_spi.h"
 #include "lc823450-xgevk.h"
@@ -199,11 +199,11 @@ FAR struct lcd_dev_s *board_lcd_getdev(int lcddev)
     {
       lcdinfo("SPI port 1 bound to LCD %d\n", lcddev);
 
-      (void)g_lcddev->setcontrast(g_lcddev, CONFIG_LCD_MAXCONTRAST);
+      g_lcddev->setcontrast(g_lcddev, CONFIG_LCD_MAXCONTRAST);
 
       /* And turn the LCD on (CONFIG_LCD_MAXPOWER should be 1) */
 
-      (void)g_lcddev->setpower(g_lcddev, CONFIG_LCD_MAXPOWER);
+      g_lcddev->setpower(g_lcddev, CONFIG_LCD_MAXPOWER);
       return g_lcddev;
     }
 

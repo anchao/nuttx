@@ -41,7 +41,7 @@
 
 #include <nuttx/irq.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "hardware/am335x_wdog.h"
 
 /****************************************************************************
@@ -68,4 +68,3 @@ void am335x_wdog_disable_all(void)
     {
     }
 }
-

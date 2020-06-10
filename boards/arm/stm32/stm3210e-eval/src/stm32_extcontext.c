@@ -43,7 +43,7 @@
 #include <assert.h>
 #include <debug.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "stm32.h"
 #include "stm3210e-eval.h"
 
@@ -112,5 +112,3 @@ void stm32_extcontextrestore(struct extmem_save_s *restore)
 }
 
 #endif /* CONFIG_STM32_FSMC */
-
-

@@ -50,7 +50,7 @@
 #include <debug.h>
 #include <nuttx/irq.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "chip.h"
 #include "lpc17_40_gpio.h"
 
@@ -178,4 +178,3 @@ int lpc17_40_dumpgpio(lpc17_40_pinset_t pinset, const char *msg)
   return OK;
 }
 #endif /* CONFIG_DEBUG_GPIO_INFO */
-

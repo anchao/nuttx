@@ -46,7 +46,7 @@
 #include <nuttx/spi/spi.h>
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 #include "chip.h"
 #include "tiva_gpio.h"
 #include "tm4c123g-launchpad.h"
@@ -80,7 +80,7 @@
 void weak_function tm4c_ssidev_initialize(void)
 {
   #ifdef CONFIG_CAN_MCP2515
-  (void)tiva_configgpio(GPIO_MCP2515_CS);    /* mcp2515 chip select */
+  tiva_configgpio(GPIO_MCP2515_CS);    /* mcp2515 chip select */
   #endif
 }
 
@@ -125,4 +125,3 @@ uint8_t tiva_ssistatus(FAR struct spi_dev_s *dev, uint32_t devid)
 }
 
 #endif /* CONFIG_TIVA_SSI0 || CONFIG_TIVA_SSI1 */
-

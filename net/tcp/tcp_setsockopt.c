@@ -1,7 +1,7 @@
 /****************************************************************************
  * net/tcp/tcp_setsockopt.c
  *
- *   Copyright (C) 2018 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2018, 2020 Gregory Nutt. All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,6 @@
 
 #include <netinet/tcp.h>
 
-#include <nuttx/clock.h>
 #include <nuttx/net/net.h>
 #include <nuttx/net/tcp.h>
 
@@ -142,7 +141,7 @@ int tcp_setsockopt(FAR struct socket *psock, int option,
             else
               {
                 conn->keepalive = (bool)keepalive;
-                conn->keeptime  = clock_systimer();   /* Reset start time */
+                conn->keeptime  = clock_systime_ticks();   /* Reset start time */
                 ret = OK;
               }
           }
@@ -184,7 +183,7 @@ int tcp_setsockopt(FAR struct socket *psock, int option,
                 else
                   {
                     conn->keepidle = (uint16_t)dsecs;
-                    conn->keeptime = clock_systimer();   /* Reset start time */
+                    conn->keeptime = clock_systime_ticks();   /* Reset start time */
                     ret = OK;
                   }
               }
@@ -222,7 +221,7 @@ int tcp_setsockopt(FAR struct socket *psock, int option,
                 else
                   {
                     conn->keepintvl = (uint16_t)dsecs;
-                    conn->keeptime  = clock_systimer();   /* Reset start time */
+                    conn->keeptime  = clock_systime_ticks();   /* Reset start time */
                     ret = OK;
                   }
               }
@@ -246,7 +245,7 @@ int tcp_setsockopt(FAR struct socket *psock, int option,
             else
               {
                 conn->keepcnt  = (uint8_t)keepcnt;
-                conn->keeptime = clock_systimer();   /* Reset start time */
+                conn->keeptime = clock_systime_ticks();   /* Reset start time */
                 ret = OK;
               }
           }

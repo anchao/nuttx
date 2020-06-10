@@ -76,7 +76,7 @@ void weak_function xmc4_spidev_initialize(void)
   /* Configure SPI2 chip selects */
 
 #if define(CONFIG_XMC4_SPI2) && defined(CONFIG_SENSORS_MAX6675)
-  (void)xmc4_gpio_config(GPIO_CS_MAX6675);
+  xmc4_gpio_config(GPIO_CS_MAX6675);
 #endif
 
   /* Configure SPI3 chip selects */
@@ -90,10 +90,10 @@ void weak_function xmc4_spidev_initialize(void)
  *
  * Description:
  *   These external functions must be provided by board-specific logic.  They
- *   are implementations of the select, status, and cmddata methods of the SPI
- *   interface defined by struct spi_ops_s (see include/nuttx/spi/spi.h). All
- *   other methods including xmc4_spibus_initialize()) are provided by common
- *   Kinetis logic.  To use this common SPI logic on your board:
+ *   are implementations of the select, status, and cmddata methods of the
+ *   SPI interface defined by struct spi_ops_s (see include/nuttx/spi/spi.h).
+ *   All other methods including xmc4_spibus_initialize()) are provided by
+ *   common xmc4 logic. To use this common SPI logic on your board:
  *
  *   1. Provide logic in xmc4_boardinitialize() to configure SPI chip select
  *      pins.
@@ -113,6 +113,7 @@ void weak_function xmc4_spidev_initialize(void)
  *      the SPI MMC/SD driver).
  *
  ****************************************************************************/
+
 /****************************************************************************
  * Name: xmc4_spi[n]select
  *

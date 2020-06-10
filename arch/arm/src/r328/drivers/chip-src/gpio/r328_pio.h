@@ -42,14 +42,13 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define GPIO_INFO(fmt, arg...) printf("GPIO : %s()%d "fmt, __func__, __LINE__, ##arg)
-
 #ifdef CONFIG_DRIVERS_GPIO_DEBUG
-#define GPIO_ERR(fmt, arg...) printf("GPIO : %s()%d "fmt, __func__, __LINE__, ##arg)
+#define GPIO_INFO(fmt, arg...) printf("GPIO : %s()%d "fmt, __func__, __LINE__, ##arg)
 #else
-#define GPIO_ERR(fmt, arg...) do {}while(0)
+#define GPIO_INFO(fmt, arg...) do {}while(0)
 #endif
+
+#define GPIO_ERR(fmt, arg...) printf("GPIO : %s()%d "fmt, __func__, __LINE__, ##arg)
 
 
 

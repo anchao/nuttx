@@ -52,7 +52,7 @@
 
 #include <arch/board/board.h>
 
-#include "up_arch.h"
+#include "arm_arch.h"
 
 #include "hardware/lpc54_rtc.h"
 #include "lpc54_enableclk.h"
@@ -322,7 +322,7 @@ int lpc54_rtc_rdalarm(FAR struct tm *time)
   uint32_t match;
 
   match = getreg32(LPC54_RTC_MATCH);
-  (void)gmtime_r((time_t *)&match, time);
+  gmtime_r((time_t *)&match, time);
   return OK;
 }
 #endif
