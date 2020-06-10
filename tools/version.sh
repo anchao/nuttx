@@ -85,15 +85,14 @@ done
 
 OUTFILE=$1
 
-VERSION=9.0.3fc8e55b
 if [ -z ${VERSION} ] ; then
-        GIT_CUR_VERSION=`git --version | cut -d' ' -f3`
-        GIT_REQ_VERSION="2.17.1"
-        if [ "$(printf '%s\n' "$GIT_REQ_VERSION" "$GIT_CUR_VERSION" | sort -V | head -n1)" == "$GIT_REQ_VERSION" ]; then
-	        VERSION=`git tag --sort=taggerdate | tail -1 | cut -d'-' -f2`
-        else
-                VERSION=`git for-each-ref --format="%(refname)" --sort=-taggerdate --count=1 refs/tags | tail -1 | cut -d'-' -f2`
-        fi
+  VERSION=`git tag --sort=taggerdate | tail -1 | cut -d'-' -f2`
+
+  # Earlier tags used the format "major.minor", append a "0" for a patch.
+
+  if [[ ${VERSION} =~ ^([0-9]+[\.][0-9]+)$ ]] ; then
+    VERSION=${VERSION}.0
+  fi
 fi
 
 # Make sure we know what is going on
