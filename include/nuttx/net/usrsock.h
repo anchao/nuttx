@@ -61,13 +61,16 @@
 
 /* Response message flags */
 
-#define USRSOCK_MESSAGE_FLAG_REQ_IN_PROGRESS (1 << 0)
-#define USRSOCK_MESSAGE_FLAG_EVENT           (1 << 1)
+#define USRSOCK_MESSAGE_FLAG_REQ_IN_PROGRESS  (1 << 0)
+#define USRSOCK_MESSAGE_FLAG_EVENT            (1 << 1)
+#define USRSOCK_MESSAGE_FLAG_RECVFROM_UNAVAIL (1 << 2)
 
 #define USRSOCK_MESSAGE_IS_EVENT(flags) \
                           (!!((flags) & USRSOCK_MESSAGE_FLAG_EVENT))
 #define USRSOCK_MESSAGE_IS_REQ_RESPONSE(flags) \
                           (!USRSOCK_MESSAGE_IS_EVENT(flags))
+#define USRSOCK_MESSAGE_IS_RECVFROM_UNAVAIL(flags) \
+                          (!!((flags) & USRSOCK_MESSAGE_FLAG_RECVFROM_UNAVAIL))
 
 #define USRSOCK_MESSAGE_REQ_IN_PROGRESS(flags) \
                           (!!((flags) & USRSOCK_MESSAGE_FLAG_REQ_IN_PROGRESS))

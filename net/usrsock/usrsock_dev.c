@@ -616,6 +616,10 @@ usrsockdev_handle_datareq_response(FAR struct usrsockdev_s *dev,
       ret = sizeof(*datahdr);
       goto unlock_out;
     }
+  else if (USRSOCK_MESSAGE_IS_RECVFROM_UNAVAIL(hdr->head.flags))
+    {
+      conn->flags &= ~USRSOCK_EVENT_RECVFROM_AVAIL;
+    }
 
   conn->resp.inprogress = false;
   conn->resp.xid = 0;
