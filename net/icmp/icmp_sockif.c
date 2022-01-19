@@ -69,19 +69,19 @@ static int        icmp_close(FAR struct socket *psock);
 
 const struct sock_intf_s g_icmp_sockif =
 {
-  icmp_setup,       /* si_setup */
-  icmp_sockcaps,    /* si_sockcaps */
-  icmp_addref,      /* si_addref */
-  icmp_bind,        /* si_bind */
-  icmp_getsockname, /* si_getsockname */
-  icmp_getpeername, /* si_getpeername */
-  icmp_listen,      /* si_listen */
-  icmp_connect,     /* si_connect */
-  icmp_accept,      /* si_accept */
-  icmp_netpoll,     /* si_poll */
-  icmp_sendmsg,     /* si_sendmsg */
-  icmp_recvmsg,     /* si_recvmsg */
-  icmp_close        /* si_close */
+  .si_setup       = icmp_setup,       /* si_setup */
+  .si_sockcaps    = icmp_sockcaps,    /* si_sockcaps */
+  .si_addref      = icmp_addref,      /* si_addref */
+  .si_bind        = icmp_bind,        /* si_bind */
+  .si_getsockname = icmp_getsockname, /* si_getsockname */
+  .si_getpeername = icmp_getpeername, /* si_getpeername */
+  .si_listen      = icmp_listen,      /* si_listen */
+  .si_connect     = icmp_connect,     /* si_connect */
+  .si_accept      = icmp_accept,      /* si_accept */
+  .si_poll        = icmp_netpoll,     /* si_poll */
+  .si_sendmsg     = icmp_sendmsg,     /* si_sendmsg */
+  .si_recvmsg     = icmp_recvmsg,     /* si_recvmsg */
+  .si_close       = icmp_close,       /* si_close */
 };
 
 /****************************************************************************

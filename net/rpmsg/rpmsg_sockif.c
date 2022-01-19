@@ -154,20 +154,20 @@ static int        rpmsg_socket_ioctl(FAR struct socket *psock, int cmd,
 
 const struct sock_intf_s g_rpmsg_sockif =
 {
-  rpmsg_socket_setup,       /* si_setup */
-  rpmsg_socket_sockcaps,    /* si_sockcaps */
-  rpmsg_socket_addref,      /* si_addref */
-  rpmsg_socket_bind,        /* si_bind */
-  rpmsg_socket_getsockname, /* si_getsockname */
-  rpmsg_socket_getconnname, /* si_getconnname */
-  rpmsg_socket_listen,      /* si_listen */
-  rpmsg_socket_connect,     /* si_connect */
-  rpmsg_socket_accept,      /* si_accept */
-  rpmsg_socket_poll,        /* si_poll */
-  rpmsg_socket_sendmsg,     /* si_sendmsg */
-  rpmsg_socket_recvmsg,     /* si_recvmsg */
-  rpmsg_socket_close,       /* si_close */
-  rpmsg_socket_ioctl,       /* si_ioctl */
+  .si_setup       = rpmsg_socket_setup,       /* si_setup */
+  .si_sockcaps    = rpmsg_socket_sockcaps,    /* si_sockcaps */
+  .si_addref      = rpmsg_socket_addref,      /* si_addref */
+  .si_bind        = rpmsg_socket_bind,        /* si_bind */
+  .si_getsockname = rpmsg_socket_getsockname, /* si_getsockname */
+  .si_getpeername = rpmsg_socket_getconnname, /* si_getconnname */
+  .si_listen      = rpmsg_socket_listen,      /* si_listen */
+  .si_connect     = rpmsg_socket_connect,     /* si_connect */
+  .si_accept      = rpmsg_socket_accept,      /* si_accept */
+  .si_poll        = rpmsg_socket_poll,        /* si_poll */
+  .si_sendmsg     = rpmsg_socket_sendmsg,     /* si_sendmsg */
+  .si_recvmsg     = rpmsg_socket_recvmsg,     /* si_recvmsg */
+  .si_close       = rpmsg_socket_close,       /* si_close */
+  .si_ioctl       = rpmsg_socket_ioctl,       /* si_ioctl */
 };
 
 /****************************************************************************

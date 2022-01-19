@@ -53,23 +53,20 @@ static int        usrsock_sockif_close(FAR struct socket *psock);
 
 const struct sock_intf_s g_usrsock_sockif =
 {
-  usrsock_sockif_setup,       /* si_setup */
-  usrsock_sockif_sockcaps,    /* si_sockcaps */
-  usrsock_sockif_addref,      /* si_addref */
-  usrsock_bind,               /* si_bind */
-  usrsock_getsockname,        /* si_getsockname */
-  usrsock_getpeername,        /* si_getpeername */
-  usrsock_listen,             /* si_listen */
-  usrsock_connect,            /* si_connect */
-  usrsock_accept,             /* si_accept */
-  usrsock_poll,               /* si_poll */
-  usrsock_sendmsg,            /* si_sendmsg */
-  usrsock_recvmsg,            /* si_recvmsg */
-  usrsock_sockif_close,       /* si_close */
-#ifdef CONFIG_NET_SENDFILE
-  NULL,                       /* si_sendfile */
-#endif
-  usrsock_ioctl               /* si_ioctl */
+  .si_setup       = usrsock_sockif_setup,       /* si_setup */
+  .si_sockcaps    = usrsock_sockif_sockcaps,    /* si_sockcaps */
+  .si_addref      = usrsock_sockif_addref,      /* si_addref */
+  .si_bind        = usrsock_bind,               /* si_bind */
+  .si_getsockname = usrsock_getsockname,        /* si_getsockname */
+  .si_getpeername = usrsock_getpeername,        /* si_getpeername */
+  .si_listen      = usrsock_listen,             /* si_listen */
+  .si_connect     = usrsock_connect,            /* si_connect */
+  .si_accept      = usrsock_accept,             /* si_accept */
+  .si_poll        = usrsock_poll,               /* si_poll */
+  .si_sendmsg     = usrsock_sendmsg,            /* si_sendmsg */
+  .si_recvmsg     = usrsock_recvmsg,            /* si_recvmsg */
+  .si_close       = usrsock_sockif_close,       /* si_close */
+  .si_ioctl       = usrsock_ioctl,              /* si_ioctl */
 };
 
 /****************************************************************************

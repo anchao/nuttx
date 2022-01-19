@@ -79,21 +79,21 @@ static int        local_socketpair(FAR struct socket *psocks[2]);
 
 const struct sock_intf_s g_local_sockif =
 {
-  local_setup,       /* si_setup */
-  local_sockcaps,    /* si_sockcaps */
-  local_addref,      /* si_addref */
-  local_bind,        /* si_bind */
-  local_getsockname, /* si_getsockname */
-  local_getpeername, /* si_getpeername */
-  local_listen,      /* si_listen */
-  local_connect,     /* si_connect */
-  local_accept,      /* si_accept */
-  local_poll,        /* si_poll */
-  local_sendmsg,     /* si_sendmsg */
-  local_recvmsg,     /* si_recvmsg */
-  local_close,       /* si_close */
-  local_ioctl,       /* si_ioctl */
-  local_socketpair   /* si_socketpair */
+  .si_setup       = local_setup,       /* si_setup */
+  .si_sockcaps    = local_sockcaps,    /* si_sockcaps */
+  .si_addref      = local_addref,      /* si_addref */
+  .si_bind        = local_bind,        /* si_bind */
+  .si_getsockname = local_getsockname, /* si_getsockname */
+  .si_getpeername = local_getpeername, /* si_getpeername */
+  .si_listen      = local_listen,      /* si_listen */
+  .si_connect     = local_connect,     /* si_connect */
+  .si_accept      = local_accept,      /* si_accept */
+  .si_poll        = local_poll,        /* si_poll */
+  .si_sendmsg     = local_sendmsg,     /* si_sendmsg */
+  .si_recvmsg     = local_recvmsg,     /* si_recvmsg */
+  .si_close       = local_close,       /* si_close */
+  .si_ioctl       = local_ioctl,       /* si_ioctl */
+  .si_socketpair  = local_socketpair,  /* si_socketpair */
 };
 
 /****************************************************************************

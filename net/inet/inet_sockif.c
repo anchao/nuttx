@@ -103,24 +103,23 @@ static ssize_t    inet_sendfile(FAR struct socket *psock,
 
 static const struct sock_intf_s g_inet_sockif =
 {
-  inet_setup,       /* si_setup */
-  inet_sockcaps,    /* si_sockcaps */
-  inet_addref,      /* si_addref */
-  inet_bind,        /* si_bind */
-  inet_getsockname, /* si_getsockname */
-  inet_getpeername, /* si_getpeername */
-  inet_listen,      /* si_listen */
-  inet_connect,     /* si_connect */
-  inet_accept,      /* si_accept */
-  inet_poll,        /* si_poll */
-  inet_sendmsg,     /* si_sendmsg */
-  inet_recvmsg,     /* si_recvmsg */
-  inet_close,       /* si_close */
-  inet_ioctl,       /* si_ioctl */
-  inet_socketpair   /* si_socketpair */
+  .si_setup       = inet_setup,       /* si_setup */
+  .si_sockcaps    = inet_sockcaps,    /* si_sockcaps */
+  .si_addref      = inet_addref,      /* si_addref */
+  .si_bind        = inet_bind,        /* si_bind */
+  .si_getsockname = inet_getsockname, /* si_getsockname */
+  .si_getpeername = inet_getpeername, /* si_getpeername */
+  .si_listen      = inet_listen,      /* si_listen */
+  .si_connect     = inet_connect,     /* si_connect */
+  .si_accept      = inet_accept,      /* si_accept */
+  .si_poll        = inet_poll,        /* si_poll */
+  .si_sendmsg     = inet_sendmsg,     /* si_sendmsg */
+  .si_recvmsg     = inet_recvmsg,     /* si_recvmsg */
+  .si_close       = inet_close,       /* si_close */
+  .si_ioctl       = inet_ioctl,       /* si_ioctl */
+  .si_socketpair  = inet_socketpair,  /* si_socketpair */
 #ifdef CONFIG_NET_SENDFILE
-  ,
-  inet_sendfile     /* si_sendfile */
+  .si_sendfile    = inet_sendfile,    /* si_sendfile */
 #endif
 };
 

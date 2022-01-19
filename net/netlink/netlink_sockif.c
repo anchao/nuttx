@@ -76,19 +76,19 @@ static int netlink_close(FAR struct socket *psock);
 
 const struct sock_intf_s g_netlink_sockif =
 {
-  netlink_setup,        /* si_setup */
-  netlink_sockcaps,     /* si_sockcaps */
-  netlink_addref,       /* si_addref */
-  netlink_bind,         /* si_bind */
-  netlink_getsockname,  /* si_getsockname */
-  netlink_getpeername,  /* si_getpeername */
-  netlink_listen,       /* si_listen */
-  netlink_connect,      /* si_connect */
-  netlink_accept,       /* si_accept */
-  netlink_poll,         /* si_poll */
-  netlink_sendmsg,      /* si_sendmsg */
-  netlink_recvmsg,      /* si_recvmsg */
-  netlink_close         /* si_close */
+  .si_setup       = netlink_setup,        /* si_setup */
+  .si_sockcaps    = netlink_sockcaps,     /* si_sockcaps */
+  .si_addref      = netlink_addref,       /* si_addref */
+  .si_bind        = netlink_bind,         /* si_bind */
+  .si_getsockname = netlink_getsockname,  /* si_getsockname */
+  .si_getpeername = netlink_getpeername,  /* si_getpeername */
+  .si_listen      = netlink_listen,       /* si_listen */
+  .si_connect     = netlink_connect,      /* si_connect */
+  .si_accept      = netlink_accept,       /* si_accept */
+  .si_poll        = netlink_poll,         /* si_poll */
+  .si_sendmsg     = netlink_sendmsg,      /* si_sendmsg */
+  .si_recvmsg     = netlink_recvmsg,      /* si_recvmsg */
+  .si_close       = netlink_close,        /* si_close */
 };
 
 /****************************************************************************

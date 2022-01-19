@@ -81,19 +81,19 @@ static int        bluetooth_hci_bind(FAR struct socket *psock,
 
 const struct sock_intf_s g_bluetooth_sockif =
 {
-  bluetooth_setup,       /* si_setup */
-  bluetooth_sockcaps,    /* si_sockcaps */
-  bluetooth_addref,      /* si_addref */
-  bluetooth_bind,        /* si_bind */
-  bluetooth_getsockname, /* si_getsockname */
-  bluetooth_getpeername, /* si_getpeername */
-  bluetooth_listen,      /* si_listen */
-  bluetooth_connect,     /* si_connect */
-  bluetooth_accept,      /* si_accept */
-  bluetooth_poll_local,  /* si_poll */
-  bluetooth_sendmsg,     /* si_sendmsg */
-  bluetooth_recvmsg,     /* si_recvmsg */
-  bluetooth_close        /* si_close */
+  .si_setup       = bluetooth_setup,       /* si_setup */
+  .si_sockcaps    = bluetooth_sockcaps,    /* si_sockcaps */
+  .si_addref      = bluetooth_addref,      /* si_addref */
+  .si_bind        = bluetooth_bind,        /* si_bind */
+  .si_getsockname = bluetooth_getsockname, /* si_getsockname */
+  .si_getpeername = bluetooth_getpeername, /* si_getpeername */
+  .si_listen      = bluetooth_listen,      /* si_listen */
+  .si_connect     = bluetooth_connect,     /* si_connect */
+  .si_accept      = bluetooth_accept,      /* si_accept */
+  .si_poll        = bluetooth_poll_local,  /* si_poll */
+  .si_sendmsg     = bluetooth_sendmsg,     /* si_sendmsg */
+  .si_recvmsg     = bluetooth_recvmsg,     /* si_recvmsg */
+  .si_close       = bluetooth_close,       /* si_close */
 };
 
 /****************************************************************************

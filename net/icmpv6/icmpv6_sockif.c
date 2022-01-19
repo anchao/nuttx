@@ -69,19 +69,19 @@ static int        icmpv6_close(FAR struct socket *psock);
 
 const struct sock_intf_s g_icmpv6_sockif =
 {
-  icmpv6_setup,       /* si_setup */
-  icmpv6_sockcaps,    /* si_sockcaps */
-  icmpv6_addref,      /* si_addref */
-  icmpv6_bind,        /* si_bind */
-  icmpv6_getsockname, /* si_getsockname */
-  icmpv6_getpeername, /* si_getpeername */
-  icmpv6_listen,      /* si_listen */
-  icmpv6_connect,     /* si_connect */
-  icmpv6_accept,      /* si_accept */
-  icmpv6_netpoll,     /* si_poll */
-  icmpv6_sendmsg,     /* si_sendmsg */
-  icmpv6_recvmsg,     /* si_recvmsg */
-  icmpv6_close        /* si_close */
+  .si_setup       = icmpv6_setup,       /* si_setup */
+  .si_sockcaps    = icmpv6_sockcaps,    /* si_sockcaps */
+  .si_addref      = icmpv6_addref,      /* si_addref */
+  .si_bind        = icmpv6_bind,        /* si_bind */
+  .si_getsockname = icmpv6_getsockname, /* si_getsockname */
+  .si_getpeername = icmpv6_getpeername, /* si_getpeername */
+  .si_listen      = icmpv6_listen,      /* si_listen */
+  .si_connect     = icmpv6_connect,     /* si_connect */
+  .si_accept      = icmpv6_accept,      /* si_accept */
+  .si_poll        = icmpv6_netpoll,     /* si_poll */
+  .si_sendmsg     = icmpv6_sendmsg,     /* si_sendmsg */
+  .si_recvmsg     = icmpv6_recvmsg,     /* si_recvmsg */
+  .si_close       = icmpv6_close,       /* si_close */
 };
 
 /****************************************************************************

@@ -71,19 +71,19 @@ static int        ieee802154_close(FAR struct socket *psock);
 
 const struct sock_intf_s g_ieee802154_sockif =
 {
-  ieee802154_setup,       /* si_setup */
-  ieee802154_sockcaps,    /* si_sockcaps */
-  ieee802154_addref,      /* si_addref */
-  ieee802154_bind,        /* si_bind */
-  ieee802154_getsockname, /* si_getsockname */
-  ieee802154_getpeername, /* si_getpeername */
-  ieee802154_listen,      /* si_listen */
-  ieee802154_connect,     /* si_connect */
-  ieee802154_accept,      /* si_accept */
-  ieee802154_poll_local,  /* si_poll */
-  ieee802154_sendmsg,     /* si_sendmsg */
-  ieee802154_recvmsg,     /* si_recvmsg */
-  ieee802154_close        /* si_close */
+  .si_setup       = ieee802154_setup,       /* si_setup */
+  .si_sockcaps    = ieee802154_sockcaps,    /* si_sockcaps */
+  .si_addref      = ieee802154_addref,      /* si_addref */
+  .si_bind        = ieee802154_bind,        /* si_bind */
+  .si_getsockname = ieee802154_getsockname, /* si_getsockname */
+  .si_getpeername = ieee802154_getpeername, /* si_getpeername */
+  .si_listen      = ieee802154_listen,      /* si_listen */
+  .si_connect     = ieee802154_connect,     /* si_connect */
+  .si_accept      = ieee802154_accept,      /* si_accept */
+  .si_poll        = ieee802154_poll_local,  /* si_poll */
+  .si_sendmsg     = ieee802154_sendmsg,     /* si_sendmsg */
+  .si_recvmsg     = ieee802154_recvmsg,     /* si_recvmsg */
+  .si_close       = ieee802154_close,       /* si_close */
 };
 
 /****************************************************************************

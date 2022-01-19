@@ -72,19 +72,19 @@ static int        pkt_close(FAR struct socket *psock);
 
 const struct sock_intf_s g_pkt_sockif =
 {
-  pkt_setup,       /* si_setup */
-  pkt_sockcaps,    /* si_sockcaps */
-  pkt_addref,      /* si_addref */
-  pkt_bind,        /* si_bind */
-  pkt_getsockname, /* si_getsockname */
-  pkt_getpeername, /* si_getpeername */
-  pkt_listen,      /* si_listen */
-  pkt_connect,     /* si_connect */
-  pkt_accept,      /* si_accept */
-  pkt_poll_local,  /* si_poll */
-  pkt_sendmsg,     /* si_sendmsg */
-  pkt_recvmsg,     /* si_recvmsg */
-  pkt_close        /* si_close */
+  .si_setup       = pkt_setup,       /* si_setup */
+  .si_sockcaps    = pkt_sockcaps,    /* si_sockcaps */
+  .si_addref      = pkt_addref,      /* si_addref */
+  .si_bind        = pkt_bind,        /* si_bind */
+  .si_getsockname = pkt_getsockname, /* si_getsockname */
+  .si_getpeername = pkt_getpeername, /* si_getpeername */
+  .si_listen      = pkt_listen,      /* si_listen */
+  .si_connect     = pkt_connect,     /* si_connect */
+  .si_accept      = pkt_accept,      /* si_accept */
+  .si_poll        = pkt_poll_local,  /* si_poll */
+  .si_sendmsg     = pkt_sendmsg,     /* si_sendmsg */
+  .si_recvmsg     = pkt_recvmsg,     /* si_recvmsg */
+  .si_close       = pkt_close,       /* si_close */
 };
 
 /****************************************************************************

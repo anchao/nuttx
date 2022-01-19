@@ -72,19 +72,19 @@ static int can_close(FAR struct socket *psock);
 
 const struct sock_intf_s g_can_sockif =
 {
-  can_setup,        /* si_setup */
-  can_sockcaps,     /* si_sockcaps */
-  can_addref,       /* si_addref */
-  can_bind,         /* si_bind */
-  can_getsockname,  /* si_getsockname */
-  can_getpeername,  /* si_getpeername */
-  can_listen,       /* si_listen */
-  can_connect,      /* si_connect */
-  can_accept,       /* si_accept */
-  can_poll_local,   /* si_poll */
-  can_sendmsg,      /* si_sendmsg */
-  can_recvmsg,      /* si_recvmsg */
-  can_close         /* si_close */
+  .si_setup       = can_setup,        /* si_setup */
+  .si_sockcaps    = can_sockcaps,     /* si_sockcaps */
+  .si_addref      = can_addref,       /* si_addref */
+  .si_bind        = can_bind,         /* si_bind */
+  .si_getsockname = can_getsockname,  /* si_getsockname */
+  .si_getpeername = can_getpeername,  /* si_getpeername */
+  .si_listen      = can_listen,       /* si_listen */
+  .si_connect     = can_connect,      /* si_connect */
+  .si_accept      = can_accept,       /* si_accept */
+  .si_poll        = can_poll_local,   /* si_poll */
+  .si_sendmsg     = can_sendmsg,      /* si_sendmsg */
+  .si_recvmsg     = can_recvmsg,      /* si_recvmsg */
+  .si_close       = can_close,        /* si_close */
 };
 
 /****************************************************************************
