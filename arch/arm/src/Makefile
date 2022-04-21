@@ -89,8 +89,13 @@ LDFLAGS += $(addprefix -T,$(call CONVERT_PATH,$(ARCHSCRIPT))) $(EXTRALINKCMDS)
 
 # Override in Make.defs if linker is not 'ld'
 
-LDSTARTGROUP ?= --start-group
-LDENDGROUP ?= --end-group
+ifeq ($(LD),$(CC))
+  LDSTARTGROUP ?= -Wl,--start-group
+  LDENDGROUP   ?= -Wl,--end-group
+else
+  LDSTARTGROUP ?= --start-group
+  LDENDGROUP   ?= --end-group
+endif
 
 BOARDMAKE = $(if $(wildcard board$(DELIM)Makefile),y,)
 
@@ -137,6 +142,13 @@ $(KBIN): $(OBJS)
 
 board$(DELIM)libboard$(LIBEXT):
 	$(Q) $(MAKE) -C board libboard$(LIBEXT) EXTRAFLAGS="$(EXTRAFLAGS)"
+
+ifeq ($(CONFIG_LTO_FULL),y)
+  ifeq ($(LD),$(CC))
+    LDFLAGS := $(addprefix -Xlinker ,$(LDFLAGS))
+    LDFLAGS += $(CFLAGS)
+  endif
+endif
 
 define LINK_ALLSYMS
 	$(Q) $(TOPDIR)/tools/mkallsyms.sh $(NUTTX) $(CROSSDEV) > allsyms.tmp
