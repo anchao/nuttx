@@ -1,5 +1,5 @@
 ############################################################################
-# boards/sim/sim/sim/scripts/Make.defs
+# boards/sim/sim/sim/CMakeLists.txt
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with

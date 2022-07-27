@@ -1,5 +1,5 @@
 ############################################################################
-# libs/libc/machine/arm/armv8-m/Make.defs
+# libs/libc/machine/arm/armv8-m/CMakeLists.txt
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with

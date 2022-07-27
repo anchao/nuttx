@@ -1,35 +1,20 @@
 ############################################################################
 # drivers/CMakeLists.txt
 #
-#   Copyright (C) 2007-2014, 2016 Gregory Nutt. All rights reserved.
-#   Author: Gregory Nutt <gnutt@nuttx.org>
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.  The
+# ASF licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in
-#    the documentation and/or other materials provided with the
-#    distribution.
-# 3. Neither the name NuttX nor the names of its contributors may be
-#    used to endorse or promote products derived from this software
-#    without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
-# OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
-# AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations
+# under the License.
 #
 ############################################################################
 
@@ -40,8 +25,10 @@ add_subdirectory(analog)
 add_subdirectory(audio)
 add_subdirectory(bch)
 add_subdirectory(can)
+add_subdirectory(clk)
 add_subdirectory(contactless)
 add_subdirectory(crypto)
+add_subdirectory(dummy)
 add_subdirectory(eeprom)
 add_subdirectory(efuse)
 add_subdirectory(i2c)
@@ -51,16 +38,20 @@ add_subdirectory(ioexpander)
 add_subdirectory(lcd)
 add_subdirectory(leds)
 add_subdirectory(loop)
+add_subdirectory(math)
+add_subdirectory(misc)
 add_subdirectory(mmcsd)
 add_subdirectory(modem)
 add_subdirectory(motor)
 add_subdirectory(mtd)
 add_subdirectory(net)
+add_subdirectory(note)
 add_subdirectory(pipes)
 add_subdirectory(power)
 add_subdirectory(rc)
 add_subdirectory(rf)
 add_subdirectory(rptun)
+add_subdirectory(segger)
 add_subdirectory(sensors)
 add_subdirectory(serial)
 add_subdirectory(spi)
@@ -73,32 +64,5 @@ add_subdirectory(usbmonitor)
 add_subdirectory(video)
 add_subdirectory(wireless)
 
-if (CONFIG_SPECIFIC_DRIVERS)
-  add_subdirectory(platform)
-endif()
-
-set(SRCS dev_null.c dev_zero.c)
-
-if (CONFIG_DEV_SIMPLE_ADDRENV)
-  list(APPEND SRCS addrenv.c)
-endif()
-
-if (CONFIG_LWL_CONSOLE)
-  list(APPEND SRCS lwl_console.c)
-endif()
-
-if (NOT CONFIG_DISABLE_MOUNTPOINT)
-  list(APPEND SRCS ramdisk.c)
-  if (CONFIG_DRVR_MKRD)
-    list(APPEND SRCS mkrd.c)
-  endif()
-  if (CONFIG_DRVR_WRITEBUFFER)
-    list(APPEND SRCS rwbuffer.c)
-  else()
-    if (CONFIG_DRVR_READAHEAD)
-      list(APPEND SRCS rwbuffer.c)
-    endif()
-  endif()
-endif()
-
-target_sources(drivers PRIVATE ${SRCS})
+target_sources(drivers PRIVATE drivers_initialize.c)
+target_include_directories(drivers PRIVATE ${CMAKE_CURRENT_LIST_DIR})

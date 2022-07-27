@@ -1,36 +1,20 @@
 ############################################################################
-# arch/sim/src/CMakeLists.txt
+# arch/sim/src/sim/CMakeLists.txt
 #
-#   Copyright (C) 2007, 2008, 2011-2012, 2014, 2016, 2018 Gregory Nutt. All
-#     rights reserved.
-#   Author: Gregory Nutt <gnutt@nuttx.org>
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.  The
+# ASF licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in
-#    the documentation and/or other materials provided with the
-#    distribution.
-# 3. Neither the name NuttX nor the names of its contributors may be
-#    used to endorse or promote products derived from this software
-#    without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
-# OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
-# AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations
+# under the License.
 #
 ############################################################################
 
@@ -43,34 +27,38 @@ set(HOSTSRCS)
 set(HOST_INCLUDE_DIRS)
 set(STDLIBS pthread)
 
+list(APPEND HOST_DEFINITIONS -D__SIM__)
+
 # common guest sources
 
 list(APPEND SRCS
-      up_initialize.c up_idle.c up_interruptcontext.c up_initialstate.c
-      up_createstack.c up_usestack.c up_releasestack.c up_stackframe.c
-      up_unblocktask.c up_blocktask.c up_releasepending.c
-      up_reprioritizertr.c up_exit.c up_schedulesigaction.c
-      up_heap.c up_uart.c up_assert.c up_copyfullstate.c up_sigdeliver.c
-)
+  up_initialize.c up_idle.c up_interruptcontext.c up_initialstate.c
+  up_createstack.c up_usestack.c up_releasestack.c up_stackframe.c
+  up_unblocktask.c up_blocktask.c up_releasepending.c
+  up_reprioritizertr.c up_exit.c up_schedulesigaction.c
+  up_heap.c up_uart.c up_assert.c up_nputs.c up_copyfullstate.c
+  up_sigdeliver.c)
 
-if(X86_64)
+if (CONFIG_HOST_X86_64)
   if(CONFIG_SIM_M32)
-    list(APPEND SRCS up_vfork32.S)
+    list(APPEND SRCS up_vfork_x86.S)
   else()
-    list(APPEND SRCS up_vfork64.S)
+    list(APPEND SRCS up_vfork_x86_64.S)
   endif()
-elseif(X86)
-  list(APPEND SRCS up_vfork32.S)
-elseif(ARM)
+elseif (CONFIG_HOST_X86)
+  list(APPEND SRCS up_vfork_x86.S)
+elseif (CONFIG_HOST_ARM)
   list(APPEND SRCS up_vfork_arm.S)
+elseif (CONFIG_HOST_ARM64)
+  list(APPEND SRCS up_vfork_arm64.S)
+endif()
+
+if (CONFIG_SCHED_BACKTRACE)
+  list(APPEND SRCS up_backtrace.c)
 endif()
 
 if (CONFIG_ARCH_HAVE_VFORK AND CONFIG_SCHED_WAITPID)
   list(APPEND SRCS up_vfork.c)
-endif()
-
-if (CONFIG_SCHED_INSTRUMENTATION AND NOT CONFIG_SCHED_INSTRUMENTATION_BUFFER)
-  list(APPEND SRCS up_schednote.c)
 endif()
 
 if (CONFIG_ONESHOT)
@@ -91,18 +79,6 @@ if (CONFIG_STACK_COLORATION)
   list(APPEND SRCS up_checkstack.c)
 endif()
 
-if (CONFIG_SIM_IOEXPANDER)
-  list(APPEND SRCS up_ioexpander.c)
-endif()
-
-if (CONFIG_SIM_SPIFLASH)
-  list(APPEND SRCS up_spiflash.c)
-endif()
-
-if (CONFIG_SIM_QSPIFLASH)
-  list(APPEND SRCS up_qspiflash.c)
-endif()
-
 if (CONFIG_FS_FAT)
   list(APPEND SRCS up_blockdevice.c up_deviceimage.c)
   list(APPEND STDLIBS z)
@@ -120,10 +96,6 @@ if (CONFIG_ARCH_ROMGETC)
   list(APPEND SRCS up_romgetc.c)
 endif()
 
-if (CONFIG_SIM_MOTOR_FOC)
-  list(APPEND SRCS up_foc.c)
-endif()
-
 if (CONFIG_RPTUN)
   list(APPEND SRCS up_rptun.c)
 endif()
@@ -135,7 +107,8 @@ endif()
 
 # host sources ###############################################################
 
-list(APPEND HOSTSRCS up_hostirq.c up_hostmemory.c up_hosttime.c up_simuart.c)
+list(APPEND HOSTSRCS
+  up_hostirq.c up_hostmemory.c up_hosttime.c up_simuart.c up_hostmisc.c)
 
 if (CONFIG_SPINLOCK)
   list(APPEND HOSTSRCS up_testset.c)
@@ -207,6 +180,11 @@ if (CONFIG_SIM_HCISOCKET)
   list(APPEND SRCS up_hcisocket.c)
 endif()
 
+if (CONFIG_SIM_NETUSRSOCK)
+  list(APPEND HOSTSRCS up_usrsock_host.c)
+  list(APPEND SRCS up_usrsock.c)
+endif()
+
 if(CONFIG_SIM_BTUART)
   list(APPEND HOSTSRCS up_hcisocket_host.c)
   list(APPEND SRCS up_btuart.c)
@@ -220,13 +198,20 @@ if (CONFIG_SIM_I2CBUS_LINUX)
   list(APPEND HOSTSRCS up_i2cbuslinux.c)
 endif()
 
-if (CONFIG_FS_HOSTFS AND NOT CONFIG_FS_HOSTFS_RPMSG)
+if (CONFIG_SIM_SPI_LINUX)
+  list(APPEND HOSTSRCS up_spilinux.c)
+endif()
+
+if (CONFIG_SIM_HOSTFS)
   list(APPEND HOSTSRCS up_hostfs.c)
   list(APPEND HOST_DEFINITIONS CONFIG_NAME_MAX=${CONFIG_NAME_MAX})
 
   configure_file(${NUTTX_DIR}/include/nuttx/fs/hostfs.h ${CMAKE_CURRENT_BINARY_DIR}/hostfs.h COPYONLY)
   target_include_directories(nuttx PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 endif()
+
+
+target_include_directories(nuttx PRIVATE ${CMAKE_BINARY_DIR}/include/nuttx)
 
 target_sources(up_head PUBLIC up_head.c)
 target_sources(arch PRIVATE ${SRCS})

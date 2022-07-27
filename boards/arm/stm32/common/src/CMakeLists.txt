@@ -1,5 +1,5 @@
-#############################################################################
-# boards/arm/stm32/common/src/Make.defs
+############################################################################
+# boards/arm/stm32/common/src/CMakeLists.txt
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -16,7 +16,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 #
-#############################################################################
+############################################################################
 
 set(SRCS)
 

@@ -1,55 +1,122 @@
-if (CONFIG_OPENAMP)
-  # get libmetal
-
+############################################################################
+# openamp/libmetal.cmake
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.  The
+# ASF licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+############################################################################
+if (NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/libmetal)
   FetchContent_Declare(libmetal
-    URL https://github.com/OpenAMP/libmetal/archive/v${OPENAMP_VERSION}.zip
-    PATCH_COMMAND patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/0001-system-nuttx-change-clock_systimespec-to-clock_systi.patch)
-  FetchContent_Populate(libmetal)
-  FetchContent_GetProperties(libmetal SOURCE_DIR LIBMETAL_SOURCE_DIR)
+    DOWNLOAD_NAME "libmetal-v${OPENAMP_VERSION}.zip"
+    DOWNLOAD_DIR ${CMAKE_CURRENT_LIST_DIR}
+    URL "https://github.com/OpenAMP/libmetal/archive/v${OPENAMP_VERSION}.zip"
+    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/libmetal
+    BINARY_DIR ${CMAKE_BINARY_DIR}/openamp/libmetal
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+    DOWNLOAD_NO_PROGRESS true
+    TIMEOUT 30
+    )
 
-  # process libmetal headers
+  FetchContent_GetProperties(libmetal)
 
-  if (CONFIG_ARCH STREQUAL sim)
-    set(LIBMETAL_ARCH x86_64)
-  elseif (CONFIG_ARCH STREQUAL risc-v)
-    set(LIBMETAL_ARCH riscv)
-  else()
-    set(LIBMETAL_ARCH ${CONFIG_ARCH})
+  if (NOT libmetal_target_POPULATED)
+    FetchContent_Populate(libmetal)
   endif()
-
-  set(PROJECT_VER_MAJOR 0)
-  set(PROJECT_VER_MINOR 1)
-  set(PROJECT_VER_PATCH 0)
-  set(PROJECT_VER 0.1.0)
-  set(PROJECT_SYSTEM nuttx)
-  set(PROJECT_PROCESSOR ${LIBMETAL_ARCH})
-  set(PROJECT_MACHINE ${CONFIG_ARCH_CHIP})
-  set(PROJECT_SYSTEM_UPPER nuttx)
-  set(PROJECT_PROCESSOR_UPPER ${LIBMETAL_ARCH})
-  set(PROJECT_MACHINE_UPPER ${CONFIG_ARCH_CHIP})
-
-  file(GLOB OPENMETAL_HEADERS RELATIVE ${LIBMETAL_SOURCE_DIR}/lib
-    ${LIBMETAL_SOURCE_DIR}/lib/compiler/gcc/*.h
-    ${LIBMETAL_SOURCE_DIR}/lib/processor/${LIBMETAL_ARCH}/*.h
-    ${LIBMETAL_SOURCE_DIR}/lib/system/nuttx/*.h
-    ${LIBMETAL_SOURCE_DIR}/lib/*.h)
-
-  foreach(header ${OPENMETAL_HEADERS})
-    configure_file(${LIBMETAL_SOURCE_DIR}/lib/${header} ${CMAKE_BINARY_DIR}/include/metal/${header})
-  endforeach()
-
-  set_property(TARGET nuttx APPEND PROPERTY NUTTX_KERNEL_INCLUDE_DIRECTORIES)
-
-  # include sources
-
-  set(SRCS
-    lib/system/nuttx/condition.c lib/system/nuttx/device.c
-    lib/system/nuttx/init.c lib/system/nuttx/io.c
-    lib/system/nuttx/irq.c lib/system/nuttx/shmem.c
-    lib/system/nuttx/time.c lib/device.c lib/dma.c lib/init.c lib/io.c
-    lib/irq.c lib/log.c lib/shmem.c lib/version.c)
-
-  list(TRANSFORM SRCS PREPEND ${LIBMETAL_SOURCE_DIR}/)
-  target_sources(openamp PRIVATE ${SRCS})
-  target_compile_definitions(openamp PRIVATE -DMETAL_INTERNAL)
 endif()
+
+if ("${CONFIG_ARCH}" STREQUAL "sim")
+  set(LIBMETAL_ARCH x86_64)
+elseif ("${CONFIG_ARCH}" STREQUAL "risc-v")
+  set(LIBMETAL_ARCH riscv)
+else()
+  set(LIBMETAL_ARCH ${CONFIG_ARCH})
+endif()
+
+add_custom_command(
+  OUTPUT  ${CMAKE_BINARY_DIR}/libmetal/.libmetal_headers
+  COMMAND touch ${CMAKE_BINARY_DIR}/libmetal/.libmetal_headers
+  DEPENDS libmetal)
+
+add_custom_target(libmetal_patch DEPENDS ${CMAKE_BINARY_DIR}/libmetal/.libmetal_headers)
+
+set(PROJECT_VERSION_MAJOR 0)
+set(PROJECT_VERSION_MINOR 1)
+set(PROJECT_VERSION_PATCH 0)
+set(PROJECT_VERSION 0.1.0)
+set(PROJECT_SYSTEM nuttx)
+set(PROJECT_PROCESSOR ${LIBMETAL_ARCH})
+set(PROJECT_MACHINE ${CONFIG_ARCH_CHIP})
+set(PROJECT_SYSTEM_UPPER nuttx)
+set(PROJECT_PROCESSOR_UPPER ${LIBMETAL_ARCH})
+set(PROJECT_MACHINE_UPPER ${CONFIG_ARCH_CHIP})
+
+set(headers)
+file(GLOB headers LIST_DIRECTORIES false
+     RELATIVE ${CMAKE_CURRENT_LIST_DIR}/libmetal/lib
+     ${CMAKE_CURRENT_LIST_DIR}/libmetal/lib/*.h)
+foreach(header ${headers})
+  configure_file(${CMAKE_CURRENT_LIST_DIR}/libmetal/lib/${header} ${CMAKE_BINARY_DIR}/include/metal/${header})
+endforeach()
+
+set(headers)
+file(GLOB headers LIST_DIRECTORIES false
+     RELATIVE ${CMAKE_CURRENT_LIST_DIR}/libmetal/lib/system/nuttx
+     ${CMAKE_CURRENT_LIST_DIR}/libmetal/lib/system/nuttx/*.h)
+foreach(header ${headers})
+  configure_file(${CMAKE_CURRENT_LIST_DIR}/libmetal/lib/system/nuttx/${header}
+                 ${CMAKE_BINARY_DIR}/include/metal/system/nuttx/${header})
+endforeach()
+
+set(headers)
+file(GLOB headers LIST_DIRECTORIES false
+     RELATIVE ${CMAKE_CURRENT_LIST_DIR}/libmetal/lib/processor/${LIBMETAL_ARCH}
+     ${CMAKE_CURRENT_LIST_DIR}/libmetal/lib/processor/${LIBMETAL_ARCH}/*.h)
+foreach(header ${headers})
+  configure_file(${CMAKE_CURRENT_LIST_DIR}/libmetal/lib/processor/${LIBMETAL_ARCH}/${header}
+                 ${CMAKE_BINARY_DIR}/include/metal/processor/${LIBMETAL_ARCH}/${header})
+endforeach()
+
+set(headers)
+file(GLOB headers LIST_DIRECTORIES false
+     RELATIVE ${CMAKE_CURRENT_LIST_DIR}/libmetal/lib/compiler/gcc
+     ${CMAKE_CURRENT_LIST_DIR}/libmetal/lib/compiler/gcc/*.h)
+foreach(header ${headers})
+  configure_file(${CMAKE_CURRENT_LIST_DIR}/libmetal/lib/compiler/gcc/${header}
+                 ${CMAKE_BINARY_DIR}/include/metal/compiler/gcc/${header})
+endforeach()
+
+nuttx_add_kernel_library(lib_metal)
+
+target_sources(lib_metal PRIVATE
+  libmetal/lib/system/nuttx/condition.c
+  libmetal/lib/system/nuttx/device.c
+  libmetal/lib/system/nuttx/init.c
+  libmetal/lib/system/nuttx/io.c
+  libmetal/lib/system/nuttx/irq.c
+  libmetal/lib/system/nuttx/shmem.c
+  libmetal/lib/system/nuttx/time.c
+  libmetal/lib/device.c
+  libmetal/lib/dma.c
+  libmetal/lib/init.c
+  libmetal/lib/io.c
+  libmetal/lib/irq.c
+  libmetal/lib/log.c
+  libmetal/lib/shmem.c
+  libmetal/lib/version.c)
+
+add_dependencies(lib_metal libmetal_patch)
+target_compile_definitions(lib_metal PRIVATE METAL_INTERNAL)

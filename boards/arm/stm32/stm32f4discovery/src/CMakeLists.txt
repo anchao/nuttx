@@ -1,5 +1,5 @@
 ############################################################################
-# boards/arm/stm32/stm32f4discovery/src/Make.defs
+# boards/arm/stm32/stm32f4discovery/src/CMakeLists.txt
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -26,10 +26,6 @@ else()
   list(APPEND SRCS stm32_userleds.c)
 endif()
 
-if (CONFIG_SCHED_CRITMONITOR)
-  list(APPEND SRCS stm32_critmon.c)
-endif()
-
 if (CONFIG_AUDIO_CS43L22)
   list(APPEND SRCS stm32_cs43l22.c)
 endif()
@@ -38,7 +34,7 @@ if (CONFIG_ARCH_BUTTONS)
   list(APPEND SRCS  stm32_buttons.c)
 endif()
 
-if (CONFIG_CAN)
+if (CONFIG_STM32_CAN_CHARDRIVER)
   list(APPEND SRCS stm32_can.c)
 endif()
 
@@ -94,7 +90,7 @@ if (CONFIG_PWM)
   list(APPEND SRCS stm32_pwm.c)
 endif()
 
-if (CONFIG_LIB_BOARDCTL)
+if (CONFIG_BOARDCTL)
   list(APPEND SRCS stm32_appinit.c)
   if (CONFIG_BOARDCTL_RESET)
     list(APPEND SRCS stm32_reset.c)
@@ -131,10 +127,6 @@ endif()
 
 if (CONFIG_LCD_UG2864HSWEG01)
   list(APPEND SRCS stm32_ug2864hsweg01.c)
-endif()
-
-if (CONFIG_TESTING_OSTEST)
-  list(APPEND SRCS stm32_ostest.c)
 endif()
 
 if (CONFIG_TIMER)

@@ -1,3 +1,25 @@
+############################################################################
+# cmake/nuttx_add_application.cmake
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.  The
+# ASF licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+############################################################################
+
+include(nuttx_parse_function_args)
+
 define_property(GLOBAL PROPERTY NUTTX_APP_LIBS
   BRIEF_DOCS "NuttX application libs"
   FULL_DOCS "List of all NuttX application libraries"
@@ -86,11 +108,11 @@ function(nuttx_add_application)
     set_property(TARGET nuttx APPEND PROPERTY NUTTX_LOADABLE_APPS ${TARGET})
   else()
     # add to list of application libraries
-    set_property(GLOBAL APPEND PROPERTY NUTTX_APP_LIBS ${TARGET})
+    set_property(GLOBAL APPEND PROPERTY NUTTX_APPS_LIBRARIES ${TARGET})
 
     # create as library to be archived into libapps.a
     set(TARGET "apps_${NAME}")
-    nuttx_add_user_library(${TARGET} ${SRCS})
+    nuttx_add_library(${TARGET} ${SRCS})
 
     if (NOT NO_MAIN_ALIAS)
       # provide main() alias
@@ -130,7 +152,7 @@ function(nuttx_add_application)
 
   # add supplied dependencies
 
-  if(DEPENDS)
+  if (DEPENDS)
     # using target_link_libraries for dependencies provides linking
     #  as well as interface include and libraries
     foreach(dep ${DEPENDS})

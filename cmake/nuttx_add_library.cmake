@@ -1,3 +1,23 @@
+############################################################################
+# cmake/nuttx_add_library.cmake
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.  The
+# ASF licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+############################################################################
+
 # Internal utility function
 #
 # Used by functions below, not to be used directly
@@ -51,10 +71,10 @@ function(nuttx_add_user_library target)
   nuttx_add_library_internal(${target} ${ARGN})
 
   # link to final libapps
-  target_link_libraries(apps PRIVATE ${target})
+  target_link_libraries(apps INTERFACE ${target})
 
   # add apps/include to include path
-  target_include_directories(${target} PRIVATE ${NUTTX_APPS_ABS_DIR}/include)
+  target_include_directories(${target} INTERFACE ${NUTTX_APPS_ABS_DIR}/include)
 endfunction()
 
 # System Libraries
@@ -122,4 +142,38 @@ function(nuttx_add_kernel_library target)
     # same for include directories
     target_include_directories(${kernel_target} PRIVATE $<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>)
   endif()
+endfunction()
+
+
+include(nuttx_parse_function_args)
+
+define_property(GLOBAL PROPERTY NUTTX_LIBRARIES
+                 BRIEF_DOCS "NuttX libs"
+                 FULL_DOCS "List of all NuttX libraries"
+                 )
+
+#=============================================================================
+#
+# nuttx_add_library
+#
+# Wrapper of cmake add_library but with nuttx platform dependencies
+#
+function(nuttx_add_library target)
+  add_library(${target} ${ARGN})
+
+  set_property(GLOBAL APPEND PROPERTY NUTTX_APPS_LIBRARIES ${target})
+
+  nuttx_add_library_internal(${target})
+  # declare target
+  #add_library(${target} OBJECT ${ARGN})
+
+  #nuttx_add_library_internal(${target} ${ARGN})
+
+  ##set_property(GLOBAL APPEND PROPERTY NUTTX_KERNEL_LIBRARIES ${target})
+
+  ## link to final libapps
+  #target_link_libraries(apps INTERFACE ${target})
+
+  ## add apps/include to include path
+  #target_include_directories(${target} PRIVATE ${NUTTX_APPS_ABS_DIR}/include)
 endfunction()

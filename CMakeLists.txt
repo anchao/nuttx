@@ -1,3 +1,23 @@
+############################################################################
+# CMakeLists.txt
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.  The
+# ASF licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+############################################################################
+
 # Request a version available on latest Ubuntu LTS (20.04)
 
 cmake_minimum_required(VERSION 3.16)
@@ -13,28 +33,25 @@ endif()
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
-#set(CMAKE_C_STANDARD 99)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Setup build type (Debug Release RelWithDebInfo MinSizeRel Coverage). Default
 # to minimum size release
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "MinSizeRel" CACHE STRING "Build type" FORCE)
-endif()
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug;Release;RelWithDebInfo;MinSizeRel")
+# Use nuttx optimization configuration options, workaround for cmake build type
+# TODO Integration the build type with CMAKE
 
-# TODO: extra flags to defaults per config?
-
-#ifneq ($(CONFIG_DEBUG_NOOPT),y)
-#  ARCHOPTIMIZATION += -O2 -fno-strict-aliasing
-#endif
+#if (NOT CMAKE_BUILD_TYPE)
+#      set(CMAKE_BUILD_TYPE "MinSizeRel" CACHE STRING "Build type" FORCE)
+#endif()
+#set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug;Release;RelWithDebInfo;MinSizeRel")
 
 # Process board config & directory locations #################################
 
 set(NUTTX_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(NUTTX_APPS_DIR "../apps" CACHE FILEPATH "Relative path to apps/ directory")
+set(NUTTX_APPS_BINDIR "${CMAKE_BINARY_DIR}/apps" CACHE FILEPATH "Out of tree path to apps/ directory")
 get_filename_component(NUTTX_APPS_ABS_DIR ${NUTTX_APPS_DIR} ABSOLUTE BASE_DIR ${NUTTX_DIR})
 
 # Board/config combination
@@ -61,6 +78,8 @@ endif()
 # The following commands need these variables to be passed via environment
 
 set(ENV{APPSDIR} ${NUTTX_APPS_DIR}) # TODO: support not having apps/
+set(ENV{APPSBINDIR} ${NUTTX_APPS_BINDIR}) # TODO: support not having apps/
+set(ENV{BINDIR} ${CMAKE_BINARY_DIR}) # TODO: support not having apps/
 set(ENV{EXTERNALDIR} dummy) # TODO
 set(ENV{DRIVERS_PLATFORM_DIR} dummy) # TODO
 
@@ -79,6 +98,37 @@ elseif(UNIX)
 else()
   set(ENV{HOST_OTHER} y)
   set(OTHER_OS TRUE)
+endif()
+
+include(kconfig_directory)
+include(nuttx_parse_function_args)
+
+# Add apps/ to the build (if present)
+
+if (NOT EXISTS ${NUTTX_APPS_BINDIR}/Kconfig)
+  add_subdirectory(${NUTTX_APPS_DIR} preapps)
+endif()
+
+# Unsupport custom board/chips yet, workaround
+
+if (NOT EXISTS ${CMAKE_BINARY_DIR}/arch/dummy/Kconfig)
+  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/arch/dummy)
+  file(TOUCH ${CMAKE_BINARY_DIR}/arch/dummy/Kconfig)
+endif()
+
+if (NOT EXISTS ${CMAKE_BINARY_DIR}/boards/dummy/Kconfig)
+  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/boards/dummy)
+  file(TOUCH ${CMAKE_BINARY_DIR}/boards/dummy/Kconfig)
+endif()
+
+if (NOT EXISTS ${CMAKE_BINARY_DIR}/drivers/platform/Kconfig)
+  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/drivers/platform)
+  file(TOUCH ${CMAKE_BINARY_DIR}/drivers/platform/Kconfig)
+endif()
+
+if (NOT EXISTS ${CMAKE_BINARY_DIR}/apps/platform/board/Kconfig)
+  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/apps/platform/board)
+  file(TOUCH ${CMAKE_BINARY_DIR}/apps/platform/board/Kconfig)
 endif()
 
 # Copy board defconfig into main directory and expand
@@ -128,7 +178,6 @@ endif()
 include(kconfig)
 
 include(custom_commands)
-include(nuttx_parse_function_args)
 include(nuttx_add_library)
 include(nuttx_add_application)
 include(nuttx_add_romfs)
@@ -146,6 +195,7 @@ set(FETCHCONTENT_QUIET OFF)
 
 # This needs to happen before project() when binaries are searched for
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/arch/${CONFIG_ARCH}/cmake)
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/arch/${CONFIG_ARCH}/cmake/Toolchain.cmake")
 
 # Define project #############################################################
@@ -156,7 +206,6 @@ project(NuttX LANGUAGES ASM C CXX)
 # Setup platform options (this needs to happen after project(),
 # once the toolchain file has been processed)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/arch/${CONFIG_ARCH}/cmake)
 include(Platform)
 
 # detect host platform
@@ -223,9 +272,11 @@ if (CONFIG_STACK_CANARIES)
   add_compile_options(-fstack-protector-all)
 endif()
 
-add_definitions(
-  -D__NuttX__
-)
+if(CONFIG_NDEBUG)
+  add_compile_options(-DNDEBUG)
+endif()
+
+add_definitions(-D__NuttX__)
 
 set_property(TARGET nuttx APPEND PROPERTY NUTTX_KERNEL_DEFINITIONS __KERNEL__)
 
@@ -244,6 +295,11 @@ ExternalProject_Add(nuttx_host_tools
 
 # Each subdirectory will generate a static library
 
+if (CONFIG_OPENAMP)
+  include_directories(${CMAKE_SOURCE_DIR}/openamp/open-amp/lib/include)
+endif()
+
+add_subdirectory(openamp)
 add_subdirectory(arch)
 add_subdirectory(audio)
 add_subdirectory(binfmt)
@@ -253,7 +309,6 @@ add_subdirectory(graphics)
 add_subdirectory(libs)
 add_subdirectory(mm)
 add_subdirectory(net)
-add_subdirectory(openamp)
 add_subdirectory(sched)
 add_subdirectory(syscall)
 add_subdirectory(wireless)
@@ -264,9 +319,8 @@ add_subdirectory(boards)
 
 # Add apps/ to the build (if present)
 
-if(EXISTS ${NUTTX_DIR}/${NUTTX_APPS_DIR}/CMakeLists.txt)
+if (EXISTS ${NUTTX_DIR}/${NUTTX_APPS_DIR}/CMakeLists.txt)
   add_subdirectory(${NUTTX_APPS_DIR} apps)
-
   execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink dummy ${NUTTX_APPS_DIR}/platform/board
                   WORKING_DIRECTORY ${NUTTX_APPS_DIR})
 else()
@@ -312,21 +366,26 @@ if (NOT CONFIG_ARCH_SIM)
   endif()
 
   get_property(nuttx_kernel_libs GLOBAL PROPERTY NUTTX_KERNEL_LIBRARIES)
+  get_property(nuttx_apps_libs   GLOBAL PROPERTY NUTTX_APPS_LIBRARIES)
+  get_property(nuttx_extra_libs  GLOBAL PROPERTY NUTTX_EXTRA_LIBRARIES)
 
   # TODO: nostart/nodefault not applicable to nuttx toolchain
-  target_link_libraries(nuttx PRIVATE
-    --entry=__start -nostartfiles -nodefaultlibs
-    -Wl,--script=${ldscript}
-    -Wl,--start-group ${nuttx_kernel_libs} ${nuttx_system_libs} gcc $<$<BOOL:${CONFIG_HAVE_CXX}>:supc++> -Wl,--end-group
+  target_link_libraries(nuttx PRIVATE ${NUTTX_EXTRA_FLAGS}
+    --entry=__start -Wl,--script=${ldscript} -Wl,--start-group
+    ${nuttx_kernel_libs} ${nuttx_system_libs} ${nuttx_apps_libs}
+    ${nuttx_extra_libs} -Wl,--end-group
   )
 
   # generate binary outputs in different formats (.bin, .hex, etc)
   nuttx_generate_outputs(nuttx)
 
   if (CONFIG_UBOOT_UIMAGE)
-    add_custom_command(OUTPUT uImage
-      COMMAND ${MKIMAGE} -A ${CONFIG_ARCH} -O linux -C none -T kernel -a ${CONFIG_UIMAGE_LOAD_ADDRESS} -e ${CONFIG_UIMAGE_ENTRY_POINT} -n nuttx -d nuttx.bin uImage
-       DEPENDS nuttx)
+    add_custom_command(
+      OUTPUT  uImage
+      COMMAND ${MKIMAGE} -A ${CONFIG_ARCH} -O linux -C none -T kernel
+              -a ${CONFIG_UIMAGE_LOAD_ADDRESS} -e ${CONFIG_UIMAGE_ENTRY_POINT}
+              -n nuttx -d nuttx.bin uImage
+      DEPENDS nuttx)
     add_custom_target(nuttx-uImage ALL DEPENDS uImage)
 
     # TODO: install?
@@ -406,10 +465,11 @@ else()
 
   get_property(nuttx_kernel_libs GLOBAL PROPERTY NUTTX_KERNEL_LIBRARIES)
   get_property(nuttx_system_libs GLOBAL PROPERTY NUTTX_SYSTEM_LIBRARIES)
+  get_property(nuttx_apps_libs   GLOBAL PROPERTY NUTTX_APPS_LIBRARIES)
 
   # TODO: do with single function call?
   set(nuttx_libs_paths)
-  foreach(lib ${nuttx_kernel_libs} ${nuttx_system_libs})
+  foreach(lib ${nuttx_kernel_libs} ${nuttx_system_libs} ${nuttx_apps_libs})
     list(APPEND nuttx_libs_paths $<TARGET_FILE:${lib}>)
   endforeach()
 

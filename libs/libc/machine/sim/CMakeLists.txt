@@ -1,5 +1,5 @@
 ############################################################################
-# libs/libc/machine/sim/Make.defs
+# libs/libc/machine/sim/CMakeLists.txt
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -23,32 +23,37 @@
 
 set(SRCS)
 
-if (X86_64)
+if (CONFIG_HOST_X86_64)
   if (CONFIG_SIM_M32)
     if (CONFIG_LIBC_ARCH_ELF)
       list(APPEND SRCS arch_elf.c)
     endif()
     if (CONFIG_ARCH_SETJMP_H)
-      list(APPEND SRCS arch_setjmp.S)
+      list(APPEND SRCS arch_setjmp_x86.S)
     endif()
   else()
     if (CONFIG_LIBC_ARCH_ELF)
       list(APPEND SRCS arch_elf64.c)
     endif()
     if (CONFIG_ARCH_SETJMP_H)
-      list(APPEND SRCS arch_setjmp64.S)
+      list(APPEND SRCS arch_setjmp_x86_64.S)
     endif()
   endif()
-elseif (X86)
+
+elseif (CONFIG_HOST_X86)
   if (CONFIG_LIBC_ARCH_ELF)
     list(APPEND SRCS arch_elf.c)
   endif()
   if (CONFIG_ARCH_SETJMP_H)
-    list(APPEND SRCS arch_setjmp.S)
+    list(APPEND SRCS arch_setjmp_x86.S)
   endif()
-elseif (ARM)
+elseif (CONFIG_HOST_ARM)
   if (CONFIG_ARCH_SETJMP_H)
     list(APPEND SRCS arch_setjmp_arm.S)
+  endif()
+elseif (CONFIG_HOST_ARM64)
+  if (CONFIG_ARCH_SETJMP_H)
+    list(APPEND SRCS arch_setjmp_arm64.S)
   endif()
 endif()
 
