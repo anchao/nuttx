@@ -54,18 +54,58 @@ set(NUTTX_APPS_DIR "../apps" CACHE FILEPATH "Relative path to apps/ directory")
 set(NUTTX_APPS_BINDIR "${CMAKE_BINARY_DIR}/apps" CACHE FILEPATH "Out of tree path to apps/ directory")
 get_filename_component(NUTTX_APPS_ABS_DIR ${NUTTX_APPS_DIR} ABSOLUTE BASE_DIR ${NUTTX_DIR})
 
-# Board/config combination
-set(NUTTX_CONFIG "nsh" CACHE STRING "Board confguration")
-if (NOT DEFINED NUTTX_BOARD)
-  message(FATAL_ERROR "Please define a board with NUTTX_BOARD and configuration with NUTTX_CONFIG")
+if (NOT DEFINED BOARD_CONFIG)
+  message(FATAL_ERROR "Please define configuration with BOARD_CONFIG")
 endif()
 
-set(BOARD_PATH "${NUTTX_DIR}/boards/${NUTTX_BOARD}")
-if (NOT EXISTS "${BOARD_PATH}/CMakeLists.txt")
-  message(FATAL_ERROR "No CMakeList.txt found at ${BOARD_PATH} for ${NUTTX_BOARD}")
+if (EXISTS ${BOARD_CONFIG} AND
+    EXISTS ${BOARD_CONFIG}/defconfig)
+  get_filename_component(NUTTX_BOARD_ABS_DIR ${BOARD_CONFIG} ABSOLUTE BASE_DIR ${NUTTX_DIR})
+
+  string(REPLACE "/" ";" CONFIG_ARRAY ${NUTTX_BOARD_ABS_DIR})
+
+  list(LENGTH CONFIG_ARRAY CONFIG_ARRAY_LENGTH)
+
+  if (${CONFIG_ARRAY_LENGTH} LESS 4)
+    message(FATAL_ERROR "Please define correct board config : ${BOARD_CONFIG}")
+  endif()
+
+  math(EXPR NUTTX_CONFIG_INDEX "${CONFIG_ARRAY_LENGTH} - 1")
+  math(EXPR NUTTX_BOARD_INDEX "${CONFIG_ARRAY_LENGTH} - 3")
+  list(GET CONFIG_ARRAY ${NUTTX_BOARD_INDEX} NUTTX_BOARD)
+  list(GET CONFIG_ARRAY ${NUTTX_CONFIG_INDEX} NUTTX_CONFIG)
+
+else()
+  if (BOARD_CONFIG MATCHES "/")
+    set(MATCH_REGEX "/")
+  else()
+    set(MATCH_REGEX ":")
+  endif()
+
+  string(REPLACE ${MATCH_REGEX} ";" CONFIG_ARRAY ${BOARD_CONFIG})
+
+  list(LENGTH CONFIG_ARRAY CONFIG_ARRAY_LENGTH)
+
+  if (${CONFIG_ARRAY_LENGTH} LESS 2)
+    message(FATAL_ERROR "Please define correct board config : ${BOARD_CONFIG}")
+  endif()
+
+  list(GET CONFIG_ARRAY 0 NUTTX_BOARD)
+  list(GET CONFIG_ARRAY 1 NUTTX_CONFIG)
+
 endif()
 
-set(NUTTX_DEFCONFIG ${BOARD_PATH}/configs/${NUTTX_CONFIG}/defconfig)
+file(GLOB NUTTX_BOARD_DIR LIST_DIRECTORIES true "${NUTTX_DIR}/boards/*/*/${NUTTX_BOARD}")
+
+if ("${NUTTX_BOARD_DIR}" STREQUAL "" OR "${NUTTX_CONFIG}" STREQUAL "")
+  message(FATAL_ERROR "Please define correct board config : ${BOARD_CONFIG}")
+endif()
+
+if (NOT EXISTS "${NUTTX_BOARD_DIR}/CMakeLists.txt")
+  message(FATAL_ERROR "No CMakeList.txt found at ${NUTTX_BOARD_DIR}")
+endif()
+
+set(NUTTX_DEFCONFIG ${NUTTX_BOARD_DIR}/configs/${NUTTX_CONFIG}/defconfig)
 
 if (NOT EXISTS "${NUTTX_DEFCONFIG}")
   message(FATAL_ERROR "No config file found at ${NUTTX_DEFCONFIG}")
@@ -166,7 +206,7 @@ if (NOT EXISTS ${CMAKE_BINARY_DIR}/.config OR
 
   # Print configuration choices
 
-  message(STATUS "  Board: ${NUTTX_BOARD}")
+  message(STATUS "  Board:  ${NUTTX_BOARD}")
   message(STATUS "  Config: ${NUTTX_CONFIG}")
   message(STATUS "  Appdir: ${NUTTX_APPS_DIR}")
 endif()

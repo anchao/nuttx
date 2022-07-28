@@ -172,7 +172,7 @@ endif()
 target_sources(board PRIVATE ${SRCS})
 
 # TODO: make this the default and then allow boards to redefine
-set_property(GLOBAL PROPERTY LD_SCRIPT "${BOARD_PATH}/scripts/ld.script")
+set_property(GLOBAL PROPERTY LD_SCRIPT "${NUTTX_BOARD_DIR}/scripts/ld.script")
 
 # TODO:move this to apropriate arch/toolchain level
 set_property(GLOBAL APPEND PROPERTY COMPILE_OPTIONS $<$<CONFIG:Release>:-fno-strict-aliasing -fomit-frame-pointer>)
@@ -207,4 +207,4 @@ set_property(TARGET nuttx APPEND PROPERTY NUTTX_ELF_MODULE_LINK_OPTIONS -r -e mo
 # ELF module definitions
 
 set_property(TARGET nuttx APPEND PROPERTY NUTTX_ELF_APP_COMPILE_OPTIONS -mlong-calls)
-set_property(TARGET nuttx APPEND PROPERTY NUTTX_ELF_APP_LINK_OPTIONS -r -e main -T${BOARD_PATH}/scripts/gnu-elf.ld)
+set_property(TARGET nuttx APPEND PROPERTY NUTTX_ELF_APP_LINK_OPTIONS -r -e main -T${NUTTX_BOARD_DIR}/scripts/gnu-elf.ld)

@@ -151,4 +151,4 @@ target_sources(board PRIVATE ${CSRCS})
 # Configure linker script
 # TODO: better to place this in boards/CMakeLists.txt?
 
-set_property(GLOBAL PROPERTY LD_SCRIPT "${BOARD_PATH}/scripts/ld.script")
+set_property(GLOBAL PROPERTY LD_SCRIPT "${NUTTX_BOARD_DIR}/scripts/ld.script")

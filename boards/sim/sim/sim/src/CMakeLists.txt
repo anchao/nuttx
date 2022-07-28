@@ -58,7 +58,7 @@ endif()
 
 target_sources(board PRIVATE ${SRCS})
 
-set_property(GLOBAL PROPERTY LD_SCRIPT "${BOARD_PATH}/scripts/gnu-elf.ld")
+set_property(GLOBAL PROPERTY LD_SCRIPT "${NUTTX_BOARD_DIR}/scripts/gnu-elf.ld")
 
 if (CONFIG_NSH_ROMFSETC AND CONFIG_NSH_ARCHROMFS)
   nuttx_add_romfs(

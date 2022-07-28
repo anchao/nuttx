@@ -31,4 +31,4 @@ endif()
 target_sources(board PRIVATE ${SRCS})
 
 # TODO: make this the default and then allow boards to redefine
-set_property(GLOBAL PROPERTY LD_SCRIPT "${BOARD_PATH}/scripts/flash.ld")
+set_property(GLOBAL PROPERTY LD_SCRIPT "${NUTTX_BOARD_DIR}/scripts/flash.ld")

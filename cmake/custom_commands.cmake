@@ -58,7 +58,7 @@ add_custom_command(
   COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/include_apps
 
   COMMAND ${CMAKE_COMMAND} -E create_symlink ${NUTTX_DIR}/arch/${CONFIG_ARCH}/include ${CMAKE_BINARY_DIR}/include/arch # include/arch
-  COMMAND ${CMAKE_COMMAND} -E create_symlink ${NUTTX_DIR}/boards/${NUTTX_BOARD}/include ${CMAKE_BINARY_DIR}/include_arch/arch/board # include/arch/board
+  COMMAND ${CMAKE_COMMAND} -E create_symlink ${NUTTX_BOARD_DIR}/include ${CMAKE_BINARY_DIR}/include_arch/arch/board # include/arch/board
   COMMAND ${CMAKE_COMMAND} -E create_symlink ${NUTTX_DIR}/arch/${CONFIG_ARCH}/include/${CONFIG_ARCH_CHIP} ${CMAKE_BINARY_DIR}/include_arch/arch/chip  # include/arch/chip
   COMMAND ${CMAKE_COMMAND} -E create_symlink ${NUTTX_DIR}/include/nuttx ${CMAKE_BINARY_DIR}/include_nuttx/nuttx # include/nuttx
 

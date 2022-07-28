@@ -62,5 +62,4 @@ if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/${CONFIG_ARCH}/${CONFIG_ARCH_CHIP}/common/C
   add_subdirectory(${CONFIG_ARCH}/${CONFIG_ARCH_CHIP}/common)
 endif()
 
-get_filename_component(BOARD_NAME ${NUTTX_BOARD} NAME)
-add_subdirectory(${CONFIG_ARCH}/${CONFIG_ARCH_CHIP}/${BOARD_NAME})
+add_subdirectory(${NUTTX_BOARD_DIR})
