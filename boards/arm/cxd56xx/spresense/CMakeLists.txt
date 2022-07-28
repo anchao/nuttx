@@ -1,5 +1,5 @@
 ############################################################################
-# mm/mm_heap/CMakeLists.txt
+# boards/arm/cxd56xx/spresense/CMakeLists.txt
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -18,22 +18,9 @@
 #
 ############################################################################
 
-# Kernel heap allocator
+add_subdirectory(src)
 
-if (CONFIG_MM_DEFAULT_MANAGER)
-
-  set(SRCS)
-
-  list(APPEND SRCS
-    mm_initialize.c mm_sem.c mm_addfreechunk.c mm_size2ndx.c
-    mm_malloc_size.c mm_shrinkchunk.c mm_brkaddr.c mm_calloc.c
-    mm_extend.c mm_free.c mm_mallinfo.c mm_malloc.c mm_foreach.c
-    mm_memalign.c mm_realloc.c mm_zalloc.c mm_heapmember.c mm_memdump.c)
-
-  if (CONFIG_DEBUG_MM)
-    list(APPEND SRCS mm_checkcorruption.c)
-  endif()
-
-  target_sources(mm PRIVATE ${SRCS})
-
+if (NOT CONFIG_BUILD_FLAT)
+  add_subdirectory(kernel)
+  set_property(GLOBAL PROPERTY LD_SCRIPT_USER ${CMAKE_CURRENT_LIST_DIR}/scripts/memory.ld ${CMAKE_CURRENT_LIST_DIR}/scripts/user-space.ld)
 endif()

@@ -75,6 +75,7 @@ if (EXISTS ${BOARD_CONFIG} AND
   list(GET CONFIG_ARRAY ${NUTTX_BOARD_INDEX} NUTTX_BOARD)
   list(GET CONFIG_ARRAY ${NUTTX_CONFIG_INDEX} NUTTX_CONFIG)
 
+  string(REGEX REPLACE "configs/${NUTTX_CONFIG}" "" NUTTX_BOARD_DIR ${NUTTX_BOARD_ABS_DIR})
 else()
   if (BOARD_CONFIG MATCHES "/")
     set(MATCH_REGEX "/")
@@ -93,9 +94,8 @@ else()
   list(GET CONFIG_ARRAY 0 NUTTX_BOARD)
   list(GET CONFIG_ARRAY 1 NUTTX_CONFIG)
 
+  file(GLOB NUTTX_BOARD_DIR LIST_DIRECTORIES true "${NUTTX_DIR}/boards/*/*/${NUTTX_BOARD}")
 endif()
-
-file(GLOB NUTTX_BOARD_DIR LIST_DIRECTORIES true "${NUTTX_DIR}/boards/*/*/${NUTTX_BOARD}")
 
 if ("${NUTTX_BOARD_DIR}" STREQUAL "" OR "${NUTTX_CONFIG}" STREQUAL "")
   message(FATAL_ERROR "Please define correct board config : ${BOARD_CONFIG}")
@@ -149,22 +149,77 @@ if (NOT EXISTS ${NUTTX_APPS_BINDIR}/Kconfig)
   add_subdirectory(${NUTTX_APPS_DIR} preapps)
 endif()
 
-# Unsupport custom board/chips yet, workaround
+# Custom board ###################################################
 
-if (NOT EXISTS ${CMAKE_BINARY_DIR}/arch/dummy/Kconfig)
-  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/arch/dummy)
-  file(TOUCH ${CMAKE_BINARY_DIR}/arch/dummy/Kconfig)
-endif()
+set(NUTTX_ACTIVE_DEFCONFIG ${NUTTX_DEFCONFIG})
+include(kconfig)
 
-if (NOT EXISTS ${CMAKE_BINARY_DIR}/boards/dummy/Kconfig)
-  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/boards/dummy)
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/boards/dummy)
+if (CONFIG_ARCH_BOARD_CUSTOM)
+  get_filename_component(NUTTX_BOARD_ABS_DIR ${CONFIG_ARCH_BOARD_CUSTOM_DIR}
+                         ABSOLUTE BASE_DIR ${NUTTX_DIR})
+else()
+  set(NUTTX_BOARD_ABS_DIR ${NUTTX_BOARD_DIR})
   file(TOUCH ${CMAKE_BINARY_DIR}/boards/dummy/Kconfig)
 endif()
 
-if (NOT EXISTS ${CMAKE_BINARY_DIR}/drivers/platform/Kconfig)
+if (NOT EXISTS ${CMAKE_BINARY_DIR}/boards/dummy/Kconfig)
+  if (CONFIG_ARCH_BOARD_CUSTOM)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                            ${NUTTX_BOARD_ABS_DIR}/Kconfig
+                            ${CMAKE_BINARY_DIR}/boards/dummy/Kconfig
+                    WORKING_DIRECTORY ${NUTTX_DIR})
+  else()
+    file(TOUCH ${CMAKE_BINARY_DIR}/boards/dummy/Kconfig)
+  endif()
+endif()
+
+# board platfrom driver
+
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/drivers)
+
+if (EXISTS ${NUTTX_BOARD_ABS_DIR}/../drivers AND
+    EXISTS ${NUTTX_BOARD_ABS_DIR}/../drivers/Kconfig)
+  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                          ${NUTTX_BOARD_ABS_DIR}/../drivers
+                          ${CMAKE_BINARY_DIR}/drivers/platform
+                  WORKING_DIRECTORY ${NUTTX_DIR})
+else()
   file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/drivers/platform)
   file(TOUCH ${CMAKE_BINARY_DIR}/drivers/platform/Kconfig)
 endif()
+
+# Custom chip ###################################################
+
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/arch/${CONFIG_ARCH})
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/arch/${CONFIG_ARCH}/src)
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/arch/dummy)
+
+if (CONFIG_ARCH_CHIP_CUSTOM)
+  get_filename_component(NUTTX_CHIP_ABS_DIR ${CONFIG_ARCH_CHIP_CUSTOM_DIR}
+                         ABSOLUTE BASE_DIR ${NUTTX_DIR})
+  set(NUTTX_CHIP_ABS_DIR ${NUTTX_CHIP_ABS_DIR})
+else()
+  set(NUTTX_CHIP_ABS_DIR "${NUTTX_DIR}/arch/${CONFIG_ARCH}/src/${CONFIG_ARCH_CHIP}")
+endif()
+
+if (NOT EXISTS ${CMAKE_BINARY_DIR}/arch/dummy/Kconfig)
+  if (CONFIG_ARCH_CHIP_CUSTOM)
+      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                              ${NUTTX_CHIP_ABS_DIR}/Kconfig
+                              ${CMAKE_BINARY_DIR}/arch/dummy/Kconfig
+                      WORKING_DIRECTORY ${NUTTX_DIR})
+  else()
+    file(TOUCH ${CMAKE_BINARY_DIR}/arch/dummy/Kconfig)
+  endif()
+endif()
+
+execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                        ${NUTTX_CHIP_ABS_DIR}
+                        ${CMAKE_BINARY_DIR}/arch/${CONFIG_ARCH}/src/chip
+                WORKING_DIRECTORY ${NUTTX_DIR})
+
+# Unsupport custom board/chips yet, workaround
 
 if (NOT EXISTS ${CMAKE_BINARY_DIR}/apps/platform/board/Kconfig)
   file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/apps/platform/board)
@@ -215,6 +270,7 @@ endif()
 
 # this exposes all Kconfig vars to CMake
 
+set(NUTTX_ACTIVE_DEFCONFIG ${CMAKE_BINARY_DIR}/.config)
 include(kconfig)
 
 include(custom_commands)

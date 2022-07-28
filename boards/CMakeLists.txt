@@ -54,12 +54,12 @@ target_include_directories(board PRIVATE $<TARGET_PROPERTY:arch,INCLUDE_DIRECTOR
 # add contents of <arch>, <soc> and <board> directories, adding common/ subdirs
 # if found at each arch and soc level
 
-if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/${CONFIG_ARCH}/common/CMakeLists.txt)
-  add_subdirectory(${CONFIG_ARCH}/common)
+if (EXISTS ${NUTTX_BOARD_ABS_DIR}/../common/CMakeLists.txt)
+  add_subdirectory("${NUTTX_BOARD_ABS_DIR}/../common" EXCLUDE_FROM_ALL exclude_common)
 endif()
 
-if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/${CONFIG_ARCH}/${CONFIG_ARCH_CHIP}/common/CMakeLists.txt)
-  add_subdirectory(${CONFIG_ARCH}/${CONFIG_ARCH_CHIP}/common)
+if (EXISTS ${NUTTX_BOARD_ABS_DIR}/../drivers/CMakeLists.txt)
+  add_subdirectory("${NUTTX_BOARD_ABS_DIR}/../drivers" EXCLUDE_FROM_ALL exclude_drivers)
 endif()
 
-add_subdirectory(${NUTTX_BOARD_DIR})
+add_subdirectory(${NUTTX_BOARD_ABS_DIR} EXCLUDE_FROM_ALL exclude_board)

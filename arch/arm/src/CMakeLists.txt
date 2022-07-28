@@ -20,12 +20,12 @@
 
 add_subdirectory(common)
 add_subdirectory(${ARCH_SUBDIR})
-add_subdirectory(${CONFIG_ARCH_CHIP})
+add_subdirectory(${NUTTX_CHIP_ABS_DIR} EXCLUDE_FROM_ALL exclude_chip)
 
 # Include directories (before system ones) as PUBLIC so that it can be
 # exposed to libboard
-target_include_directories(arch BEFORE PUBLIC ${CONFIG_ARCH_CHIP} common ${ARCH_SUBDIR})
+target_include_directories(arch BEFORE PUBLIC ${NUTTX_CHIP_ABS_DIR} common ${ARCH_SUBDIR})
 
 if (NOT CONFIG_BUILD_FLAT)
-  target_include_directories(arch_interface BEFORE PUBLIC ${CONFIG_ARCH_CHIP} common ${ARCH_SUBDIR})
+  target_include_directories(arch_interface BEFORE PUBLIC ${NUTTX_CHIP_ABS_DIR} common ${ARCH_SUBDIR})
 endif()

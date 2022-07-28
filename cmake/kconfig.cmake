@@ -20,7 +20,7 @@
 
 # Parse nuttx config options for cmake
 
-file(STRINGS ${CMAKE_BINARY_DIR}/.config ConfigContents)
+file(STRINGS ${NUTTX_ACTIVE_DEFCONFIG} ConfigContents)
 foreach(NameAndValue ${ConfigContents})
   # Strip leading spaces
   string(REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue})

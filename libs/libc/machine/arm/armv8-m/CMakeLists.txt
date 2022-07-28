@@ -25,57 +25,54 @@ if (CONFIG_LIBC_ARCH_ELF)
 endif()
 
 if (CONFIG_ARMV8M_LIBM)
-  if (LIBM_ARCH_CEIL)
+  if (CONFIG_LIBM_ARCH_CEIL)
     list(APPEND SRCS arch_ceil.c)
   endif()
 
-  if (LIBM_ARCH_CEILF)
+  if (CONFIG_LIBM_ARCH_CEILF)
     list(APPEND SRCS arch_ceilf.c)
   endif()
 
-  if (LIBM_ARCH_FLOOR)
+  if (CONFIG_LIBM_ARCH_FLOOR)
     list(APPEND SRCS arch_floor.c)
   endif()
 
-  if (LIBM_ARCH_FLOORF)
+  if (CONFIG_LIBM_ARCH_FLOORF)
     list(APPEND SRCS arch_floorf.c)
   endif()
 
-  if (LIBM_ARCH_NEARBYINT)
+  if (CONFIG_LIBM_ARCH_NEARBYINT)
     list(APPEND SRCS arch_nearbyint.c)
   endif()
 
-  if (LIBM_ARCH_NEARBYINTF)
+  if (CONFIG_LIBM_ARCH_NEARBYINTF)
     list(APPEND SRCS arch_nearbyintf.c)
   endif()
 
-  if (LIBM_ARCH_RINTF)
+  if (CONFIG_LIBM_ARCH_RINTF)
     list(APPEND SRCS arch_rintf.c)
   endif()
 
-  if (LIBM_ARCH_ROUNDF)
+  if (CONFIG_LIBM_ARCH_ROUNDF)
     list(APPEND SRCS arch_roundf.c)
   endif()
 
-  if (LIBM_ARCH_TRUNCF)
+  if (CONFIG_LIBM_ARCH_TRUNCF)
     list(APPEND SRCS arch_truncf.c)
   endif()
 
-  if (LIBM_ARCH_RINT)
+  if (CONFIG_LIBM_ARCH_RINT)
     list(APPEND SRCS arch_rint.c)
   endif()
 
-  if (LIBM_ARCH_ROUND)
+  if (CONFIG_LIBM_ARCH_ROUND)
     list(APPEND SRCS arch_round.c)
   endif()
 
-  if (LIBM_ARCH_TRUNC)
+  if (CONFIG_LIBM_ARCH_TRUNC)
     list(APPEND SRCS arch_trunc.c)
   endif()
-endif() # CONFIG_ARMV8M_LIBM
 
-if (CONFIG_ARCH_SETJMP_H)
-  list(APPEND SRCS gnu/arch_setjmp.S)
 endif()
 
 target_sources(c PRIVATE ${SRCS})

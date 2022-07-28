@@ -18,6 +18,8 @@
 #
 ############################################################################
 
+set(SRCS)
+
 if (CONFIG_ARCH_ARM7TDMI)        # ARM7TDMI is ARMv4T
   add_subdirectory(arm)
 elseif (CONFIG_ARCH_ARM920T)    # ARM920T is ARMv4T
@@ -42,6 +44,28 @@ elseif (CONFIG_ARCH_ARMV8M)     # All ARMv8-M
   add_subdirectory(armv8-m)
 endif()
 
-if (CONFIG_CXX_EXCEPTION)
-  target_sources(c PRIVATE gnu_unwind_find_exidx.c)
+list(APPEND SRCS
+  aeabi_memclr.c aeabi_memclr4.c aeabi_memclr8.c
+  aeabi_memcpy.c aeabi_memcpy4.c aeabi_memcpy8.c
+  aeabi_memmove.c aeabi_memmove4.c aeabi_memmove8.c
+  aeabi_memset.c aeabi_memset4.c aeabi_memset8.c)
+
+if (NOT CONFIG_LIBSUPCXX)
+  list(APPEND SRCS aeabi_atexit.c)
 endif()
+
+if (CONFIG_CXX_EXCEPTION)
+  list(APPEND SRCS gnu_unwind_find_exidx.c)
+endif()
+
+if (CONFIG_ARCH_SETJMP_H)
+  if(CONFIG_ARCH_TOOLCHAIN_GNU)
+    list(APPEND SRCS gnu/arch_setjmp.S)
+  endif()
+endif()
+
+if (CONFIG_CXX_EXCEPTION)
+  list(APPEND SRCS gnu_unwind_find_exidx.c)
+endif()
+
+target_sources(c PRIVATE ${SRCS})
