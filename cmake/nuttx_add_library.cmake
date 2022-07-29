@@ -1,22 +1,22 @@
-############################################################################
+# ##############################################################################
 # cmake/nuttx_add_library.cmake
 #
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.  The
-# ASF licenses this file to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance with the
-# License.  You may obtain a copy of the License at
+# Licensed to the Apache Software Foundation (ASF) under one or more contributor
+# license agreements.  See the NOTICE file distributed with this work for
+# additional information regarding copyright ownership.  The ASF licenses this
+# file to you under the Apache License, Version 2.0 (the "License"); you may not
+# use this file except in compliance with the License.  You may obtain a copy of
+# the License at
 #
-#   http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
-# License for the specific language governing permissions and limitations
-# under the License.
+# License for the specific language governing permissions and limitations under
+# the License.
 #
-############################################################################
+# ##############################################################################
 
 # Internal utility function
 #
@@ -27,30 +27,33 @@ function(nuttx_add_library_internal target)
   add_dependencies(${target} nuttx_context)
 
   # add main include directories
-  target_include_directories(${target} SYSTEM PUBLIC
-    $<$<BOOL:${CONFIG_HAVE_CXX}>:${CMAKE_BINARY_DIR}/include_cxx>
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_BINARY_DIR}/include
-    ${CMAKE_BINARY_DIR}/include_arch
-  )
+  target_include_directories(
+    ${target} SYSTEM
+    PUBLIC $<$<BOOL:${CONFIG_HAVE_CXX}>:${CMAKE_BINARY_DIR}/include_cxx>
+           ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/include
+           ${CMAKE_BINARY_DIR}/include_arch)
 
-  # Set global compile options & definitions
-  # We use the "nuttx" target to hold these properties
-  # so that libraries added after this property is set can read
-  # the final value at build time. The GENEX_EVAL allows the property
-  # to hold generator expression itself
-  target_compile_options(${target} PRIVATE $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_COMPILE_OPTIONS>>)
-  target_compile_definitions(${target} PRIVATE $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_DEFINITIONS>>)
-  target_include_directories(${target} PRIVATE $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_INCLUDE_DIRECTORIES>>)
+  # Set global compile options & definitions We use the "nuttx" target to hold
+  # these properties so that libraries added after this property is set can read
+  # the final value at build time. The GENEX_EVAL allows the property to hold
+  # generator expression itself
+  target_compile_options(
+    ${target}
+    PRIVATE $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_COMPILE_OPTIONS>>)
+  target_compile_definitions(
+    ${target} PRIVATE $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_DEFINITIONS>>)
+  target_include_directories(
+    ${target}
+    PRIVATE $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_INCLUDE_DIRECTORIES>>)
 endfunction()
 
 # Auxiliary libraries
 #
-# The whole purpose of this is to overcome the limitation of CMake 3.16
-# to set source file properties from directories different from the one
-# defining the target where the source file is used. This auxiliary
-# library acts as an intermediate target that is usually linked to the
-# system/kernel library defined at a higher level.
+# The whole purpose of this is to overcome the limitation of CMake 3.16 to set
+# source file properties from directories different from the one defining the
+# target where the source file is used. This auxiliary library acts as an
+# intermediate target that is usually linked to the system/kernel library
+# defined at a higher level.
 
 function(nuttx_add_aux_library target)
   # declare target
@@ -103,17 +106,17 @@ endfunction()
 #
 # For non-kernel builds, this defines an OS library which will receive
 # kernel-level flags (such as __KERNEL__) and will be linked into nuttx binary
-# For kernel builds, the same happens unless SPLIT is specified. In this
-# case both a <target> and a k<target> library will be defined,
-# but only the latter having the kernel-level flags. In this case,
-# both libraries will receive the same set of sources (the original <target>
-# should be used by the user to add sources).
+# For kernel builds, the same happens unless SPLIT is specified. In this case
+# both a <target> and a k<target> library will be defined, but only the latter
+# having the kernel-level flags. In this case, both libraries will receive the
+# same set of sources (the original <target> should be used by the user to add
+# sources).
 
 function(nuttx_add_kernel_library target)
   cmake_parse_arguments(ARGS SPLIT "" "" ${ARGN})
   set(SRCS ${ARGS_UNPARSED_ARGUMENTS})
 
-  if (ARGS_SPLIT AND NOT CONFIG_BUILD_FLAT)
+  if(ARGS_SPLIT AND NOT CONFIG_BUILD_FLAT)
     set(kernel_target k${target})
 
     # add non-kernel (system) library
@@ -127,32 +130,40 @@ function(nuttx_add_kernel_library target)
   nuttx_add_library_internal(${kernel_target} ${SRCS})
   set_property(GLOBAL APPEND PROPERTY NUTTX_KERNEL_LIBRARIES ${kernel_target})
 
-  # Add kernel options & definitions
-  # See note above in nuttx_add_library_internal()
-  # on syntax and nuttx target use
-  target_compile_options(${kernel_target} PRIVATE $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_KERNEL_COMPILE_OPTIONS>>)
-  target_compile_definitions(${kernel_target} PRIVATE $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_KERNEL_DEFINITIONS>>)
-  target_include_directories(${kernel_target} PRIVATE $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_KERNEL_INCLUDE_DIRECTORIES>>)
+  # Add kernel options & definitions See note above in
+  # nuttx_add_library_internal() on syntax and nuttx target use
+  target_compile_options(
+    ${kernel_target}
+    PRIVATE $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_KERNEL_COMPILE_OPTIONS>>)
+  target_compile_definitions(
+    ${kernel_target}
+    PRIVATE $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_KERNEL_DEFINITIONS>>)
+  target_include_directories(
+    ${kernel_target}
+    PRIVATE
+      $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_KERNEL_INCLUDE_DIRECTORIES>>)
 
-  if (NOT "${target}" STREQUAL "${kernel_target}")
-    # The k${target} lib will have the same sources added to that ${target}
-    # lib. This allows to do target_sources(${target} ..) easily
-    target_sources(${kernel_target} PRIVATE $<TARGET_PROPERTY:${target},SOURCES>)
+  if(NOT "${target}" STREQUAL "${kernel_target}")
+    # The k${target} lib will have the same sources added to that ${target} lib.
+    # This allows to do target_sources(${target} ..) easily
+    target_sources(${kernel_target}
+                   PRIVATE $<TARGET_PROPERTY:${target},SOURCES>)
 
     # same for include directories
-    target_include_directories(${kernel_target} PRIVATE $<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>)
+    target_include_directories(
+      ${kernel_target} PRIVATE $<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>)
   endif()
 endfunction()
 
-
 include(nuttx_parse_function_args)
 
-define_property(GLOBAL PROPERTY NUTTX_LIBRARIES
-                 BRIEF_DOCS "NuttX libs"
-                 FULL_DOCS "List of all NuttX libraries"
-                 )
+define_property(
+  GLOBAL
+  PROPERTY NUTTX_LIBRARIES
+  BRIEF_DOCS "NuttX libs"
+  FULL_DOCS "List of all NuttX libraries")
 
-#=============================================================================
+# =============================================================================
 #
 # nuttx_add_library
 #
@@ -164,16 +175,14 @@ function(nuttx_add_library target)
   set_property(GLOBAL APPEND PROPERTY NUTTX_APPS_LIBRARIES ${target})
 
   nuttx_add_library_internal(${target})
-  # declare target
-  #add_library(${target} OBJECT ${ARGN})
+  # declare target add_library(${target} OBJECT ${ARGN})
 
-  #nuttx_add_library_internal(${target} ${ARGN})
+  # nuttx_add_library_internal(${target} ${ARGN})
 
-  ##set_property(GLOBAL APPEND PROPERTY NUTTX_KERNEL_LIBRARIES ${target})
+  # set_property(GLOBAL APPEND PROPERTY NUTTX_KERNEL_LIBRARIES ${target})
 
-  ## link to final libapps
-  #target_link_libraries(apps INTERFACE ${target})
+  # link to final libapps target_link_libraries(apps INTERFACE ${target})
 
-  ## add apps/include to include path
-  #target_include_directories(${target} PRIVATE ${NUTTX_APPS_ABS_DIR}/include)
+  # add apps/include to include path target_include_directories(${target}
+  # PRIVATE ${NUTTX_APPS_ABS_DIR}/include)
 endfunction()
