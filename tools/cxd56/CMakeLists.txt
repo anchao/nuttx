@@ -1,5 +1,5 @@
 # ##############################################################################
-# boards/arm/cxd56xx/spresense/CMakeLists.txt
+# tools/cxd56/CMakeLists.txt
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
@@ -18,28 +18,36 @@
 #
 # ##############################################################################
 
-add_subdirectory(src)
+cmake_minimum_required(VERSION 3.16)
+project(nuttx_postbuild LANGUAGES C)
 
-if(NOT CONFIG_BUILD_FLAT)
-  add_subdirectory(kernel)
-  set_property(
-    GLOBAL PROPERTY LD_SCRIPT_USER ${CMAKE_CURRENT_LIST_DIR}/scripts/memory.ld
-                    ${CMAKE_CURRENT_LIST_DIR}/scripts/user-space.ld)
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE
+      "Release"
+      CACHE STRING "Build type" FORCE)
 endif()
 
-ExternalProject_Add(
-  nuttx_post_build
-  SOURCE_DIR ${CMAKE_SOURCE_DIR}/tools/cxd56
-  INSTALL_DIR ${CMAKE_BINARY_DIR}/tools/cxd56
-  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
-  USES_TERMINAL_CONFIGURE true
-  USES_TERMINAL_BUILD true
-  USES_TERMINAL_INSTALL true
-  DEPENDS nuttx)
+# set basic warnings
 
-add_custom_command(
-  TARGET nuttx_post_build
-  POST_BUILD
-  BYPRODUCTS nuttx.spk
-  COMMAND ${CMAKE_BINARY_DIR}/bin/mkspk -c2 nuttx nuttx nuttx.spk
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+add_compile_options(-O2 -Wall)
+
+# configure according to platform
+
+if(MSYS)
+  add_compile_definitions(CONFIG_WINDOWS_NATIVE=y)
+else()
+  # GCC or clang is assumed in all other POSIX environments (Linux, Cygwin,
+  # MSYS2, macOS). strtok_r is used in some tools, but does not seem to be
+  # available in the MinGW environment.
+
+  add_compile_definitions(HAVE_STRTOK_C=1)
+
+  if(CYGWIN)
+    add_compile_definitions(HOST_CYGWIN=1)
+  endif()
+endif()
+
+# define targets
+
+add_executable(mkspk mkspk.c clefia.c)
+install(TARGETS mkspk DESTINATION bin)

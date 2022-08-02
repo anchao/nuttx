@@ -434,6 +434,15 @@ add_subdirectory(wireless)
 
 add_subdirectory(boards)
 
+# POSTBUILD -- Perform post build operations Some architectures require the use
+# of special tools and special handling AFTER building the NuttX binary.
+# Make.defs files for those architectures should override the following define
+# with the correct operations for that platform
+
+if(TARGET nuttx_post_build)
+  add_custom_target(post_build ALL DEPENDS nuttx_post_build)
+endif()
+
 # Add apps/ to the build (if present)
 
 if(EXISTS ${NUTTX_DIR}/${NUTTX_APPS_DIR}/CMakeLists.txt)
