@@ -662,10 +662,12 @@ else()
   get_property(nuttx_kernel_libs GLOBAL PROPERTY NUTTX_KERNEL_LIBRARIES)
   get_property(nuttx_system_libs GLOBAL PROPERTY NUTTX_SYSTEM_LIBRARIES)
   get_property(nuttx_apps_libs GLOBAL PROPERTY NUTTX_APPS_LIBRARIES)
+  get_property(nuttx_extra_libs GLOBAL PROPERTY NUTTX_EXTRA_LIBRARIES)
 
   # TODO: do with single function call?
   set(nuttx_libs_paths)
-  foreach(lib ${nuttx_kernel_libs} ${nuttx_system_libs} ${nuttx_apps_libs})
+  foreach(lib ${nuttx_kernel_libs} ${nuttx_system_libs} ${nuttx_apps_libs}
+              ${nuttx_extra_libs})
     list(APPEND nuttx_libs_paths $<TARGET_FILE:${lib}>)
   endforeach()
 

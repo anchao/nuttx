@@ -17,11 +17,6 @@
 # the License.
 #
 # ##############################################################################
-nuttx_add_system_library(xx)
-
-list(APPEND SRCS libxx_impure.cxx)
-
-target_sources(xx PRIVATE ${SRCS})
 
 # Include the uClibc++ Make.defs file if selected.  If it is included, the
 # uClibc++/Make.defs file will add its files to the source file list, add its
@@ -37,8 +32,9 @@ if(CONFIG_UCLIBCXX)
 elseif(CONFIG_LIBCXX)
   include(libcxx.cmake)
 else()
-  include(cxx.cmake)
+  include(libcxxmini.cmake)
 endif()
 
-# include_directories(${CMAKE_CURRENT_SOURCE_DIR}) include_directories(SYSTEM
-# ${NUTTX_DIR}/include/cxx)
+if(CONFIG_LIBCXXABI)
+  include(libcxxabi.cmake)
+endif()

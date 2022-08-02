@@ -29,8 +29,7 @@ function(nuttx_add_library_internal target)
   # add main include directories
   target_include_directories(
     ${target} SYSTEM
-    PUBLIC $<$<BOOL:${CONFIG_HAVE_CXX}>:${CMAKE_BINARY_DIR}/include_cxx>
-           ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/include
+    PUBLIC ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/include
            ${CMAKE_BINARY_DIR}/include_arch)
 
   # Set global compile options & definitions We use the "nuttx" target to hold
@@ -172,17 +171,7 @@ define_property(
 function(nuttx_add_library target)
   add_library(${target} ${ARGN})
 
-  set_property(GLOBAL APPEND PROPERTY NUTTX_APPS_LIBRARIES ${target})
+  set_property(GLOBAL APPEND PROPERTY NUTTX_EXTRA_LIBRARIES ${target})
 
   nuttx_add_library_internal(${target})
-  # declare target add_library(${target} OBJECT ${ARGN})
-
-  # nuttx_add_library_internal(${target} ${ARGN})
-
-  # set_property(GLOBAL APPEND PROPERTY NUTTX_KERNEL_LIBRARIES ${target})
-
-  # link to final libapps target_link_libraries(apps INTERFACE ${target})
-
-  # add apps/include to include path target_include_directories(${target}
-  # PRIVATE ${NUTTX_APPS_ABS_DIR}/include)
 endfunction()

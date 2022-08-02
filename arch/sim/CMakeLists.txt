@@ -83,9 +83,7 @@ set_property(
            -U__linux__
            -U__sun__
            -U__unix__
-           # Note: -fshort-wchar for the case where NuttX and the host OS have
-           # differnt wchar_t. On Nuttx, it's uint16_t. On macOS, it's 32-bit.
-           -fshort-wchar)
+           -U__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
 
 # common options #############################################################
 
@@ -99,15 +97,6 @@ if(X86_64 AND CONFIG_SIM_M32)
 endif()
 
 if(CONFIG_LIBCXX)
-  # Why c++14? * libcxx seems to require c++11. * The compiler defaults varies:
-  # clang/macOS (from xcode): 199711L gcc/ubuntu:               201402L * There
-  # is a precedent to use c++14.
-  # (boards/arm/stm32l4/nucleo-l476rg/scripts/Make.defs)
-
-  # TODO: place on top-level CMakeLists.txt?
-  set(CMAKE_CXX_STANDARD 14)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
   if(APPLE)
     # macOS uses libc++abi
 
@@ -123,6 +112,17 @@ if(CONFIG_LIBCXX)
       APPEND
       PROPERTY NUTTX_DEFINITIONS __GLIBCXX__)
   endif()
+
+  # Disable availability macros. The availability on Host OS is not likely
+  # appropriate for NuttX.
+  #
+  # Note: When compiling NuttX apps, we undefine __APPLE__. It makes libcxx
+  # __availability header unhappy.
+  # https://github.com/llvm/llvm-project/blob/2e2999cd44f6ec9a5e396fa0113497ea82582f69/libcxx/include/__availability#L258
+  set_property(
+    TARGET nuttx
+    APPEND
+    PROPERTY NUTTX_DEFINITIONS _LIBCPP_DISABLE_AVAILABILITY)
 endif()
 
 # This is part of the top-level export target TODO: how to deal with in CMake?

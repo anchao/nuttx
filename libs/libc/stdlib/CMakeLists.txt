@@ -23,12 +23,13 @@ set(SRCS
     lib_abort.c
     lib_atof.c
     lib_atoi.c
-    lib_atexit.c
+    lib_getprogname.c
     lib_atol.c
     lib_atoll.c
     lib_div.c
     lib_ldiv.c
     lib_lldiv.c
+    lib_exit.c
     lib_itoa.c
     lib_labs.c
     lib_llabs.c
@@ -38,7 +39,6 @@ set(SRCS
     lib_qsort.c
     lib_srand.c
     lib_strtol.c
-    lib_exit.c
     lib_strtoll.c
     lib_strtoul.c
     lib_strtoull.c
@@ -48,25 +48,21 @@ set(SRCS
     lib_checkbase.c
     lib_mktemp.c
     lib_mkstemp.c
-    lib_mkdtemp.c)
-
-if(CONFIG_LIBC_WCHAR)
-  list(
-    APPEND
-    SRCS
+    lib_mkdtemp.c
+    lib_aligned_alloc.c
+    lib_posix_memalign.c
+    lib_valloc.c
     lib_mblen.c
     lib_mbtowc.c
     lib_wctomb.c
     lib_mbstowcs.c
-    lib_wcstombs.c)
-endif()
-
-if(CONFIG_PSEUDOTERM_SUSV1)
-  list(APPEND SRCS lib_ptsname.c lib_ptsnamer.c)
-endif()
+    lib_wcstombs.c
+    lib_atexit.c
+    lib_cxa_atexit.c
+    lib_onexit.c)
 
 if(CONFIG_PSEUDOTERM)
-  list(APPEND SRCS lib_unlockpt.c)
+  list(APPEND SRCS lib_ptsname.c lib_ptsnamer.c lib_unlockpt.c lib_openpty.c)
 endif()
 
 target_sources(c PRIVATE ${SRCS})

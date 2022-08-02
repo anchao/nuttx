@@ -22,7 +22,7 @@ include(nuttx_parse_function_args)
 
 define_property(
   GLOBAL
-  PROPERTY NUTTX_APP_LIBS
+  PROPERTY NUTTX_APPS_LIBRARIES
   BRIEF_DOCS "NuttX application libs"
   FULL_DOCS "List of all NuttX application libraries")
 
@@ -115,12 +115,13 @@ function(nuttx_add_application)
       APPEND
       PROPERTY NUTTX_LOADABLE_APPS ${TARGET})
   else()
-    # add to list of application libraries
-    set_property(GLOBAL APPEND PROPERTY NUTTX_APPS_LIBRARIES ${TARGET})
-
     # create as library to be archived into libapps.a
     set(TARGET "apps_${NAME}")
     nuttx_add_library(${TARGET} ${SRCS})
+
+    # add to list of application libraries
+
+    set_property(GLOBAL APPEND PROPERTY NUTTX_APPS_LIBRARIES ${TARGET})
 
     if(NOT NO_MAIN_ALIAS)
       # provide main() alias
