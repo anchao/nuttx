@@ -79,8 +79,9 @@ if(EXISTS ${BOARD_CONFIG} AND EXISTS ${BOARD_CONFIG}/defconfig)
   list(GET CONFIG_ARRAY ${NUTTX_BOARD_INDEX} NUTTX_BOARD)
   list(GET CONFIG_ARRAY ${NUTTX_CONFIG_INDEX} NUTTX_CONFIG)
 
-  string(REGEX REPLACE "configs/${NUTTX_CONFIG}" "" NUTTX_BOARD_DIR
+  string(REGEX REPLACE "(.*)/(.*)/${NUTTX_CONFIG}" "\\1" NUTTX_BOARD_DIR
                        ${NUTTX_BOARD_ABS_DIR})
+  set(NUTTX_DEFCONFIG ${BOARD_CONFIG}/defconfig)
 else()
   if(BOARD_CONFIG MATCHES "/")
     set(MATCH_REGEX "/")
@@ -103,17 +104,15 @@ else()
     GLOB NUTTX_BOARD_DIR
     LIST_DIRECTORIES true
     "${NUTTX_DIR}/boards/*/*/${NUTTX_BOARD}")
+
+  if(EXISTS ${NUTTX_BOARD_DIR}/configs/${NUTTX_CONFIG}/defconfig)
+    set(NUTTX_DEFCONFIG ${NUTTX_BOARD_DIR}/configs/${NUTTX_CONFIG}/defconfig)
+  endif()
 endif()
 
-if("${NUTTX_BOARD_DIR}" STREQUAL "" OR "${NUTTX_CONFIG}" STREQUAL "")
-  message(FATAL_ERROR "Please define correct board config : ${BOARD_CONFIG}")
+if("${NUTTX_CONFIG}" STREQUAL "")
+  message(FATAL_ERROR "Please define correct board config : ${NUTTX_CONFIG}")
 endif()
-
-if(NOT EXISTS "${NUTTX_BOARD_DIR}/CMakeLists.txt")
-  message(FATAL_ERROR "No CMakeList.txt found at ${NUTTX_BOARD_DIR}")
-endif()
-
-set(NUTTX_DEFCONFIG ${NUTTX_BOARD_DIR}/configs/${NUTTX_CONFIG}/defconfig)
 
 if(NOT EXISTS "${NUTTX_DEFCONFIG}")
   message(FATAL_ERROR "No config file found at ${NUTTX_DEFCONFIG}")
@@ -157,10 +156,23 @@ if(NOT EXISTS ${NUTTX_APPS_BINDIR}/Kconfig)
   add_subdirectory(${NUTTX_APPS_DIR} preapps)
 endif()
 
-# Custom board ###################################################
-
 set(NUTTX_ACTIVE_DEFCONFIG ${NUTTX_DEFCONFIG})
 include(kconfig)
+
+if(CONFIG_ARCH_BOARD_CUSTOM)
+  get_filename_component(NUTTX_BOARD_DIR ${CONFIG_ARCH_BOARD_CUSTOM_DIR}
+                         ABSOLUTE BASE_DIR ${NUTTX_DIR})
+endif()
+
+if("${NUTTX_BOARD_DIR}" STREQUAL "")
+  message(FATAL_ERROR "Please define correct board : ${NUTTX_BOARD_DIR}")
+endif()
+
+if(NOT EXISTS "${NUTTX_BOARD_DIR}/CMakeLists.txt")
+  message(FATAL_ERROR "No CMakeList.txt found at ${NUTTX_BOARD_DIR}")
+endif()
+
+# Custom board ###################################################
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/boards/dummy)
 if(CONFIG_ARCH_BOARD_CUSTOM)
@@ -679,7 +691,7 @@ else()
       ${nuttx_libs_paths} $<$<NOT:$<BOOL:${APPLE}>>:-Wl,--end-group> -o
       nuttx.rel
     COMMAND ${CMAKE_OBJCOPY} --redefine-syms=nuttx-names.dat nuttx.rel
-    DEPENDS ${nuttx_libs} up_head)
+    DEPENDS ${nuttx_libs_paths} up_head)
   add_custom_target(nuttx-rel DEPENDS nuttx.rel
                                       $<$<NOT:$<BOOL:${APPLE}>>:nuttx.ld>)
 

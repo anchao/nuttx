@@ -174,11 +174,11 @@ set(ARCHCFLAGS "-Wstrict-prototypes")
 set(ARCHCXXFLAGS "-nostdinc++")
 
 if(CONFIG_CXX_EXCEPTION)
-  string(APPEND ARCHCXXFLAGS "-fno-exceptions -fcheck-new")
+  string(APPEND ARCHCXXFLAGS " -fno-exceptions -fcheck-new")
 endif()
 
 if(CONFIG_CXX_RTTI)
-  string(APPEND ARCHCXXFLAGS "-fno-rtti")
+  string(APPEND ARCHCXXFLAGS " -fno-rtti")
 endif()
 
 if(NOT "${CMAKE_C_FLAGS}" STREQUAL "")

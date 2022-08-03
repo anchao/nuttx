@@ -21,6 +21,14 @@
 if(CONFIG_SENSORS)
   set(SRCS sensor.c)
 
+  if(CONFIG_USENSOR)
+    list(APPEND SRCS usensor.c)
+  endif()
+
+  if(CONFIG_SENSORS_RPMSG)
+    list(APPEND SRCS sensor_rpmsg.c)
+  endif()
+
   if(CONFIG_SENSORS_WTGAHRS2)
     list(APPEND SRCS wtgahrs2.c)
   endif()
@@ -44,6 +52,7 @@ if(CONFIG_SENSORS)
   # These drivers depend on I2C support
 
   if(CONFIG_I2C)
+
     if(CONFIG_SENSORS_APDS9960)
       list(APPEND SRCS apds9960.c)
     endif()
@@ -90,6 +99,10 @@ if(CONFIG_SENSORS)
 
     if(CONFIG_SENSORS_LSM9DS1)
       list(APPEND SRCS lsm9ds1.c)
+    endif()
+
+    if(CONFIG_SENSORS_MSA301)
+      list(APPEND SRCS msa301.c)
     endif()
 
     if(CONFIG_SENSORS_LPS25H)
@@ -156,6 +169,10 @@ if(CONFIG_SENSORS)
       list(APPEND SRCS mlx90614.c)
     endif()
 
+    if(CONFIG_SENSORS_MS5611)
+      list(APPEND SRCS ms5611.c)
+    endif()
+
     if(CONFIG_SENSORS_MS58XX)
       list(APPEND SRCS ms58xx.c)
     endif()
@@ -178,6 +195,10 @@ if(CONFIG_SENSORS)
 
     if(CONFIG_SENSORS_SCD30)
       list(APPEND SRCS scd30.c)
+    endif()
+
+    if(CONFIG_SENSORS_SCD41)
+      list(APPEND SRCS scd41.c)
     endif()
 
     if(CONFIG_SENSORS_SGP30)
@@ -203,11 +224,13 @@ if(CONFIG_SENSORS)
     if(CONFIG_SENSORS_T67XX)
       list(APPEND SRCS t67xx.c)
     endif()
+
   endif() # CONFIG_I2C
 
   # These drivers depend on SPI support
 
   if(CONFIG_SPI)
+
     if(CONFIG_ADXL345_SPI)
       list(APPEND SRCS adxl345_spi.c)
     endif()
@@ -251,7 +274,22 @@ if(CONFIG_SENSORS)
     if(CONFIG_SENSORS_ADT7320)
       list(APPEND SRCS adt7320.c)
     endif()
+
+    if(CONFIG_SENSORS_AS5048A)
+      list(APPEND SRCS as5048a.c)
+    endif()
+
   endif() # CONFIG_SPI
+
+  # These drivers depend on 1WIRE support
+
+  if(CONFIG_1WIRE)
+
+    if(CONFIG_SENSORS_DS18B20)
+      list(APPEND SRCS ds18b20.c)
+    endif()
+
+  endif() # CONFIG_1WIRE
 
   if(CONFIG_SENSORS_MPU60X0)
     list(APPEND SRCS mpu60x0.c)
@@ -261,6 +299,12 @@ if(CONFIG_SENSORS)
 
   if(CONFIG_SENSORS_QENCODER)
     list(APPEND SRCS qencoder.c)
+  endif()
+
+  # 3-phase Hall effect sensor upper half
+
+  if(CONFIG_SENSORS_HALL3PHASE)
+    list(APPEND SRCS hall3ph.c)
   endif()
 
   # Vishay VEML6070

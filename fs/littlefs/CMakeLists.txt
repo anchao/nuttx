@@ -17,7 +17,7 @@
 # the License.
 #
 # ##############################################################################
-if(CONFIG_FS_LITTLEFS)
+if(CONFIG_FS_LITTLEFS AND NOT EXISTS littlefs)
   set(LITTLEFS_VERSION 2.4.0)
 
   FetchContent_Declare(
