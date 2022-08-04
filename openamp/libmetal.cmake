@@ -51,14 +51,6 @@ else()
   set(LIBMETAL_ARCH ${CONFIG_ARCH})
 endif()
 
-add_custom_command(
-  OUTPUT ${CMAKE_BINARY_DIR}/libmetal/.libmetal_headers
-  COMMAND touch ${CMAKE_BINARY_DIR}/libmetal/.libmetal_headers
-  DEPENDS libmetal)
-
-add_custom_target(libmetal_patch
-                  DEPENDS ${CMAKE_BINARY_DIR}/libmetal/.libmetal_headers)
-
 set(PROJECT_VERSION_MAJOR 0)
 set(PROJECT_VERSION_MINOR 1)
 set(PROJECT_VERSION_PATCH 0)
@@ -135,5 +127,4 @@ target_sources(
           libmetal/lib/shmem.c
           libmetal/lib/version.c)
 
-add_dependencies(lib_metal libmetal_patch)
 target_compile_definitions(lib_metal PRIVATE METAL_INTERNAL)
