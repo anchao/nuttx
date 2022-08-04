@@ -18,35 +18,34 @@
 #
 # ##############################################################################
 
-if(CONFIG_LIBC_WCHAR)
-  target_sources(
-    c
-    PRIVATE lib_wcscmp.c
-            lib_wcslen.c
-            lib_wmemchr.c
-            lib_wmemcmp.c
-            lib_wmemcpy.c
-            lib_wmemmove.c
-            lib_wmemset.c
-            lib_btowc.c
-            lib_mbrtowc.c
-            lib_wctob.c
-            lib_wcslcpy.c
-            lib_wcsxfrm.c
-            lib_wcrtomb.c
-            lib_wcsftime.c
-            lib_wcscoll.c
-            lib_wcstol.c
-            lib_wcstoll.c
-            lib_wcstoul.c
-            lib_wcstoull.c
-            lib_wcstold.c
-            lib_wcstof.c
-            lib_wcstod.c
-            lib_swprintf.c
-            lib_mbsnrtowcs.c
-            lib_wcsnrtombs.c
-            lib_mbrlen.c
-            lib_mbsrtowcs.c
-            lib_wcsrtombs.c)
-endif()
+target_sources(
+  c
+  PRIVATE lib_wcscmp.c
+          lib_wcslen.c
+          lib_wmemchr.c
+          lib_wmemcmp.c
+          lib_wmemcpy.c
+          lib_wmemmove.c
+          lib_wmemset.c
+          lib_btowc.c
+          lib_mbrtowc.c
+          lib_wctob.c
+          lib_wcslcpy.c
+          lib_wcsxfrm.c
+          lib_wcrtomb.c
+          lib_wcsftime.c
+          lib_wcscoll.c
+          lib_wcstol.c
+          lib_wcstoll.c
+          lib_wcstoul.c
+          lib_wcstoull.c
+          lib_wcstold.c
+          lib_wcstof.c
+          lib_wcstod.c
+          lib_swprintf.c
+          lib_mbsnrtowcs.c
+          lib_wcsnrtombs.c
+          lib_mbsinit.c
+          lib_mbrlen.c
+          lib_mbsrtowcs.c
+          lib_wcsrtombs.c)

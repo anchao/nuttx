@@ -101,7 +101,8 @@ set(CMAKE_ASM_ARCHIVE_CREATE
 
 # Architecture flags
 
-add_link_options(-Wl,-nostdlib)
+add_link_options(--entry=__start)
+add_link_options(-nostdlib)
 add_compile_options(-fno-common)
 add_compile_options(-Wall -Wshadow -Wundef)
 

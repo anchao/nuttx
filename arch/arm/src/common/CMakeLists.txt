@@ -56,7 +56,7 @@ if(CONFIG_STACK_COLORATION)
   list(APPEND SRCS arm_checkstack.c)
 endif()
 
-if(CONFIG_ARCH_IDLE_CUSTOM)
+if(NOT CONFIG_ARCH_IDLE_CUSTOM)
   list(APPEND SRCS arm_idle.c)
 endif()
 

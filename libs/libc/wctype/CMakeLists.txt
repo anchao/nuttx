@@ -18,7 +18,5 @@
 #
 # ##############################################################################
 
-if(CONFIG_LIBC_WCHAR)
-  target_sources(c PRIVATE lib_wctype.c lib_iswctype.c lib_towlower.c
-                           lib_towupper.c)
-endif()
+target_sources(c PRIVATE lib_wctype.c lib_iswctype.c lib_towlower.c
+                         lib_towupper.c)

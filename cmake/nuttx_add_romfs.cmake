@@ -53,7 +53,6 @@ function(nuttx_add_romfs)
   endif()
 
   foreach(rcsrc ${RCSRCS})
-    list(APPEND DEPENDS ${rcsrc})
     get_filename_component(rcpath ${rcsrc} DIRECTORY)
     add_custom_command(
       OUTPUT ${rcsrc}
@@ -61,12 +60,26 @@ function(nuttx_add_romfs)
       COMMAND
         ${CMAKE_C_COMPILER} ${CMAKE_C_FLAGS} -E -P -x c
         -I${CMAKE_BINARY_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/${rcsrc} >
-        ${rcsrc})
+        ${rcsrc}
+      DEPENDS nuttx_context ${CMAKE_CURRENT_SOURCE_DIR}/${rcsrc})
+    list(APPEND DEPENDS ${rcsrc})
   endforeach()
 
   foreach(rcraw ${RCRAWS})
-    list(APPEND DEPENDS ${rcraw})
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${rcraw} ${rcraw} COPYONLY)
+    get_filename_component(absrcraw ${rcraw} ABSOLUTE)
+    if(IS_DIRECTORY ${absrcraw})
+      file(
+        GLOB subdir
+        LIST_DIRECTORIES false
+        ${rcraws} ${rcraw})
+      foreach(rcraw ${rcraws})
+        list(APPEND DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${rcraw})
+        configure_file(${rcraw} ${CMAKE_CURRENT_BINARY_DIR}/${rcraw} COPYONLY)
+      endforeach()
+    else()
+      list(APPEND DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${rcraw})
+      configure_file(${rcraw} ${CMAKE_CURRENT_BINARY_DIR}/${rcraw} COPYONLY)
+    endif()
   endforeach()
 
   if(HEADER)
@@ -95,8 +108,11 @@ function(nuttx_add_romfs)
     DEPENDS ${DEPENDS})
 
   if(NOT HEADER)
-    add_library(romfs_${NAME} OBJECT romfs_${NAME}.c)
+    add_custom_target(target-romfs DEPENDS ${DEPENDS})
+    add_library(romfs_${NAME})
     nuttx_add_library_internal(romfs_${NAME})
+    target_sources(romfs_${NAME} PRIVATE romfs_${NAME}.${EXTENSION})
+    add_dependencies(romfs_${NAME} target-romfs)
   endif()
 endfunction()
 

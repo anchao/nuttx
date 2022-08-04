@@ -28,7 +28,8 @@ if(CONFIG_FS_PROCFS)
       fs_procfscpuload.c
       fs_procfsmeminfo.c
       fs_procfsiobinfo.c
-      fs_procfsversion.c)
+      fs_procfsversion.c
+      fs_procfstcbinfo.c)
 
   if(CONFIG_SCHED_CRITMONITOR)
     list(APPEND SRCS fs_procfscritmon.c)

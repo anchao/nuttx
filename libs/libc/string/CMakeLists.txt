@@ -18,6 +18,8 @@
 #
 # ##############################################################################
 
+# Add the string C files to the build
+
 set(SRCS
     lib_ffs.c
     lib_ffsl.c
@@ -28,6 +30,7 @@ set(SRCS
     lib_isbasedigit.c
     lib_memccpy.c
     lib_memrchr.c
+    lib_memmem.c
     lib_popcount.c
     lib_popcountl.c
     lib_popcountll.c
@@ -57,18 +60,6 @@ set(SRCS
     lib_strsignal.c
     lib_index.c
     lib_rindex.c)
-
-if(NOT CONFIG_LIBC_ARCH_MEMCPY)
-  if(CONFIG_MEMCPY_VIK)
-    list(APPEND SRCS lib_vikmemcpy.c)
-  else()
-    list(APPEND SRCS lib_memcpy.c)
-  endif()
-endif()
-
-if(CONFIG_LIBC_LOCALE)
-  list(APPEND SRCS lib_strcoll.c lib_strxfrm.c)
-endif()
 
 if(NOT CONFIG_LIBC_ARCH_MEMCHR)
   list(APPEND SRCS lib_memchr.c)

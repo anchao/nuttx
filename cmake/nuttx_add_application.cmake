@@ -117,8 +117,9 @@ function(nuttx_add_application)
   else()
     # create as library to be archived into libapps.a
     set(TARGET "apps_${NAME}")
-    nuttx_add_library(${TARGET} ${SRCS})
+    add_library(${TARGET} ${SRCS})
 
+    nuttx_add_library_internal(${TARGET})
     # add to list of application libraries
 
     set_property(GLOBAL APPEND PROPERTY NUTTX_APPS_LIBRARIES ${TARGET})

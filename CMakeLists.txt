@@ -513,7 +513,6 @@ if(NOT CONFIG_ARCH_SIM)
   target_link_libraries(
     nuttx
     PRIVATE ${NUTTX_EXTRA_FLAGS}
-            --entry=__start
             -Wl,--script=${ldscript}
             -Wl,--start-group
             ${nuttx_kernel_libs}

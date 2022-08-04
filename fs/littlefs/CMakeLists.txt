@@ -27,8 +27,10 @@ if(CONFIG_FS_LITTLEFS AND NOT EXISTS littlefs)
   FetchContent_MakeAvailable(littlefs)
 
   target_compile_definitions(
-    fs PRIVATE -DLFS_TRACE=finfo -DLFS_DEBUG=finfo -DLFS_WARN=fwarn
-               -DLFS_ERROR=ferr -DLFS_ASSERT=DEBUGASSERT)
+    fs
+    PRIVATE -DLFS_TRACE=finfo -DLFS_DEBUG=finfo -DLFS_WARN=fwarn
+            -DLFS_ERROR=ferr -DLFS_ASSERT=DEBUGASSERT
+            -DLFS_CONFIG=${CMAKE_CURRENT_LIST_DIR}/lfs_vfs.h)
 
   FetchContent_GetProperties(littlefs SOURCE_DIR LITTLEFS_SOURCE_DIR)
 
