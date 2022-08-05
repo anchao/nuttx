@@ -71,76 +71,77 @@ function(nuttx_add_application)
     NO_MAIN_ALIAS
     REQUIRED
     NAME
-    SRCS
     ARGN
     ${ARGN})
 
   # create target
 
-  if(MODULE
-     AND ("${MODULE}" STREQUAL "m")
-     OR CONFIG_BUILD_KERNEL)
-    # create as standalone executable (loadable application or "module")
-    set(TARGET "${NAME}")
+  if(SRCS)
+    if(MODULE
+       AND ("${MODULE}" STREQUAL "m")
+       OR CONFIG_BUILD_KERNEL)
+      # create as standalone executable (loadable application or "module")
+      set(TARGET "${NAME}")
 
-    # Use ELF capable toolchain, by building manually and overwriting the
-    # non-elf output
-    if(NOT CMAKE_C_ELF_COMPILER)
+      # Use ELF capable toolchain, by building manually and overwriting the
+      # non-elf output
+      if(NOT CMAKE_C_ELF_COMPILER)
+        add_library(${TARGET} ${SRCS})
+
+        add_custom_command(
+          TARGET ${TARGET}
+          POST_BUILD
+          COMMAND
+            ${CMAKE_C_COMPILER}
+            $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_ELF_APP_LINK_OPTIONS>>
+            $<TARGET_FILE:${TARGET}> -o ${TARGET}
+          COMMAND_EXPAND_LISTS)
+      else()
+        add_executable(${TARGET} ${SRCS})
+        target_link_options(
+          ${TARGET} PRIVATE
+          $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_ELF_APP_LINK_OPTIONS>>)
+      endif()
+
+      # easy access to final ELF, regardless of how it was created
+      set_property(TARGET ${TARGET}
+                   PROPERTY ELF_BINARY ${CMAKE_CURRENT_BINARY_DIR}/${TARGET})
+
+      nuttx_add_library_internal(${TARGET})
+
+      install(TARGETS ${TARGET})
+      set_property(
+        TARGET nuttx
+        APPEND
+        PROPERTY NUTTX_LOADABLE_APPS ${TARGET})
+    else()
+      # create as library to be archived into libapps.a
+      set(TARGET "apps_${NAME}")
       add_library(${TARGET} ${SRCS})
 
-      add_custom_command(
-        TARGET ${TARGET}
-        POST_BUILD
-        COMMAND
-          ${CMAKE_C_COMPILER}
-          $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_ELF_APP_LINK_OPTIONS>>
-          $<TARGET_FILE:${TARGET}> -o ${TARGET}
-        COMMAND_EXPAND_LISTS)
-    else()
-      add_executable(${TARGET} ${SRCS})
-      target_link_options(
-        ${TARGET} PRIVATE
-        $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_ELF_APP_LINK_OPTIONS>>)
+      nuttx_add_library_internal(${TARGET})
+      # add to list of application libraries
+
+      set_property(GLOBAL APPEND PROPERTY NUTTX_APPS_LIBRARIES ${TARGET})
+
+      if(NOT NO_MAIN_ALIAS)
+        # provide main() alias
+        list(GET SRCS 0 MAIN_SRC)
+        set_property(
+          SOURCE ${MAIN_SRC}
+          APPEND
+          PROPERTY COMPILE_DEFINITIONS main=${NAME}_main)
+      endif()
     endif()
 
-    # easy access to final ELF, regardless of how it was created
-    set_property(TARGET ${TARGET}
-                 PROPERTY ELF_BINARY ${CMAKE_CURRENT_BINARY_DIR}/${TARGET})
+    # loadable build requires applying ELF flags to all applications
 
-    nuttx_add_library_internal(${TARGET})
-
-    install(TARGETS ${TARGET})
-    set_property(
-      TARGET nuttx
-      APPEND
-      PROPERTY NUTTX_LOADABLE_APPS ${TARGET})
-  else()
-    # create as library to be archived into libapps.a
-    set(TARGET "apps_${NAME}")
-    add_library(${TARGET} ${SRCS})
-
-    nuttx_add_library_internal(${TARGET})
-    # add to list of application libraries
-
-    set_property(GLOBAL APPEND PROPERTY NUTTX_APPS_LIBRARIES ${TARGET})
-
-    if(NOT NO_MAIN_ALIAS)
-      # provide main() alias
-      list(GET SRCS 0 MAIN_SRC)
-      set_property(
-        SOURCE ${MAIN_SRC}
-        APPEND
-        PROPERTY COMPILE_DEFINITIONS main=${NAME}_main)
+    if(CONFIG_BUILD_LOADABLE)
+      target_compile_options(
+        ${TARGET}
+        PRIVATE
+          $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_ELF_APP_COMPILE_OPTIONS>>)
     endif()
-  endif()
-
-  # loadable build requires applying ELF flags to all applications
-
-  if(CONFIG_BUILD_LOADABLE)
-    target_compile_options(
-      ${TARGET}
-      PRIVATE
-        $<GENEX_EVAL:$<TARGET_PROPERTY:nuttx,NUTTX_ELF_APP_COMPILE_OPTIONS>>)
   endif()
 
   # store parameters into properties (used during builtin list generation)
