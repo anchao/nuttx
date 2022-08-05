@@ -17,14 +17,18 @@
 # the License.
 #
 # ##############################################################################
-if(CONFIG_FS_LITTLEFS AND NOT EXISTS littlefs)
-  set(LITTLEFS_VERSION 2.4.0)
 
-  FetchContent_Declare(
-    littlefs
-    URL https://github.com/ARMmbed/littlefs/archive/v${LITTLEFS_VERSION}.tar.gz
-        SOURCE_DIR littlefs)
-  FetchContent_MakeAvailable(littlefs)
+if(CONFIG_FS_LITTLEFS)
+  if(NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/littlefs)
+    set(LITTLEFS_VERSION 2.4.0)
+
+    FetchContent_Declare(
+      littlefs
+      URL https://github.com/ARMmbed/littlefs/archive/v${LITTLEFS_VERSION}.tar.gz
+          SOURCE_DIR
+          ${CMAKE_CURRENT_LIST_DIR}/littlefs)
+    FetchContent_MakeAvailable(littlefs)
+  endif()
 
   target_compile_definitions(
     fs
@@ -32,10 +36,8 @@ if(CONFIG_FS_LITTLEFS AND NOT EXISTS littlefs)
             -DLFS_ERROR=ferr -DLFS_ASSERT=DEBUGASSERT
             -DLFS_CONFIG=${CMAKE_CURRENT_LIST_DIR}/lfs_vfs.h)
 
-  FetchContent_GetProperties(littlefs SOURCE_DIR LITTLEFS_SOURCE_DIR)
-
-  target_sources(fs PRIVATE lfs_vfs.c ${LITTLEFS_SOURCE_DIR}/lfs.c
-                            ${LITTLEFS_SOURCE_DIR}/lfs_util.c)
+  target_sources(fs PRIVATE lfs_vfs.c ${CMAKE_CURRENT_LIST_DIR}/littlefs/lfs.c
+                            ${CMAKE_CURRENT_LIST_DIR}/littlefs/lfs_util.c)
 
   target_include_directories(fs PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 endif()
