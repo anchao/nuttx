@@ -18,5 +18,5 @@
 #
 # ##############################################################################
 if(CONFIG_DRIVERS_IEEE80211)
-  add_subdirectory(bcm43xxx)
+  nuttx_add_subdirectory()
 endif()

@@ -25,7 +25,7 @@ if(CONFIG_MODEM)
     list(APPEND SRCS u-blox.c)
   endif()
 
-  add_subdirectory(altair)
+  nuttx_add_subdirectory()
 
   target_sources(drivers PRIVATE ${SRCS})
 endif()

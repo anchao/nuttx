@@ -1,5 +1,5 @@
 # ##############################################################################
-# drivers/CMakeLists.txt
+# cmake/nuttx_add_subdirectory.cmake
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
@@ -18,7 +18,15 @@
 #
 # ##############################################################################
 
-nuttx_add_kernel_library(drivers)
-nuttx_add_subdirectory()
-target_sources(drivers PRIVATE drivers_initialize.c)
-target_include_directories(drivers PRIVATE ${CMAKE_CURRENT_LIST_DIR})
+function(nuttx_add_subdirectory)
+  file(
+    GLOB subdir
+    LIST_DIRECTORIES false
+    RELATIVE ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}/*/CMakeLists.txt)
+
+  foreach(dir ${subdir})
+    get_filename_component(dir ${dir} DIRECTORY)
+    add_subdirectory(${dir})
+  endforeach()
+endfunction()

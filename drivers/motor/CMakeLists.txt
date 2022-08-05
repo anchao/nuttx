@@ -17,4 +17,4 @@
 # the License.
 #
 # ##############################################################################
-add_subdirectory(foc)
+nuttx_add_subdirectory()

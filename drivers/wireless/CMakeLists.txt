@@ -21,10 +21,7 @@
 if(CONFIG_DRIVERS_WIRELESS)
   set(SRCS)
 
-  add_subdirectory(ieee802154)
-  add_subdirectory(ieee80211)
-  add_subdirectory(bluetooth)
-  add_subdirectory(lpwan)
+  nuttx_add_subdirectory()
 
   # Include wireless drivers
 
@@ -35,10 +32,6 @@ if(CONFIG_DRIVERS_WIRELESS)
 
   if(CONFIG_WL_GS2200M)
     list(APPEND SRCS gs2200m.c)
-  endif()
-
-  if(CONFIG_WL_SPIRIT)
-    add_subdirectory(spirit)
   endif()
 
   if(CONFIG_WL_NRF24L01)

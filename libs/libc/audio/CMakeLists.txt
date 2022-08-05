@@ -20,6 +20,5 @@
 
 if(CONFIG_AUDIO)
   target_sources(c PRIVATE lib_buffer.c)
+  nuttx_add_subdirectory()
 endif()
-add_subdirectory(libsrc)
-# endif()

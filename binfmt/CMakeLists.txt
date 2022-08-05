@@ -22,8 +22,7 @@ set(SRCS)
 
 nuttx_add_kernel_library(binfmt)
 
-add_subdirectory(libelf)
-add_subdirectory(libnxflat)
+nuttx_add_subdirectory()
 
 list(
   APPEND

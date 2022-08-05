@@ -17,4 +17,4 @@
 # the License.
 #
 # ##############################################################################
-add_subdirectory(src)
+nuttx_add_subdirectory()

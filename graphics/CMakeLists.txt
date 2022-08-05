@@ -22,8 +22,5 @@ if(CONFIG_NX)
 
   target_include_directories(graphics PRIVATE nxmu nxbe)
 
-  add_subdirectory(nxbe)
-  add_subdirectory(nxglib)
-  add_subdirectory(nxmu)
-  add_subdirectory(nxterm)
+  nuttx_add_subdirectory()
 endif()

@@ -148,6 +148,7 @@ else()
 endif()
 
 include(kconfig_directory)
+include(nuttx_add_subdirectory)
 include(nuttx_parse_function_args)
 
 # Add apps/ to the build (if present)
