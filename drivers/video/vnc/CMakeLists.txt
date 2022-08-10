@@ -1,5 +1,5 @@
 # ##############################################################################
-# wireless/CMakeLists.txt
+# drivers/video/vnc/CMakeLists.txt
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
@@ -18,16 +18,25 @@
 #
 # ##############################################################################
 
-if(CONFIG_WIRELESS)
-  nuttx_add_kernel_library(wireless)
+if(CONFIG_VNCSERVER)
+  set(SRCS
+      vnc_server.c
+      vnc_negotiate.c
+      vnc_updater.c
+      vnc_receiver.c
+      vnc_raw.c
+      vnc_rre.c
+      vnc_color.c
+      vnc_fbdev.c
+      vnc_keymap.c)
 
-  nuttx_add_subdirectory()
+  if(CONFIG_VNCSERVER_TOUCH)
+    list(APPEND SRCS vnc_touch.c)
+  endif()
 
-  if(NOT EXISTS ${CMAKE_BINARY_DIR}/wireless)
-    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/wireless)
+  if(CONFIG_VNCSERVER_KBD)
+    list(APPEND SRCS vnc_kbd.c)
   endif()
-  if(NOT EXISTS ${CMAKE_BINARY_DIR}/wireless/dummy.c)
-    file(TOUCH ${CMAKE_BINARY_DIR}/wireless/dummy.c)
-  endif()
-  target_sources(wireless PRIVATE ${CMAKE_BINARY_DIR}/wireless/dummy.c)
+
+  target_sources(drivers PRIVATE ${SRCS})
 endif()

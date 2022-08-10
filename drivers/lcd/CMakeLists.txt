@@ -21,6 +21,7 @@
 set(SRCS)
 
 if(CONFIG_LCD)
+
   # Support for the generic LCD framebuffer front-end
 
   if(CONFIG_LCD_FRAMEBUFFER)
@@ -35,7 +36,6 @@ if(CONFIG_LCD)
 
   if(CONFIG_LCD_FT80X)
     list(APPEND SRCS ft80x.c)
-
     if(CONFIG_LCD_FT80X_SPI)
       list(APPEND SRCS ft80x_spi.c)
     elseif(CONFIG_LCD_FT80X_I2C)
@@ -45,6 +45,10 @@ if(CONFIG_LCD)
 
   if(CONFIG_LCD_LPM013M091A)
     list(APPEND SRCS lpm013m091a.c)
+  endif()
+
+  if(CONFIG_LCD_APA102)
+    list(APPEND SRCS apa102.c)
   endif()
 
   if(CONFIG_LCD_P14201)
@@ -73,6 +77,10 @@ if(CONFIG_LCD)
 
   if(CONFIG_LCD_SSD1289)
     list(APPEND SRCS ssd1289.c)
+  endif()
+
+  if(CONFIG_LCD_SSD1680)
+    list(APPEND SRCS ssd1680.c)
   endif()
 
   if(CONFIG_LCD_SSD1351)
@@ -134,9 +142,15 @@ if(CONFIG_LCD)
   if(CONFIG_LCD_ST7789)
     list(APPEND SRCS st7789.c)
   endif()
-endif()
+
+  if(CONFIG_LCD_GC9A01)
+    list(APPEND SRCS gc9a01.c)
+  endif()
+
+endif() # CONFIG_LCD
 
 if(CONFIG_SLCD)
+
   # Include support for Alphanumeric/Segment LCD drivers
 
   if(CONFIG_LCD_BACKPACK)
@@ -146,7 +160,11 @@ if(CONFIG_SLCD)
   if(CONFIG_LCD_ST7032)
     list(APPEND SRCS st7032.c)
   endif()
-endif()
+
+  if(CONFIG_LCD_HT16K33)
+    list(APPEND SRCS ht16k33_14seg.c)
+  endif()
+endif() # CONFIG_SLCD
 
 # Other LCD-related devices
 

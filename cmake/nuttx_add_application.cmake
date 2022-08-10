@@ -34,8 +34,8 @@ define_property(
 # -Dmain=app_main definition during build.
 #
 # Usage: nuttx_add_application( NAME <string> [ PRIORITY <string> ] [ STACKSIZE
-# <string> ] [ COMPILE_FLAGS <list> ] [ DEPENDS <string> ] [ MODULE <string> ] [
-# SRCS <list> ] )
+# <string> ] [ COMPILE_FLAGS <list> ] [ INCLUDE_DIRECTORIES <list> ] [ DEPENDS
+# <string> ] [ MODULE <string> ] [ SRCS <list> ] )
 #
 # Parameters: NAME          : unique name of application PRIORITY      :
 # priority STACKSIZE     : stack size COMPILE_FLAGS : compile flags SRCS :
@@ -65,6 +65,7 @@ function(nuttx_add_application)
     MODULE
     MULTI_VALUE
     COMPILE_FLAGS
+    INCLUDE_DIRECTORIES
     SRCS
     DEPENDS
     OPTIONS
@@ -167,6 +168,12 @@ function(nuttx_add_application)
 
   if(COMPILE_FLAGS)
     target_compile_options(${TARGET} PRIVATE ${COMPILE_FLAGS})
+  endif()
+
+  if(INCLUDE_DIRECTORIES)
+    foreach(inc ${INCLUDE_DIRECTORIES})
+      target_include_directories(${TARGET} PRIVATE ${inc})
+    endforeach()
   endif()
 
   # add supplied dependencies

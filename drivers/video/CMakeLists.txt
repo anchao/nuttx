@@ -18,7 +18,10 @@
 #
 # ##############################################################################
 
+# Include video drivers
+
 if(CONFIG_DRIVERS_VIDEO)
+
   set(SRCS)
 
   if(CONFIG_VIDEO_FB)
@@ -32,18 +35,32 @@ if(CONFIG_DRIVERS_VIDEO)
   # These video drivers depend on I2C support
 
   if(CONFIG_I2C)
+
+    if(CONFIG_VIDEO_ISX012)
+      list(APPEND SRCS isx012.c)
+    endif()
+
+    if(CONFIG_VIDEO_ISX019)
+      list(APPEND SRCS isx019.c)
+    endif()
+
     if(CONFIG_VIDEO_OV2640)
       list(APPEND SRCS ov2640.c)
     endif()
+
   endif()
 
   # These video drivers depend on SPI support
 
   if(CONFIG_SPI)
+
     if(CONFIG_VIDEO_MAX7456)
       list(APPEND SRCS max7456.c)
     endif()
+
   endif()
 
   target_sources(drivers PRIVATE ${SRCS})
+
+  nuttx_add_subdirectory()
 endif()
