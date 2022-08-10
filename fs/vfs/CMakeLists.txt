@@ -21,11 +21,12 @@
 set(SRCS
     fs_chstat.c
     fs_close.c
-    fs_dup.c
+    fs_dir.c
     fs_dup2.c
-    fs_fcntl.c
+    fs_dup.c
     fs_epoll.c
     fs_fchstat.c
+    fs_fcntl.c
     fs_fstat.c
     fs_fstatfs.c
     fs_ioctl.c
