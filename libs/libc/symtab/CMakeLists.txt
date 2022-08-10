@@ -18,5 +18,10 @@
 #
 # ##############################################################################
 
-target_sources(c PRIVATE symtab_findbyname.c symtab_findbyvalue.c
-                         symtab_sortbyname.c)
+set(SRCS symtab_findbyname.c symtab_findbyvalue.c symtab_sortbyname.c)
+
+if(CONFIG_ALLSYMS)
+  list(APPEND SRCS symtab_allsyms.c)
+endif()
+
+target_sources(c PRIVATE ${SRCS})

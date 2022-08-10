@@ -211,10 +211,6 @@ endif()
 
 # Custom chip ###################################################
 
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/arch/${CONFIG_ARCH})
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/arch/${CONFIG_ARCH}/src)
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/arch/dummy)
-
 if(CONFIG_ARCH_CHIP_CUSTOM)
   get_filename_component(NUTTX_CHIP_ABS_DIR ${CONFIG_ARCH_CHIP_CUSTOM_DIR}
                          ABSOLUTE BASE_DIR ${NUTTX_DIR})
@@ -222,6 +218,10 @@ if(CONFIG_ARCH_CHIP_CUSTOM)
 else()
   set(NUTTX_CHIP_ABS_DIR
       "${NUTTX_DIR}/arch/${CONFIG_ARCH}/src/${CONFIG_ARCH_CHIP}")
+endif()
+
+if(NOT EXISTS ${CMAKE_BINARY_DIR}/arch/dummy)
+  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/arch/dummy)
 endif()
 
 if(NOT EXISTS ${CMAKE_BINARY_DIR}/arch/dummy/Kconfig)
@@ -233,6 +233,11 @@ if(NOT EXISTS ${CMAKE_BINARY_DIR}/arch/dummy/Kconfig)
   else()
     file(TOUCH ${CMAKE_BINARY_DIR}/arch/dummy/Kconfig)
   endif()
+endif()
+
+if(NOT EXISTS ${CMAKE_BINARY_DIR}/arch/${CONFIG_ARCH})
+  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/arch/${CONFIG_ARCH})
+  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/arch/${CONFIG_ARCH}/src)
 endif()
 
 execute_process(
@@ -469,12 +474,6 @@ else()
     STATUS "Application directory not found at ${NUTTX_APPS_DIR}, skipping")
 endif()
 
-# Same for external/
-
-if(EXISTS ${CMAKE_SOURCE_DIR}/external/CMakeLists.txt)
-  add_subdirectory(${CMAKE_SOURCE_DIR}/external)
-endif()
-
 # Link step ##################################################################
 
 # Get linker script to use
@@ -486,41 +485,32 @@ get_property(ldscript GLOBAL PROPERTY LD_SCRIPT)
 # and we will only be linking libraries
 
 if(CONFIG_HAVE_CXX)
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/empty.cxx" "")
+  file(TOUCH "${CMAKE_CURRENT_BINARY_DIR}/empty.cxx")
   target_sources(nuttx PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/empty.cxx")
 else()
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/empty.c" "")
+  file(TOUCH "${CMAKE_CURRENT_BINARY_DIR}/empty.c")
   target_sources(nuttx PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/empty.c")
 endif()
 
 # initialize manifest to hold all generated files
-file(WRITE ${CMAKE_BINARY_DIR}/nuttx.manifest "")
+file(TOUCH ${CMAKE_BINARY_DIR}/nuttx.manifest)
+
+get_property(nuttx_kernel_libs GLOBAL PROPERTY NUTTX_KERNEL_LIBRARIES)
+if(CONFIG_BUILD_FLAT)
+  get_property(nuttx_system_libs GLOBAL PROPERTY NUTTX_SYSTEM_LIBRARIES)
+endif()
+get_property(nuttx_apps_libs GLOBAL PROPERTY NUTTX_APPS_LIBRARIES)
+get_property(nuttx_extra_libs GLOBAL PROPERTY NUTTX_EXTRA_LIBRARIES)
+
+set(nuttx_libs ${nuttx_kernel_libs} ${nuttx_system_libs} ${nuttx_apps_libs}
+               ${nuttx_extra_libs})
 
 if(NOT CONFIG_ARCH_SIM)
-  # Non-sim platform pass the apropriate linker flags
-
-  # TODO: move elsewhere? toolchain?
-  target_link_directories(nuttx PRIVATE ${LIBGCC_FILEPATH})
-
-  if(NOT CONFIG_BUILD_PROTECTED)
-    get_property(nuttx_system_libs GLOBAL PROPERTY NUTTX_SYSTEM_LIBRARIES)
-  endif()
-
-  get_property(nuttx_kernel_libs GLOBAL PROPERTY NUTTX_KERNEL_LIBRARIES)
-  get_property(nuttx_apps_libs GLOBAL PROPERTY NUTTX_APPS_LIBRARIES)
-  get_property(nuttx_extra_libs GLOBAL PROPERTY NUTTX_EXTRA_LIBRARIES)
 
   # TODO: nostart/nodefault not applicable to nuttx toolchain
   target_link_libraries(
-    nuttx
-    PRIVATE ${NUTTX_EXTRA_FLAGS}
-            -Wl,--script=${ldscript}
-            -Wl,--start-group
-            ${nuttx_kernel_libs}
-            ${nuttx_system_libs}
-            ${nuttx_apps_libs}
-            ${nuttx_extra_libs}
-            -Wl,--end-group)
+    nuttx PRIVATE ${NUTTX_EXTRA_FLAGS} -Wl,--script=${ldscript}
+                  -Wl,--start-group ${nuttx_libs} -Wl,--end-group)
 
   # generate binary outputs in different formats (.bin, .hex, etc)
   nuttx_generate_outputs(nuttx)
@@ -556,11 +546,6 @@ else()
   # objects need to construct Step 3 cheat the host there is no object to
   # construct Note: the destructor can be fixed in the same way.
 
-  get_property(
-    nuttx_compile_options
-    TARGET nuttx
-    PROPERTY NUTTX_COMPILE_OPTIONS)
-
   if(NOT APPLE)
     add_custom_command(
       OUTPUT nuttx.ld
@@ -581,105 +566,11 @@ else()
 
   # conflicting symbols to rename
 
-  set(NXSYMBOLS
-      __cxa_atexit
-      atexit
-      bind
-      calloc
-      clock_gettime
-      close
-      closedir
-      connect
-      dlsym
-      dup
-      exit
-      free
-      fstat
-      fsync
-      ftruncate
-      if_nametoindex
-      ioctl
-      longjmp
-      lseek
-      malloc
-      mallinfo
-      memalign
-      memcpy
-      mkdir
-      mmap
-      munmap
-      open
-      opendir
-      perror
-      poll
-      pthread_cond_destroy
-      pthread_cond_init
-      pthread_cond_signal
-      pthread_cond_wait
-      pthread_create
-      pthread_getspecific
-      pthread_key_create
-      pthread_kill
-      pthread_mutex_destroy
-      pthread_mutex_init
-      pthread_mutex_lock
-      pthread_mutex_unlock
-      pthread_setspecific
-      pthread_sigmask
-      read
-      readdir
-      readv
-      realloc
-      rename
-      rewinddir
-      rmdir
-      sched_yield
-      select
-      sendmsg
-      setjmp
-      shutdown
-      sigaction
-      sigaddset
-      sigemptyset
-      sigfillset
-      sleep
-      socket
-      stat
-      statvfs
-      strerror
-      syslog
-      tcgetattr
-      tcsetattr
-      unlink
-      usleep
-      write
-      writev)
-
-  # write the remapping "old new" file for each entry
-
-  set(NXSYMBOL_RENAMES)
-  foreach(NXSYMBOL ${NXSYMBOLS})
-    if(APPLE OR (CYGWIN AND CONFIG_SIM_CYGWIN_DECORATED))
-      list(APPEND NXSYMBOL_RENAMES "_${NXSYMBOL} NX${NXSYMBOL}")
-    else()
-      list(APPEND NXSYMBOL_RENAMES "${NXSYMBOL} NX${NXSYMBOL}")
-    endif()
-  endforeach()
-  string(REPLACE ";" "\n" NXSYMBOL_RENAMES "${NXSYMBOL_RENAMES}")
-  file(WRITE ${CMAKE_BINARY_DIR}/nuttx-names.dat "${NXSYMBOL_RENAMES}\n")
-
-  # create the relocatable object manually, from all internal libs TODO: link
-  # using target_link_libraries?
-
-  get_property(nuttx_kernel_libs GLOBAL PROPERTY NUTTX_KERNEL_LIBRARIES)
-  get_property(nuttx_system_libs GLOBAL PROPERTY NUTTX_SYSTEM_LIBRARIES)
-  get_property(nuttx_apps_libs GLOBAL PROPERTY NUTTX_APPS_LIBRARIES)
-  get_property(nuttx_extra_libs GLOBAL PROPERTY NUTTX_EXTRA_LIBRARIES)
+  include(nuttx_redefine_symbols)
 
   # TODO: do with single function call?
   set(nuttx_libs_paths)
-  foreach(lib ${nuttx_kernel_libs} ${nuttx_system_libs} ${nuttx_apps_libs}
-              ${nuttx_extra_libs})
+  foreach(lib ${nuttx_libs})
     list(APPEND nuttx_libs_paths $<TARGET_FILE:${lib}>)
   endforeach()
 
@@ -711,7 +602,6 @@ endif()
 if(NOT CONFIG_BUILD_FLAT)
   add_executable(nuttx_user)
 
-  target_link_directories(nuttx_user PRIVATE ${LIBGCC_FILEPATH})
   get_property(nuttx_system_libs GLOBAL PROPERTY NUTTX_SYSTEM_LIBRARIES)
 
   get_property(user_ldscript GLOBAL PROPERTY LD_SCRIPT_USER)
