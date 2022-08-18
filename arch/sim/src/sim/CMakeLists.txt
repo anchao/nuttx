@@ -239,5 +239,7 @@ target_sources(up_head PUBLIC up_head.c)
 target_sources(arch PRIVATE ${SRCS})
 target_sources(nuttx PRIVATE ${HOSTSRCS})
 
-target_link_libraries(nuttx PUBLIC ${STDLIBS})
+if(NOT WIN32)
+  target_link_libraries(nuttx PUBLIC ${STDLIBS})
+endif()
 target_compile_definitions(nuttx PRIVATE ${HOST_DEFINITIONS})

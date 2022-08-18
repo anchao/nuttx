@@ -27,14 +27,16 @@
 # the configuration problem.  Refer to the README.txt file in the NuttX uClibc++
 # GIT repository for more information
 
-if(CONFIG_UCLIBCXX)
-  include(uClibc++.cmake)
-elseif(CONFIG_LIBCXX)
-  include(libcxx.cmake)
-else()
-  include(libcxxmini.cmake)
-endif()
+if(CONFIG_HAVE_CXX)
+  if(CONFIG_UCLIBCXX)
+    include(uClibc++.cmake)
+  elseif(CONFIG_LIBCXX)
+    include(libcxx.cmake)
+  else()
+    include(libcxxmini.cmake)
+  endif()
 
-if(CONFIG_LIBCXXABI)
-  include(libcxxabi.cmake)
+  if(CONFIG_LIBCXXABI)
+    include(libcxxabi.cmake)
+  endif()
 endif()

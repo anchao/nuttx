@@ -34,21 +34,23 @@ endif()
 
 # configure simulated nuttx ##################################################
 
-# Add -fvisibility=hidden Because we don't want export nuttx's symbols to shared
-# libraries
+if(NOT WIN32)
+  # Add -fvisibility=hidden Because we don't want export nuttx's symbols to
+  # shared libraries
 
-set_property(
-  TARGET nuttx
-  APPEND
-  PROPERTY NUTTX_COMPILE_OPTIONS -fvisibility=hidden)
+  set_property(
+    TARGET nuttx
+    APPEND
+    PROPERTY NUTTX_COMPILE_OPTIONS -fvisibility=hidden)
 
-# Add -fno-common because macOS "ld -r" doesn't seem to pick objects for common
-# symbols.
+  # Add -fno-common because macOS "ld -r" doesn't seem to pick objects for
+  # common symbols.
 
-set_property(
-  TARGET nuttx
-  APPEND
-  PROPERTY NUTTX_COMPILE_OPTIONS -fno-common)
+  set_property(
+    TARGET nuttx
+    APPEND
+    PROPERTY NUTTX_COMPILE_OPTIONS -fno-common)
+endif()
 
 if(CONFIG_SIM_SANITIZE)
   set_property(

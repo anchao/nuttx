@@ -95,10 +95,6 @@ set(CMAKE_CXX_ARCHIVE_CREATE
 set(CMAKE_ASM_ARCHIVE_CREATE
     "<CMAKE_AR> rcs -o <TARGET> <LINK_FLAGS> <OBJECTS>")
 
-# compiler tools TODO: move to Toolchain-tools? foreach(tool nm ld objcopy
-# ranlib strip) string(TOUPPER ${tool} TOOL) find_program(CMAKE_${TOOL}
-# ${TOOLCHAIN_PREFIX}-${tool} REQUIRED) endforeach()
-
 # Architecture flags
 
 add_link_options(--entry=__start)
@@ -203,5 +199,3 @@ if(CONFIG_ARCH_TOOLCHAIN_CLANG)
 else()
   set(CMAKE_EXE_LINKER_FLAGS_INIT "--specs=nosys.specs")
 endif()
-
-include(Toolchain-tools)

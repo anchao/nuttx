@@ -51,16 +51,6 @@ endif()
 
 # define targets
 
-add_library(cfg cfgdefine.c)
-
-add_executable(mkconfig mkconfig.c)
-target_link_libraries(mkconfig cfg)
-install(TARGETS mkconfig DESTINATION bin)
-
-add_executable(mkversion mkversion.c)
-target_link_libraries(mkversion cfg)
-install(TARGETS mkversion DESTINATION bin)
-
 add_library(csvparser csvparser.c)
 
 add_executable(mksyscall mksyscall.c)

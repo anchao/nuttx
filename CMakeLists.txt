@@ -124,6 +124,7 @@ endif()
 
 # The following commands need these variables to be passed via environment
 
+set(ENV{PYTHONPYCACHEPREFIX} ${CMAKE_BINARY_DIR})
 set(ENV{APPSDIR} ${NUTTX_APPS_DIR}) # TODO: support not having apps/
 set(ENV{APPSBINDIR} ${NUTTX_APPS_BINDIR}) # TODO: support not having apps/
 set(ENV{BINDIR} ${CMAKE_BINARY_DIR}) # TODO: support not having apps/
@@ -147,9 +148,10 @@ else()
   set(OTHER_OS TRUE)
 endif()
 
-include(kconfig_directory)
-include(nuttx_add_subdirectory)
 include(nuttx_parse_function_args)
+include(nuttx_generate_kconfig)
+include(nuttx_add_subdirectory)
+include(nuttx_create_symlink)
 
 # Add apps/ to the build (if present)
 
@@ -186,10 +188,8 @@ endif()
 
 if(NOT EXISTS ${CMAKE_BINARY_DIR}/boards/dummy/Kconfig)
   if(CONFIG_ARCH_BOARD_CUSTOM)
-    execute_process(
-      COMMAND ${CMAKE_COMMAND} -E create_symlink ${NUTTX_BOARD_ABS_DIR}/Kconfig
-              ${CMAKE_BINARY_DIR}/boards/dummy/Kconfig
-      WORKING_DIRECTORY ${NUTTX_DIR})
+    nuttx_create_symlink(${NUTTX_BOARD_ABS_DIR}/Kconfig
+                         ${CMAKE_BINARY_DIR}/boards/dummy/Kconfig)
   else()
     file(TOUCH ${CMAKE_BINARY_DIR}/boards/dummy/Kconfig)
   endif()
@@ -201,9 +201,8 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/drivers)
 
 if(EXISTS ${NUTTX_BOARD_ABS_DIR}/../drivers
    AND EXISTS ${NUTTX_BOARD_ABS_DIR}/../drivers/Kconfig)
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink ${NUTTX_BOARD_ABS_DIR}/../drivers
-            ${CMAKE_BINARY_DIR}/drivers/platform WORKING_DIRECTORY ${NUTTX_DIR})
+  nuttx_create_symlink(${NUTTX_BOARD_ABS_DIR}/../drivers
+                       ${CMAKE_BINARY_DIR}/drivers/platform)
 else()
   file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/drivers/platform)
   file(TOUCH ${CMAKE_BINARY_DIR}/drivers/platform/Kconfig)
@@ -226,10 +225,8 @@ endif()
 
 if(NOT EXISTS ${CMAKE_BINARY_DIR}/arch/dummy/Kconfig)
   if(CONFIG_ARCH_CHIP_CUSTOM)
-    execute_process(
-      COMMAND ${CMAKE_COMMAND} -E create_symlink ${NUTTX_CHIP_ABS_DIR}/Kconfig
-              ${CMAKE_BINARY_DIR}/arch/dummy/Kconfig
-      WORKING_DIRECTORY ${NUTTX_DIR})
+    nuttx_create_symlink(${NUTTX_CHIP_ABS_DIR}/Kconfig
+                         ${CMAKE_BINARY_DIR}/arch/dummy/Kconfig)
   else()
     file(TOUCH ${CMAKE_BINARY_DIR}/arch/dummy/Kconfig)
   endif()
@@ -240,10 +237,10 @@ if(NOT EXISTS ${CMAKE_BINARY_DIR}/arch/${CONFIG_ARCH})
   file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/arch/${CONFIG_ARCH}/src)
 endif()
 
-execute_process(
-  COMMAND ${CMAKE_COMMAND} -E create_symlink ${NUTTX_CHIP_ABS_DIR}
-          ${CMAKE_BINARY_DIR}/arch/${CONFIG_ARCH}/src/chip
-  WORKING_DIRECTORY ${NUTTX_DIR})
+if(NOT EXISTS ${CMAKE_BINARY_DIR}/arch/${CONFIG_ARCH}/src/chip)
+  nuttx_create_symlink(${NUTTX_CHIP_ABS_DIR}
+                       ${CMAKE_BINARY_DIR}/arch/${CONFIG_ARCH}/src/chip)
+endif()
 
 # Unsupport custom board/chips yet, workaround
 
@@ -303,13 +300,13 @@ endif()
 set(NUTTX_ACTIVE_DEFCONFIG ${CMAKE_BINARY_DIR}/.config)
 include(kconfig)
 
-include(custom_commands)
+include(nuttx_generate_headers)
+include(nuttx_generate_outputs)
 include(nuttx_add_library)
 include(nuttx_add_application)
 include(nuttx_add_romfs)
 include(nuttx_add_symtab)
 include(nuttx_add_module)
-include(nuttx_generate_outputs)
 include(menuconfig)
 
 include(ExternalProject)
@@ -328,7 +325,10 @@ set(CMAKE_TOOLCHAIN_FILE
 # Define project #############################################################
 # This triggers configuration
 
-project(NuttX LANGUAGES ASM C CXX)
+project(NuttX LANGUAGES C CXX ASM)
+if(WIN32)
+  enable_language(ASM_MASM)
+endif()
 
 # Setup platform options (this needs to happen after project(), once the
 # toolchain file has been processed)
@@ -384,16 +384,28 @@ if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
   endif()
 endif()
 
-add_compile_options(
-  # system wide warnings
-  -Wall
-  $<$<COMPILE_LANGUAGE:C>:-Wstrict-prototypes>
-  -Wshadow
-  -Wundef
-  # system wide options
-  -fno-builtin
-  $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>
-  $<$<COMPILE_LANGUAGE:ASM>:-D__ASSEMBLY__>)
+if(WIN32)
+  add_compile_options(
+    -W2
+    -wd4116 # unnamed type definition in parentheses
+    -wd4146 # unary minus operator applied to unsigned type, result still
+            # unsigned
+    -wd4244 # 'argument' : conversion from 'type1' to 'type2', possible loss of
+            # data
+    -wd4305 # 'context' : truncation from 'type1' to 'type2'
+  )
+else()
+  add_compile_options(
+    # system wide warnings
+    -Wall
+    $<$<COMPILE_LANGUAGE:C>:-Wstrict-prototypes>
+    -Wshadow
+    -Wundef
+    # system wide options
+    -fno-builtin
+    $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>
+    $<$<COMPILE_LANGUAGE:ASM>:-D__ASSEMBLY__>)
+endif()
 
 if(NOT CONFIG_CXX_EXCEPTION)
   add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>
@@ -416,17 +428,6 @@ set_property(
   PROPERTY NUTTX_KERNEL_DEFINITIONS __KERNEL__)
 
 # Recurse subdirectories #####################################################
-
-# Add tools
-
-ExternalProject_Add(
-  nuttx_host_tools
-  SOURCE_DIR ${CMAKE_SOURCE_DIR}/tools
-  INSTALL_DIR ${CMAKE_BINARY_DIR}
-  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
-  USES_TERMINAL_CONFIGURE true
-  USES_TERMINAL_BUILD true
-  USES_TERMINAL_INSTALL true)
 
 # Each subdirectory will generate a static library
 
@@ -465,10 +466,6 @@ endif()
 
 if(EXISTS ${NUTTX_DIR}/${NUTTX_APPS_DIR}/CMakeLists.txt)
   add_subdirectory(${NUTTX_APPS_DIR} apps)
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink dummy
-            ${NUTTX_APPS_DIR}/platform/board
-    WORKING_DIRECTORY ${NUTTX_APPS_DIR})
 else()
   message(
     STATUS "Application directory not found at ${NUTTX_APPS_DIR}, skipping")
@@ -506,7 +503,6 @@ set(nuttx_libs ${nuttx_kernel_libs} ${nuttx_system_libs} ${nuttx_apps_libs}
                ${nuttx_extra_libs})
 
 if(NOT CONFIG_ARCH_SIM)
-
   # TODO: nostart/nodefault not applicable to nuttx toolchain
   target_link_libraries(
     nuttx PRIVATE ${NUTTX_EXTRA_FLAGS} -Wl,--script=${ldscript}
@@ -529,6 +525,9 @@ if(NOT CONFIG_ARCH_SIM)
     # /tftpboot/uImage; \ fi
     file(APPEND ${CMAKE_BINARY_DIR}/nuttx.manifest uImage)
   endif()
+elseif(WIN32)
+  target_link_options(nuttx PUBLIC /SAFESEH:NO)
+  target_link_libraries(nuttx PRIVATE $<TARGET_OBJECTS:up_head> ${nuttx_libs})
 else()
   # On sim platform the link step is a little different. NuttX is first built
   # into a partially linked relocatable object nuttx.rel with no interface to

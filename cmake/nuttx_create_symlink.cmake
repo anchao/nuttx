@@ -1,5 +1,5 @@
 # ##############################################################################
-# cmake/Toolchain-tools.cmake
+# cmake/nuttx_create_symlink.cmake
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
@@ -18,22 +18,10 @@
 #
 # ##############################################################################
 
-set(CMAKE_FIND_ROOT_PATH get_file_component (${CMAKE_C_COMPILER} PATH))
-set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-
-# REQUIRED OS tools
-foreach(tool grep genromfs make)
-  string(TOUPPER ${tool} TOOL)
-  find_program(${TOOL} ${tool} REQUIRED)
-endforeach()
-
-# OPTIONAL tools
-foreach(tool srec_cat)
-  string(TOUPPER ${tool} TOOL)
-  find_program(${TOOL} ${tool})
-endforeach()
-
-# optional compiler tools foreach(tool gdb gdbtui) string(TOUPPER ${tool} TOOL)
-# find_program(${TOOL} arm-none-eabi-${tool}) endforeach()
+function(nuttx_create_symlink old new)
+  if(IS_DIRECTORY ${old} AND WIN32)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${old} ${new})
+  else()
+    file(CREATE_LINK ${old} ${new} COPY_ON_ERROR SYMBOLIC)
+  endif()
+endfunction()
