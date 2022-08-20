@@ -234,12 +234,24 @@ if(CONFIG_SIM_HOSTFS)
 endif()
 
 target_include_directories(nuttx PRIVATE ${CMAKE_BINARY_DIR}/include/nuttx)
+target_include_directories(nuttx PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
 target_sources(up_head PUBLIC up_head.c)
 target_sources(arch PRIVATE ${SRCS})
-target_sources(nuttx PRIVATE ${HOSTSRCS})
 
-if(NOT WIN32)
+if(WIN32)
+  set(HOSTDIR win)
+else()
+  set(HOSTDIR posix)
   target_link_libraries(nuttx PUBLIC ${STDLIBS})
 endif()
+
+set(WINHOSTSRCS)
+foreach(hostsrc ${HOSTSRCS})
+  list(APPEND WINHOSTSRCS ${HOSTDIR}/${hostsrc})
+endforeach()
+
+set(HOSTSRCS ${WINHOSTSRCS})
+
+target_sources(nuttx PRIVATE ${HOSTSRCS})
 target_compile_definitions(nuttx PRIVATE ${HOST_DEFINITIONS})

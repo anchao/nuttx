@@ -343,6 +343,11 @@ include(detect_platform)
 add_executable(nuttx)
 add_dependencies(nuttx nuttx_context)
 
+if(WIN32)
+  set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT
+                                                              nuttx)
+endif()
+
 if(CONFIG_ARCH_SIM)
   # Create separate up_head OBJECT library built as part of NuttX kernel It must
   # be separated to allow for linking against the rest of NuttX libraries
@@ -364,7 +369,9 @@ if(CONFIG_ARCH_SIM)
   # We need the relocatable object to be first in the list of libraries to be
   # linked against final nuttx binary
 
-  target_link_libraries(nuttx PRIVATE ${CMAKE_BINARY_DIR}/nuttx.rel)
+  if(NOT WIN32)
+    target_link_libraries(nuttx PRIVATE ${CMAKE_BINARY_DIR}/nuttx.rel)
+  endif()
 else()
   # These flags apply to source files not part of the library. In sim build this
   # corresponds to "host" files, so we only do this on non-sim build
@@ -527,7 +534,21 @@ if(NOT CONFIG_ARCH_SIM)
   endif()
 elseif(WIN32)
   target_link_options(nuttx PUBLIC /SAFESEH:NO)
-  target_link_libraries(nuttx PRIVATE $<TARGET_OBJECTS:up_head> ${nuttx_libs})
+  set(nuttx_libs_paths)
+  foreach(lib ${nuttx_libs})
+    list(APPEND nuttx_libs_paths $<TARGET_FILE:${lib}>)
+  endforeach()
+
+  add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/nuttx_all.lib
+    COMMAND ${CMAKE_AR} /OUT:${CMAKE_BINARY_DIR}/nuttx_all.lib
+            ${nuttx_libs_paths}
+    DEPENDS ${nuttx_libs}
+    VERBATIM)
+  add_custom_target(nuttx_all-lib DEPENDS ${CMAKE_BINARY_DIR}/nuttx_all.lib)
+  add_dependencies(nuttx nuttx_all-lib)
+  target_link_libraries(nuttx PRIVATE $<TARGET_OBJECTS:up_head>
+                                      ${CMAKE_BINARY_DIR}/nuttx_all.lib)
 else()
   # On sim platform the link step is a little different. NuttX is first built
   # into a partially linked relocatable object nuttx.rel with no interface to
