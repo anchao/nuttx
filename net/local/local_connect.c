@@ -283,7 +283,6 @@ int psock_local_connect(FAR struct socket *psock,
         case LOCAL_TYPE_UNNAMED:   /* A Unix socket that is not bound to any name */
         case LOCAL_TYPE_ABSTRACT:  /* lc_path is length zero */
           {
-#warning Missing logic
             net_unlock();
             return OK;
           }
