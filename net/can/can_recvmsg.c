@@ -135,7 +135,7 @@ static size_t can_recvfrom_newdata(FAR struct net_driver_s *dev,
 
   /* Copy the new packet data into the user buffer */
 
-  memcpy(pstate->pr_buffer, dev->d_buf, recvlen);
+  memcpy(pstate->pr_buffer, dev->d_iob->io_data, recvlen);
 
   /* Update the accumulated size of the data read */
 

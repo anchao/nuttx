@@ -128,7 +128,7 @@ static void pkt_recvfrom_newdata(FAR struct net_driver_s *dev,
 
   /* Copy the new packet data into the user buffer */
 
-  memcpy(pstate->pr_buffer, dev->d_buf, recvlen);
+  memcpy(pstate->pr_buffer, dev->d_iob->io_data, recvlen);
   ninfo("Received %d bytes (of %d)\n", (int)recvlen, (int)dev->d_len);
 
   /* Update the accumulated size of the data read */

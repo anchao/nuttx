@@ -56,8 +56,8 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-#define ETHBUF ((FAR struct eth_hdr_s *)&dev->d_buf[0])
-#define IPBUF  ((FAR struct arp_iphdr_s *)&dev->d_buf[ETH_HDRLEN])
+#define ETHBUF ((FAR struct eth_hdr_s *)&dev->d_iob->io_data[0])
+#define IPBUF  ((FAR struct arp_iphdr_s *)&dev->d_iob->io_data[ETH_HDRLEN])
 
 /****************************************************************************
  * Public Functions

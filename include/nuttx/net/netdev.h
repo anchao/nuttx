@@ -59,7 +59,9 @@
 #include <net/ethernet.h>
 #include <arpa/inet.h>
 
+#include <nuttx/mm/iob.h>
 #include <nuttx/net/netconfig.h>
+#include <nuttx/net/net.h>
 #include <nuttx/net/ip.h>
 
 #ifdef CONFIG_NET_IGMP
@@ -292,6 +294,21 @@ struct net_driver_s
   net_ipv6addr_t d_ipv6draddr;  /* Default router IPv6 address */
   net_ipv6addr_t d_ipv6netmask; /* Network IPv6 subnet mask */
 #endif
+
+  /* This is a new design that uses d_iob as packets input and output
+   * buffer which used by some NICs such as celluler net driver. Case for
+   * data input, note that d_iob maybe a linked chain only when using
+   * d_iob to store reassembled datagrams, otherwise d_iob uses only
+   * one buffer to hold the entire frame data. Case for data output, note
+   * that d_iob also maybe a linked chain only when using d_iob to
+   * store fragmented datagrams, otherwise d_iob uses only one buffer
+   * to hold the entire frame data.
+   *
+   * In all cases mentioned above, d_buf always points to the beginning
+   * of the first buffer of d_iob.
+   */
+
+  FAR struct iob_s *d_iob;
 
   /* The d_buf array is used to hold incoming and outgoing packets. The
    * device driver should place incoming data into this buffer.  When sending

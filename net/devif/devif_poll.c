@@ -109,7 +109,7 @@ static void devif_packet_conversion(FAR struct net_driver_s *dev,
       if (dev->d_lltype == NET_LL_IEEE802154 ||
           dev->d_lltype == NET_LL_PKTRADIO)
         {
-          FAR struct ipv6_hdr_s *ipv6 = (FAR struct ipv6_hdr_s *)dev->d_buf;
+          FAR struct ipv6_hdr_s *ipv6 = (FAR struct ipv6_hdr_s *)dev->d_iob->io_data;
 
 #ifdef CONFIG_NET_IPv4
           if ((ipv6->vtc & IP_VERSION_MASK) != IPv6_VERSION)

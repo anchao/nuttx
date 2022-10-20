@@ -500,7 +500,7 @@ int ipv6_forward_callback(FAR struct net_driver_s *fwddev, FAR void *arg)
   FAR struct ipv6_hdr_s *ipv6;
   int ret;
 
-  DEBUGASSERT(fwddev != NULL && dev != NULL && dev->d_buf != NULL);
+  DEBUGASSERT(fwddev != NULL && dev != NULL && dev->d_iob->io_data != NULL);
 
   /* Check if we are forwarding on the same device that we received the
    * packet from.
@@ -512,7 +512,7 @@ int ipv6_forward_callback(FAR struct net_driver_s *fwddev, FAR void *arg)
        * d_buf.
        */
 
-      ipv6 = (FAR struct ipv6_hdr_s *)&dev->d_buf[NET_LL_HDRLEN(dev)];
+      ipv6 = (FAR struct ipv6_hdr_s *)&dev->d_iob->io_data[NET_LL_HDRLEN(dev)];
 
       /* Send the packet asynchrously on the forwarding device. */
 
@@ -549,10 +549,10 @@ int ipv6_forward_callback(FAR struct net_driver_s *fwddev, FAR void *arg)
  *           packet
  *
  *   On input:
- *   - dev->d_buf holds the received packet.
+ *   - dev->d_iob->io_data holds the received packet.
  *   - dev->d_len holds the length of the received packet MINUS the
  *     size of the L1 header.  That was subtracted out by ipv6_input.
- *   - ipv6 points to the IPv6 header with dev->d_buf.
+ *   - ipv6 points to the IPv6 header with dev->d_iob->io_data.
  *
  * Returned Value:
  *   Zero is returned if the packet was successfully forward;  A negated
@@ -622,7 +622,7 @@ int ipv6_forward(FAR struct net_driver_s *dev, FAR struct ipv6_hdr_s *ipv6)
            *   This  will involve ICMPv6 and Neighbor Discovery.
            */
 
-          /* Correct dev->d_buf by adding back the L1 header length */
+          /* Correct dev->d_iob->io_data by adding back the L1 header length */
 
 #endif
 
@@ -676,10 +676,10 @@ drop:
  *           packet
  *
  *   On input:
- *   - dev->d_buf holds the received packet.
+ *   - dev->d_iob->io_data holds the received packet.
  *   - dev->d_len holds the length of the received packet MINUS the
  *     size of the L1 header.  That was subtracted out by ipv6_input.
- *   - ipv6 points to the IPv6 header with dev->d_buf.
+ *   - ipv6 points to the IPv6 header with dev->d_iob->io_data.
  *
  * Returned Value:
  *   None

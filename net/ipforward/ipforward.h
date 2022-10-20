@@ -135,10 +135,10 @@ void ipfwd_free(FAR struct forward_s *fwd);
  *           packet
  *
  *   On input:
- *   - dev->d_buf holds the received packet.
+ *   - dev->d_iob->io_data holds the received packet.
  *   - dev->d_len holds the length of the received packet MINUS the
  *     size of the L1 header.  That was subtracted out by ipv4_input.
- *   - ipv4 points to the IPv4 header with dev->d_buf.
+ *   - ipv4 points to the IPv4 header with dev->d_iob->io_data.
  *
  * Returned Value:
  *   None
@@ -166,10 +166,10 @@ void ipv4_forward_broadcast(FAR struct net_driver_s *dev,
  *           packet
  *
  *   On input:
- *   - dev->d_buf holds the received packet.
+ *   - dev->d_iob->io_data holds the received packet.
  *   - dev->d_len holds the length of the received packet MINUS the
  *     size of the L1 header.  That was subtracted out by ipv6_input.
- *   - ipv6 points to the IPv6 header with dev->d_buf.
+ *   - ipv6 points to the IPv6 header with dev->d_iob->io_data.
  *
  * Returned Value:
  *   None
@@ -277,10 +277,10 @@ void ipfwd_dropstats(FAR struct forward_s *fwd);
  *           packet
  *
  *   On input:
- *   - dev->d_buf holds the received packet.
+ *   - dev->d_iob->io_data holds the received packet.
  *   - dev->d_len holds the length of the received packet MINUS the
  *     size of the L1 header.  That was subtracted out by ipv4_input.
- *   - ipv4 points to the IPv4 header with dev->d_buf.
+ *   - ipv4 points to the IPv4 header with dev->d_iob->io_data.
  *
  * Returned Value:
  *   Zero is returned if the packet was successfully forward;  A negated

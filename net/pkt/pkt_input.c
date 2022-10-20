@@ -39,7 +39,7 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-#define PKTBUF ((FAR struct eth_hdr_s *)dev->d_buf)
+#define PKTBUF ((FAR struct eth_hdr_s *)dev->d_iob->io_data)
 
 /****************************************************************************
  * Public Functions
@@ -78,7 +78,7 @@ int pkt_input(struct net_driver_s *dev)
 
       /* Setup for the application callback */
 
-      dev->d_appdata = dev->d_buf;
+      dev->d_appdata = dev->d_iob->io_data;
       dev->d_sndlen  = 0;
 
       /* Perform the application callback */

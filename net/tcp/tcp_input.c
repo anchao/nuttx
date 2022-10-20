@@ -67,8 +67,8 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-#define IPv4BUF ((FAR struct ipv4_hdr_s *)&dev->d_buf[NET_LL_HDRLEN(dev)])
-#define IPv6BUF ((FAR struct ipv6_hdr_s *)&dev->d_buf[NET_LL_HDRLEN(dev)])
+#define IPv4BUF ((FAR struct ipv4_hdr_s *)&dev->d_iob->io_data[NET_LL_HDRLEN(dev)])
+#define IPv6BUF ((FAR struct ipv6_hdr_s *)&dev->d_iob->io_data[NET_LL_HDRLEN(dev)])
 
 /****************************************************************************
  * Private Functions
@@ -306,7 +306,7 @@ static void tcp_input(FAR struct net_driver_s *dev, uint8_t domain,
    * the link layer header and the IP header.
    */
 
-  tcp = (FAR struct tcp_hdr_s *)&dev->d_buf[iplen + NET_LL_HDRLEN(dev)];
+  tcp = (FAR struct tcp_hdr_s *)&dev->d_iob->io_data[iplen + NET_LL_HDRLEN(dev)];
 
   /* Get the size of the IP header and the TCP header.
    *
@@ -455,7 +455,7 @@ static void tcp_input(FAR struct net_driver_s *dev, uint8_t domain,
             {
               for (i = 0; i < ((tcp->tcpoffset >> 4) - 5) << 2 ; )
                 {
-                  opt = dev->d_buf[hdrlen + i];
+                  opt = dev->d_iob->io_data[hdrlen + i];
                   if (opt == TCP_OPT_END)
                     {
                       /* End of options. */
@@ -470,21 +470,21 @@ static void tcp_input(FAR struct net_driver_s *dev, uint8_t domain,
                       continue;
                     }
                   else if (opt == TCP_OPT_MSS &&
-                          dev->d_buf[hdrlen + 1 + i] == TCP_OPT_MSS_LEN)
+                          dev->d_iob->io_data[hdrlen + 1 + i] == TCP_OPT_MSS_LEN)
                     {
                       uint16_t tcp_mss = TCP_MSS(dev, iplen);
 
                       /* An MSS option with the right option length. */
 
-                      tmp16 = ((uint16_t)dev->d_buf[hdrlen + 2 + i] << 8) |
-                               (uint16_t)dev->d_buf[hdrlen + 3 + i];
+                      tmp16 = ((uint16_t)dev->d_iob->io_data[hdrlen + 2 + i] << 8) |
+                               (uint16_t)dev->d_iob->io_data[hdrlen + 3 + i];
                       conn->mss = tmp16 > tcp_mss ? tcp_mss : tmp16;
                     }
 #ifdef CONFIG_NET_TCP_WINDOW_SCALE
                   else if (opt == TCP_OPT_WS &&
-                          dev->d_buf[hdrlen + 1 + i] == TCP_OPT_WS_LEN)
+                          dev->d_iob->io_data[hdrlen + 1 + i] == TCP_OPT_WS_LEN)
                     {
-                      conn->snd_scale = dev->d_buf[hdrlen + 2 + i];
+                      conn->snd_scale = dev->d_iob->io_data[hdrlen + 2 + i];
                       conn->rcv_scale = CONFIG_NET_TCP_WINDOW_SCALE_FACTOR;
                       conn->flags    |= TCP_WSCALE;
                     }
@@ -495,7 +495,7 @@ static void tcp_input(FAR struct net_driver_s *dev, uint8_t domain,
                        * easily can skip past them.
                        */
 
-                      if (dev->d_buf[hdrlen + 1 + i] == 0)
+                      if (dev->d_iob->io_data[hdrlen + 1 + i] == 0)
                         {
                           /* If the length field is zero, the options are
                            * malformed and we don't process them further.
@@ -505,7 +505,7 @@ static void tcp_input(FAR struct net_driver_s *dev, uint8_t domain,
                         }
                     }
 
-                  i += dev->d_buf[hdrlen + 1 + i];
+                  i += dev->d_iob->io_data[hdrlen + 1 + i];
                 }
             }
 
@@ -918,7 +918,7 @@ found:
               {
                 for (i = 0; i < ((tcp->tcpoffset >> 4) - 5) << 2 ; )
                   {
-                    opt = dev->d_buf[hdrlen + i];
+                    opt = dev->d_iob->io_data[hdrlen + i];
                     if (opt == TCP_OPT_END)
                       {
                         /* End of options. */
@@ -933,22 +933,22 @@ found:
                         continue;
                       }
                     else if (opt == TCP_OPT_MSS &&
-                              dev->d_buf[hdrlen + 1 + i] == TCP_OPT_MSS_LEN)
+                              dev->d_iob->io_data[hdrlen + 1 + i] == TCP_OPT_MSS_LEN)
                       {
                         uint16_t tcp_mss = TCP_MSS(dev, iplen);
 
                         /* An MSS option with the right option length. */
 
                         tmp16 =
-                          (dev->d_buf[hdrlen + 2 + i] << 8) |
-                          dev->d_buf[hdrlen + 3 + i];
+                          (dev->d_iob->io_data[hdrlen + 2 + i] << 8) |
+                          dev->d_iob->io_data[hdrlen + 3 + i];
                         conn->mss = tmp16 > tcp_mss ? tcp_mss : tmp16;
                       }
 #ifdef CONFIG_NET_TCP_WINDOW_SCALE
                     else if (opt == TCP_OPT_WS &&
-                            dev->d_buf[hdrlen + 1 + i] == TCP_OPT_WS_LEN)
+                            dev->d_iob->io_data[hdrlen + 1 + i] == TCP_OPT_WS_LEN)
                       {
-                        conn->snd_scale = dev->d_buf[hdrlen + 2 + i];
+                        conn->snd_scale = dev->d_iob->io_data[hdrlen + 2 + i];
                         conn->rcv_scale = CONFIG_NET_TCP_WINDOW_SCALE_FACTOR;
                         conn->flags    |= TCP_WSCALE;
                       }
@@ -959,7 +959,7 @@ found:
                          * easily can skip past them.
                          */
 
-                        if (dev->d_buf[hdrlen + 1 + i] == 0)
+                        if (dev->d_iob->io_data[hdrlen + 1 + i] == 0)
                           {
                             /* If the length field is zero, the options are
                              * malformed and we don't process them further.
@@ -969,7 +969,7 @@ found:
                           }
                       }
 
-                    i += dev->d_buf[hdrlen + 1 + i];
+                    i += dev->d_iob->io_data[hdrlen + 1 + i];
                   }
               }
 

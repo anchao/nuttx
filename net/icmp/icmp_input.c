@@ -68,8 +68,8 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-#define IPv4BUF      ((FAR struct ipv4_hdr_s *)&dev->d_buf[NET_LL_HDRLEN(dev)])
-#define ICMPBUF(hl)  ((FAR struct icmp_hdr_s *)&dev->d_buf[NET_LL_HDRLEN(dev) + (hl)])
+#define IPv4BUF      ((FAR struct ipv4_hdr_s *)&dev->d_iob->io_data[NET_LL_HDRLEN(dev)])
+#define ICMPBUF(hl)  ((FAR struct icmp_hdr_s *)&dev->d_iob->io_data[NET_LL_HDRLEN(dev) + (hl)])
 #define ICMPSIZE(hl) ((dev)->d_len - (hl))
 
 /****************************************************************************

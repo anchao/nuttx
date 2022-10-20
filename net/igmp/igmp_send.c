@@ -62,8 +62,8 @@
 /* Buffer layout */
 
 #define RASIZE      (4)
-#define IPv4BUF     ((FAR struct igmp_iphdr_s *)&dev->d_buf[NET_LL_HDRLEN(dev)])
-#define IGMPBUF(hl) ((FAR struct igmp_hdr_s *)&dev->d_buf[NET_LL_HDRLEN(dev) + (hl)])
+#define IPv4BUF     ((FAR struct igmp_iphdr_s *)&dev->d_iob->io_data[NET_LL_HDRLEN(dev)])
+#define IGMPBUF(hl) ((FAR struct igmp_hdr_s *)&dev->d_iob->io_data[NET_LL_HDRLEN(dev) + (hl)])
 
 /****************************************************************************
  * Private Functions

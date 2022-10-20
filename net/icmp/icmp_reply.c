@@ -51,7 +51,7 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-#define IPv4BUF ((FAR struct ipv4_hdr_s *)&dev->d_buf[NET_LL_HDRLEN(dev)])
+#define IPv4BUF ((FAR struct ipv4_hdr_s *)&dev->d_iob->io_data[NET_LL_HDRLEN(dev)])
 
 /* RFC 1812:
  * 4.3.2.3, Original Message Header

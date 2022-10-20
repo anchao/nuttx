@@ -72,7 +72,7 @@
  *   an xmit or poll request from the network interface driver.
  *
  *   This is almost identical to calling devif_send() except that the data to
- *   be sent is copied into dev->d_buf (vs. dev->d_appdata), since there is
+ *   be sent is copied into dev->d_iob->io_data (vs. dev->d_appdata), since there is
  *   no header on the data.
  *
  * Assumptions:
@@ -87,7 +87,7 @@ void devif_can_send(FAR struct net_driver_s *dev, FAR const void *buf,
 
   /* Copy the data into the device packet buffer */
 
-  memcpy(dev->d_buf, buf, len);
+  memcpy(dev->d_iob->io_data, buf, len);
 
   /* Set the number of bytes to send */
 

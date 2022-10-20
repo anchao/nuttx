@@ -109,8 +109,8 @@
 
 /* Buffer access helpers */
 
-#define IPv6BUF(dev)  ((FAR struct ipv6_hdr_s *)((dev)->d_buf))
-#define TCPBUF(dev)   ((FAR struct tcp_hdr_s *)&(dev)->d_buf[IPv6_HDRLEN])
+#define IPv6BUF(dev)  ((FAR struct ipv6_hdr_s *)((dev)->d_iob->io_data))
+#define TCPBUF(dev)   ((FAR struct tcp_hdr_s *)&(dev)->d_iob->io_data[IPv6_HDRLEN])
 
 /****************************************************************************
  * Private Data

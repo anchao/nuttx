@@ -59,9 +59,9 @@
  ****************************************************************************/
 
 #define IPv6BUF \
-  ((FAR struct ipv6_hdr_s *)&dev->d_buf[NET_LL_HDRLEN(dev)])
+  ((FAR struct ipv6_hdr_s *)&dev->d_iob->io_data[NET_LL_HDRLEN(dev)])
 #define ICMPv6BUF \
-  ((FAR struct icmpv6_echo_request_s *)&dev->d_buf[NET_LL_HDRLEN(dev) + IPv6_HDRLEN])
+  ((FAR struct icmpv6_echo_request_s *)&dev->d_iob->io_data[NET_LL_HDRLEN(dev) + IPv6_HDRLEN])
 
 /****************************************************************************
  * Private Types

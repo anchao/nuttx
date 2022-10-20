@@ -52,7 +52,7 @@
 
 /* Buffer access helpers */
 
-#define TCPBUF(dev) ((FAR struct tcp_hdr_s *)(&(dev)->d_buf[IPv6_HDRLEN]))
+#define TCPBUF(dev) ((FAR struct tcp_hdr_s *)(&(dev)->d_iob->io_data[IPv6_HDRLEN]))
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -501,7 +501,7 @@ static uint16_t tcp_send_eventhandler(FAR struct net_driver_s *dev,
            *
            * NOTE: tcp_appsend() normally increments conn->tx_unacked based
            * on the value of dev->d_sndlen.  However, dev->d_len is always
-           * zero for 6LoWPAN since it does not send via the dev->d_buf
+           * zero for 6LoWPAN since it does not send via the dev->d_iob->io_data
            * but, rather, uses a backdoor frame interface with the IEEE
            * 802.15.4 MAC.
            */
@@ -833,7 +833,7 @@ ssize_t psock_6lowpan_tcp_send(FAR struct socket *psock, FAR const void *buf,
  *   fwddev - The network device used to send the data.  This will be the
  *            same device except for the IP forwarding case where packets
  *            are sent across devices.
- *   ipv6   - A pointer to the IPv6 header in dev->d_buf which lies AFTER
+ *   ipv6   - A pointer to the IPv6 header in dev->d_iob->io_data which lies AFTER
  *            the L1 header.  NOTE: dev->d_len must have been decremented
  *            by the size of any preceding MAC header.
  *

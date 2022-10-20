@@ -46,9 +46,9 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-#define IPv6BUF         ((FAR struct ipv6_hdr_s *)&dev->d_buf[NET_LL_HDRLEN(dev)])
+#define IPv6BUF         ((FAR struct ipv6_hdr_s *)&dev->d_iob->io_data[NET_LL_HDRLEN(dev)])
 #define ICMPv6BUF        ((FAR struct icmpv6_hdr_s *) \
-                          (&dev->d_buf[NET_LL_HDRLEN(dev)] + iplen))
+                          (&dev->d_iob->io_data[NET_LL_HDRLEN(dev)] + iplen))
 #define ICMPv6REPLY      ((FAR struct icmpv6_echo_reply_s *)icmpv6)
 #define ICMPv6SIZE       ((dev)->d_len - iplen)
 

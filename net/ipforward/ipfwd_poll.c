@@ -67,7 +67,7 @@ static int ipfwd_packet_proto(FAR struct net_driver_s *dev)
         {
           /* There should be an IPv6 packet at the beginning of the buffer */
 
-          ipv6 = (FAR struct ipv6_hdr_s *)&dev->d_buf[llhdrlen];
+          ipv6 = (FAR struct ipv6_hdr_s *)&dev->d_iob->io_data[llhdrlen];
           if ((ipv6->vtc & IP_VERSION_MASK) == IPv6_VERSION)
             {
               /* Yes.. return the L2 protocol of the packet */
@@ -101,7 +101,7 @@ static void ipfwd_packet_conversion(FAR struct net_driver_s *dev, int proto)
       if (dev->d_lltype == NET_LL_IEEE802154 ||
           dev->d_lltype == NET_LL_PKTRADIO)
         {
-          FAR struct ipv6_hdr_s *ipv6 = (FAR struct ipv6_hdr_s *)dev->d_buf;
+          FAR struct ipv6_hdr_s *ipv6 = (FAR struct ipv6_hdr_s *)dev->d_iob->io_data;
 
 #ifdef CONFIG_NET_TCP
           if (proto == IP_PROTO_TCP)

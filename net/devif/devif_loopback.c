@@ -37,8 +37,8 @@
 
 /* This is a helper pointer for accessing the contents of the ip header */
 
-#define IPv4BUF ((FAR struct ipv4_hdr_s *)(dev->d_buf + dev->d_llhdrlen))
-#define IPv6BUF ((FAR struct ipv6_hdr_s *)(dev->d_buf + dev->d_llhdrlen))
+#define IPv4BUF ((FAR struct ipv4_hdr_s *)(dev->d_iob->io_data + dev->d_llhdrlen))
+#define IPv6BUF ((FAR struct ipv6_hdr_s *)(dev->d_iob->io_data + dev->d_llhdrlen))
 
 /****************************************************************************
  * Private Functions

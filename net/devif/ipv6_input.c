@@ -58,8 +58,8 @@
 
 /* Macros */
 
-#define IPv6BUF ((FAR struct ipv6_hdr_s *)&dev->d_buf[NET_LL_HDRLEN(dev)])
-#define PAYLOAD ((FAR uint8_t *)&dev->d_buf[NET_LL_HDRLEN(dev)] + IPv6_HDRLEN)
+#define IPv6BUF ((FAR struct ipv6_hdr_s *)&dev->d_iob->io_data[NET_LL_HDRLEN(dev)])
+#define PAYLOAD ((FAR uint8_t *)&dev->d_iob->io_data[NET_LL_HDRLEN(dev)] + IPv6_HDRLEN)
 
 /****************************************************************************
  * Private Functions
