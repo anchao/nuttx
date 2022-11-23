@@ -35,6 +35,7 @@
 #include <nuttx/mm/iob.h>
 #include <nuttx/net/ip.h>
 #include <nuttx/net/net.h>
+#include <nuttx/net/tcp.h>
 #include <nuttx/wqueue.h>
 
 #ifdef CONFIG_NET_TCP
@@ -384,6 +385,39 @@ struct tcp_backlog_s
 extern "C"
 {
 #endif
+
+/****************************************************************************
+ * Inline Functions
+ ****************************************************************************/
+
+/****************************************************************************
+ * Name: tcpip_hdrsize
+ *
+ * Description:
+ *   Get the total size of L3 and L4 TCP header
+ *
+ * Input Parameters:
+ *   conn     The connection structure associated with the socket
+ *
+ * Returned Value:
+ *   the total size of L3 and L4 TCP header
+ *
+ ****************************************************************************/
+
+static inline uint16_t tcpip_hdrsize(FAR struct tcp_conn_s *conn)
+{
+  uint16_t hdrsize = sizeof(struct tcp_hdr_s);
+
+#if defined(CONFIG_NET_IPv4) && defined(CONFIG_NET_IPv6)
+  return net_iphdrsize(conn->domain, hdrsize);
+#elif defined(CONFIG_NET_IPv6)
+  UNUSED(conn);
+  return net_iphdrsize(PF_INET6, hdrsize);
+#else
+  UNUSED(conn);
+  return net_iphdrsize(PF_INET, hdrsize);
+#endif
+}
 
 /****************************************************************************
  * Public Function Prototypes
@@ -1250,8 +1284,9 @@ uint16_t tcp_callback(FAR struct net_driver_s *dev,
  *
  ****************************************************************************/
 
-uint16_t tcp_datahandler(FAR struct tcp_conn_s *conn, FAR uint8_t *buffer,
-                         uint16_t nbytes);
+uint16_t tcp_datahandler(FAR struct net_driver_s *dev,
+                         FAR struct tcp_conn_s *conn,
+                         uint16_t offset);
 
 /****************************************************************************
  * Name: tcp_backlogcreate

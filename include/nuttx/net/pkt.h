@@ -68,4 +68,34 @@
 struct net_driver_s; /* Forward reference */
 int pkt_input(FAR struct net_driver_s *dev);
 
+/****************************************************************************
+ * Name: pkt_iob_input
+ *
+ * Description:
+ *   Handle incoming packet input
+ *
+ *   This is the iob buffer version of pkt_input(),
+ *   this function will support send/receive iob vectors directly between
+ *   the driver and l3/l4 stack to avoid unnecessary memory copies,
+ *   especially on hardware that supports Scatter/gather, which can
+ *   greatly improve performance
+ *   this function will uses d_iob as packets input which used by some
+ *   NICs such as celluler net driver.
+ *
+ * Input Parameters:
+ *   dev - The device driver structure containing the received packet
+ *
+ * Returned Value:
+ *   OK     The packet has been processed  and can be deleted
+ *  -EAGAIN There is a matching connection, but could not dispatch the packet
+ *          yet.  Useful when a packet arrives before a recv call is in
+ *          place.
+ *
+ * Assumptions:
+ *   The network is locked.
+ *
+ ****************************************************************************/
+
+int pkt_iob_input(FAR struct net_driver_s *dev);
+
 #endif /* __INCLUDE_NUTTX_NET_PKT_H */

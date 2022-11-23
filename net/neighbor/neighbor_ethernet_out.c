@@ -196,6 +196,13 @@ void neighbor_ethernet_out(FAR struct net_driver_s *dev)
   memcpy(eth->src, dev->d_mac.ether.ether_addr_octet, ETHER_ADDR_LEN);
   eth->type  = HTONS(ETHTYPE_IP6);
 
+  /* Update device buffer length */
+
+  if (dev->d_iob != NULL)
+    {
+      netdev_iob_update(dev->d_iob, dev->d_iob->io_offset, dev->d_len);
+    }
+
   /* Add the size of the layer layer header to the total size of the
    * outgoing packet.
    */

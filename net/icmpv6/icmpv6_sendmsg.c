@@ -128,7 +128,11 @@ static void sendto_request(FAR struct net_driver_s *dev,
   /* Copy the ICMPv6 request and payload into place after the IPv6 header */
 
   icmpv6         = IPBUF(IPv6_HDRLEN);
-  memcpy(icmpv6, pstate->snd_buf, pstate->snd_buflen);
+
+  netdev_iob_update(dev->d_iob, dev->d_iob->io_offset, IPv6_HDRLEN);
+
+  iob_copyin(dev->d_iob, pstate->snd_buf,
+             pstate->snd_buflen, IPv6_HDRLEN, false);
 
   /* Calculate the ICMPv6 checksum over the ICMPv6 header and payload. */
 

@@ -86,7 +86,8 @@ void icmpv6_reply(FAR struct net_driver_s *dev, int type, int code, int data)
 {
   int ipicmplen = IPv6_HDRLEN + sizeof(struct icmpv6_hdr_s);
   FAR struct ipv6_hdr_s *ipv6 = IPv6BUF;
-  FAR struct icmpv6_hdr_s *icmpv6 = (FAR struct icmpv6_hdr_s *)(ipv6 + 1);
+  FAR struct icmpv6_hdr_s *icmpv6;
+  FAR struct iob_s *iob;
   uint16_t datalen;
   uint16_t paylen;
 
@@ -109,14 +110,76 @@ void icmpv6_reply(FAR struct net_driver_s *dev, int type, int code, int data)
   if (datalen > ICMPv6_MINMTULEN - ipicmplen)
     {
       datalen = ICMPv6_MINMTULEN - ipicmplen;
+      iob_trimtail(dev->d_iob, dev->d_iob->io_pktlen - datalen);
     }
+
+  /* Save the original datagram */
+
+#if CONFIG_IOB_BUFSIZE < ICMPv6_MINMTULEN + CONFIG_NET_LL_GRUARDSIZE
+  if (CONFIG_IOB_BUFSIZE >= datalen + ipicmplen +
+                            CONFIG_NET_LL_GRUARDSIZE)
+    {
+      /* Reuse current iob */
+
+      memmove((FAR char *)ipv6 + ipicmplen, ipv6, datalen);
+
+      /* Skip icmp header from iob */
+
+      netdev_iob_update(dev->d_iob, dev->d_iob->io_offset,
+                        datalen + ipicmplen);
+    }
+  else
+    {
+      /* Save the original datagram to iob chain */
+
+      iob = dev->d_iob;
+      dev->d_iob = NULL;
+
+      /* Re-prepare device buffer */
+
+      if (netdev_iob_prepare(dev, false, 0) != OK)
+        {
+          dev->d_len = 0;
+          dev->d_iob = iob;
+          netdev_iob_release(dev);
+          return;
+        }
+
+      /* Copy ipv4 header to device buffer */
+
+      if (iob_trycopyin(dev->d_iob, (FAR void *)ipv6,
+                        IPv6_HDRLEN, 0, false) != IPv6_HDRLEN)
+        {
+          dev->d_len = 0;
+          netdev_iob_release(dev);
+          iob_free_chain(iob);
+          return;
+        }
+
+      /* Skip icmp header from iob */
+
+      netdev_iob_update(dev->d_iob, dev->d_iob->io_offset,
+                        dev->d_iob->io_pktlen + sizeof(struct icmpv6_hdr_s));
+
+      /* Concat new icmp packet before original datagram */
+
+      iob_concat(dev->d_iob, iob);
+
+      /* IPv6 header to new iob */
+
+      ipv6 = IPBUF(0);
+    }
+#else
+  /* Reuse current iob */
+
+  memmove((FAR char *)ipv6 + ipicmplen, ipv6, datalen);
+
+  netdev_iob_update(dev->d_iob, dev->d_iob->io_offset,
+                    datalen + ipicmplen);
+#endif
 
   dev->d_len = ipicmplen + datalen;
   paylen = dev->d_len - IPv6_HDRLEN;
-
-  /* Copy fields from original packet */
-
-  memmove(icmpv6 + 1, ipv6, datalen);
 
   /* Set up the IPv6 header (most is probably already in place) */
 
@@ -133,6 +196,7 @@ void icmpv6_reply(FAR struct net_driver_s *dev, int type, int code, int data)
 
   /* Initialize the ICMPv6 header */
 
+  icmpv6 = (FAR struct icmpv6_hdr_s *)(ipv6 + 1);
   icmpv6->type    = type;
   icmpv6->code    = code;
   icmpv6->data[0] = data >> 16;

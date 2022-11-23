@@ -599,7 +599,8 @@ static uint16_t psock_send_eventhandler(FAR struct net_driver_s *dev,
            * happen until the polling cycle completes).
            */
 
-          devif_iob_send(dev, TCP_WBIOB(wrb), sndlen, 0);
+          devif_iob_send(dev, TCP_WBIOB(wrb), sndlen,
+                         0, tcpip_hdrsize(conn));
 
           /* Reset the retransmission timer. */
 
@@ -885,7 +886,8 @@ static uint16_t psock_send_eventhandler(FAR struct net_driver_s *dev,
            * won't actually happen until the polling cycle completes).
            */
 
-          devif_iob_send(dev, TCP_WBIOB(wrb), sndlen, TCP_WBSENT(wrb));
+          devif_iob_send(dev, TCP_WBIOB(wrb), sndlen,
+                         TCP_WBSENT(wrb), tcpip_hdrsize(conn));
 
           /* Remember how much data we send out now so that we know
            * when everything has been acknowledged.  Just increment

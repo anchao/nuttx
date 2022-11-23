@@ -119,6 +119,10 @@ void igmp_send(FAR struct net_driver_s *dev, FAR struct igmp_group_s *group,
 
   dev->d_len        = iphdrlen + IGMP_HDRLEN;
 
+  /* Update device buffer length */
+
+  netdev_iob_update(dev->d_iob, dev->d_iob->io_offset, dev->d_len);
+
   /* The total size of the data is the size of the IGMP header */
 
   dev->d_sndlen     = IGMP_HDRLEN;

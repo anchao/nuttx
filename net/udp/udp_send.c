@@ -211,6 +211,10 @@ void udp_send(FAR struct net_driver_s *dev, FAR struct udp_conn_s *conn)
       udp->udplen      = HTONS(dev->d_sndlen + UDP_HDRLEN);
       udp->udpchksum   = 0;
 
+      /* Update the device buffer length */
+
+      netdev_iob_update(dev->d_iob, dev->d_iob->io_offset, dev->d_len);
+
 #ifdef CONFIG_NET_UDP_CHECKSUMS
       /* Calculate UDP checksum. */
 

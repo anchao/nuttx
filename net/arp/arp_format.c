@@ -97,6 +97,14 @@ void arp_format(FAR struct net_driver_s *dev, in_addr_t ipaddr)
 
   eth->type        = HTONS(ETHTYPE_ARP);
   dev->d_len       = sizeof(struct arp_hdr_s) + ETH_HDRLEN;
+
+  /* Update device buffer length */
+
+  if (dev->d_iob != NULL)
+    {
+      netdev_iob_update(dev->d_iob,
+                        dev->d_iob->io_offset, sizeof(struct arp_hdr_s));
+    }
 }
 
 #endif /* CONFIG_NET_ARP */

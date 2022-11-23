@@ -230,6 +230,51 @@ extern "C"
  ****************************************************************************/
 
 /****************************************************************************
+ * Name: net_iphdrsize
+ *
+ * Description:
+ *   Return the size of the IP header
+ *
+ * Input Parameters:
+ *   domain  - IP domain: PF_INET or PF_INET6
+ *   l4size  - L4 additional header size
+ *
+ * Returned Value:
+ *   The size of the combined L3 + L4 headers is returned.
+ *
+ ****************************************************************************/
+
+static inline uint16_t net_iphdrsize(uint8_t domain, uint16_t l4size)
+{
+  uint16_t iplen;
+
+  /* Which domain the socket used */
+
+#ifdef CONFIG_NET_IPv4
+#ifdef CONFIG_NET_IPv6
+  if (domain == PF_INET)
+#endif
+    {
+      /* Select the IPv4 domain */
+
+      iplen = sizeof(struct ipv4_hdr_s);
+    }
+#endif
+#ifdef CONFIG_NET_IPv6
+#ifdef CONFIG_NET_IPv4
+  else /* if (domain == PF_INET6) */
+#endif
+    {
+      /* Select the IPv6 domain */
+
+      iplen = sizeof(struct ipv6_hdr_s);
+    }
+#endif
+
+  return iplen + l4size;
+}
+
+/****************************************************************************
  * Macro: net_ipaddr
  *
  * Description:

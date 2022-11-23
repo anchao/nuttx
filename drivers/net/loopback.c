@@ -83,7 +83,6 @@ struct lo_driver_s
  ****************************************************************************/
 
 static struct lo_driver_s g_loopback;
-static uint8_t g_iobuffer[NET_LO_PKTSIZE + CONFIG_NET_GUARDSIZE];
 
 /****************************************************************************
  * Private Function Prototypes
@@ -146,7 +145,7 @@ static int lo_txpoll(FAR struct net_driver_s *dev)
 #ifdef CONFIG_NET_PKT
       /* When packet sockets are enabled, feed the frame into the tap */
 
-       pkt_input(&priv->lo_dev);
+       pkt_iob_input(&priv->lo_dev);
 #endif
 
       /* We only accept IP packets of the configured type and ARP packets */
@@ -156,7 +155,7 @@ static int lo_txpoll(FAR struct net_driver_s *dev)
         {
           ninfo("IPv4 frame\n");
           NETDEV_RXIPV4(&priv->lo_dev);
-          ipv4_input(&priv->lo_dev);
+          ipv4_iob_input(&priv->lo_dev);
         }
       else
 #endif
@@ -165,7 +164,7 @@ static int lo_txpoll(FAR struct net_driver_s *dev)
         {
           ninfo("IPv6 frame\n");
           NETDEV_RXIPV6(&priv->lo_dev);
-          ipv6_input(&priv->lo_dev);
+          ipv6_iob_input(&priv->lo_dev);
         }
       else
 #endif
@@ -280,7 +279,10 @@ static void lo_txavail_work(FAR void *arg)
           /* If so, then poll the network for new XMIT data */
 
           priv->lo_txdone = false;
-          devif_poll(&priv->lo_dev, lo_txpoll);
+          if (devif_iob_poll(&priv->lo_dev, lo_txpoll))
+            {
+              break;
+            }
         }
       while (priv->lo_txdone);
     }
@@ -416,7 +418,6 @@ int localhost_initialize(void)
   priv->lo_dev.d_addmac  = lo_addmac;    /* Add multicast MAC address */
   priv->lo_dev.d_rmmac   = lo_rmmac;     /* Remove multicast MAC address */
 #endif
-  priv->lo_dev.d_buf     = g_iobuffer;   /* Attach the IO buffer */
   priv->lo_dev.d_private = priv;         /* Used to recover private state from dev */
 
   /* Register the loopabck device with the OS so that socket IOCTLs can b

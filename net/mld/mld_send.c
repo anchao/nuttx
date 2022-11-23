@@ -160,6 +160,10 @@ void mld_send(FAR struct net_driver_s *dev, FAR struct mld_group_s *group,
 
   dev->d_sndlen  = RASIZE + mldsize;
 
+  /* Update device buffer length */
+
+  netdev_iob_update(dev->d_iob, dev->d_iob->io_offset, dev->d_len);
+
   /* Set up the IPv6 header */
 
   ipv6           = IPv6BUF;

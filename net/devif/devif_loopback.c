@@ -93,7 +93,7 @@ int devif_loopback(FAR struct net_driver_s *dev)
 #ifdef CONFIG_NET_PKT
       /* When packet sockets are enabled, feed the frame into the tap */
 
-       pkt_input(dev);
+       pkt_iob_input(dev);
 #endif
 
       /* We only accept IP packets of the configured type */
@@ -104,7 +104,7 @@ int devif_loopback(FAR struct net_driver_s *dev)
           ninfo("IPv4 frame\n");
 
           NETDEV_RXIPV4(dev);
-          ipv4_input(dev);
+          ipv4_iob_input(dev);
         }
       else
 #endif
@@ -114,7 +114,7 @@ int devif_loopback(FAR struct net_driver_s *dev)
           ninfo("IPv6 frame\n");
 
           NETDEV_RXIPV6(dev);
-          ipv6_input(dev);
+          ipv6_iob_input(dev);
         }
       else
 #endif

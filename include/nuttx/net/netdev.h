@@ -59,8 +59,11 @@
 #include <net/ethernet.h>
 #include <arpa/inet.h>
 
+#include <nuttx/mm/iob.h>
 #include <nuttx/net/netconfig.h>
+#include <nuttx/net/net.h>
 #include <nuttx/net/ip.h>
+#include <nuttx/nuttx.h>
 
 #ifdef CONFIG_NET_IGMP
 #  include <nuttx/net/igmp.h>
@@ -154,17 +157,25 @@
 #  define NETDEV_ERRORS(dev)
 #endif
 
-/* There are some helper pointers for accessing the contents of the Ethernet
- * headers
+/* There are some helper pointers for accessing the contents of the Link
+ * layer headers
  */
 
-#define ETHBUF ((FAR struct eth_hdr_s *)&dev->d_buf[0])
+#define LLBUF ((FAR void *)(dev->d_iob ? \
+               &dev->d_iob->io_data[CONFIG_NET_LL_GRUARDSIZE - \
+                                    NET_LL_HDRLEN(dev)] : dev->d_buf))
+
+/* Ethernet headers */
+
+#define ETHBUF ((FAR struct eth_hdr_s *)LLBUF)
 
 /* There are some helper pointers for accessing the contents of the IP
  * headers
  */
 
-#define IPBUF(hl) ((FAR void *)&dev->d_buf[NET_LL_HDRLEN(dev) + (hl)])
+#define IPBUF(hl) ((FAR void *)(dev->d_iob ? \
+                   &dev->d_iob->io_data[CONFIG_NET_LL_GRUARDSIZE + (hl)] : \
+                   &dev->d_buf[NET_LL_HDRLEN(dev) + hl]))
 
 #define IPv4BUF ((FAR struct ipv4_hdr_s *)IPBUF(0))
 #define IPv6BUF ((FAR struct ipv6_hdr_s *)IPBUF(0))
@@ -238,6 +249,8 @@ struct netdev_varaddr_s
 
 struct devif_callback_s; /* Forward reference */
 
+typedef CODE int (*devif_poll_callback_t)(FAR struct net_driver_s *dev);
+
 struct net_driver_s
 {
   /* This link is used to maintain a single-linked list of ethernet drivers.
@@ -307,6 +320,20 @@ struct net_driver_s
   net_ipv6addr_t d_ipv6draddr;  /* Default router IPv6 address */
   net_ipv6addr_t d_ipv6netmask; /* Network IPv6 subnet mask */
 #endif
+  /* This is a new design that uses d_iob as packets input and output
+   * buffer which used by some NICs such as celluler net driver. Case for
+   * data input, note that d_iob maybe a linked chain only when using
+   * d_iob to store reassembled datagrams, otherwise d_iob uses only
+   * one buffer to hold the entire frame data. Case for data output, note
+   * that d_iob also maybe a linked chain only when using d_iob to
+   * store fragmented datagrams, otherwise d_iob uses only one buffer
+   * to hold the entire frame data.
+   *
+   * In all cases mentioned above, d_buf always points to the beginning
+   * of the first buffer of d_iob.
+   */
+
+  FAR struct iob_s *d_iob;
 
   /* The d_buf array is used to hold incoming and outgoing packets. The
    * device driver should place incoming data into this buffer.  When sending
@@ -420,16 +447,15 @@ struct net_driver_s
                  unsigned long arg);
 #endif
 
+  /* Private referernce by net device internal */
+
+  devif_poll_callback_t d_pollcallback;
+  FAR uint8_t          *d_pollbuf;
+
   /* Drivers may attached device-specific, private information */
 
   FAR void *d_private;
 };
-
-typedef CODE int (*devif_poll_callback_t)(FAR struct net_driver_s *dev);
-
-/****************************************************************************
- * Public Data
- ****************************************************************************/
 
 /****************************************************************************
  * Public Function Prototypes
@@ -497,10 +523,12 @@ typedef CODE int (*devif_poll_callback_t)(FAR struct net_driver_s *dev);
 
 #ifdef CONFIG_NET_IPv4
 int ipv4_input(FAR struct net_driver_s *dev);
+int ipv4_iob_input(FAR struct net_driver_s *dev);
 #endif
 
 #ifdef CONFIG_NET_IPv6
 int ipv6_input(FAR struct net_driver_s *dev);
+int ipv6_iob_input(FAR struct net_driver_s *dev);
 #endif
 
 #ifdef CONFIG_NET_6LOWPAN
@@ -560,9 +588,68 @@ int sixlowpan_input(FAR struct radio_driver_s *ieee,
  *     return 0;
  *   }
  *
+ *   Compatible with all old flat buffer NICs
+ *
+ *                 tcp_poll()/udp_poll()/pkt_poll()/...(l3/l4)
+ *                            /              \
+ *                           /                \
+ * devif_poll_[l3/l4]_connections()     devif_iob_send() (nocopy:udp/icmp/..)
+ *            /                                   \      (copy:tcp)
+ *           /                                     \
+ *   devif_iob_poll(devif_poll_callback())  devif_poll_callback()
+ *        /                                           \
+ *       /                                             \
+ *  devif_poll("NIC"_txpoll)                     "NIC"_send()(dev->d_buf)
+ *
  ****************************************************************************/
 
 int devif_poll(FAR struct net_driver_s *dev, devif_poll_callback_t callback);
+
+/****************************************************************************
+ * Name: devif_iob_poll
+ *
+ * Description:
+ *   This function will traverse each active network connection structure and
+ *   will perform network polling operations. devif_poll() may be called
+ *   asynchronously with the network driver can accept another outgoing
+ *   packet.
+ *
+ *   This function will call the provided callback function for every active
+ *   connection. Polling will continue until all connections have been polled
+ *   or until the user-supplied function returns a non-zero value (which it
+ *   should do only if it cannot accept further write data).
+ *
+ *   When the callback function is called, there may be an outbound packet
+ *   waiting for service in the device packet buffer, and if so the d_len
+ *   field is set to a value larger than zero. The device driver should then
+ *   send out the packet.
+ *
+ *   This is the iob buffer version of devif_input(),
+ *   this function will support send/receive iob vectors directly between
+ *   the driver and l3/l4 stack to avoid unnecessary memory copies,
+ *   especially on hardware that supports Scatter/gather, which can
+ *   greatly improve performance
+ *   this function will uses d_iob as packets input which used by some
+ *   NICs such as celluler net driver.
+ *
+ *   If NIC hardware support Scatter/gather transfer
+ *
+ *                  tcp_poll()/udp_poll()/pkt_poll()/...(l3/l4)
+ *                             /           \
+ *                            /             \
+ *  devif_poll_[l3/l4]_connections()  devif_iob_send() (nocopy:udp/icmp/...)
+ *             /                                \      (copy:tcp)
+ *            /                                  \
+ *    devif_iob_poll("NIC"_txpoll)             callback() // "NIC"_txpoll
+ *
+ * Assumptions:
+ *   This function is called from the MAC device driver with the network
+ *   locked.
+ *
+ ****************************************************************************/
+
+int devif_iob_poll(FAR struct net_driver_s *dev,
+                   devif_poll_callback_t callback);
 
 /****************************************************************************
  * Name: neighbor_out
@@ -751,5 +838,113 @@ uint16_t ipv4_chksum(FAR struct net_driver_s *dev);
  ****************************************************************************/
 
 int netdev_lladdrsize(FAR struct net_driver_s *dev);
+
+/****************************************************************************
+ * Name: netdev_iob_update
+ *
+ * Description:
+ *   Update the offset and length to a given I/O buffer,
+ *   The buffer layout as follow:
+ *  -------------------------------------------------------------------------
+ *  |          iob entry 0           |          iob entry 1           | ... |
+ *  -------------------------------------------------------------------------
+ *  |<-- io_offset -->|<-- io_len -->|<---------- io_len ------------>| ... |
+ *  |     (offset)    |<------------- io_pktlen (datalen) ----------------->|
+ *  -------------------------------------------------------------------------
+ *
+ * Assumptions:
+ *   None
+ *
+ ****************************************************************************/
+
+void netdev_iob_update(FAR struct iob_s *iob, uint16_t offset,
+                          uint16_t datalen);
+
+/****************************************************************************
+ * Name: netdev_iob_prepare
+ *
+ * Description:
+ *   Prepare data buffer for a given NIC
+ *   The iob offset will be updated to l2 gruard size by default:
+ *  ----------------------------------------------------------------
+ *  |                     iob entry                                |
+ *  ---------------------------------------------------------------|
+ *  |<-- CONFIG_NET_LL_GRUARDSIZE -->|<--- io_len/io_pktlen(0) --->|
+ *  ---------------------------------------------------------------|
+ *
+ * Assumptions:
+ *   The caller has locked the network.
+ *
+ * Returned Value:
+ *   A non-zero copy is returned on success.
+ *
+ ****************************************************************************/
+
+int netdev_iob_prepare(FAR struct net_driver_s *dev, bool throttled,
+                          unsigned int timeout);
+
+/****************************************************************************
+ * Name: netdev_iob_clear
+ *
+ * Description:
+ *   Clean up buffer resources for a given NIC
+ *
+ * Assumptions:
+ *   The caller has locked the network and dev->d_iob has been
+ *   released or taken away.
+ *
+ ****************************************************************************/
+
+void netdev_iob_clear(FAR struct net_driver_s *dev);
+
+/****************************************************************************
+ * Name: netdev_iob_release
+ *
+ * Description:
+ *   Release buffer resources for a given NIC
+ *
+ * Assumptions:
+ *   The caller has locked the network.
+ *
+ ****************************************************************************/
+
+void netdev_iob_release(FAR struct net_driver_s *dev);
+
+/****************************************************************************
+ * Name: netdev_input
+ *
+ * Description:
+ *   This function will copy the flat buffer that does not support
+ *   Scatter/gather to the iob vector buffer.
+ *
+ *   Compatible with all old flat buffer NICs:
+ *
+ *   [tcp|udp|icmp|...]ipv[4|6]_data_handler()
+ *                     |                     (iob_concat/append to readahead)
+ *                     |
+ *       [tcp|udp|icmp|...]_ipv[4|6]_input()
+ *                     |
+ *                     |
+ *          pkt/ipv[4/6]_iob_input()/...
+ *                     |
+ *                     |
+ *                netdev_input()  // new interface, Scatter/gather flat/iobs
+ *                     |
+ *                     |
+ *           pkt/ipv[4|6]_input()/...
+ *                     |
+ *                     |
+ *     NICs io vector receive(Orignal flat buffer)
+ *
+ * Input Parameters:
+ *   callback - Input callback of L3 stack
+ *
+ * Returned Value:
+ *   A non-zero copy is returned on success.
+ *
+ ****************************************************************************/
+
+int netdev_input(FAR struct net_driver_s *dev,
+                 devif_poll_callback_t callback, bool reply);
 
 #endif /* __INCLUDE_NUTTX_NET_NETDEV_H */

@@ -81,8 +81,11 @@
 
 /* This is a helper pointer for accessing the contents of the IP header */
 
-#define ARPBUF    ((FAR struct arp_hdr_s *)&dev->d_buf[ETH_HDRLEN])
-#define ARPIPBUF  ((FAR struct arp_iphdr_s *)&dev->d_buf[ETH_HDRLEN])
+#define ARPBUF    ((FAR void *)(dev->d_iob ? \
+                                dev->d_iob->io_data + CONFIG_NET_LL_GRUARDSIZE : \
+                                dev->d_buf + ETH_HDRLEN))
+
+#define ARPIPBUF  ((FAR struct arp_iphdr_s *)ARPBUF)
 
 /****************************************************************************
  * Public Types

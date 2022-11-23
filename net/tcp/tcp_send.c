@@ -254,6 +254,10 @@ static inline void tcp_ipv6_sendcomplete(FAR struct net_driver_s *dev,
 static void tcp_sendcomplete(FAR struct net_driver_s *dev,
                              FAR struct tcp_hdr_s *tcp)
 {
+  /* Update device buffer length before setup the IP header */
+
+  netdev_iob_update(dev->d_iob, dev->d_iob->io_offset, dev->d_len);
+
 #ifdef CONFIG_NET_IPv6
 #ifdef CONFIG_NET_IPv4
   if (IFF_IS_IPv6(dev->d_flags))
@@ -421,8 +425,14 @@ static void tcp_sendcommon(FAR struct net_driver_s *dev,
 void tcp_send(FAR struct net_driver_s *dev, FAR struct tcp_conn_s *conn,
               uint16_t flags, uint16_t len)
 {
-  FAR struct tcp_hdr_s *tcp = tcp_header(dev);
+  FAR struct tcp_hdr_s *tcp;
 
+  if (dev->d_iob == NULL)
+    {
+      return;
+    }
+
+  tcp            = tcp_header(dev);
   tcp->flags     = flags;
   dev->d_len     = len;
   tcp->tcpoffset = (TCP_HDRLEN / 4) << 4;
@@ -448,17 +458,24 @@ void tcp_send(FAR struct net_driver_s *dev, FAR struct tcp_conn_s *conn,
 
 void tcp_reset(FAR struct net_driver_s *dev)
 {
-  FAR struct tcp_hdr_s *tcp = tcp_header(dev);
+  FAR struct tcp_hdr_s *tcp;
   uint32_t ackno;
   uint16_t tmp16;
   uint16_t acklen = 0;
   uint8_t seqbyte;
+
+  if (dev->d_iob == NULL)
+    {
+      return;
+    }
 
 #ifdef CONFIG_NET_STATISTICS
   g_netstats.tcp.rst++;
 #endif
 
   /* TCP setup */
+
+  tcp = tcp_header(dev);
 
   if ((tcp->flags & TCP_SYN) != 0 || (tcp->flags & TCP_FIN) != 0)
     {
@@ -642,6 +659,11 @@ void tcp_synack(FAR struct net_driver_s *dev, FAR struct tcp_conn_s *conn,
   FAR struct tcp_hdr_s *tcp;
   uint16_t tcp_mss;
   int16_t optlen = 0;
+
+  if (dev->d_iob == NULL)
+    {
+      return;
+    }
 
   /* Get values that vary with the underlying IP domain */
 

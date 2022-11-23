@@ -116,6 +116,14 @@ void icmpv6_advertise(FAR struct net_driver_s *dev,
 
   memcpy(adv->tgtlladdr, &dev->d_mac, lladdrsize);
 
+  /* Update device buffer length */
+
+  if (dev->d_iob)
+    {
+      netdev_iob_update(dev->d_iob, dev->d_iob->io_offset,
+                        IPv6_HDRLEN + l3size);
+    }
+
   /* Calculate the checksum over both the ICMP header and payload */
 
   adv->chksum    = 0;

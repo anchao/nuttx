@@ -34,6 +34,7 @@
 #include <nuttx/semaphore.h>
 #include <nuttx/net/ip.h>
 #include <nuttx/net/net.h>
+#include <nuttx/net/udp.h>
 #include <nuttx/mm/iob.h>
 
 #ifdef CONFIG_NET_UDP_NOTIFIER
@@ -184,6 +185,39 @@ extern "C"
 /****************************************************************************
  * Public Function Prototypes
  ****************************************************************************/
+
+/****************************************************************************
+ * Inline Functions
+ ****************************************************************************/
+
+/****************************************************************************
+ * Name: udpip_hdrsize
+ *
+ * Description:
+ *   Get the total size of L3 and L4 UDP header
+ *
+ * Input Parameters:
+ *   conn     The connection structure associated with the socket
+ *
+ * Returned Value:
+ *   the total size of L3 and L4 TCP header
+ *
+ ****************************************************************************/
+
+static inline uint16_t udpip_hdrsize(FAR struct udp_conn_s *conn)
+{
+  uint16_t hdrsize = sizeof(struct udp_hdr_s);
+
+#if defined(CONFIG_NET_IPv4) && defined(CONFIG_NET_IPv6)
+  return net_iphdrsize(conn->domain, hdrsize);
+#elif defined(CONFIG_NET_IPv6)
+  UNUSED(conn);
+  return net_iphdrsize(PF_INET6, hdrsize);
+#else
+  UNUSED(conn);
+  return net_iphdrsize(PF_INET, hdrsize);
+#endif
+}
 
 /****************************************************************************
  * Name: udp_initialize
@@ -894,7 +928,7 @@ void udp_readahead_signal(FAR struct udp_conn_s *conn);
  *   When write buffer becomes empty, *all* of the workers waiting
  *   for that event data will be executed.  If there are multiple workers
  *   waiting for read-ahead data then only the first to execute will get the
- *   data.  Others will need to call tcp_writebuffer_notifier_setup() once
+ *   data.  Others will need to call udp_writebuffer_notifier_setup() once
  *   again.
  *
  * Input Parameters:
