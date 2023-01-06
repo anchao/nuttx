@@ -33,7 +33,19 @@ list(
   lib_nullinstream.c
   lib_nulloutstream.c
   lib_libnoflush.c
-  lib_libsnoflush.c
-  lib_stdoutstream.c)
+  lib_libsnoflush.c)
+
+if(CONFIG_FILE_STREAM)
+  list(APPEND SRCS lib_stdinstream.c lib_stdoutstream.c lib_stdsistream.c
+       lib_stdsostream.c)
+endif()
+if(CONFIG_LIBC_LZF)
+  list(APPEND SRCS lib_lzfcompress.c)
+endif()
+
+if(NOT CONFIG_DISABLE_MOUNTPOINT)
+  list(APPEND SRCS lib_blkoutstream.c)
+
+endif()
 
 target_sources(c PRIVATE ${SRCS})
