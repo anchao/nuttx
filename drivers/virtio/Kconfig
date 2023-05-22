@@ -32,6 +32,15 @@ config DRIVERS_VIRTIO_NET
 	select ARCH_HAVE_NETDEV_STATISTICS
 	select NETDEV_LATEINIT
 
+config DRIVERS_VIRTIO_NET_BUFNUM
+	int "Virtio serial driver buffer number"
+	default 0
+	depends on DRIVERS_VIRTIO_NET
+	---help---
+		The buffer number in each virtqueue. (We have 2 virtqueues.)
+		If this value equals to 0, use CONFIG_IOB_NBUFFERS / 4 for each.
+		Normally we get just a little improvement for >8 buffers, and very little for >32.
+
 config DRIVERS_VIRTIO_RNG
 	bool "Virtio rng support"
 	default n

@@ -245,6 +245,18 @@ static int virtio_net_send(FAR struct netdev_lowerhalf_s *dev,
   vrtinfo("Send, hdr=%p, buf=%p, buflen=%d\n", hdr, vb.buf, vb.len);
   virtqueue_add_buffer(vq, &vb, 1, 0, hdr);
   virtqueue_kick(vq);
+
+  /* Try return Netpkt TX buffer to upper-half. */
+
+  virtio_net_txfree(dev);
+
+  /* If we have no buffer left, enable TX done callback. */
+
+  if (netdev_lower_quota_load(dev, NETPKT_TX) <= 0)
+    {
+      virtqueue_enable_cb(vq);
+    }
+
   return OK;
 }
 
@@ -268,6 +280,10 @@ static netpkt_t *virtio_net_recv(FAR struct netdev_lowerhalf_s *dev)
   hdr = virtqueue_get_buffer(vq, &len, NULL);
   if (hdr == NULL)
     {
+      /* If we have no buffer left, enable RX callback. */
+
+      virtqueue_enable_cb(vq);
+
       vrtinfo("get NULL buffer\n");
       return NULL;
     }
@@ -361,6 +377,7 @@ static void virtio_net_rxready(FAR struct virtqueue *vq)
 {
   FAR struct virtio_net_priv_s *priv = vq->vq_dev->priv;
 
+  virtqueue_disable_cb(vq);
   netdev_lower_rxready(&priv->lower);
 }
 
@@ -386,6 +403,10 @@ static void virtio_net_txfree(FAR struct netdev_lowerhalf_s *dev)
 
       netpkt_free(dev, hdr->pkt, NETPKT_TX);
       vrtinfo("Free, hdr: %p, pkt: %p\n", hdr, hdr->pkt);
+
+      /* Successfully sent a packet, txdone is mainly called for counting. */
+
+      netdev_lower_txdone(&priv->lower);
     }
 }
 
@@ -397,8 +418,8 @@ static void virtio_net_txdone(FAR struct virtqueue *vq)
 {
   FAR struct virtio_net_priv_s *priv = vq->vq_dev->priv;
 
+  virtqueue_disable_cb(vq);
   virtio_net_txfree(&priv->lower);
-  netdev_lower_txdone(&priv->lower);
 }
 
 /****************************************************************************
@@ -435,13 +456,15 @@ static int virtio_net_init(FAR struct virtio_net_priv_s *priv,
 
   virtio_set_status(vdev, VIRTIO_CONFIG_STATUS_DRIVER_OK);
 
+#if CONFIG_DRIVERS_VIRTIO_NET_BUFNUM > 0
+  priv->bufnum = CONFIG_DRIVERS_VIRTIO_NET_BUFNUM;
+#else
   /* Calculate the virtio network buffer number:
-   * why CONFIG_IOB_NBUFFERS / 3: 1/3 for the TX netpkts, 1/3 for the RX
-   * netpkts and rest 1/3 for the RX netpkts filled in the RX virtqueue
-   * in advance.
+   * 1/4 for the TX netpkts, 1/4 for the RX netpkts.
    */
 
-  priv->bufnum = CONFIG_IOB_NBUFFERS / 3;
+  priv->bufnum = CONFIG_IOB_NBUFFERS / 4;
+#endif
   priv->bufnum = MIN(vdev->vrings_info[VIRTIO_NET_RX].info.num_descs,
                      priv->bufnum);
   priv->bufnum = MIN(vdev->vrings_info[VIRTIO_NET_TX].info.num_descs,
@@ -476,7 +499,7 @@ static int virtio_net_probe(FAR struct virtio_device *vdev)
   /* Initialize the netdev lower half */
 
   netdev = &priv->lower;
-  netdev->quota[NETPKT_RX] = 2 * priv->bufnum;
+  netdev->quota[NETPKT_RX] = priv->bufnum;
   netdev->quota[NETPKT_TX] = priv->bufnum;
   netdev->ops = &g_virtio_net_ops;
 
