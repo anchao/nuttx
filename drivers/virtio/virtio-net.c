@@ -122,9 +122,6 @@ static int virtio_net_ioctl(FAR struct netdev_lowerhalf_s *dev);
 static int  virtio_net_probe(FAR struct virtio_device *vdev);
 static void virtio_net_remove(FAR struct virtio_device *vdev);
 
-static void virtio_net_rxfill(FAR struct netdev_lowerhalf_s *dev);
-static void virtio_net_txfree(FAR struct netdev_lowerhalf_s *dev);
-
 /****************************************************************************
  * Private Data
  ****************************************************************************/
@@ -157,13 +154,82 @@ static const struct netdev_ops_s g_virtio_net_ops =
  ****************************************************************************/
 
 /****************************************************************************
+ * Name: virtio_net_rxfill
+ ****************************************************************************/
+
+static void virtio_net_rxfill(FAR struct netdev_lowerhalf_s *dev)
+{
+  FAR struct virtio_net_priv_s *priv = (FAR struct virtio_net_priv_s *)dev;
+  FAR struct virtqueue *vq = priv->vdev->vrings_info[VIRTIO_NET_RX].vq;
+  FAR struct virtio_net_llhdr_s *hdr;
+  FAR struct virtqueue_buf vb;
+  FAR netpkt_t *pkt;
+  int i;
+
+  for (i = 0; i < priv->bufnum; i++)
+    {
+      /* IOB Offload, Alloc buffer from RX netpkt */
+
+      pkt = netpkt_alloc(dev, NETPKT_RX);
+      if (pkt == NULL)
+        {
+          vrtinfo("Has ran out of the RX buffer, i=%d\n", i);
+          break;
+        }
+
+      /* Alloc cookie and net header from transport layer */
+
+      hdr = (FAR struct virtio_net_llhdr_s *)netpkt_getbase(pkt);
+      memset(&hdr->vhdr, 0, sizeof(hdr->vhdr));
+      hdr->pkt = pkt;
+
+      /* Buffer 0, the virtio net header */
+
+      vb.buf = &hdr->vhdr;
+      vb.len = VIRTIO_NET_HDRSIZE + VIRTIO_NET_BUFSIZE;
+
+      vrtinfo("Fill rx, hdr=%p, buf=%p, buflen=%d\n", hdr, vb.buf, vb.len);
+      virtqueue_add_buffer(vq, &vb, 0, 1, hdr);
+    }
+
+  if (i > 0)
+    {
+      virtqueue_kick(vq);
+    }
+}
+
+/****************************************************************************
+ * Name: virtio_net_txfree
+ ****************************************************************************/
+
+static void virtio_net_txfree(FAR struct netdev_lowerhalf_s *dev)
+{
+  FAR struct virtio_net_priv_s *priv = (FAR struct virtio_net_priv_s *)dev;
+  FAR struct virtqueue *vq = priv->vdev->vrings_info[VIRTIO_NET_TX].vq;
+  FAR struct virtio_net_llhdr_s *hdr;
+
+  while (1)
+    {
+      /* Get buffer from tx virtqueue */
+
+      hdr = virtqueue_get_buffer(vq, NULL, NULL);
+      if (hdr == NULL)
+        {
+          break;
+        }
+
+      netpkt_free(dev, hdr->pkt, NETPKT_TX);
+      vrtinfo("Free, hdr: %p, pkt: %p\n", hdr, hdr->pkt);
+    }
+}
+
+/****************************************************************************
  * Name: virtio_net_ifup
  ****************************************************************************/
 
 static int virtio_net_ifup(FAR struct netdev_lowerhalf_s *dev)
 {
   FAR struct virtio_net_priv_s *priv = (FAR struct virtio_net_priv_s *)dev;
-  int i;
 
 #ifdef CONFIG_NET_IPv4
   vrtinfo("Bringing up: %d.%d.%d.%d\n",
@@ -180,12 +246,10 @@ static int virtio_net_ifup(FAR struct netdev_lowerhalf_s *dev)
           dev->netdev.d_ipv6addr[6], dev->netdev.d_ipv6addr[7]);
 #endif
 
-  /* Enable the Ethernet interrupt */
+  /* Prepare interrupt and packets for receiving */
 
-  for (i = 0; i < VIRTIO_NET_NUM; i++)
-    {
-      virtqueue_enable_cb(priv->vdev->vrings_info[i].vq);
-    }
+  virtqueue_enable_cb(priv->vdev->vrings_info[VIRTIO_NET_RX].vq);
+  virtio_net_rxfill(dev);
 
   return netdev_lower_carrier_on(dev);
 }
@@ -284,6 +348,14 @@ static netpkt_t *virtio_net_recv(FAR struct netdev_lowerhalf_s *dev)
 
       virtqueue_enable_cb(vq);
 
+      /* We do transmit after recv, now it's time to free TX buffer.
+       * Depends on upper-half order (Call TX after RX).
+       *
+       * TODO: Find a better way to free TX buffer.
+       */
+
+      virtio_net_txfree(&priv->lower);
+
       vrtinfo("get NULL buffer\n");
       return NULL;
     }
@@ -329,47 +401,6 @@ static int virtio_net_ioctl(FAR struct netdev_lowerhalf_s *dev)
 #endif
 
 /****************************************************************************
- * Name: virtio_net_rxfill
- ****************************************************************************/
-
-static void virtio_net_rxfill(FAR struct netdev_lowerhalf_s *dev)
-{
-  FAR struct virtio_net_priv_s *priv = (FAR struct virtio_net_priv_s *)dev;
-  FAR struct virtqueue *vq = priv->vdev->vrings_info[VIRTIO_NET_RX].vq;
-  FAR struct virtio_net_llhdr_s *hdr;
-  FAR struct virtqueue_buf vb;
-  FAR netpkt_t *pkt;
-  int i;
-
-  for (i = 0; i < priv->bufnum; i++)
-    {
-      /* IOB Offload, Alloc buffer from RX netpkt */
-
-      pkt = netpkt_alloc(dev, NETPKT_RX);
-      if (pkt == NULL)
-        {
-          vrtinfo("Has ran out of the RX buffer, i=%d\n", i);
-          break;
-        }
-
-      /* Alloc cookie and net header from transport layer */
-
-      hdr = (FAR struct virtio_net_llhdr_s *)netpkt_getbase(pkt);
-      memset(&hdr->vhdr, 0, sizeof(hdr->vhdr));
-      hdr->pkt = pkt;
-
-      /* Buffer 0, the virtio net header */
-
-      vb.buf = &hdr->vhdr;
-      vb.len = VIRTIO_NET_HDRSIZE + VIRTIO_NET_BUFSIZE;
-
-      vrtinfo("Fill rx, hdr=%p, buf=%p, buflen=%d\n", hdr, vb.buf, vb.len);
-      virtqueue_add_buffer(vq, &vb, 0, 1, hdr);
-      virtqueue_kick(vq);
-    }
-}
-
-/****************************************************************************
  * Name: virtio_net_rxready
  ****************************************************************************/
 
@@ -382,35 +413,6 @@ static void virtio_net_rxready(FAR struct virtqueue *vq)
 }
 
 /****************************************************************************
- * Name: virtio_net_txfree
- ****************************************************************************/
-
-static void virtio_net_txfree(FAR struct netdev_lowerhalf_s *dev)
-{
-  FAR struct virtio_net_priv_s *priv = (FAR struct virtio_net_priv_s *)dev;
-  FAR struct virtqueue *vq = priv->vdev->vrings_info[VIRTIO_NET_TX].vq;
-  FAR struct virtio_net_llhdr_s *hdr;
-
-  while (1)
-    {
-      /* Get buffer from tx virtqueue */
-
-      hdr = virtqueue_get_buffer(vq, NULL, NULL);
-      if (hdr == NULL)
-        {
-          break;
-        }
-
-      netpkt_free(dev, hdr->pkt, NETPKT_TX);
-      vrtinfo("Free, hdr: %p, pkt: %p\n", hdr, hdr->pkt);
-
-      /* Successfully sent a packet, txdone is mainly called for counting. */
-
-      netdev_lower_txdone(&priv->lower);
-    }
-}
-
-/****************************************************************************
  * Name: virtio_net_txdone
  ****************************************************************************/
 
@@ -419,7 +421,7 @@ static void virtio_net_txdone(FAR struct virtqueue *vq)
   FAR struct virtio_net_priv_s *priv = vq->vq_dev->priv;
 
   virtqueue_disable_cb(vq);
-  virtio_net_txfree(&priv->lower);
+  netdev_lower_txdone(&priv->lower);
 }
 
 /****************************************************************************
@@ -502,10 +504,6 @@ static int virtio_net_probe(FAR struct virtio_device *vdev)
   netdev->quota[NETPKT_RX] = priv->bufnum;
   netdev->quota[NETPKT_TX] = priv->bufnum;
   netdev->ops = &g_virtio_net_ops;
-
-  /* Prepare packets for receiving after set the quota */
-
-  virtio_net_rxfill(netdev);
 
   /* Register the net deivce */
 
