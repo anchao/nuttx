@@ -83,6 +83,9 @@ function setup_environment()
       "libdivsufsort-dev" \
       "libc++-dev" \
       "libc++abi-dev" \
+      "libprotobuf-dev" \
+      "protobuf-compiler" \
+      "protobuf-c-compiler" \
       )
 
   for (( i = 0; i < ${#PACKAGES[*]}; i++)); do
