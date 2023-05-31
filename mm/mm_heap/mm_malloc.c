@@ -86,7 +86,7 @@ void mm_dump_handler(FAR struct tcb_s *tcb, FAR void *arg)
   dump.seqmax = ULONG_MAX;
   info = mm_mallinfo_task(arg, &dump);
   mwarn("pid:%5d, used:%10d, nused:%10d\n",
-        tcb ? tcb->pid : -1, info.uordblks, info.aordblks);
+        dump.pid, info.uordblks, info.aordblks);
 }
 #endif
 
