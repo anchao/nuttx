@@ -86,6 +86,8 @@ function setup_environment()
       "libprotobuf-dev" \
       "protobuf-compiler" \
       "protobuf-c-compiler" \
+      "gcc-multilib" \
+      "g++-multilib" \
       )
 
   for (( i = 0; i < ${#PACKAGES[*]}; i++)); do
