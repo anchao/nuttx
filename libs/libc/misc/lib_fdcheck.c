@@ -121,7 +121,7 @@ int fdcheck_protect(int fd)
       return fd;
     }
 
-  return fd | ((getpid() & PID_MASK) << PID_SHIFT);
+  return (fd & FD_MASK) | ((getpid() & PID_MASK) << PID_SHIFT);
 }
 
 #endif
