@@ -258,7 +258,9 @@ static int binder_ioctl(FAR struct file *filp, int cmd, unsigned long arg)
       return -ENOMEM;
     }
 
-  if (arg == 0)
+  if (arg == 0 && (cmd == BINDER_WRITE_READ || cmd == BINDER_SET_MAX_THREADS
+      || cmd == BINDER_SET_CONTEXT_MGR || cmd == BINDER_SET_CONTEXT_MGR_EXT
+      || cmd == BINDER_VERSION || cmd == BINDER_GET_NODE_INFO_FOR_REF))
     {
       return -EFAULT;
     }
