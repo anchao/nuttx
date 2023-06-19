@@ -300,7 +300,8 @@ static void mallinfo_task_handler(FAR void *ptr, size_t size, int used,
           info->uordblks += size;
         }
 #else
-      if ((task->pid == PID_MM_ALLOC || task->pid == buf->pid ||
+      if ((task->pid == buf->pid ||
+           (task->pid == PID_MM_ALLOC && buf->pid != PID_MM_MEMPOOL) ||
            (task->pid == PID_MM_LEAK && !!nxsched_get_tcb(buf->pid))) &&
           buf->seqno >= task->seqmin && buf->seqno <= task->seqmax)
         {
@@ -416,7 +417,9 @@ static void memdump_handler(FAR void *ptr, size_t size, int used,
 #if CONFIG_MM_BACKTRACE < 0
       if (dump->pid == PID_MM_ALLOC)
 #else
-      if ((dump->pid == PID_MM_ALLOC || dump->pid == buf->pid) &&
+      if ((dump->pid == buf->pid ||
+           (dump->pid == PID_MM_ALLOC && buf->pid != PID_MM_MEMPOOL) ||
+           (dump->pid == PID_MM_LEAK && !!nxsched_get_tcb(buf->pid))) &&
           buf->seqno >= dump->seqmin && buf->seqno <= dump->seqmax)
 #endif
         {
