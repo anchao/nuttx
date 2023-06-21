@@ -226,6 +226,10 @@ function setup_toolchain()
   HIDL_DIR=${ROOTDIR}/prebuilts/tools/hidl/${SYSTEM}/${SYS_ARCH}
   export PATH=${HIDL_DIR}:$PATH
 
+  # genromfs
+  GENROMFS_DIR=${ROOTDIR}/prebuilts/tools/genromfs/${SYSTEM}/${SYS_ARCH}
+  export PATH=${GENROMFS_DIR}:$PATH
+
   # Additional prebuilt GNU tools
   if [ ${SYSTEM} == "darwin" ]; then
     export PATH=${ROOTDIR}/prebuilts/tools/gnu/${SYSTEM}/${SYS_ARCH}:$PATH
