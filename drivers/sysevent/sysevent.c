@@ -98,8 +98,8 @@ static int event_format(struct sysevent_s *event, char *jsonstr)
 {
   struct sysevent_payload_s *payload;
 
-  sprintf(jsonstr, "EventId %d -t %lld -paraList ", event->eventid,
-          event->ts.tv_sec);
+  sprintf(jsonstr, "EventId %d -t %ld -paraList ", event->eventid,
+          (long)event->ts.tv_sec);
   payload = event->head->next;
   if (payload == NULL)
     {
