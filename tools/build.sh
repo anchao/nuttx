@@ -147,7 +147,7 @@ function setup_toolchain()
   echo -e "${B}**""**""**""**""**""**""**""**""**""**""**""**""**""***${N}"
 
   SYSTEM=`uname | tr '[:upper:]' '[:lower:]'`
-  SYS_ARCH=`uname -m`
+  SYS_ARCH=`uname -m | sed 's/arm64/aarch64/'`
 
   if [ ${SYSTEM} == "darwin" ]; then
     export MACOSX_DEPLOYMENT_TARGET=11
@@ -179,7 +179,11 @@ function setup_toolchain()
 
   for (( i = 0; i < ${#ARCH[*]}; i++)); do
     for (( j = 0; j < ${#TOOLCHAIN[*]}; j++)); do
-      export PATH=${ROOTDIR}/prebuilts/${TOOLCHAIN[$j]}/${SYSTEM}/${ARCH[$i]}/bin:$PATH
+      if [ -d ${ROOTDIR}/prebuilts/${TOOLCHAIN[$j]}/${SYSTEM}-${SYS_ARCH}/${ARCH[$i]}/bin ]; then
+        export PATH=${ROOTDIR}/prebuilts/${TOOLCHAIN[$j]}/${SYSTEM}-${SYS_ARCH}/${ARCH[$i]}/bin:$PATH
+      elif [ -d ${ROOTDIR}/prebuilts/${TOOLCHAIN[$j]}/${SYSTEM}/${ARCH[$i]}/bin ]; then
+        export PATH=${ROOTDIR}/prebuilts/${TOOLCHAIN[$j]}/${SYSTEM}/${ARCH[$i]}/bin:$PATH
+      fi
     done
   done
 
