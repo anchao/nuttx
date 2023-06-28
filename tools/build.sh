@@ -237,6 +237,7 @@ function setup_toolchain()
   # Additional prebuilt GNU tools
   if [ ${SYSTEM} == "darwin" ]; then
     export PATH=${ROOTDIR}/prebuilts/tools/gnu/${SYSTEM}/${SYS_ARCH}:$PATH
+    export PATH=${ROOTDIR}/prebuilts/tools/gnu/${SYSTEM}/universal:$PATH
   fi
 }
 
