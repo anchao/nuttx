@@ -170,7 +170,7 @@ function setup_toolchain()
             "clang" )
 
   if [ "$XTENSAD_LICENSE_FILE" == "" ]; then
-    export XTENSAD_LICENSE_FILE=28000@10.221.64.91
+    export XTENSAD_LICENSE_FILE=28000@10.38.168.2
   fi
   export WASI_SDK_PATH=${ROOTDIR}/prebuilts/clang/${SYSTEM}/wasm
   export PATH=${WASI_SDK_PATH}:$PATH
