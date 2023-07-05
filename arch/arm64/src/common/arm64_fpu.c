@@ -36,7 +36,7 @@
 
 #include "sched/sched.h"
 #include "arm64_arch.h"
-#include "arm64_vfork.h"
+#include "arm64_fork.h"
 #include "arm64_internal.h"
 #include "arm64_fatal.h"
 #include "arm64_fpu.h"
