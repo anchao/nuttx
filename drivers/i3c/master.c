@@ -1183,7 +1183,7 @@ static int i3c_master_i2c_adapter_xfer(FAR struct i2c_master_s *i2c,
     }
 
   i3c_bus_normaluse_lock(&master->bus);
-  ret = master->ops->i2c_xfers(i2c, xfers, nxfers);
+  ret = master->ops->i2c_xfers(master, xfers, nxfers);
   i3c_bus_normaluse_unlock(&master->bus);
 
   return ret ? ret : nxfers;

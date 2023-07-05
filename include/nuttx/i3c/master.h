@@ -508,7 +508,7 @@ struct i3c_master_controller_ops
   CODE int (*priv_xfers)(FAR struct i3c_dev_desc *dev,
         FAR struct i3c_priv_xfer *xfers,
         int nxfers);
-  CODE int (*i2c_xfers)(FAR struct i2c_master_s *dev,
+  CODE int (*i2c_xfers)(FAR struct i3c_master_controller *master,
        FAR const struct i2c_msg_s *xfers, int nxfers);
   CODE int (*request_ibi)(FAR struct i3c_dev_desc *dev,
          FAR const struct i3c_ibi_setup *req);
