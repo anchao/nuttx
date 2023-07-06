@@ -2110,7 +2110,9 @@ static int usbclass_bind(FAR struct usbdevclass_driver_s *driver,
    * EP0).
    */
 
+#ifndef CONFIG_RNDIS_COMPOSITE
   dev->ep0->priv = priv;
+#endif
 
   /* Preallocate control request */
 
