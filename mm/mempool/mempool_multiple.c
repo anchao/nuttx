@@ -193,13 +193,13 @@ retry:
     }
 
   ret = (FAR void *)ALIGN_UP(chunk->next, align);
-  if (chunk->end - ret < size)
+  if (chunk->end - (FAR char *)ret < size)
     {
       goto retry;
     }
 
   chunk->used++;
-  chunk->next = ret + size;
+  chunk->next = (FAR char *)ret + size;
   return ret;
 }
 
