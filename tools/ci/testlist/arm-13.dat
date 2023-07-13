@@ -11,3 +11,6 @@
 -lm3s6965-ek:qemu-nxflat
 -tms570ls31x-usb-kit:nsh
 -tlsr8278adk80d:nsh
+
+# Boards build by CMake
+CMake,lm3s6965-ek:nsh
