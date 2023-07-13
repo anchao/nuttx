@@ -554,6 +554,7 @@ int netdev_upper_wireless_ioctl(FAR struct netdev_lowerhalf_s *lower,
   FAR const struct wireless_ops_s *ops = lower->iw_ops;
   const struct ether_addr zero =
     {
+      0
     };
 
   /* Decode and dispatch the driver-specific IOCTL command */
