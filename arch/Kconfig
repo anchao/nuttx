@@ -113,6 +113,7 @@ config ARCH_SIM
 	select SERIAL_CONSOLE
 	select SERIAL_IFLOWCONTROL
 	select ARCH_HAVE_CPUINFO
+	select LIBC_ARCH_STRNCAT if HOST_WINDOWS
 	---help---
 		Linux/Cygwin user-mode simulation.
 

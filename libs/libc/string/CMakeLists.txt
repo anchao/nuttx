@@ -59,7 +59,12 @@ set(SRCS
     lib_explicit_bzero.c
     lib_strsignal.c
     lib_index.c
-    lib_rindex.c)
+    lib_rindex.c
+    lib_timingsafe_bcmp.c
+    lib_strverscmp.c
+    lib_mempcpy.c
+    lib_rawmemchr.c
+    lib_bzero.c)
 
 if(NOT CONFIG_LIBC_ARCH_MEMCHR)
   list(APPEND SRCS lib_memchr.c)

@@ -57,6 +57,9 @@ ifneq ($(CONFIG_NSH_CUSTOMROMFS),y)
   RCSRCS = etc/init.d/rc.sysinit etc/init.d/rcS
   RCRAWS = etc/group etc/passwd
 endif
+ifeq ($(CONFIG_LIBC_LOCALTIME),y)
+  RCRAWS += etc/zoneinfo
+endif
 endif
 
 ifeq ($(CONFIG_ARCH_BUTTONS),y)

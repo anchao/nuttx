@@ -62,6 +62,15 @@
  * Public Functions
  ****************************************************************************/
 
+static inline int signbit(double x)
+{
+  union {
+    double d;
+    uint64_t i;
+  } y = { x };
+  return y.i>>63;
+}
+
 int __dtoa_engine(double x, FAR struct dtoa_s *dtoa, int max_digits,
                   int max_decimals)
 {
@@ -69,7 +78,7 @@ int __dtoa_engine(double x, FAR struct dtoa_s *dtoa, int max_digits,
   uint8_t flags = 0;
   int i;
 
-  if (__builtin_signbit(x))
+  if (signbit(x))
     {
       flags |= DTOA_MINUS;
       x = -x;

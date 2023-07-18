@@ -96,6 +96,10 @@ config LIBC_ARCH_STRLCPY
 	bool
 	default n
 
+config LIBC_ARCH_STRNCAT
+	bool
+	default n
+
 config LIBC_ARCH_STRNCPY
 	bool
 	default n

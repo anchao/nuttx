@@ -34,3 +34,11 @@ mount -t vfat CONCAT(/dev/ram, CONFIG_NSH_FATDEVNO) CONFIG_NSH_FATMOUNTPT
 
 #endif /* CONFIG_FS_FAT */
 #endif /* CONFIG_NSH_ROMFSETC */
+
+#ifdef CONFIG_LIBC_LOCALTIME
+set TZ Asia/Shanghai
+#endif
+
+#ifndef CONFIG_NSH_DISABLE_TIMEDATECTL
+timedatectl set-timezone Asia/Shanghai
+#endif

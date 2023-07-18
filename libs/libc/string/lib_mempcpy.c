@@ -36,5 +36,5 @@
 
 FAR void *mempcpy(FAR void *dest, FAR const void *src, size_t n)
 {
-  return memcpy(dest, src, n) + n;
+  return (FAR char *)memcpy(dest, src, n) + n;
 }
