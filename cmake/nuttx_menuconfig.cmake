@@ -1,5 +1,5 @@
 # ##############################################################################
-# cmake/menuconfig.cmake
+# cmake/nuttx_menuconfig.cmake
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
@@ -115,3 +115,13 @@ add_custom_target(
           ${CMAKE_BINARY_DIR}/.config.orig
   COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_PARENT_LIST_FILE}
   WORKING_DIRECTORY ${NUTTX_DIR})
+
+function(nuttx_setconfig config)
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E env ${KCONFIG_ENV} setconfig ${config}
+    ERROR_VARIABLE SETCONFIG_ERROR
+    OUTPUT_VARIABLE SETCONFIG_OUTPUT
+    RESULT_VARIABLE SETCONFIG_STATUS
+	OUTPUT_STRIP_TRAILING_WHITESPACE
+    WORKING_DIRECTORY ${NUTTX_DIR})
+endfunction()

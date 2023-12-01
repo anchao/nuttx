@@ -215,6 +215,8 @@ endif()
 
 nuttx_export_kconfig(${NUTTX_DEFCONFIG})
 
+message(STATUS " 1. -----------------------------   ${CONFIG_HOST_X86_64}")
+
 if(CONFIG_ARCH_BOARD_CUSTOM)
   get_filename_component(NUTTX_BOARD_DIR ${CONFIG_ARCH_BOARD_CUSTOM_DIR}
                          ABSOLUTE BASE_DIR ${NUTTX_DIR})
@@ -370,8 +372,23 @@ endif()
 
 # this exposes all Kconfig vars to CMake
 
+execute_process(
+  COMMAND uname -m
+  ERROR_VARIABLE MACHINE_ERROR
+  OUTPUT_VARIABLE MACHINE_OUTPUT
+  RESULT_VARIABLE MACHINE_STATUS
+  WORKING_DIRECTORY ${NUTTX_DIR})
+
+if(MACHINE_OUTPUT MATCHES "aarch64" OR "arm64")
+	nuttx_setconfig(HOST_ARM64=y)
+endif()
+
 nuttx_export_kconfig(${CMAKE_BINARY_DIR}/.config)
 
+message(STATUS " 2. -----------------------------   ${CONFIG_HOST_X86_64}")
+
+include(nuttx_mkconfig)
+include(nuttx_mkversion)
 include(nuttx_generate_headers)
 include(nuttx_generate_outputs)
 include(nuttx_add_library)
@@ -381,7 +398,7 @@ include(nuttx_add_symtab)
 include(nuttx_add_module)
 include(nuttx_add_dependencies)
 include(nuttx_export_header)
-include(menuconfig)
+include(nuttx_menuconfig)
 
 include(ExternalProject)
 include(FetchContent)
@@ -402,7 +419,16 @@ set(CMAKE_TOOLCHAIN_FILE
 project(NuttX LANGUAGES C CXX ASM)
 if(WIN32)
   enable_language(ASM_MASM)
+elseif(APPLE)
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+	nuttx_setconfig(HOST_ARM64=y)
+  endif()
 endif()
+
+message(STATUS " 3. -----------------------------   ${CONFIG_HOST_X86_64}")
+nuttx_setconfig(HOST_ARM64=y)
+nuttx_generate_headers()
+message(STATUS " 4. -----------------------------   ${CONFIG_HOST_X86_64}")
 
 # Setup platform options (this needs to happen after project(), once the
 # toolchain file has been processed)
