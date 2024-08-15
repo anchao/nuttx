@@ -54,26 +54,25 @@ struct riscv_mtimer_lowerhalf_s
  * Private Function Prototypes
  ****************************************************************************/
 
-static int riscv_mtimer_max_delay(struct oneshot_lowerhalf_s *lower,
-                                  struct timespec *ts);
-static int riscv_mtimer_start(struct oneshot_lowerhalf_s *lower,
+static int riscv_tick_max_delay(struct oneshot_lowerhalf_s *lower,
+                                  clock_t *ticks);
+static int riscv_tick_start(struct oneshot_lowerhalf_s *lower,
                               oneshot_callback_t callback, void *arg,
-                              const struct timespec *ts);
-static int riscv_mtimer_cancel(struct oneshot_lowerhalf_s *lower,
-                               struct timespec *ts);
-static int riscv_mtimer_current(struct oneshot_lowerhalf_s *lower,
-                                struct timespec *ts);
-
+                              clock_t ticks);
+static int riscv_tick_cancel(struct oneshot_lowerhalf_s *lower,
+                               clock_t *ticks);
+static int riscv_tick_current(struct oneshot_lowerhalf_s *lower,
+                                clock_t *ticks);
 /****************************************************************************
  * Private Data
  ****************************************************************************/
 
 static const struct oneshot_operations_s g_riscv_mtimer_ops =
 {
-  .max_delay = riscv_mtimer_max_delay,
-  .start     = riscv_mtimer_start,
-  .cancel    = riscv_mtimer_cancel,
-  .current   = riscv_mtimer_current,
+  .tick_start     = riscv_tick_start,
+  .tick_current   = riscv_tick_current,
+  .tick_max_delay = riscv_tick_max_delay,
+  .tick_cancel    = riscv_tick_cancel,
 };
 
 /****************************************************************************
@@ -159,7 +158,7 @@ static void riscv_mtimer_set_mtimecmp(struct riscv_mtimer_lowerhalf_s *priv,
 #endif
 
 /****************************************************************************
- * Name: riscv_mtimer_max_delay
+ * Name: riscv_tick_max_delay
  *
  * Description:
  *   Determine the maximum delay of the one-shot timer
@@ -168,7 +167,7 @@ static void riscv_mtimer_set_mtimecmp(struct riscv_mtimer_lowerhalf_s *priv,
  *   lower   An instance of the lower-half oneshot state structure.  This
  *           structure must have been previously initialized via a call to
  *           oneshot_initialize();
- *   ts      The location in which to return the maximum delay.
+ *   ticks   The location in which to return the maximum delay.
  *
  * Returned Value:
  *   Zero (OK) is returned on success; a negated errno value is returned
@@ -176,17 +175,18 @@ static void riscv_mtimer_set_mtimecmp(struct riscv_mtimer_lowerhalf_s *priv,
  *
  ****************************************************************************/
 
-static int riscv_mtimer_max_delay(struct oneshot_lowerhalf_s *lower,
-                                  struct timespec *ts)
+static int riscv_tick_max_delay(struct oneshot_lowerhalf_s *lower,
+                                  clock_t *ticks)
 {
-  ts->tv_sec  = UINT32_MAX;
-  ts->tv_nsec = NSEC_PER_SEC - 1;
+  DEBUGASSERT(ticks != NULL);
+
+  *ticks = (clock_t)UINT64_MAX;
 
   return 0;
 }
 
 /****************************************************************************
- * Name: riscv_mtimer_start
+ * Name: riscv_tick_start
  *
  * Description:
  *   Start the oneshot timer
@@ -197,7 +197,7 @@ static int riscv_mtimer_max_delay(struct oneshot_lowerhalf_s *lower,
  *           oneshot_initialize();
  *   handler The function to call when when the oneshot timer expires.
  *   arg     An opaque argument that will accompany the callback.
- *   ts      Provides the duration of the one shot timer.
+ *   ticks    Provides the duration of the one shot timer.
  *
  * Returned Value:
  *   Zero (OK) is returned on success; a negated errno value is returned
@@ -205,15 +205,14 @@ static int riscv_mtimer_max_delay(struct oneshot_lowerhalf_s *lower,
  *
  ****************************************************************************/
 
-static int riscv_mtimer_start(struct oneshot_lowerhalf_s *lower,
+static int riscv_tick_start(struct oneshot_lowerhalf_s *lower,
                               oneshot_callback_t callback, void *arg,
-                              const struct timespec *ts)
+                              clock_t ticks)
 {
   struct riscv_mtimer_lowerhalf_s *priv =
     (struct riscv_mtimer_lowerhalf_s *)lower;
   uint64_t mtime = riscv_mtimer_get_mtime(priv);
-  uint64_t alarm = mtime + ts->tv_sec * priv->freq +
-                   ts->tv_nsec * priv->freq / NSEC_PER_SEC;
+  uint64_t alarm = mtime + ticks * priv->freq / MSEC_PER_SEC;
 
   if (alarm < mtime)
     {
@@ -237,7 +236,7 @@ static int riscv_mtimer_start(struct oneshot_lowerhalf_s *lower,
 }
 
 /****************************************************************************
- * Name: riscv_mtimer_cancel
+ * Name: riscv_tick_cancel
  *
  * Description:
  *   Cancel the oneshot timer and return the time remaining on the timer.
@@ -249,9 +248,8 @@ static int riscv_mtimer_start(struct oneshot_lowerhalf_s *lower,
  *   lower   Caller allocated instance of the oneshot state structure.  This
  *           structure must have been previously initialized via a call to
  *           oneshot_initialize();
- *   ts      The location in which to return the time remaining on the
- *           oneshot timer.  A time of zero is returned if the timer is
- *           not running.
+ *   ticks   The location in which to return the time remaining on the
+ *           oneshot timer.
  *
  * Returned Value:
  *   Zero (OK) is returned on success.  A call to up_timer_cancel() when
@@ -260,13 +258,15 @@ static int riscv_mtimer_start(struct oneshot_lowerhalf_s *lower,
  *
  ****************************************************************************/
 
-static int riscv_mtimer_cancel(struct oneshot_lowerhalf_s *lower,
-                               struct timespec *ts)
+static int riscv_tick_cancel(struct oneshot_lowerhalf_s *lower,
+                               clock_t *ticks)
 {
   struct riscv_mtimer_lowerhalf_s *priv =
     (struct riscv_mtimer_lowerhalf_s *)lower;
   uint64_t mtime;
   uint64_t alarm = priv->alarm;
+
+  DEBUGASSERT(ticks != NULL);
 
   priv->alarm = UINT64_MAX;
   if (!up_interrupt_context())
@@ -277,14 +277,11 @@ static int riscv_mtimer_cancel(struct oneshot_lowerhalf_s *lower,
   mtime = riscv_mtimer_get_mtime(priv);
   if (alarm > mtime)
     {
-      uint64_t nsec = (alarm - mtime) * NSEC_PER_SEC / priv->freq;
-      ts->tv_sec  = nsec / NSEC_PER_SEC;
-      ts->tv_nsec = nsec % NSEC_PER_SEC;
+	  *ticks = (alarm - mtime) * MSEC_PER_SEC / priv->freq;
     }
   else
     {
-      ts->tv_sec  = 0;
-      ts->tv_nsec = 0;
+      *ticks = 0;
     }
 
   priv->alarm    = 0;
@@ -295,7 +292,7 @@ static int riscv_mtimer_cancel(struct oneshot_lowerhalf_s *lower,
 }
 
 /****************************************************************************
- * Name: riscv_mtimer_current
+ * Name: riscv_tick_current
  *
  * Description:
  *  Get the current time.
@@ -304,8 +301,7 @@ static int riscv_mtimer_cancel(struct oneshot_lowerhalf_s *lower,
  *   lower   Caller allocated instance of the oneshot state structure.  This
  *           structure must have been previously initialized via a call to
  *           oneshot_initialize();
- *   ts      The location in which to return the current time. A time of zero
- *           is returned for the initialization moment.
+ *   ticks   The location in which to return the current time.
  *
  * Returned Value:
  *   Zero (OK) is returned on success, a negated errno value is returned on
@@ -313,16 +309,15 @@ static int riscv_mtimer_cancel(struct oneshot_lowerhalf_s *lower,
  *
  ****************************************************************************/
 
-static int riscv_mtimer_current(struct oneshot_lowerhalf_s *lower,
-                                struct timespec *ts)
+static int riscv_tick_current(struct oneshot_lowerhalf_s *lower,
+                                clock_t *ticks)
 {
   struct riscv_mtimer_lowerhalf_s *priv =
     (struct riscv_mtimer_lowerhalf_s *)lower;
-  uint64_t mtime = riscv_mtimer_get_mtime(priv);
-  uint64_t nsec = mtime / (priv->freq / USEC_PER_SEC) * NSEC_PER_USEC;
 
-  ts->tv_sec  = nsec / NSEC_PER_SEC;
-  ts->tv_nsec = nsec % NSEC_PER_SEC;
+  DEBUGASSERT(ticks != NULL);
+
+  *ticks = riscv_mtimer_get_mtime(priv) / (priv->freq / MSEC_PER_SEC);
 
   return 0;
 }
