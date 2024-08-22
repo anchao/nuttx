@@ -212,7 +212,7 @@ static int riscv_tick_start(struct oneshot_lowerhalf_s *lower,
   struct riscv_mtimer_lowerhalf_s *priv =
     (struct riscv_mtimer_lowerhalf_s *)lower;
   uint64_t mtime = riscv_mtimer_get_mtime(priv);
-  uint64_t alarm = mtime + ticks * priv->freq / MSEC_PER_SEC;
+  uint64_t alarm = mtime + ticks * priv->freq / TICK_PER_SEC;
 
   if (alarm < mtime)
     {
@@ -277,7 +277,7 @@ static int riscv_tick_cancel(struct oneshot_lowerhalf_s *lower,
   mtime = riscv_mtimer_get_mtime(priv);
   if (alarm > mtime)
     {
-	  *ticks = (alarm - mtime) * MSEC_PER_SEC / priv->freq;
+      *ticks = (alarm - mtime) * TICK_PER_SEC / priv->freq;
     }
   else
     {
@@ -317,7 +317,7 @@ static int riscv_tick_current(struct oneshot_lowerhalf_s *lower,
 
   DEBUGASSERT(ticks != NULL);
 
-  *ticks = riscv_mtimer_get_mtime(priv) / (priv->freq / MSEC_PER_SEC);
+  *ticks = riscv_mtimer_get_mtime(priv) / (priv->freq / TICK_PER_SEC);
 
   return 0;
 }
