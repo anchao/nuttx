@@ -54,7 +54,7 @@ CSRCS += open-amp/lib/virtio/virtio.c
 CSRCS += open-amp/lib/virtio/virtqueue.c
 
 # Download and unpack tarball if no git repo found
-ifeq ($(wildcard open-amp/.git),)
+ifeq ($(wildcard open-amp),)
 open-amp.zip:
 	$(call DOWNLOAD,https://github.com/OpenAMP/open-amp/archive,$(OPENAMP_COMMIT).zip,open-amp.zip)
 	$(Q) unzip -o open-amp.zip
@@ -87,10 +87,6 @@ context:: .openamp_headers
 
 distclean::
 	$(call DELDIR, $(TOPDIR)$(DELIM)include$(DELIM)openamp$(DELIM))
-ifeq ($(wildcard open-amp/.git),)
-	$(call DELDIR, open-amp)
-	$(call DELFILE, open-amp.zip)
-endif
 	$(call DELFILE, .openamp_headers)
 
 endif
