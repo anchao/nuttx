@@ -87,10 +87,6 @@ context:: .openamp_headers
 
 distclean::
 	$(call DELDIR, $(TOPDIR)$(DELIM)include$(DELIM)openamp$(DELIM))
-ifeq ($(wildcard open-amp/.git),)
-	$(call DELDIR, open-amp)
-	$(call DELFILE, open-amp.zip)
-endif
 	$(call DELFILE, .openamp_headers)
 
 endif
