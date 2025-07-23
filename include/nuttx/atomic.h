@@ -235,30 +235,11 @@ int64_t nx_atomic_fetch_xor_8(FAR volatile void *ptr, int64_t value,
                               int memorder);
 
 #ifdef USE_ARCH_ATOMIC
-static inline int32_t atomic_fetch_add(FAR volatile void *obj, int32_t val)
-{
-  return nx_atomic_fetch_add_4(obj, val, __ATOMIC_ACQ_REL);
-}
-
-static inline int32_t atomic_fetch_sub(FAR volatile void *obj, int32_t val)
-{
-  return nx_atomic_fetch_sub_4(obj, val, __ATOMIC_ACQ_REL);
-}
-
-static inline int32_t atomic_fetch_and(FAR volatile void *obj, int32_t val)
-{
-  return nx_atomic_fetch_and_4(obj, val, __ATOMIC_ACQ_REL);
-}
-
-static inline int32_t atomic_fetch_or(FAR volatile void *obj, int32_t val)
-{
-  return nx_atomic_fetch_or_4(obj, val, __ATOMIC_ACQ_REL);
-}
-
-static inline int32_t atomic_fetch_xor(FAR volatile void *obj, int32_t val)
-{
-  return nx_atomic_fetch_xor_4(obj, val, __ATOMIC_ACQ_REL);
-}
+#  define atomic_fetch_add(p, v) nx_atomic_fetch_add_4(p, v, __ATOMIC_ACQ_REL)
+#  define atomic_fetch_sub(p, v) nx_atomic_fetch_sub_4(p, v, __ATOMIC_ACQ_REL)
+#  define atomic_fetch_and(p, v) nx_atomic_fetch_and_4(p, v, __ATOMIC_ACQ_REL)
+#  define atomic_fetch_or(p, v)  nx_atomic_fetch_or_4(p, v, __ATOMIC_ACQ_REL)
+#  define atomic_fetch_xor(p, v) nx_atomic_fetch_xor_4(p, v, __ATOMIC_ACQ_REL)
 #endif
 
 #undef EXTERN
