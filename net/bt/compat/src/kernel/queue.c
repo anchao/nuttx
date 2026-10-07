@@ -1,19 +1,121 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 #include <zephyr/kernel.h>
 #include <errno.h>
-#include <sched.h>
+#include <nuttx/sched.h>
+
+static void *k_fifo_remove_locked(struct k_fifo *fifo)
+{
+    return list_remove_head(&fifo->data_q);
+}
+
+static void k_poll_register_fifo_events(struct k_poll_event *events,
+                                        int num_events)
+{
+    int i;
+
+    for (i = 0; i < num_events; i++)
+        {
+            if (events[i].type == K_POLL_TYPE_FIFO_DATA_AVAILABLE &&
+                events[i].fifo != NULL)
+                {
+                    irqstate_t flags;
+
+                    flags = spin_lock_irqsave(&events[i].fifo->lock);
+                    events[i].fifo->poll_waiters++;
+                    spin_unlock_irqrestore(&events[i].fifo->lock, flags);
+                }
+        }
+}
+
+static void k_poll_unregister_fifo_events(struct k_poll_event *events,
+                                          int num_events)
+{
+    int i;
+
+    for (i = 0; i < num_events; i++)
+        {
+            if (events[i].type == K_POLL_TYPE_FIFO_DATA_AVAILABLE &&
+                events[i].fifo != NULL)
+                {
+                    irqstate_t flags;
+
+                    flags = spin_lock_irqsave(&events[i].fifo->lock);
+                    if (events[i].fifo->poll_waiters > 0)
+                        {
+                            events[i].fifo->poll_waiters--;
+                        }
+
+                    spin_unlock_irqrestore(&events[i].fifo->lock, flags);
+                }
+        }
+}
+
+static int k_poll_check_fifo_events(struct k_poll_event *events,
+                                    int num_events)
+{
+    int i;
+
+    for (i = 0; i < num_events; i++)
+        {
+            events[i].state = K_POLL_STATE_NOT_READY;
+
+            if (events[i].type == K_POLL_TYPE_FIFO_DATA_AVAILABLE &&
+                events[i].fifo != NULL)
+                {
+                    irqstate_t flags;
+                    bool ready;
+
+                    flags = spin_lock_irqsave(&events[i].fifo->lock);
+                    if (events[i].fifo->poll_cancel_waiters > 0)
+                        {
+                            events[i].fifo->poll_cancel_waiters--;
+                            events[i].state = K_POLL_STATE_CANCELLED;
+                            spin_unlock_irqrestore(&events[i].fifo->lock,
+                                                   flags);
+                            return 0;
+                        }
+
+                    ready = !list_is_empty(&events[i].fifo->data_q);
+                    spin_unlock_irqrestore(&events[i].fifo->lock, flags);
+
+                    if (ready)
+                        {
+                            events[i].state = K_POLL_STATE_FIFO_DATA_AVAILABLE;
+                            return 0;
+                        }
+                }
+        }
+
+    return -EAGAIN;
+}
 
 void k_fifo_init(struct k_fifo *fifo)
 {
     list_initialize(&fifo->data_q);
+    nxsem_init(&fifo->sem, 0, 0);
     fifo->lock = SP_UNLOCKED;
+    fifo->waiters = 0;
+    fifo->poll_waiters = 0;
+    fifo->cancel_waiters = 0;
+    fifo->poll_cancel_waiters = 0;
 }
 
 void k_fifo_cancel_wait(struct k_fifo *fifo)
 {
-    spin_lock_irqsave(&fifo->lock);
-    /* Wake all waiters - simplified for single-core */
-    spin_unlock_irqrestore(&fifo->lock, SP_UNLOCKED);
+    irqstate_t flags;
+    unsigned int waiters;
+    unsigned int i;
+
+    flags = spin_lock_irqsave(&fifo->lock);
+    waiters = fifo->waiters;
+    fifo->cancel_waiters += waiters;
+    fifo->poll_cancel_waiters += fifo->poll_waiters;
+    spin_unlock_irqrestore(&fifo->lock, flags);
+
+    for (i = 0; i < waiters; i++)
+        {
+            nxsem_post(&fifo->sem);
+        }
 }
 
 void k_fifo_put(struct k_fifo *fifo, void *data)
@@ -21,51 +123,81 @@ void k_fifo_put(struct k_fifo *fifo, void *data)
     irqstate_t flags = spin_lock_irqsave(&fifo->lock);
     list_add_tail(&fifo->data_q, (struct list_node *)data);
     spin_unlock_irqrestore(&fifo->lock, flags);
+    nxsem_post(&fifo->sem);
 }
 
 void *k_fifo_get(struct k_fifo *fifo, clock_t timeout)
 {
     irqstate_t flags;
     struct list_node *node;
+    clock_t deadline = 0;
+    int ret;
 
-    if (((timeout) == (0)))
+    if (timeout > 0)
+        {
+            deadline = clock_systime_ticks() + timeout;
+        }
+
+    while (1)
         {
             flags = spin_lock_irqsave(&fifo->lock);
-            node = list_remove_head(&fifo->data_q);
+            node = k_fifo_remove_locked(fifo);
             spin_unlock_irqrestore(&fifo->lock, flags);
-            return node;
-        }
 
-    /* Blocking wait - spin then poll with delay */
-    if (((timeout) == (((clock_t)-1))))
-        {
-            while (1)
+            if (node != NULL)
                 {
-                    flags = spin_lock_irqsave(&fifo->lock);
-                    node = list_remove_head(&fifo->data_q);
+                    (void)nxsem_trywait(&fifo->sem);
+                    return node;
+                }
+
+            if (timeout == 0)
+                {
+                    return NULL;
+                }
+
+            flags = spin_lock_irqsave(&fifo->lock);
+            fifo->waiters++;
+            spin_unlock_irqrestore(&fifo->lock, flags);
+
+            if (timeout < 0)
+                {
+                    ret = nxsem_wait_uninterruptible(&fifo->sem);
+                }
+            else
+                {
+                    clock_t now = clock_systime_ticks();
+
+                    if ((clock_t)(deadline - now) <= 0)
+                        {
+                            ret = -ETIMEDOUT;
+                        }
+                    else
+                        {
+                            ret = nxsem_tickwait_uninterruptible(&fifo->sem,
+                                                                 deadline - now);
+                        }
+                }
+
+            flags = spin_lock_irqsave(&fifo->lock);
+            if (fifo->waiters > 0)
+                {
+                    fifo->waiters--;
+                }
+
+            if (ret >= 0 && fifo->cancel_waiters > 0)
+                {
+                    fifo->cancel_waiters--;
                     spin_unlock_irqrestore(&fifo->lock, flags);
-                    if (node)
-                        return node;
-                    /* Yield to allow producer */
-                    sched_yield();
+                    return NULL;
+                }
+
+            spin_unlock_irqrestore(&fifo->lock, flags);
+
+            if (ret < 0)
+                {
+                    return NULL;
                 }
         }
-
-    /* Timed wait */
-    {
-        clock_t deadline = clock_systime_ticks() + timeout;
-        while (clock_systime_ticks() < deadline)
-            {
-                flags = spin_lock_irqsave(&fifo->lock);
-                node = list_remove_head(&fifo->data_q);
-                spin_unlock_irqrestore(&fifo->lock, flags);
-                if (node)
-                    return node;
-                sched_yield();
-            }
-    }
-
-    return NULL;
 }
 
 bool k_fifo_is_empty(struct k_fifo *fifo)
@@ -89,6 +221,7 @@ void z_k_queue_prepend_fifo(struct k_fifo *fifo, void *data)
     irqstate_t flags = spin_lock_irqsave(&fifo->lock);
     list_add_head(&fifo->data_q, (struct list_node *)data);
     spin_unlock_irqrestore(&fifo->lock, flags);
+    nxsem_post(&fifo->sem);
 }
 
 bool z_k_queue_remove_fifo(struct k_fifo *fifo, void *data)
@@ -101,53 +234,51 @@ bool z_k_queue_remove_fifo(struct k_fifo *fifo, void *data)
                                          (struct list_node *)data);
     spin_unlock_irqrestore(&fifo->lock, flags);
 
+    if (removed)
+        {
+            (void)nxsem_trywait(&fifo->sem);
+        }
+
     return removed;
 }
 
 int k_poll(struct k_poll_event *events, int num_events, clock_t timeout)
 {
     clock_t deadline = 0;
-    int i;
+    int ret;
 
-    if (!((timeout) == (0)) &&
-        !((timeout) == (((clock_t)-1))))
+    ret = k_poll_check_fifo_events(events, num_events);
+    if (ret == 0 || timeout == 0)
+        {
+            return ret;
+        }
+
+    if (timeout > 0)
         {
             deadline = clock_systime_ticks() + timeout;
         }
 
+    k_poll_register_fifo_events(events, num_events);
+
     while (1)
         {
-            for (i = 0; i < num_events; i++)
+            ret = k_poll_check_fifo_events(events, num_events);
+            if (ret == 0)
                 {
-                    events[i].state = K_POLL_STATE_NOT_READY;
-
-                    switch (events[i].type)
-                        {
-                        case K_POLL_TYPE_FIFO_DATA_AVAILABLE:
-                            if (events[i].fifo != NULL &&
-                                k_fifo_peek_head(events[i].fifo) != NULL)
-                                {
-                                    events[i].state = K_POLL_STATE_FIFO_DATA_AVAILABLE;
-                                    return 0;
-                                }
-                            break;
-
-                        default:
-                            break;
-                        }
+                    break;
                 }
 
-            if (((timeout) == (0)))
-                {
-                    return -EAGAIN;
-                }
-
-            if (!((timeout) == (((clock_t)-1))) &&
+            if (timeout > 0 &&
                 (clock_t)clock_systime_ticks() >= deadline)
                 {
-                    return -EAGAIN;
+                    ret = -EAGAIN;
+                    break;
                 }
 
-            sched_yield();
+            nxsched_msleep(1);
         }
+
+    k_poll_unregister_fifo_events(events, num_events);
+
+    return ret;
 }

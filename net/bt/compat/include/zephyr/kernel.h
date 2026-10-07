@@ -30,7 +30,12 @@ extern "C" {
 /* ===== FIFO / Queue ===== */
 struct k_fifo {
     struct list_node data_q;
+    sem_t sem;
     spinlock_t lock;  /* Use raw spinlock for ISR safety */
+    unsigned int waiters;
+    unsigned int poll_waiters;
+    unsigned int cancel_waiters;
+    unsigned int poll_cancel_waiters;
 };
 
 void k_fifo_init(struct k_fifo *fifo);
@@ -53,6 +58,7 @@ bool z_k_queue_remove_fifo(struct k_fifo *fifo, void *data);
 #define K_FIFO_DEFINE(name) \
     struct k_fifo name = { \
         .data_q = LIST_INITIAL_VALUE(name.data_q), \
+        .sem = SEM_INITIALIZER(0), \
     }
 
 /* ===== Thread ===== */
