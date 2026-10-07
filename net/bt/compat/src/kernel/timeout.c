@@ -1,23 +1,71 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-#include <nuttx/wdog.h>
+#include <errno.h>
 #include <nuttx/clock.h>
 #include <nuttx/sched.h>
+#include <sched.h>
+#include <string.h>
 #include <zephyr/kernel.h>
 
 /* Global system work queue - uses NuttX HP work queue */
-struct k_work_q k_sys_work_q;
+struct k_work_q k_sys_work_q = { .qid = HPWORK };
 
-/* Timer callback wrapper for delayed work */
-static void work_timeout_callback(wdparm_t arg)
+static int k_work_queue_native(struct k_work_q *queue,
+                               struct work_s *work,
+                               worker_t worker, void *arg,
+                               clock_t delay)
 {
-    struct k_work_delayable *dwork = (struct k_work_delayable *)arg;
-    dwork->work.handler(&dwork->work);
+    if (queue != NULL && queue->wqueue != NULL)
+        {
+            return work_queue_wq(queue->wqueue, work, worker, arg, delay);
+        }
+
+    return work_queue(queue != NULL ? queue->qid : HPWORK,
+                      work, worker, arg, delay);
+}
+
+static int k_work_cancel_native(struct k_work *work, bool sync)
+{
+    struct k_work_q *queue = work->queue;
+    int ret;
+
+    if (queue != NULL && queue->wqueue != NULL)
+        {
+            ret = sync ? work_cancel_sync_wq(queue->wqueue, &work->work) :
+                         work_cancel_wq(queue->wqueue, &work->work);
+        }
+    else
+        {
+            ret = sync ? work_cancel_sync(queue != NULL ? queue->qid : HPWORK,
+                                          &work->work) :
+                         work_cancel(queue != NULL ? queue->qid : HPWORK,
+                                     &work->work);
+        }
+
+    if (ret == 0)
+        {
+            work->flags &= ~(K_WORK_QUEUED | K_WORK_DELAYED);
+        }
+
+    return ret;
+}
+
+static void k_work_handler_wrapper(void *arg)
+{
+    struct k_work *work = arg;
+
+    work->flags &= ~(K_WORK_QUEUED | K_WORK_DELAYED);
+    work->flags |= K_WORK_RUNNING;
+
+    work->handler(work);
+
+    work->flags &= ~K_WORK_RUNNING;
 }
 
 void k_work_init(struct k_work *work, k_work_handler_t handler)
 {
     memset(work, 0, sizeof(*work));
     work->handler = handler;
+    work->queue = &k_sys_work_q;
 }
 
 void k_work_init_delayable(struct k_work_delayable *dwork, k_work_handler_t handler)
@@ -28,97 +76,128 @@ void k_work_init_delayable(struct k_work_delayable *dwork, k_work_handler_t hand
 
 int k_work_submit(struct k_work *work)
 {
-    return work_queue(HPWORK, &work->work, (worker_t)work->handler, work, 0);
+    return k_work_submit_to_queue(&k_sys_work_q, work);
 }
 
 int k_work_submit_to_queue(struct k_work_q *queue, struct k_work *work)
 {
-    return work_queue(HPWORK, &work->work, (worker_t)work->handler, work, 0);
+    int ret;
+
+    work->queue = queue != NULL ? queue : &k_sys_work_q;
+    work->flags |= K_WORK_QUEUED;
+    work->flags &= ~K_WORK_DELAYED;
+
+    ret = k_work_queue_native(work->queue, &work->work,
+                              k_work_handler_wrapper, work, 0);
+    if (ret < 0)
+        {
+            work->flags &= ~K_WORK_QUEUED;
+        }
+
+    return ret;
 }
 
 int k_work_schedule(struct k_work_delayable *dwork, clock_t delay)
 {
-    if (dwork->queue == NULL)
+    if ((dwork->work.flags & (K_WORK_QUEUED | K_WORK_DELAYED)) != 0)
         {
-            dwork->queue = &k_sys_work_q;
+            return 0;
         }
 
-    if (((delay) == (0)))
-        {
-            return k_work_submit(&dwork->work);
-        }
-
-    if (((delay) == (((clock_t)-1))))
-        return 0;
-
-    wd_start(&dwork->wdog, delay, work_timeout_callback, (wdparm_t)dwork);
-    return 0;
+    return k_work_reschedule(dwork, delay);
 }
 
 int k_work_schedule_for_queue(struct k_work_q *queue,
                               struct k_work_delayable *dwork,
                               clock_t delay)
 {
-    dwork->queue = queue;
+    dwork->work.queue = queue != NULL ? queue : &k_sys_work_q;
+
     return k_work_schedule(dwork, delay);
 }
 
 int k_work_cancel_delayable(struct k_work_delayable *dwork)
 {
-    return wd_cancel(&dwork->wdog);
+    return k_work_cancel_native(&dwork->work, false);
 }
 
 int k_work_cancel_delayable_sync(struct k_work_delayable *dwork,
                                  struct k_work_sync *sync)
 {
     (void)sync;
-    return k_work_cancel_delayable(dwork);
+    return k_work_cancel_native(&dwork->work, true);
 }
 
 int k_work_reschedule(struct k_work_delayable *dwork, clock_t delay)
 {
-    wd_cancel(&dwork->wdog);
-    return k_work_schedule(dwork, delay);
+    int ret;
+
+    (void)k_work_cancel_delayable(dwork);
+
+    if (dwork->work.queue == NULL)
+        {
+            dwork->work.queue = &k_sys_work_q;
+        }
+
+    if (delay < 0)
+        {
+            dwork->work.flags &= ~(K_WORK_QUEUED | K_WORK_DELAYED);
+            return 0;
+        }
+
+    dwork->work.flags |= delay > 0 ? K_WORK_DELAYED : K_WORK_QUEUED;
+    dwork->work.flags &= delay > 0 ? ~K_WORK_QUEUED : ~K_WORK_DELAYED;
+
+    ret = k_work_queue_native(dwork->work.queue, &dwork->work.work,
+                              k_work_handler_wrapper, &dwork->work, delay);
+    if (ret < 0)
+        {
+            dwork->work.flags &= ~(K_WORK_QUEUED | K_WORK_DELAYED);
+        }
+
+    return ret;
 }
 
 int k_work_reschedule_for_queue(struct k_work_q *queue,
                                 struct k_work_delayable *dwork,
                                 clock_t delay)
 {
-    (void)queue;
+    dwork->work.queue = queue != NULL ? queue : &k_sys_work_q;
+
     return k_work_reschedule(dwork, delay);
 }
 
 bool k_work_is_pending(const struct k_work *work)
 {
-    /* Simply check if work is queued */
-    return false;
+    return (work->flags & (K_WORK_QUEUED | K_WORK_DELAYED)) != 0;
 }
 
 int k_work_busy_get(const struct k_work *work)
 {
-    (void)work;
-    return 0;
+    return work->flags;
 }
 
 int k_work_flush(struct k_work *work, struct k_work_sync *sync)
 {
-    (void)work;
     (void)sync;
+
+    while (k_work_busy_get(work) != 0)
+        {
+            sched_yield();
+        }
+
     return 0;
 }
 
 int k_work_cancel(struct k_work *work)
 {
-    (void)work;
-    return -EALREADY;
+    return k_work_cancel_native(work, false);
 }
 
 int k_work_cancel_sync(struct k_work *work, struct k_work_sync *sync)
 {
-    (void)work;
     (void)sync;
-    return -EALREADY;
+    return k_work_cancel_native(work, true);
 }
 
 struct k_work_delayable *k_work_delayable_from_work(struct k_work *work)
@@ -128,19 +207,26 @@ struct k_work_delayable *k_work_delayable_from_work(struct k_work *work)
 
 int k_work_delayable_busy_get(const struct k_work_delayable *dwork)
 {
-    (void)dwork;
-    return 0;
+    return k_work_busy_get(&dwork->work);
 }
 
 clock_t k_work_delayable_remaining_get(const struct k_work_delayable *dwork)
 {
-    (void)dwork;
-    return 0;
+    clock_t remaining;
+
+    if ((dwork->work.flags & K_WORK_DELAYED) == 0)
+        {
+            return 0;
+        }
+
+    remaining = work_timeleft(&dwork->work.work);
+
+    return remaining > 0 ? remaining : 0;
 }
 
 struct k_thread *k_work_queue_thread_get(struct k_work_q *queue)
 {
-    return queue ? queue->thread_id : NULL;
+    return queue != NULL ? queue->thread_id : NULL;
 }
 
 void k_work_queue_init(struct k_work_q *queue)
@@ -148,6 +234,7 @@ void k_work_queue_init(struct k_work_q *queue)
     if (queue != NULL)
         {
             memset(queue, 0, sizeof(*queue));
+            queue->qid = HPWORK;
         }
 }
 
@@ -155,11 +242,18 @@ int k_work_queue_start(struct k_work_q *queue, char *stack,
                        size_t stack_size, int prio,
                        const struct k_work_queue_config *cfg)
 {
-    (void)queue;
-    (void)stack;
-    (void)stack_size;
-    (void)prio;
-    (void)cfg;
+    if (queue == NULL)
+        {
+            return -EINVAL;
+        }
+
+    queue->wqueue = work_queue_create(cfg != NULL ? cfg->name : NULL,
+                                      prio, stack, stack_size, 1);
+    if (queue->wqueue == NULL)
+        {
+            return -ENOMEM;
+        }
+
     return 0;
 }
 

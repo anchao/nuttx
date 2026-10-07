@@ -103,24 +103,32 @@ int k_thread_name_set(k_tid_t thread, const char *name);
 struct k_thread *k_current_get(void);
 
 /* ===== Work Queue ===== */
+/* Work flags for k_work */
+#define K_WORK_QUEUED    BIT(0)
+#define K_WORK_DELAYED   BIT(1)
+#define K_WORK_RUNNING   BIT(2)
+
 struct k_work {
     struct work_s work;
     void (*handler)(struct k_work *work);
+    struct k_work_q *queue;
+    uint32_t flags;
 };
 
 struct k_work_delayable {
     struct k_work work;
-    struct wdog_s wdog;
-    struct k_work_q *queue;
 };
 
 struct k_work_q {
-    struct work_s queue;
+    FAR struct kwork_wqueue_s *wqueue;
+    int qid;
     k_tid_t thread_id;
 };
 
 struct k_work_queue_config {
     const char *name;
+    bool no_yield;
+    bool essential;
 };
 
 /* Work queue synchronization */
@@ -141,11 +149,6 @@ typedef void (*k_work_handler_t)(struct k_work *work);
 
 #define K_WORK_DELAYABLE_DEFINE(dwork, work_handler) \
     struct k_work_delayable dwork = { .work = { .handler = (work_handler) } }
-
-/* Work flags for k_work */
-#define K_WORK_QUEUED    BIT(0)
-#define K_WORK_DELAYED   BIT(1)
-#define K_WORK_RUNNING   BIT(2)
 
 void k_work_init(struct k_work *work, k_work_handler_t handler);
 void k_work_init_delayable(struct k_work_delayable *dwork, k_work_handler_t handler);
