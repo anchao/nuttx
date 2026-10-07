@@ -1,0 +1,31 @@
+############################################################################
+# net/bt/common/Make.defs
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+############################################################################
+
+ifeq ($(CONFIG_BT),y)
+
+BT_CSRCS += bt/common/addr.c
+BT_CSRCS += bt/common/dummy.c
+BT_CSRCS += bt/common/bt_str.c
+BT_CSRCS += bt/common/hci_pkt.c
+BT_CSRCS += bt/common/hci_lockstep.c
+
+ifeq ($(CONFIG_BT_HCI_SET_PUBLIC_ADDR),y)
+BT_CSRCS += bt/common/hci_public_addr.c
+endif
+
+ifeq ($(CONFIG_BT_RPA),y)
+BT_CSRCS += bt/common/rpa.c
+endif
+
+ifeq ($(CONFIG_BT_PRIVATE_SHELL),y)
+BT_CSRCS += bt/common/bt_shell_private.c
+endif
+
+VPATH += bt/common
+DEPPATH += --dep-path bt/common
+
+endif
