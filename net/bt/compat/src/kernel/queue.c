@@ -143,7 +143,8 @@ int k_poll(struct k_poll_event *events, int num_events, k_timeout_t timeout)
 
                         case K_POLL_TYPE_SEM_AVAILABLE:
                             if (events[i].sem != NULL &&
-                                k_sem_count_get(events[i].sem) > 0)
+                                ({ int sem_count; nxsem_get_value(events[i].sem,
+                                     &sem_count) == 0 && sem_count > 0; }))
                                 {
                                     events[i].state = K_POLL_STATE_SEM_AVAILABLE;
                                     return 0;

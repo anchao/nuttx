@@ -187,7 +187,7 @@ struct cmd_data {
 	struct bt_hci_cmd_state_set *state;
 
 	/** Used by bt_hci_cmd_send_sync. */
-	struct k_sem *sync;
+	sem_t *sync;
 };
 
 static struct cmd_data cmd_data[BT_BUF_CMD_TX_COUNT];
@@ -419,7 +419,7 @@ static void hci_cmd_queue_purge(void)
 
 		if (cmd(buf)->sync != NULL) {
 			cmd(buf)->status = BT_HCI_ERR_UNSPECIFIED;
-			k_sem_give(cmd(buf)->sync);
+			nxsem_post(cmd(buf)->sync);
 		}
 
 		net_buf_unref(buf);
@@ -496,7 +496,7 @@ static bool process_pending_cmd(k_timeout_t timeout);
 int bt_hci_cmd_send_sync(uint16_t opcode, struct net_buf *buf,
 			 struct net_buf **rsp)
 {
-	struct k_sem sync_sem;
+	sem_t sync_sem;
 	uint8_t status;
 	int err;
 
@@ -519,7 +519,7 @@ int bt_hci_cmd_send_sync(uint16_t opcode, struct net_buf *buf,
 	 * command is processed by the LL. It is given (and we are awaken) by
 	 * the cmd_complete/status handlers.
 	 */
-	k_sem_init(&sync_sem, 0, 1);
+	nxsem_init(&sync_sem, 0, 0);
 	cmd(buf)->sync = &sync_sem;
 
 	err = bt_hci_cmd_send(opcode, net_buf_ref(buf));
@@ -568,7 +568,7 @@ int bt_hci_cmd_send_sync(uint16_t opcode, struct net_buf *buf,
 	}
 
 	/* Now that we have sent the command, suspend until the LL replies */
-	err = k_sem_take(&sync_sem, HCI_CMD_TIMEOUT);
+	err = nxsem_tickwait(&sync_sem, HCI_CMD_TIMEOUT.ticks);
 	BT_ASSERT_MSG(err == 0,
 		      "Controller unresponsive, command opcode 0x%04x timeout with err %d",
 		      opcode, err);
@@ -739,7 +739,7 @@ static void hci_num_completed_packets(struct net_buf *buf)
 				break;
 			}
 
-			k_sem_give(bt_conn_get_pkts(conn));
+			nxsem_post(bt_conn_get_pkts(conn));
 
 			/* The `complete` list is consumed from another context,
 			 * which uses the same lock.
@@ -2730,7 +2730,7 @@ static void hci_cmd_done(uint16_t opcode, uint8_t status, struct net_buf *evt_bu
 	if (cmd(buf)->sync) {
 		LOG_DBG("sync cmd released");
 		cmd(buf)->status = status;
-		k_sem_give(cmd(buf)->sync);
+		nxsem_post(cmd(buf)->sync);
 	}
 
 exit:
@@ -2772,7 +2772,7 @@ static void hci_cmd_complete(struct net_buf *buf)
 
 	/* Allow next command to be sent */
 	if (rsp.ncmd != 0) {
-		k_sem_give(&bt_dev.ncmd_sem);
+		nxsem_post(&bt_dev.ncmd_sem);
 		bt_tx_irq_raise();
 	}
 }
@@ -2798,7 +2798,7 @@ static void hci_cmd_status(struct net_buf *buf)
 
 	/* Allow next command to be sent */
 	if (rsp.ncmd != 0) {
-		k_sem_give(&bt_dev.ncmd_sem);
+		nxsem_post(&bt_dev.ncmd_sem);
 		bt_tx_irq_raise();
 	}
 }
@@ -3437,7 +3437,7 @@ static void hci_core_send_cmd(void)
 	err = bt_send(buf);
 	if (err) {
 		LOG_ERR("Unable to send to driver (err %d)", err);
-		k_sem_give(&bt_dev.ncmd_sem);
+		nxsem_post(&bt_dev.ncmd_sem);
 		hci_cmd_done(cmd(buf)->opcode, BT_HCI_ERR_UNSPECIFIED, buf);
 		net_buf_unref(buf);
 		bt_tx_irq_raise();
@@ -3541,7 +3541,7 @@ static void read_buffer_size_complete(struct net_buf *buf)
 
 	LOG_DBG("ACL BR/EDR buffers: pkts %u mtu %u", pkts, bt_dev.le.acl_mtu);
 
-	k_sem_init(&bt_dev.le.acl_pkts, pkts, pkts);
+	nxsem_init(&bt_dev.le.acl_pkts, 0, pkts);
 }
 #endif /* !defined(CONFIG_BT_CLASSIC) */
 #endif /* CONFIG_BT_CONN */
@@ -3565,7 +3565,7 @@ static void le_read_buffer_size_complete(struct net_buf *buf)
 
 	CHECK_NUM_OF_ACL_PKTS(rp->le_max_num);
 
-	k_sem_init(&bt_dev.le.acl_pkts, rp->le_max_num, rp->le_max_num);
+	nxsem_init(&bt_dev.le.acl_pkts, 0, rp->le_max_num);
 #endif /* CONFIG_BT_CONN */
 }
 
@@ -3583,7 +3583,7 @@ static void read_buffer_size_v2_complete(struct net_buf *buf)
 		bt_dev.le.acl_mtu = acl_mtu;
 		LOG_DBG("ACL LE buffers: pkts %u mtu %u", rp->acl_max_num, bt_dev.le.acl_mtu);
 
-		k_sem_init(&bt_dev.le.acl_pkts, rp->acl_max_num, rp->acl_max_num);
+		nxsem_init(&bt_dev.le.acl_pkts, 0, rp->acl_max_num);
 
 		CHECK_NUM_OF_ACL_PKTS(rp->acl_max_num);
 	}
@@ -3600,7 +3600,7 @@ static void read_buffer_size_v2_complete(struct net_buf *buf)
 
 	LOG_DBG("ISO buffers: pkts %u mtu %u", rp->iso_max_num, bt_dev.le.iso_mtu);
 
-	k_sem_init(&bt_dev.le.iso_pkts, rp->iso_max_num, rp->iso_max_num);
+	nxsem_init(&bt_dev.le.iso_pkts, 0, rp->iso_max_num);
 	bt_dev.le.iso_limit = rp->iso_max_num;
 
 	CHECK_NUM_OF_ISO_PKTS(rp->iso_max_num);
@@ -4944,9 +4944,9 @@ int bt_enable(bt_ready_cb_t cb)
 	 * initial Command Complete for NOP.
 	 */
 	if (!IS_ENABLED(CONFIG_BT_WAIT_NOP)) {
-		k_sem_init(&bt_dev.ncmd_sem, 1, 1);
+		nxsem_init(&bt_dev.ncmd_sem, 0, 1);
 	} else {
-		k_sem_init(&bt_dev.ncmd_sem, 0, 1);
+		nxsem_init(&bt_dev.ncmd_sem, 0, 0);
 	}
 	k_fifo_init(&bt_dev.cmd_tx_queue);
 
@@ -5420,7 +5420,7 @@ static bool process_pending_cmd(k_timeout_t timeout)
 	}
 
 	if (!k_fifo_is_empty(&bt_dev.cmd_tx_queue)) {
-		if (k_sem_take(&bt_dev.ncmd_sem, timeout) == 0) {
+		if (nxsem_tickwait(&bt_dev.ncmd_sem, timeout.ticks) == 0) {
 			hci_core_send_cmd();
 			return true;
 		}

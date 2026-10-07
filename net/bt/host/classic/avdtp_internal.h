@@ -268,7 +268,7 @@ struct bt_avdtp {
 	struct k_work_delayable timeout_work;
 	struct k_work _release_work;
 	/* semaphore for lock/unlock */
-	struct k_sem sem_lock;
+	sem_t sem_lock;
 	struct net_buf *reasm_buf;
 	uint8_t num_of_signal_pkts;
 	uint8_t tid_sent;

@@ -892,7 +892,7 @@ static void read_buffer_size_complete(struct net_buf *buf)
 
 	LOG_DBG("ACL BR/EDR buffers: pkts %u mtu %u", pkts, bt_dev.br.mtu);
 
-	k_sem_init(&bt_dev.br.pkts, pkts, pkts);
+	nxsem_init(&bt_dev.br.pkts, 0, pkts);
 }
 
 int bt_br_init(void)

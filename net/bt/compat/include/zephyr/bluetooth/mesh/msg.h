@@ -170,7 +170,7 @@ void bt_mesh_model_msg_init(struct net_buf_simple *msg, uint32_t opcode);
  * Acknowledged message context for tracking the status of model messages pending a response.
  */
 struct bt_mesh_msg_ack_ctx {
-	struct k_sem          sem;       /**< Sync semaphore. */
+	sem_t          sem;       /**< Sync semaphore. */
 	uint32_t              op;        /**< Opcode we're waiting for. */
 	uint16_t              dst;       /**< Address of the node that should respond. */
 	void                 *user_data; /**< User specific parameter. */
@@ -185,7 +185,7 @@ struct bt_mesh_msg_ack_ctx {
  */
 static inline void bt_mesh_msg_ack_ctx_init(struct bt_mesh_msg_ack_ctx *ack)
 {
-	k_sem_init(&ack->sem, 0, 1);
+	nxsem_init(&ack->sem, 0, 0);
 }
 
 /** @brief Reset the synchronization semaphore in an acknowledged message context.
@@ -196,7 +196,7 @@ static inline void bt_mesh_msg_ack_ctx_init(struct bt_mesh_msg_ack_ctx *ack)
  */
 static inline void bt_mesh_msg_ack_ctx_reset(struct bt_mesh_msg_ack_ctx *ack)
 {
-	k_sem_reset(&ack->sem);
+	nxsem_reset(&ack->sem, 0);
 }
 
 /** @brief Clear parameters of an acknowledged message context.
@@ -254,7 +254,7 @@ int bt_mesh_msg_ack_ctx_wait(struct bt_mesh_msg_ack_ctx *ack, k_timeout_t timeou
  */
 static inline void bt_mesh_msg_ack_ctx_rx(struct bt_mesh_msg_ack_ctx *ack)
 {
-	k_sem_give(&ack->sem);
+	nxsem_post(&ack->sem);
 }
 
 /** @brief Check if an opcode and address of a message matches the expected one.

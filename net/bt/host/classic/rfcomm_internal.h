@@ -27,7 +27,7 @@ struct bt_rfcomm_session {
 	/* Retry timeout expired timer */
 	struct k_work_delayable retry_timeout_work;
 	/* Binary sem for aggregate fc */
-	struct k_sem fc;
+	sem_t fc;
 	/* DLC list */
 	struct list_node dlcs;
 	uint16_t mtu;

@@ -638,7 +638,7 @@ int bt_conn_init(void);
 void bt_conn_cleanup_all(void);
 
 /* Selects based on connection type right semaphore for ACL packets */
-struct k_sem *bt_conn_get_pkts(struct bt_conn *conn);
+sem_t *bt_conn_get_pkts(struct bt_conn *conn);
 
 void bt_conn_tx_processor(void);
 

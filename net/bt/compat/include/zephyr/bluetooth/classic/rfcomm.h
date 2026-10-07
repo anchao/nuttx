@@ -169,7 +169,7 @@ struct bt_rfcomm_dlc {
 	 *  is not negotiated it is used as a binary semaphore to serialize
 	 *  transmissions under aggregate (MSC) flow control.
 	 */
-	struct k_sem tx_credits;
+	sem_t tx_credits;
 
 	/** Worker for RFCOMM TX.
 	 *

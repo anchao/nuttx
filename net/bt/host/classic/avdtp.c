@@ -64,7 +64,7 @@ static struct list_node seps;
 
 #define AVDTP_TIMEOUT K_SECONDS(6)
 
-K_SEM_DEFINE(avdtp_sem_lock, 1U, 1U);
+sem_t avdtp_sem_lock = NXSEM_INITIALIZER(1U, 0);
 
 struct avdtp_buf_user_data {
 	struct bt_avdtp *session;
@@ -110,25 +110,25 @@ static uint8_t avdtp_get_tid(struct bt_avdtp *session)
 
 static void avdtp_lock(struct bt_avdtp *session)
 {
-	k_sem_take(&session->sem_lock, K_FOREVER);
+	nxsem_wait_uninterruptible(&session->sem_lock);
 }
 
 static void avdtp_unlock(struct bt_avdtp *session)
 {
-	k_sem_give(&session->sem_lock);
+	nxsem_post(&session->sem_lock);
 }
 
 static void avdtp_sep_lock(struct bt_avdtp_sep *sep)
 {
 	if (sep != NULL) {
-		k_sem_take(&sep->sem_lock, K_FOREVER);
+		nxsem_wait_uninterruptible(&sep->sem_lock);
 	}
 }
 
 static void avdtp_sep_unlock(struct bt_avdtp_sep *sep)
 {
 	if (sep != NULL) {
-		k_sem_give(&sep->sem_lock);
+		nxsem_post(&sep->sem_lock);
 	}
 }
 
@@ -415,9 +415,9 @@ static void avdtp_tx_cb(struct bt_conn *conn, void *user_data, int err)
 
 static void avdtp_tx_remove(struct net_buf *buf)
 {
-	k_sem_take(&avdtp_sem_lock, K_FOREVER);
+	nxsem_wait_uninterruptible(&avdtp_sem_lock);
 	list_find_and_remove(&avdtp_tx_list, &buf->node);
-	k_sem_give(&avdtp_sem_lock);
+	nxsem_post(&avdtp_sem_lock);
 }
 
 static void avdtp_tx_rel_buf(struct net_buf *buf, struct net_buf *frag)
@@ -553,14 +553,14 @@ static void avdtp_tx_processor(struct k_work *item)
 	const struct list_node *node;
 	struct net_buf *buf;
 
-	k_sem_take(&avdtp_sem_lock, K_FOREVER);
+	nxsem_wait_uninterruptible(&avdtp_sem_lock);
 	node = list_peek_head(&avdtp_tx_list);
 	if (node == NULL) {
-		k_sem_give(&avdtp_sem_lock);
+		nxsem_post(&avdtp_sem_lock);
 		LOG_DBG("No pending tx");
 		return;
 	}
-	k_sem_give(&avdtp_sem_lock);
+	nxsem_post(&avdtp_sem_lock);
 
 	buf = CONTAINER_OF(node, struct net_buf, node);
 	user_data = net_buf_user_data(buf);
@@ -611,9 +611,9 @@ static void avdtp_buf_init_user_data(struct bt_avdtp *session, struct net_buf *b
 static void avdtp_send_common(struct bt_avdtp *session, struct net_buf *buf)
 {
 	avdtp_buf_init_user_data(session, buf);
-	k_sem_take(&avdtp_sem_lock, K_FOREVER);
+	nxsem_wait_uninterruptible(&avdtp_sem_lock);
 	list_add_tail(&avdtp_tx_list, &buf->node);
-	k_sem_give(&avdtp_sem_lock);
+	nxsem_post(&avdtp_sem_lock);
 
 	avdtp_tx_raise();
 }
@@ -1851,9 +1851,9 @@ void bt_avdtp_l2cap_disconnected(struct bt_l2cap_chan *chan)
 
 	net_buf_drop(&session->reasm_buf);
 
-	k_sem_take(&avdtp_sem_lock, K_FOREVER);
+	nxsem_wait_uninterruptible(&avdtp_sem_lock);
 	bt_avdtp_clear_tx(session);
-	k_sem_give(&avdtp_sem_lock);
+	nxsem_post(&avdtp_sem_lock);
 
 	/* notify a2dp disconnect */
 	session->ops->disconnected(session);
@@ -2156,10 +2156,10 @@ int bt_avdtp_connect(struct bt_conn *conn, struct bt_avdtp *session)
 	 * Use the `conn` to check whether the l2cap creation is already started.
 	 * The whole `session` is cleared by upper layer if it is new l2cap connection.
 	 */
-	k_sem_take(&avdtp_sem_lock, K_FOREVER);
+	nxsem_wait_uninterruptible(&avdtp_sem_lock);
 
 	if (session->br_chan.chan.conn != NULL) {
-		k_sem_give(&avdtp_sem_lock);
+		nxsem_post(&avdtp_sem_lock);
 		return -ENOMEM;
 	}
 
@@ -2169,7 +2169,7 @@ int bt_avdtp_connect(struct bt_conn *conn, struct bt_avdtp *session)
 	 * until the release work has completed.
 	 */
 	if (k_work_busy_get(&session->_release_work) != 0) {
-		k_sem_give(&avdtp_sem_lock);
+		nxsem_post(&avdtp_sem_lock);
 		return -EBUSY;
 	}
 
@@ -2177,10 +2177,10 @@ int bt_avdtp_connect(struct bt_conn *conn, struct bt_avdtp *session)
 	 * initialized before the session is published, since the session
 	 * memory is owned and cleared by the upper layer.
 	 */
-	k_sem_init(&session->sem_lock, 1, 1);
+	nxsem_init(&session->sem_lock, 0, 1);
 	session->br_chan.chan.conn = conn;
 	bt_avdtp_clear_tx(session);
-	k_sem_give(&avdtp_sem_lock);
+	nxsem_post(&avdtp_sem_lock);
 
 	k_work_init(&session->_release_work, avdtp_release_work);
 	k_work_init_delayable(&session->timeout_work, avdtp_timeout);
@@ -2199,11 +2199,11 @@ int bt_avdtp_connect(struct bt_conn *conn, struct bt_avdtp *session)
 		 * has already been cleared by bt_l2cap_br_chan_del(), so only
 		 * clear it if it still holds the value set above.
 		 */
-		k_sem_take(&avdtp_sem_lock, K_FOREVER);
+		nxsem_wait_uninterruptible(&avdtp_sem_lock);
 		if (session->br_chan.chan.conn == conn) {
 			session->br_chan.chan.conn = NULL;
 		}
-		k_sem_give(&avdtp_sem_lock);
+		nxsem_post(&avdtp_sem_lock);
 	}
 
 	return err;
@@ -2255,7 +2255,7 @@ int bt_avdtp_l2cap_accept(struct bt_conn *conn, struct bt_l2cap_server *server,
 	 * Use the `conn` to check whether the l2cap creation is already started.
 	 * The whole `session` is cleared by upper layer if it is new l2cap connection.
 	 */
-	k_sem_take(&avdtp_sem_lock, K_FOREVER);
+	nxsem_wait_uninterruptible(&avdtp_sem_lock);
 
 	if (session->br_chan.chan.conn == NULL) {
 		/* The release work submitted when the previous connection
@@ -2264,7 +2264,7 @@ int bt_avdtp_l2cap_accept(struct bt_conn *conn, struct bt_l2cap_server *server,
 		 * the session reuse until the release work has completed.
 		 */
 		if (k_work_busy_get(&session->_release_work) != 0) {
-			k_sem_give(&avdtp_sem_lock);
+			nxsem_post(&avdtp_sem_lock);
 			return -ENOMEM;
 		}
 
@@ -2272,10 +2272,10 @@ int bt_avdtp_l2cap_accept(struct bt_conn *conn, struct bt_l2cap_server *server,
 		 * initialized before the session is published, since the
 		 * session memory is owned and cleared by the upper layer.
 		 */
-		k_sem_init(&session->sem_lock, 1, 1);
+		nxsem_init(&session->sem_lock, 0, 1);
 		session->br_chan.chan.conn = conn;
 		bt_avdtp_clear_tx(session);
-		k_sem_give(&avdtp_sem_lock);
+		nxsem_post(&avdtp_sem_lock);
 
 		k_work_init(&session->_release_work, avdtp_release_work);
 		k_work_init_delayable(&session->timeout_work, avdtp_timeout);
@@ -2283,7 +2283,7 @@ int bt_avdtp_l2cap_accept(struct bt_conn *conn, struct bt_l2cap_server *server,
 		session->br_chan.rx.mtu = BT_L2CAP_RX_MTU;
 		*chan = &session->br_chan.chan;
 	} else {
-		k_sem_give(&avdtp_sem_lock);
+		nxsem_post(&avdtp_sem_lock);
 
 		/* get the current opening endpoint */
 		if (session->current_sep != NULL) {
@@ -2352,9 +2352,9 @@ int bt_avdtp_register_sep(uint8_t media_type, uint8_t sep_type, struct bt_avdtp_
 		return -EIO;
 	}
 
-	k_sem_take(&avdtp_sem_lock, K_FOREVER);
+	nxsem_wait_uninterruptible(&avdtp_sem_lock);
 	if (list_find(&seps, &sep->_node, NULL)) {
-		k_sem_give(&avdtp_sem_lock);
+		nxsem_post(&avdtp_sem_lock);
 		LOG_ERR("Endpoint is already registered");
 		return -EEXIST;
 	}
@@ -2365,7 +2365,7 @@ int bt_avdtp_register_sep(uint8_t media_type, uint8_t sep_type, struct bt_avdtp_
 	sep->sep_info.media_type = media_type;
 	sep->sep_info.tsep = sep_type;
 	/* Locking semaphore initialized to 1 (unlocked) */
-	k_sem_init(&sep->sem_lock, 1, 1);
+	nxsem_init(&sep->sem_lock, 0, 1);
 	k_work_init_delayable(&sep->_delay_work, avdtp_media_disconnect_work);
 	/* The endpoint is not in the `seps` list yet, so it cannot be accessed
 	 * by any other context. Set the state without taking `sep->sem_lock`,
@@ -2374,7 +2374,7 @@ int bt_avdtp_register_sep(uint8_t media_type, uint8_t sep_type, struct bt_avdtp_
 	bt_avdtp_set_state(sep, AVDTP_IDLE);
 
 	list_add_tail(&seps, &sep->_node);
-	k_sem_give(&avdtp_sem_lock);
+	nxsem_post(&avdtp_sem_lock);
 
 	return 0;
 }

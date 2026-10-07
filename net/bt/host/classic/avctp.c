@@ -41,7 +41,7 @@ LOG_MODULE_REGISTER(bt_avctp);
 #define AVCTP_CHAN(_ch) CONTAINER_OF(_ch, struct bt_avctp, br_chan.chan)
 /* L2CAP Server list */
 static struct list_node avctp_l2cap_server = LIST_INITIAL_VALUE(avctp_l2cap_server);
-static struct k_sem avctp_lock;
+static sem_t avctp_lock;
 
 /* tx list for packets */
 static struct list_node avctp_tx_list = LIST_INITIAL_VALUE(avctp_tx_list);
@@ -123,9 +123,9 @@ static void avctp_l2cap_disconnected(struct bt_l2cap_chan *chan)
 
 	net_buf_drop(&session->reassembly_buf);
 
-	k_sem_take(&avctp_lock, K_FOREVER);
+	nxsem_wait_uninterruptible(&avctp_lock);
 	bt_avctp_clear_tx(session);
-	k_sem_give(&avctp_lock);
+	nxsem_post(&avctp_lock);
 
 	if (session->ops && session->ops->disconnected) {
 		session->ops->disconnected(session);
@@ -170,9 +170,9 @@ static void avctp_tx_cb(struct bt_conn *conn, void *user_data, int err)
 
 static void avctp_tx_remove(struct net_buf *buf)
 {
-	k_sem_take(&avctp_lock, K_FOREVER);
+	nxsem_wait_uninterruptible(&avctp_lock);
 	list_find_and_remove(&avctp_tx_list, &buf->node);
-	k_sem_give(&avctp_lock);
+	nxsem_post(&avctp_lock);
 }
 
 static int send_single_avctp(struct bt_avctp *avctp, uint8_t tid, bt_avctp_cr_t cr, uint8_t ipid,
@@ -299,14 +299,14 @@ static void avctp_tx_processor(struct k_work *item)
 	uint8_t pkt_type;
 	uint16_t max_payload_size;
 
-	k_sem_take(&avctp_lock, K_FOREVER);
+	nxsem_wait_uninterruptible(&avctp_lock);
 	node = list_peek_head(&avctp_tx_list);
 	if (node == NULL) {
-		k_sem_give(&avctp_lock);
+		nxsem_post(&avctp_lock);
 		LOG_DBG("No pending tx");
 		return;
 	}
-	k_sem_give(&avctp_lock);
+	nxsem_post(&avctp_lock);
 
 	buf = CONTAINER_OF(node, struct net_buf, node);
 
@@ -382,9 +382,9 @@ static int bt_avctp_send_common(struct bt_avctp *session, struct net_buf *buf,
 	user_data->num_packet = num_packet;
 	user_data->tid = tid;
 
-	k_sem_take(&avctp_lock, K_FOREVER);
+	nxsem_wait_uninterruptible(&avctp_lock);
 	list_add_tail(&avctp_tx_list, &buf->node);
-	k_sem_give(&avctp_lock);
+	nxsem_post(&avctp_lock);
 
 	avctp_tx_raise(0);
 	return 0;
@@ -655,15 +655,15 @@ static int avctp_l2cap_accept(struct bt_conn *conn, struct bt_l2cap_server *serv
 
 	avctp_server = CONTAINER_OF(server, struct bt_avctp_server, l2cap);
 
-	k_sem_take(&avctp_lock, K_FOREVER);
+	nxsem_wait_uninterruptible(&avctp_lock);
 
 	if (!list_find(&avctp_l2cap_server, &avctp_server->node, NULL)) {
 		LOG_WRN("Invalid l2cap server");
-		k_sem_give(&avctp_lock);
+		nxsem_post(&avctp_lock);
 		return -EINVAL;
 	}
 
-	k_sem_give(&avctp_lock);
+	nxsem_post(&avctp_lock);
 
 	/* Get the AVCTP session from upper layer */
 	err = avctp_server->accept(conn, &session);
@@ -690,11 +690,11 @@ int bt_avctp_server_register(struct bt_avctp_server *server)
 		return -EINVAL;
 	}
 
-	k_sem_take(&avctp_lock, K_FOREVER);
+	nxsem_wait_uninterruptible(&avctp_lock);
 
 	if (list_find(&avctp_l2cap_server, &server->node, NULL)) {
 		LOG_WRN("L2CAP server has been registered");
-		k_sem_give(&avctp_lock);
+		nxsem_post(&avctp_lock);
 		return -EEXIST;
 	}
 
@@ -702,14 +702,14 @@ int bt_avctp_server_register(struct bt_avctp_server *server)
 	err = bt_l2cap_br_server_register(&server->l2cap);
 	if (err < 0) {
 		LOG_ERR("AVCTP L2CAP registration failed %d", err);
-		k_sem_give(&avctp_lock);
+		nxsem_post(&avctp_lock);
 		return err;
 	}
 
 	LOG_DBG("Register L2CAP server %p", server);
 	list_add_tail(&avctp_l2cap_server, &server->node);
 
-	k_sem_give(&avctp_lock);
+	nxsem_post(&avctp_lock);
 
 	return err;
 }
@@ -726,6 +726,6 @@ void bt_avctp_init(void)
 
 	LOG_DBG("Initializing AVCTP");
 	/* Locking semaphore initialized to 1 (unlocked) */
-	k_sem_init(&avctp_lock, 1, 1);
+	nxsem_init(&avctp_lock, 0, 1);
 	k_work_init_delayable(&avctp_tx_work, avctp_tx_processor);
 }

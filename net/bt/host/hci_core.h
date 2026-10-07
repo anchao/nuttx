@@ -328,12 +328,12 @@ struct bt_dev_le {
 #if defined(CONFIG_BT_CONN)
 	/* Controller buffer information */
 	uint16_t		acl_mtu;
-	struct k_sem		acl_pkts;
+	sem_t		acl_pkts;
 #endif /* CONFIG_BT_CONN */
 #if defined(CONFIG_BT_ISO)
 	uint16_t		iso_mtu;
 	uint8_t			iso_limit;
-	struct k_sem		iso_pkts;
+	sem_t		iso_pkts;
 #endif /* CONFIG_BT_ISO */
 #if defined(CONFIG_BT_BROADCASTER)
 	uint16_t max_adv_data_len;
@@ -358,7 +358,7 @@ struct bt_dev_le {
 struct bt_dev_br {
 	/* Max controller's acceptable ACL packet length */
 	uint16_t         mtu;
-	struct k_sem  pkts;
+	sem_t  pkts;
 	uint16_t         esco_pkt_type;
 };
 
@@ -437,7 +437,7 @@ struct bt_dev {
 #endif
 
 	/* Number of commands controller can accept */
-	struct k_sem		ncmd_sem;
+	sem_t		ncmd_sem;
 
 	/* Last sent HCI command */
 	struct net_buf		*sent_cmd;

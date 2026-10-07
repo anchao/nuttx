@@ -205,7 +205,7 @@ struct bt_mesh_dfu_cli {
 		uint8_t type;
 		uint8_t img_cnt;
 		uint16_t addr;
-		struct k_sem sem;
+		sem_t sem;
 		void *params;
 		bt_mesh_dfu_img_cb_t img_cb;
 	} req;

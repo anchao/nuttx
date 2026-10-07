@@ -131,7 +131,7 @@ static struct pacs {
 } pacs;
 
 
-static K_SEM_DEFINE(read_buf_sem, 1, 1);
+static sem_t read_buf_sem = NXSEM_INITIALIZER(1, 0);
 NET_BUF_SIMPLE_DEFINE_STATIC(read_buf, BT_ATT_MAX_ATTRIBUTE_LEN);
 
 static int pacs_gatt_notify(struct bt_conn *conn,
@@ -407,7 +407,7 @@ static ssize_t snk_read(struct bt_conn *conn, const struct bt_gatt_attr *attr,
 
 	LOG_DBG("conn %p attr %p buf %p len %u offset %u", (void *)conn, attr, buf, len, offset);
 
-	err = k_sem_take(&read_buf_sem, READ_BUF_SEM_TIMEOUT);
+	err = nxsem_tickwait(&read_buf_sem, READ_BUF_SEM_TIMEOUT.ticks);
 	if (err != 0) {
 		LOG_DBG("Failed to take read_buf_sem: %d", err);
 
@@ -419,7 +419,7 @@ static ssize_t snk_read(struct bt_conn *conn, const struct bt_gatt_attr *attr,
 	ret_val = bt_gatt_attr_read(conn, attr, buf, len, offset, read_buf.data,
 				    read_buf.len);
 
-	k_sem_give(&read_buf_sem);
+	nxsem_post(&read_buf_sem);
 
 	return ret_val;
 }
@@ -520,7 +520,7 @@ static ssize_t src_read(struct bt_conn *conn, const struct bt_gatt_attr *attr,
 
 	LOG_DBG("conn %p attr %p buf %p len %u offset %u", (void *)conn, attr, buf, len, offset);
 
-	err = k_sem_take(&read_buf_sem, READ_BUF_SEM_TIMEOUT);
+	err = nxsem_tickwait(&read_buf_sem, READ_BUF_SEM_TIMEOUT.ticks);
 	if (err != 0) {
 		LOG_DBG("Failed to take read_buf_sem: %d", err);
 
@@ -532,7 +532,7 @@ static ssize_t src_read(struct bt_conn *conn, const struct bt_gatt_attr *attr,
 	ret_val = bt_gatt_attr_read(conn, attr, buf, len, offset, read_buf.data,
 				    read_buf.len);
 
-	k_sem_give(&read_buf_sem);
+	nxsem_post(&read_buf_sem);
 
 	return ret_val;
 }
@@ -1042,7 +1042,7 @@ static int pac_notify(struct bt_conn *conn, enum bt_audio_dir dir)
 		return -EINVAL;
 	}
 
-	err = k_sem_take(&read_buf_sem, K_NO_WAIT);
+	err = nxsem_trywait(&read_buf_sem);
 	if (err != 0) {
 		LOG_DBG("Failed to take read_buf_sem: %d", err);
 
@@ -1059,7 +1059,7 @@ static int pac_notify(struct bt_conn *conn, enum bt_audio_dir dir)
 		LOG_WRN("PACS notify failed: %d", err);
 	}
 
-	k_sem_give(&read_buf_sem);
+	nxsem_post(&read_buf_sem);
 
 	if (err == -ENOTCONN) {
 		return 0;

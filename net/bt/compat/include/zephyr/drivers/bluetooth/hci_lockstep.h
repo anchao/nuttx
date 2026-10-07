@@ -32,7 +32,7 @@ typedef int (*bt_hci_lockstep_send_t)(const struct device *dev,
 struct bt_hci_lockstep {
   const struct device *dev;
   bt_hci_lockstep_send_t send;
-  struct k_sem changed;
+  sem_t changed;
   spinlock_t lock;
   struct net_buf_simple *rsp;
   uint16_t opcode;

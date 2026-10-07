@@ -55,7 +55,7 @@ struct bt_avrcp_tg {
 	struct list_node vd_rsp_tx_pending;
 
 	/* Critical locker */
-	struct k_sem lock;
+	sem_t lock;
 
 	/* AVRCP vendor dependent response TX work */
 	struct k_work_delayable vd_rsp_tx_work;
@@ -407,12 +407,12 @@ static struct bt_sdp_record avrcp_ct_rec = BT_SDP_RECORD(avrcp_ct_attrs);
 
 static void avrcp_tg_lock(struct bt_avrcp_tg *tg)
 {
-	k_sem_take(&tg->lock, K_FOREVER);
+	nxsem_wait_uninterruptible(&tg->lock);
 }
 
 static void avrcp_tg_unlock(struct bt_avrcp_tg *tg)
 {
-	k_sem_give(&tg->lock);
+	nxsem_post(&tg->lock);
 }
 
 static struct bt_avrcp *avrcp_get_connection(struct bt_conn *conn)
@@ -2983,7 +2983,7 @@ void bt_avrcp_init(void)
 					      bt_avrcp_tg_vendor_tx_work);
 			list_initialize(&bt_avrcp_tg_pool[i].vd_rsp_tx_pending);
 
-			k_sem_init(&bt_avrcp_tg_pool[i].lock, 1, 1);
+			nxsem_init(&bt_avrcp_tg_pool[i].lock, 0, 1);
 		}
 
 		memset(bt_avrcp_ct_pool[i].ct_notify, 0, sizeof(bt_avrcp_ct_pool[i].ct_notify));

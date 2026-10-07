@@ -241,14 +241,17 @@ static void rfcomm_dlcs_tx_trigger(struct bt_rfcomm_session *session)
 static void rfcomm_dlc_tx_give_credits(struct bt_rfcomm_dlc *dlc,
 				       uint8_t credits)
 {
+	int sem_count;
+
 	LOG_DBG("dlc %p credits %u", dlc, credits);
 
 	while (credits--) {
-		k_sem_give(&dlc->tx_credits);
+		nxsem_post(&dlc->tx_credits);
 		rfcomm_dlc_tx_trigger(dlc);
 	}
 
-	LOG_DBG("dlc %p updated credits %u", dlc, k_sem_count_get(&dlc->tx_credits));
+	(void)nxsem_get_value(&dlc->tx_credits, &sem_count);
+	LOG_DBG("dlc %p updated credits %d", dlc, sem_count);
 }
 
 static void rfcomm_dlc_destroy(struct bt_rfcomm_dlc *dlc)
@@ -668,7 +671,7 @@ static bool rfcomm_check_fc(struct bt_rfcomm_dlc *dlc)
 
 	LOG_DBG("Wait for credits or MSC FC %p", dlc);
 	/* Wait for credits or MSC FC */
-	err = k_sem_take(&dlc->tx_credits, K_NO_WAIT);
+	err = nxsem_trywait(&dlc->tx_credits);
 	if (err != 0) {
 		LOG_DBG("Credits not available");
 		return false;
@@ -680,9 +683,9 @@ static bool rfcomm_check_fc(struct bt_rfcomm_dlc *dlc)
 		return true;
 	}
 
-	err = k_sem_take(&dlc->session->fc, K_NO_WAIT);
+	err = nxsem_trywait(&dlc->session->fc);
 	if (err != 0) {
-		k_sem_give(&dlc->tx_credits);
+		nxsem_post(&dlc->tx_credits);
 		LOG_DBG("Flow control not available");
 		return false;
 	}
@@ -692,8 +695,8 @@ static bool rfcomm_check_fc(struct bt_rfcomm_dlc *dlc)
 	 * are sent (which will preempt this thread) and FCOFF / FC bit
 	 * with 1, is received.
 	 */
-	k_sem_give(&dlc->session->fc);
-	k_sem_give(&dlc->tx_credits);
+	nxsem_post(&dlc->session->fc);
+	nxsem_post(&dlc->tx_credits);
 
 	LOG_DBG("Flow control available");
 	return true;
@@ -1318,7 +1321,7 @@ static void rfcomm_session_send_fc_on_rsp(struct bt_rfcomm_session *session)
 		/* Give the sem so that it will unblock the waiting dlc threads
 		 * of this session in sem_take().
 		 */
-		k_sem_give(&session->fc);
+		nxsem_post(&session->fc);
 		k_work_cancel_delayable(&session->retry_timeout_work);
 		return;
 	}
@@ -1454,7 +1457,7 @@ static void rfcomm_dlc_connected(struct bt_rfcomm_dlc *dlc)
 		LOG_DBG("CFC not supported %p", dlc);
 		rfcomm_session_send_fc_on_req(dlc->session);
 		/* Use tx_credits as binary sem for MSC FC */
-		k_sem_init(&dlc->tx_credits, 0, 1);
+		nxsem_init(&dlc->tx_credits, 0, 0);
 	}
 
 	/* Cancel conn timer */
@@ -1845,12 +1848,12 @@ static void rfcomm_handle_msc(struct bt_rfcomm_session *session,
 			 * sure that RX thread will not be blocked while taking
 			 * the semaphore.
 			 */
-			k_sem_take(&dlc->tx_credits, K_NO_WAIT);
+			nxsem_trywait(&dlc->tx_credits);
 		} else {
 			/* Give the sem so that it will unblock the waiting dlc
 			 * thread in sem_take().
 			 */
-			k_sem_give(&dlc->tx_credits);
+			nxsem_post(&dlc->tx_credits);
 			rfcomm_dlc_tx_trigger(dlc);
 		}
 	}
@@ -2042,7 +2045,7 @@ static void rfcomm_handle_pn(struct bt_rfcomm_session *session,
 			if (session->cfc == BT_RFCOMM_CFC_UNKNOWN) {
 				session->cfc = BT_RFCOMM_CFC_SUPPORTED;
 			}
-			k_sem_init(&dlc->tx_credits, 0, K_SEM_MAX_LIMIT);
+			nxsem_init(&dlc->tx_credits, 0, 0);
 			rfcomm_dlc_tx_give_credits(dlc, pn->credits);
 		} else {
 			session->cfc = BT_RFCOMM_CFC_NOT_SUPPORTED;
@@ -2079,7 +2082,7 @@ static void rfcomm_handle_pn(struct bt_rfcomm_session *session,
 				if (session->cfc == BT_RFCOMM_CFC_UNKNOWN) {
 					session->cfc = BT_RFCOMM_CFC_SUPPORTED;
 				}
-				k_sem_init(&dlc->tx_credits, 0, K_SEM_MAX_LIMIT);
+				nxsem_init(&dlc->tx_credits, 0, 0);
 				rfcomm_dlc_tx_give_credits(dlc, pn->credits);
 			} else {
 				session->cfc = BT_RFCOMM_CFC_NOT_SUPPORTED;
@@ -2208,7 +2211,7 @@ static void rfcomm_handle_msg(struct bt_rfcomm_session *session, struct net_buf 
 		 * make sure that RX thread will not be blocked while taking
 		 * the semaphore.
 		 */
-		k_sem_take(&session->fc, K_NO_WAIT);
+		nxsem_trywait(&session->fc);
 		rfcomm_session_send_fc_off_rsp(session);
 		break;
 	default:
@@ -2325,12 +2328,14 @@ static void rfcomm_handle_data(struct bt_rfcomm_session *session, struct net_buf
 int bt_rfcomm_dlc_send(struct bt_rfcomm_dlc *dlc, struct net_buf *buf)
 {
 	uint8_t fcs, cr;
+	int sem_count;
 
 	if (!buf) {
 		return -EINVAL;
 	}
 
-	LOG_DBG("dlc %p tx credit %d", dlc, k_sem_count_get(&dlc->tx_credits));
+	(void)nxsem_get_value(&dlc->tx_credits, &sem_count);
+	LOG_DBG("dlc %p tx credit %d", dlc, sem_count);
 
 	if (dlc->state != BT_RFCOMM_STATE_CONNECTED) {
 		return -ENOTCONN;
@@ -2572,7 +2577,7 @@ static struct bt_rfcomm_session *rfcomm_session_new(bt_rfcomm_role_t role)
 		k_work_init_delayable(&session->rtx_work, rfcomm_session_rtx_timeout);
 		k_work_init_delayable(&session->retry_work, rfcomm_session_retry_handler);
 		k_work_init_delayable(&session->retry_timeout_work, rfcomm_session_retry_timeout);
-		k_sem_init(&session->fc, 0, 1);
+		nxsem_init(&session->fc, 0, 0);
 		atomic_set(&session->flags, 0);
 		return session;
 	}

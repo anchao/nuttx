@@ -63,7 +63,7 @@ int bt_mesh_msg_ack_ctx_wait(struct bt_mesh_msg_ack_ctx *ack, k_timeout_t timeou
 {
 	int err;
 
-	err = k_sem_take(&ack->sem, timeout);
+	err = nxsem_tickwait(&ack->sem, timeout.ticks);
 	bt_mesh_msg_ack_ctx_clear(ack);
 
 	if (err == -EAGAIN) {

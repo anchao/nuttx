@@ -152,7 +152,7 @@ static int req_wait(struct bt_mesh_dfu_cli *cli, k_timeout_t timeout)
 {
 	int err;
 
-	err = k_sem_take(&cli->req.sem, timeout);
+	err = nxsem_tickwait(&cli->req.sem, timeout.ticks);
 	cli->req.type = REQ_NONE;
 
 	return err;
@@ -768,7 +768,7 @@ static int handle_status(const struct bt_mesh_model *mod, struct bt_mesh_msg_ctx
 			rsp->blob_id = 0U;
 			rsp->img_idx = 0U;
 		}
-		k_sem_give(&cli->req.sem);
+		nxsem_post(&cli->req.sem);
 	}
 	if (cli->op != BT_MESH_DFU_OP_UPDATE_STATUS) {
 		return 0;
@@ -942,7 +942,7 @@ static int handle_info_status(const struct bt_mesh_model *mod, struct bt_mesh_ms
 				     cli->req.params);
 		if (it != BT_MESH_DFU_ITER_CONTINUE) {
 			if (cli->req.type == REQ_IMG) {
-				k_sem_give(&cli->req.sem);
+				nxsem_post(&cli->req.sem);
 			}
 
 			return 0;
@@ -960,7 +960,7 @@ static int handle_info_status(const struct bt_mesh_model *mod, struct bt_mesh_ms
 	}
 
 	if (cli->req.type == REQ_IMG) {
-		k_sem_give(&cli->req.sem);
+		nxsem_post(&cli->req.sem);
 		return 0;
 	}
 
@@ -1002,7 +1002,7 @@ static int handle_metadata_status(const struct bt_mesh_model *mod, struct bt_mes
 
 	rsp->status = hdr & BIT_MASK(3);
 	rsp->effect = (hdr >> 3);
-	k_sem_give(&cli->req.sem);
+	nxsem_post(&cli->req.sem);
 
 	return 0;
 }
@@ -1034,7 +1034,7 @@ static int dfu_cli_init(const struct bt_mesh_model *mod)
 		return err;
 	}
 
-	k_sem_init(&cli->req.sem, 0, 1);
+	nxsem_init(&cli->req.sem, 0, 0);
 
 	return 0;
 }

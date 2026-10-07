@@ -24,25 +24,6 @@
 extern "C" {
 #endif
 
-/* ===== Semaphore ===== */
-struct k_sem {
-    sem_t sem;
-    unsigned int limit;
-    unsigned int count;
-};
-
-#define Z_SEM_INITIALIZER(obj, initial_count, count_limit) \
-    { .sem = NXSEM_INITIALIZER(initial_count, count_limit), .limit = (count_limit), .count = (initial_count) }
-
-int k_sem_init(struct k_sem *sem, unsigned int initial_count, unsigned int limit);
-int k_sem_take(struct k_sem *sem, k_timeout_t timeout);
-void k_sem_give(struct k_sem *sem);
-unsigned int k_sem_count_get(struct k_sem *sem);
-void k_sem_reset(struct k_sem *sem);
-
-#define K_SEM_DEFINE(name, initial_count, count_limit) \
-    struct k_sem name = Z_SEM_INITIALIZER(name, initial_count, count_limit)
-
 /* ===== FIFO / Queue ===== */
 struct k_fifo {
     struct list_node data_q;
@@ -141,7 +122,7 @@ struct k_work_queue_config {
 
 /* Work queue synchronization */
 struct k_work_sync {
-    struct k_sem sem;
+    sem_t sem;
 };
 
 typedef void (*k_work_handler_t)(struct k_work *work);
@@ -318,7 +299,7 @@ struct k_poll_event {
     union {
         void *obj;
         struct k_poll_signal *signal;
-        struct k_sem *sem;
+        sem_t *sem;
         struct k_fifo *fifo;
     };
     int tag;

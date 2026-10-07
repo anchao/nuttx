@@ -71,7 +71,7 @@ void bt_hci_lockstep_init(struct bt_hci_lockstep *ls, const struct device *dev,
 		.timeout = LOCKSTEP_CMD_TIMEOUT,
 	};
 	lockstep_state_reset(ls);
-	k_sem_init(&ls->changed, 0, 1);
+	nxsem_init(&ls->changed, 0, 0);
 }
 
 void bt_hci_lockstep_reset(struct bt_hci_lockstep *ls)
@@ -90,7 +90,7 @@ void bt_hci_lockstep_reset(struct bt_hci_lockstep *ls)
 	 * which would take the wakeup away from a sender that has seen the old
 	 * state and is about to wait, and fail one that already waits.
 	 */
-	k_sem_give(&ls->changed);
+	nxsem_post(&ls->changed);
 }
 
 bool bt_hci_lockstep_feed(struct bt_hci_lockstep *ls, const uint8_t *pkt, size_t len)
@@ -145,7 +145,7 @@ bool bt_hci_lockstep_feed(struct bt_hci_lockstep *ls, const uint8_t *pkt, size_t
 
 	spin_unlock_irqrestore(&ls->lock, key);
 
-	k_sem_give(&ls->changed);
+	nxsem_post(&ls->changed);
 
 	return consumed;
 }
@@ -200,7 +200,7 @@ int bt_hci_lockstep_cmd_send_sync(struct bt_hci_lockstep *ls, uint16_t opcode,
 		spin_unlock_irqrestore(&ls->lock, key);
 
 		if (sys_timepoint_expired(end) ||
-		    k_sem_take(&ls->changed, sys_timepoint_timeout(end)) != 0) {
+		    nxsem_tickwait(&ls->changed, sys_timepoint_timeout(end).ticks) != 0) {
 			LOG_ERR("opcode 0x%04x: controller allows no command", opcode);
 			return -EAGAIN;
 		}
@@ -263,7 +263,7 @@ int bt_hci_lockstep_cmd_send_sync(struct bt_hci_lockstep *ls, uint16_t opcode,
 		spin_unlock_irqrestore(&ls->lock, key);
 
 		/* A stale wakeup or a NOP only leads back to the check */
-		(void)k_sem_take(&ls->changed, sys_timepoint_timeout(end));
+		(void)nxsem_tickwait(&ls->changed, sys_timepoint_timeout(end).ticks);
 	}
 
 	if (status != BT_HCI_ERR_SUCCESS) {

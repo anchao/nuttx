@@ -203,12 +203,12 @@ static enum at_cme bt_hfp_ag_get_cme_err(int err)
 
 static void hfp_ag_lock(struct bt_hfp_ag *ag)
 {
-	k_sem_take(&ag->lock, K_FOREVER);
+	nxsem_wait_uninterruptible(&ag->lock);
 }
 
 static void hfp_ag_unlock(struct bt_hfp_ag *ag)
 {
-	k_sem_give(&ag->lock);
+	nxsem_post(&ag->lock);
 }
 
 static void bt_hfp_ag_set_state(struct bt_hfp_ag *ag, bt_hfp_state_t state)
@@ -4198,7 +4198,7 @@ static struct bt_hfp_ag *hfp_ag_create(struct bt_conn *conn)
 	list_initialize(&ag->tx_pending);
 	list_initialize(&ag->tx_submit_pending);
 
-	k_sem_init(&ag->lock, 1, 1);
+	nxsem_init(&ag->lock, 0, 1);
 
 	ag->rfcomm_dlc.ops = &ops;
 	ag->rfcomm_dlc.mtu = BT_HFP_MAX_MTU;

@@ -173,7 +173,7 @@ struct bt_avdtp_sep {
 	/** Media Transport Channel*/
 	struct bt_l2cap_br_chan chan;
 	/* semaphore for lock/unlock */
-	struct k_sem sem_lock;
+	sem_t sem_lock;
 	/** avdtp session */
 	struct bt_avdtp *session;
 	/** sep ops */

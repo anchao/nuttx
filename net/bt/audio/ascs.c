@@ -144,7 +144,7 @@ BUILD_ASSERT(CONFIG_BT_ATT_PREPARE_COUNT > 0, "CONFIG_BT_ATT_PREPARE_COUNT shall
 
 static const struct bt_ascs_cb *ascs_cb;
 
-static K_SEM_DEFINE(ase_buf_sem, 1, 1);
+static sem_t ase_buf_sem = NXSEM_INITIALIZER(1, 0);
 NET_BUF_SIMPLE_DEFINE_STATIC(ase_buf, ASE_BUF_SIZE);
 
 static int control_point_notify(struct ascs_client *client);
@@ -236,7 +236,7 @@ static int ase_state_notify(struct bt_ascs_ase *ase)
 		return 0;
 	}
 
-	err = k_sem_take(&ase_buf_sem, ASE_BUF_SEM_TIMEOUT);
+	err = nxsem_tickwait(&ase_buf_sem, ASE_BUF_SEM_TIMEOUT.ticks);
 	if (err != 0) {
 		LOG_WRN("Failed to take ase_buf_sem: %d", err);
 
@@ -248,7 +248,7 @@ static int ase_state_notify(struct bt_ascs_ase *ase)
 	max_ntf_size = bt_att_get_max_notify_size(conn, BT_ATT_CHAN_OPT_NONE);
 	if (max_ntf_size < 0) {
 		__ASSERT(max_ntf_size != -EINVAL, "Unexpected -EINVAL");
-		k_sem_give(&ase_buf_sem);
+		nxsem_post(&ase_buf_sem);
 		return max_ntf_size;
 	}
 
@@ -260,7 +260,7 @@ static int ase_state_notify(struct bt_ascs_ase *ase)
 
 	err = bt_gatt_notify(conn, ase->attr, ase_buf.data, ntf_size);
 
-	k_sem_give(&ase_buf_sem);
+	nxsem_post(&ase_buf_sem);
 
 	return err;
 }
@@ -732,7 +732,7 @@ int ascs_ep_set_state(struct bt_bap_ep *ep, enum bt_bap_ep_state state)
 	/* Take semaphore here in case that `ase_state_notify` is constructing the new state
 	 * to avoid modifying the `state_pending` value.
 	 */
-	err = k_sem_take(&ase_buf_sem, ASE_BUF_SEM_TIMEOUT);
+	err = nxsem_tickwait(&ase_buf_sem, ASE_BUF_SEM_TIMEOUT.ticks);
 	if (err != 0) {
 		LOG_WRN("Failed to take ase_buf_sem: %d", err);
 
@@ -742,7 +742,7 @@ int ascs_ep_set_state(struct bt_bap_ep *ep, enum bt_bap_ep_state state)
 	ase->state_pending = state;
 	ase->has_pending_state = true;
 
-	k_sem_give(&ase_buf_sem);
+	nxsem_post(&ase_buf_sem);
 
 	err = k_work_schedule(&client->notify_work, K_NO_WAIT);
 	if (err < 0) {
@@ -1653,7 +1653,7 @@ static ssize_t ascs_ase_read(struct bt_conn *conn,
 		return ascs_ase_read_status_idle(conn, attr, buf, len, offset);
 	}
 
-	err = k_sem_take(&ase_buf_sem, ASE_BUF_SEM_TIMEOUT);
+	err = nxsem_tickwait(&ase_buf_sem, ASE_BUF_SEM_TIMEOUT.ticks);
 	if (err != 0) {
 		LOG_DBG("Failed to take ase_buf_sem: %d", err);
 
@@ -1664,7 +1664,7 @@ static ssize_t ascs_ase_read(struct bt_conn *conn,
 
 	ret_val = bt_gatt_attr_read(conn, attr, buf, len, offset, ase_buf.data, ase_buf.len);
 
-	k_sem_give(&ase_buf_sem);
+	nxsem_post(&ase_buf_sem);
 
 	return ret_val;
 }

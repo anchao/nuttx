@@ -314,7 +314,7 @@ struct bt_hfp_ag {
 	struct list_node tx_submit_pending;
 
 	/* Critical locker */
-	struct k_sem lock;
+	sem_t lock;
 
 	/* TX work */
 	struct k_work_delayable tx_work;

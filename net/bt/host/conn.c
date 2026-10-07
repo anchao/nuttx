@@ -215,7 +215,7 @@ int bt_conn_iso_init(void)
 }
 #endif /* CONFIG_BT_ISO */
 
-struct k_sem *bt_conn_get_pkts(struct bt_conn *conn)
+sem_t *bt_conn_get_pkts(struct bt_conn *conn)
 {
 #if defined(CONFIG_BT_CLASSIC)
 	if (bt_conn_is_br(conn) || !bt_dev.le.acl_mtu) {
@@ -680,7 +680,7 @@ static int send_buf(struct bt_conn *conn, struct net_buf *buf,
 		conn, buf, len, buf->len, cb, ud);
 
 	/* Acquire the right to send 1 packet to the controller */
-	if (k_sem_take(bt_conn_get_pkts(conn), K_NO_WAIT)) {
+	if (nxsem_trywait(bt_conn_get_pkts(conn)) != 0) {
 		/* This shouldn't happen now that we acquire the resources
 		 * before calling `send_buf` (in `get_conn_ready`). All
 		 * consumers of this semaphore run under the host lock
@@ -700,7 +700,7 @@ static int send_buf(struct bt_conn *conn, struct net_buf *buf,
 	/* See big comment above */
 	if (!tx) {
 		__ASSERT(0, "No TX context");
-		k_sem_give(bt_conn_get_pkts(conn));
+		nxsem_post(bt_conn_get_pkts(conn));
 		err = -ENOMEM;
 		goto error_return;
 	}
@@ -783,7 +783,7 @@ static int send_buf(struct bt_conn *conn, struct net_buf *buf,
 	 * destroyed context later.
 	 */
 	conn_tx_destroy(conn, tx);
-	k_sem_give(bt_conn_get_pkts(conn));
+	nxsem_post(bt_conn_get_pkts(conn));
 
 	/* Merge HCI driver errors */
 	return -EIO;
@@ -902,7 +902,9 @@ void bt_conn_data_ready(struct bt_conn *conn)
 
 static bool cannot_send_to_controller(struct bt_conn *conn)
 {
-	return k_sem_count_get(bt_conn_get_pkts(conn)) == 0;
+	int count;
+
+	return nxsem_get_value(bt_conn_get_pkts(conn), &count) < 0 || count == 0;
 }
 
 static bool dont_have_viewbufs(void)
@@ -1122,7 +1124,7 @@ static void process_unack_tx(struct bt_conn *conn)
 		tx = CONTAINER_OF(node, struct bt_conn_tx, node);
 
 		conn_tx_destroy(conn, tx);
-		k_sem_give(bt_conn_get_pkts(conn));
+		nxsem_post(bt_conn_get_pkts(conn));
 	}
 }
 
@@ -1478,11 +1480,11 @@ struct bt_conn *bt_conn_ref(struct bt_conn *conn)
 }
 
 #if defined(CONFIG_BT_CONN)
-static K_SEM_DEFINE(pending_recycled_events, 0, K_SEM_MAX_LIMIT);
+static sem_t pending_recycled_events = NXSEM_INITIALIZER(0, 0);
 
 static void recycled_work_handler(struct k_work *work)
 {
-	if (k_sem_take(&pending_recycled_events, K_NO_WAIT) == 0) {
+	if (nxsem_trywait(&pending_recycled_events) == 0) {
 		notify_recycled_conn_slot();
 		k_work_submit(work);
 	}
@@ -1534,7 +1536,7 @@ void bt_conn_unref(struct bt_conn *conn)
 	 * as only the first claim will be served.
 	 */
 	if (IS_ARRAY_ELEMENT(acl_conns, conn)) {
-		k_sem_give(&pending_recycled_events);
+		nxsem_post(&pending_recycled_events);
 		k_work_submit(&recycled_work);
 	}
 #endif /* CONFIG_BT_CONN */
