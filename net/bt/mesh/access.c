@@ -754,7 +754,7 @@ static int32_t next_period(const struct bt_mesh_model *mod)
 	uint32_t period = 0;
 	uint32_t elapsed;
 
-	elapsed = k_uptime_get_32() - pub->period_start;
+	elapsed = (uint32_t)TICK2MSEC(clock_systime_ticks()) - pub->period_start;
 	LOG_DBG("Publishing took %ums", elapsed);
 
 	if (mod->pub->count) {
@@ -805,7 +805,7 @@ static void publish_sent(int err, void *user_data)
 	const struct bt_mesh_model *mod = user_data;
 	int32_t delay;
 
-	LOG_DBG("err %d, time %u", err, k_uptime_get_32());
+	LOG_DBG("err %d, time %u", err, (uint32_t)TICK2MSEC(clock_systime_ticks()));
 
 	delay = next_period(mod);
 
@@ -814,7 +814,7 @@ static void publish_sent(int err, void *user_data)
 		/* Using schedule() in case the application has already called
 		 * bt_mesh_publish, and a publication is pending.
 		 */
-		k_work_schedule(&mod->pub->timer, K_MSEC(delay));
+		k_work_schedule(&mod->pub->timer, MSEC2TICK(delay));
 	}
 }
 
@@ -860,7 +860,7 @@ static int pub_period_start(struct bt_mesh_model_pub *pub)
 
 	err = pub->update(pub->mod);
 
-	pub->period_start = k_uptime_get_32();
+	pub->period_start = (uint32_t)TICK2MSEC(clock_systime_ticks());
 
 	if (err) {
 		/* Skip this publish attempt. */
@@ -896,7 +896,7 @@ static int pub_delay_schedule(struct bt_mesh_model_pub *pub, int delay)
 	}
 
 	random = pub_delay_get(delay);
-	err = k_work_reschedule(&pub->timer, K_MSEC(random));
+	err = k_work_reschedule(&pub->timer, MSEC2TICK(random));
 	if (err < 0) {
 		LOG_ERR("Unable to delay publication (err %d)", err);
 		return err;
@@ -922,7 +922,7 @@ static void mod_publish(struct k_work *work)
 		return;
 	}
 
-	LOG_DBG("timestamp: %u", k_uptime_get_32());
+	LOG_DBG("timestamp: %u", (uint32_t)TICK2MSEC(clock_systime_ticks()));
 
 	if (pub->count) {
 		pub->count--;
@@ -1630,7 +1630,7 @@ int bt_mesh_model_publish(const struct bt_mesh_model *model)
 
 	/* Account for initial transmission */
 	pub->count = BT_MESH_PUB_MSG_TOTAL(pub);
-	pub->period_start = k_uptime_get_32();
+	pub->period_start = (uint32_t)TICK2MSEC(clock_systime_ticks());
 
 	LOG_DBG("Publish Retransmit Count %u Interval %ums", pub->count,
 		BT_MESH_PUB_TRANSMIT_INT(pub->retransmit));
@@ -1647,7 +1647,7 @@ int bt_mesh_model_publish(const struct bt_mesh_model *model)
 		return 0;
 	}
 
-	k_work_reschedule(&pub->timer, K_NO_WAIT);
+	k_work_reschedule(&pub->timer, 0);
 
 	return 0;
 }
@@ -2632,7 +2632,7 @@ static void commit_mod(const struct bt_mesh_model *mod, const struct bt_mesh_ele
 			random = !!mod->pub->delayable ? pub_delay_get(RANDOM_DELAY_LONG) : 0;
 
 			LOG_DBG("Starting publish timer (period %u ms, delay %u ms)", ms, random);
-			k_work_schedule(&mod->pub->timer, K_MSEC(ms + random));
+			k_work_schedule(&mod->pub->timer, MSEC2TICK(ms + random));
 		}
 	}
 

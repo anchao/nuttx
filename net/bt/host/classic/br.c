@@ -44,7 +44,7 @@ static int reject_conn(const bt_addr_t *bdaddr, uint8_t reason)
 	struct net_buf *buf;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -91,7 +91,7 @@ static uint8_t accept_conn(const struct bt_hci_evt_conn_request *evt)
 			BT_HCI_ROLE_CENTRAL : BT_HCI_ROLE_PERIPHERAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (buf == NULL) {
 		return BT_HCI_ERR_INSUFFICIENT_RESOURCES;
 	}
@@ -155,7 +155,7 @@ static bool br_sufficient_key_size(struct bt_conn *conn)
 	uint8_t key_size;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		LOG_ERR("Failed to allocate command buffer");
 		return false;
@@ -301,7 +301,7 @@ void bt_hci_conn_complete(struct net_buf *buf)
 
 	bt_conn_unref(conn);
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return;
 	}
@@ -317,7 +317,7 @@ static int request_name(const bt_addr_t *addr, uint8_t pscan, uint16_t offset)
 	struct bt_hci_cp_remote_name_request *cp;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -684,7 +684,7 @@ void bt_hci_read_remote_features_complete(struct net_buf *buf)
 		goto done;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		goto done;
 	}
@@ -812,7 +812,7 @@ static int read_ext_features(void)
 		struct net_buf *buf, *rsp;
 		int err;
 
-		buf = bt_hci_cmd_alloc(K_FOREVER);
+		buf = bt_hci_cmd_alloc(((clock_t)-1));
 		if (!buf) {
 			return -ENOBUFS;
 		}
@@ -926,7 +926,7 @@ int bt_br_init(void)
 	net_buf_unref(buf);
 
 	/* Set SSP mode */
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -939,7 +939,7 @@ int bt_br_init(void)
 	}
 
 	/* Enable Inquiry results with RSSI or extended Inquiry */
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -961,7 +961,7 @@ int bt_br_init(void)
 	}
 
 	/* Set Class of device */
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -974,7 +974,7 @@ int bt_br_init(void)
 	}
 
 	/* Set page timeout*/
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -990,7 +990,7 @@ int bt_br_init(void)
 	if (BT_FEAT_SC(bt_dev.features)) {
 		struct bt_hci_cp_write_sc_host_supp *sc_cp;
 
-		buf = bt_hci_cmd_alloc(K_FOREVER);
+		buf = bt_hci_cmd_alloc(((clock_t)-1));
 		if (!buf) {
 			return -ENOBUFS;
 		}
@@ -1023,7 +1023,7 @@ int bt_br_init(void)
 
 		default_link_policy_settings ^= BT_HCI_LINK_POLICY_SETTINGS_ENABLE_ROLE_SWITCH;
 
-		buf = bt_hci_cmd_alloc(K_FOREVER);
+		buf = bt_hci_cmd_alloc(((clock_t)-1));
 		if (!buf) {
 			return -ENOBUFS;
 		}
@@ -1046,7 +1046,7 @@ static int br_start_inquiry(const struct bt_br_discovery_param *param)
 	struct bt_hci_op_inquiry *cp;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1139,7 +1139,7 @@ int bt_br_discovery_stop(void)
 			continue;
 		}
 
-		buf = bt_hci_cmd_alloc(K_FOREVER);
+		buf = bt_hci_cmd_alloc(((clock_t)-1));
 		if (!buf) {
 			continue;
 		}
@@ -1176,7 +1176,7 @@ static int write_scan_enable(uint8_t scan)
 
 	LOG_DBG("type %u", scan);
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1229,7 +1229,7 @@ static int bt_br_write_current_iac_lap(bool limited)
 
 	param_len = sizeof(*iac_lap) + (num_current_iac * sizeof(struct bt_hci_iac_lap));
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1285,7 +1285,7 @@ static int bt_br_write_cod(uint32_t cod)
 	struct net_buf *buf;
 
 	/* Set Class of device */
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1380,7 +1380,7 @@ int bt_br_set_discoverable(bool enable, bool limited)
 		if (!err && (limited == true)) {
 			atomic_set_bit(bt_dev.flags, BT_DEV_LIMITED_DISCOVERABLE_MODE);
 			bt_work_reschedule(&bt_br_limited_discoverable_timeout,
-					   K_SECONDS(CONFIG_BT_LIMITED_DISCOVERABLE_DURATION));
+					   SEC2TICK(CONFIG_BT_LIMITED_DISCOVERABLE_DURATION));
 		}
 		return err;
 	}
@@ -1433,7 +1433,7 @@ static int bt_br_write_page_scan_activity(uint16_t interval, uint16_t window)
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (buf == NULL) {
 		return -ENOBUFS;
 	}
@@ -1466,7 +1466,7 @@ static int bt_br_write_inquiry_scan_activity(uint16_t interval, uint16_t window)
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (buf == NULL) {
 		return -ENOBUFS;
 	}
@@ -1491,7 +1491,7 @@ static int bt_br_write_page_scan_type(uint8_t type)
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (buf == NULL) {
 		return -ENOBUFS;
 	}
@@ -1515,7 +1515,7 @@ static int bt_br_write_inquiry_scan_type(uint8_t type)
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (buf == NULL) {
 		return -ENOBUFS;
 	}
@@ -1672,7 +1672,7 @@ int bt_br_write_local_name(const char *name)
 	struct net_buf *buf;
 	struct bt_hci_write_local_name *name_cp;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (buf == NULL) {
 		return -ENOBUFS;
 	}
@@ -1698,7 +1698,7 @@ int bt_br_write_eir(const struct bt_data *eir, size_t eir_count, bool fec_requir
 		return -EAGAIN;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (buf == NULL) {
 		return -ENOBUFS;
 	}

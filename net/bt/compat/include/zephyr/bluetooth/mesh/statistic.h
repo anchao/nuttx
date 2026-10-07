@@ -102,7 +102,7 @@ struct bt_mesh_lpn_timing {
  *
  *  Returns timestamp-derived measurements of actual ReceiveDelay and
  *  ReceiveWindow observed on-air. Timestamps are captured using
- *  k_uptime_get() at poll TX completion, scanner enable, and response RX.
+ *  TICK2MSEC(clock_systime_ticks()) at poll TX completion, scanner enable, and response RX.
  *
  *  @param timing  Pointer to structure to populate.
  *

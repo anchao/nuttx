@@ -141,7 +141,7 @@ static int set_random_address(const bt_addr_t *addr)
 		return 0;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -197,7 +197,7 @@ int bt_id_set_adv_random_addr(struct bt_le_ext_adv *adv,
 		return 0;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -317,7 +317,7 @@ static void le_rpa_timeout_update(void)
 		struct net_buf *buf;
 		struct bt_hci_cp_le_set_rpa_timeout *cp;
 
-		buf = bt_hci_cmd_alloc(K_FOREVER);
+		buf = bt_hci_cmd_alloc(((clock_t)-1));
 		if (!buf) {
 			LOG_ERR("Failed to create HCI RPA timeout command");
 			err = -ENOBUFS;
@@ -346,7 +346,7 @@ static void le_rpa_timeout_submit(void)
 	le_rpa_timeout_update();
 #endif
 
-	(void)bt_work_schedule(&bt_dev.rpa_update, K_SECONDS(bt_dev.rpa_timeout));
+	(void)bt_work_schedule(&bt_dev.rpa_update, SEC2TICK(bt_dev.rpa_timeout));
 }
 
 /* this function sets new RPA only if current one is no longer valid */
@@ -872,7 +872,7 @@ static int le_set_privacy_mode(const bt_addr_le_t *addr, uint8_t mode)
 	bt_addr_le_copy(&cp.id_addr, addr);
 	cp.mode = mode;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -893,7 +893,7 @@ static int addr_res_enable(uint8_t enable)
 
 	LOG_DBG("%s", enable ? "enabled" : "disabled");
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -915,7 +915,7 @@ static int hci_id_add(uint8_t id, const bt_addr_le_t *addr, uint8_t peer_irk[16]
 
 	LOG_DBG("addr %s", bt_addr_le_str(addr));
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1193,7 +1193,7 @@ static int hci_id_del(const bt_addr_le_t *addr)
 
 	LOG_DBG("addr %s", bt_addr_le_str(addr));
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1885,7 +1885,7 @@ int bt_setup_random_id_addr(void)
 static inline bool rpa_timeout_valid_check(void)
 {
 #if defined(CONFIG_BT_PRIVACY)
-	uint32_t remaining_ms = k_ticks_to_ms_floor32(
+	uint32_t remaining_ms = TICK2MSEC(
 		k_work_delayable_remaining_get(&bt_dev.rpa_update));
 	/* Check if create conn timeout will happen before RPA timeout. */
 	return remaining_ms > (10 * bt_dev.create_param.timeout);

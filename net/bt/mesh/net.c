@@ -550,7 +550,7 @@ static int net_loopback(const struct bt_mesh_net_tx *tx, const uint8_t *data,
 	int err;
 	struct loopback_buf *buf;
 
-	err = k_mem_slab_alloc(&loopback_buf_pool, (void **)&buf, K_NO_WAIT);
+	err = k_mem_slab_alloc(&loopback_buf_pool, (void **)&buf, 0);
 	if (err) {
 		LOG_WRN("Unable to allocate loopback");
 		return -ENOMEM;
@@ -751,7 +751,7 @@ static void bt_mesh_net_relay(struct net_buf_simple *sbuf, struct bt_mesh_net_rx
 	}
 
 	adv = bt_mesh_adv_create(BT_MESH_ADV_DATA, BT_MESH_ADV_TAG_RELAY,
-				 transmit, K_NO_WAIT);
+				 transmit, 0);
 	if (!adv) {
 		LOG_DBG("Out of relay advs");
 		return;

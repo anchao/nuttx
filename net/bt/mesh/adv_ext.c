@@ -186,7 +186,7 @@ static int adv_start(struct bt_mesh_ext_adv *ext_adv,
 		return err;
 	}
 
-	ext_adv->timestamp = k_uptime_get_32();
+	ext_adv->timestamp = (uint32_t)TICK2MSEC(clock_systime_ticks());
 
 	err = bt_le_ext_adv_start(ext_adv->instance, start);
 	if (err) {
@@ -269,7 +269,7 @@ static int adv_queue_send_process(struct bt_mesh_ext_adv *ext_adv)
 	struct bt_mesh_adv *adv;
 	int err = -ENOENT;
 
-	while ((adv = bt_mesh_adv_get_by_tag(ext_adv->tags, K_NO_WAIT))) {
+	while ((adv = bt_mesh_adv_get_by_tag(ext_adv->tags, 0))) {
 		/* busy == 0 means this was canceled */
 		if (!adv->ctx.busy) {
 			bt_mesh_adv_unref(adv);
@@ -352,7 +352,7 @@ static void send_pending_adv(struct k_work *work)
 
 	if (atomic_test_and_clear_bit(ext_adv->flags, ADV_FLAG_SENT)) {
 		LOG_DBG("Advertising stopped after %u ms for %s adv",
-			k_uptime_get_32() - ext_adv->timestamp,
+			(uint32_t)TICK2MSEC(clock_systime_ticks()) - ext_adv->timestamp,
 			ext_adv->adv ? adv_tag_to_str[ext_adv->adv->ctx.tag]
 				     : adv_tag_to_str[BT_MESH_ADV_TAG_PROXY]);
 
@@ -603,7 +603,7 @@ int bt_mesh_adv_gatt_start(const struct bt_le_adv_param *param,
 	struct bt_mesh_ext_adv *ext_adv = gatt_adv_get();
 	struct bt_le_ext_adv_start_param start = {
 		/* Timeout is set in 10 ms steps, with 0 indicating "forever" */
-		.timeout = (duration == SYS_FOREVER_MS) ? 0 : MAX(1, duration / 10),
+		.timeout = (duration == -1) ? 0 : MAX(1, duration / 10),
 	};
 
 	LOG_DBG("Start advertising %d ms", duration);

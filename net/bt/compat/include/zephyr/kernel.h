@@ -34,7 +34,7 @@ struct k_fifo {
 void k_fifo_init(struct k_fifo *fifo);
 void k_fifo_cancel_wait(struct k_fifo *fifo);
 void k_fifo_put(struct k_fifo *fifo, void *data);
-void *k_fifo_get(struct k_fifo *fifo, k_timeout_t timeout);
+void *k_fifo_get(struct k_fifo *fifo, clock_t timeout);
 bool k_fifo_is_empty(struct k_fifo *fifo);
 void *k_fifo_peek_head(struct k_fifo *fifo);
 void *k_fifo_peek_tail(struct k_fifo *fifo);
@@ -93,9 +93,9 @@ struct k_thread {
 k_tid_t k_thread_create(struct k_thread *new_thread, char *stack,
                         size_t stack_size, k_thread_entry_t entry,
                         void *p1, void *p2, void *p3,
-                        int prio, uint32_t options, k_timeout_t delay);
+                        int prio, uint32_t options, clock_t delay);
 void k_thread_start(k_tid_t thread);
-int k_thread_join(struct k_thread *thread, k_timeout_t timeout);
+int k_thread_join(struct k_thread *thread, clock_t timeout);
 int k_thread_name_set(k_tid_t thread, const char *name);
 struct k_thread *k_current_get(void);
 
@@ -148,17 +148,17 @@ void k_work_init(struct k_work *work, k_work_handler_t handler);
 void k_work_init_delayable(struct k_work_delayable *dwork, k_work_handler_t handler);
 int k_work_submit(struct k_work *work);
 int k_work_submit_to_queue(struct k_work_q *queue, struct k_work *work);
-int k_work_schedule(struct k_work_delayable *dwork, k_timeout_t delay);
+int k_work_schedule(struct k_work_delayable *dwork, clock_t delay);
 int k_work_schedule_for_queue(struct k_work_q *queue,
                               struct k_work_delayable *dwork,
-                              k_timeout_t delay);
+                              clock_t delay);
 int k_work_cancel_delayable(struct k_work_delayable *dwork);
 int k_work_cancel_delayable_sync(struct k_work_delayable *dwork,
                                  struct k_work_sync *sync);
-int k_work_reschedule(struct k_work_delayable *dwork, k_timeout_t delay);
+int k_work_reschedule(struct k_work_delayable *dwork, clock_t delay);
 int k_work_reschedule_for_queue(struct k_work_q *queue,
                                 struct k_work_delayable *dwork,
-                                k_timeout_t delay);
+                                clock_t delay);
 bool k_work_is_pending(const struct k_work *work);
 int k_work_busy_get(const struct k_work *work);
 static inline bool k_work_delayable_is_pending(const struct k_work_delayable *dwork)
@@ -171,7 +171,7 @@ int k_work_cancel(struct k_work *work);
 int k_work_cancel_sync(struct k_work *work, struct k_work_sync *sync);
 struct k_work_delayable *k_work_delayable_from_work(struct k_work *work);
 int k_work_delayable_busy_get(const struct k_work_delayable *dwork);
-k_ticks_t k_work_delayable_remaining_get(const struct k_work_delayable *dwork);
+clock_t k_work_delayable_remaining_get(const struct k_work_delayable *dwork);
 struct k_thread *k_work_queue_thread_get(struct k_work_q *queue);
 void k_work_queue_init(struct k_work_q *queue);
 int k_work_queue_start(struct k_work_q *queue, char *stack,
@@ -183,44 +183,7 @@ int k_work_queue_start(struct k_work_q *queue, char *stack,
 extern struct k_work_q k_sys_work_q;
 
 /* ===== Time ===== */
-typedef struct {
-    int32_t ticks;
-} k_timepoint_t;
-
-static inline k_timepoint_t sys_timepoint_calc(k_timeout_t timeout)
-{
-    if (K_TIMEOUT_EQ(timeout, K_FOREVER))
-        {
-            return (k_timepoint_t){ .ticks = -1 };
-        }
-
-    return (k_timepoint_t){ .ticks = (int32_t)clock_systime_ticks() + timeout.ticks };
-}
-
-static inline bool sys_timepoint_expired(k_timepoint_t timepoint)
-{
-    if (timepoint.ticks < 0)
-        {
-            return false;
-        }
-
-    return ((int32_t)clock_systime_ticks() - timepoint.ticks) >= 0;
-}
-
-static inline k_timeout_t sys_timepoint_timeout(k_timepoint_t timepoint)
-{
-    int32_t ticks;
-
-    if (timepoint.ticks < 0)
-        {
-            return K_FOREVER;
-        }
-
-    ticks = timepoint.ticks - (int32_t)clock_systime_ticks();
-    return ticks > 0 ? (k_timeout_t){ .ticks = ticks } : K_NO_WAIT;
-}
-
-int32_t k_sleep(k_timeout_t timeout);
+int32_t k_sleep(clock_t timeout);
 int32_t k_msleep(int32_t ms);
 void k_busy_wait(int32_t usec_to_wait);
 void k_yield(void);
@@ -239,7 +202,7 @@ struct k_mem_slab {
 
 void k_mem_slab_init(struct k_mem_slab *slab, void *buffer, size_t block_size,
                      uint32_t num_blocks);
-int k_mem_slab_alloc(struct k_mem_slab *slab, void **mem, k_timeout_t timeout);
+int k_mem_slab_alloc(struct k_mem_slab *slab, void **mem, clock_t timeout);
 void k_mem_slab_free(struct k_mem_slab *slab, void **mem);
 uint32_t k_mem_slab_num_free_get(struct k_mem_slab *slab);
 uint32_t k_mem_slab_max_used_get(struct k_mem_slab *slab);
@@ -309,12 +272,12 @@ struct k_poll_event {
     { .type = (_type), .mode = (_mode), .state = K_POLL_STATE_NOT_READY, \
       .obj = (void *)(_obj), .tag = (_tag) }
 
-int k_poll(struct k_poll_event *events, int num_events, k_timeout_t timeout);
+int k_poll(struct k_poll_event *events, int num_events, clock_t timeout);
 
 /* ===== net_buf fifo integration ===== */
 struct net_buf;
 void net_buf_put(struct k_fifo *fifo, struct net_buf *buf);
-struct net_buf *net_buf_get(struct k_fifo *fifo, k_timeout_t timeout);
+struct net_buf *net_buf_get(struct k_fifo *fifo, clock_t timeout);
 
 /* ===== Miscellaneous ===== */
 struct k_condvar {
@@ -323,7 +286,7 @@ struct k_condvar {
 
 #define Z_CONDVAR_INITIALIZER(obj) { .cond = PTHREAD_COND_INITIALIZER }
 int k_condvar_init(struct k_condvar *condvar);
-int k_condvar_wait(struct k_condvar *condvar, rmutex_t *mutex, k_timeout_t timeout);
+int k_condvar_wait(struct k_condvar *condvar, rmutex_t *mutex, clock_t timeout);
 int k_condvar_broadcast(struct k_condvar *condvar);
 
 /* k_panic / k_oops - stubs */

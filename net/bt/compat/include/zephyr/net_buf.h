@@ -6,19 +6,15 @@
 #include <nuttx/mm/net_buf.h>
 #include <zephyr/sys_clock.h>
 
-/* The NuttX net_buf provides most of the same APIs as Zephyr's net_buf.
- *
- * Key difference: net_buf_alloc and friends take raw int32_t ticks as the
- * timeout parameter, NOT k_timeout_t. Zephyr source files that pass
- * K_NO_WAIT, K_FOREVER, or K_SECONDS() need to be patched accordingly.
- * K_NO_WAIT maps to 0, K_FOREVER maps to -1, K_SECONDS(n) maps to
- * k_sec_to_ticks_ceil32(n).
- */
+static inline int32_t bt_net_buf_timeout(clock_t timeout)
+{
+    return timeout < 0 ? -1 : (int32_t)TICK2MSEC(timeout);
+}
 
 /* net_buf_alloc_fixed_debug - Zephyr debug wrapper, map to net_buf_alloc */
-static inline struct net_buf *net_buf_alloc_fixed_debug(struct net_buf_pool *pool, k_timeout_t timeout, const char *func, int line)
+static inline struct net_buf *net_buf_alloc_fixed_debug(struct net_buf_pool *pool, clock_t timeout, const char *func, int line)
 {
-    return net_buf_alloc(pool, timeout.ticks);
+    return net_buf_alloc(pool, bt_net_buf_timeout(timeout));
 }
 
 #endif /* ZEPHYR_INCLUDE_NET_BUF_H_ */

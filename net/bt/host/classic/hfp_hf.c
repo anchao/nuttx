@@ -225,7 +225,7 @@ static void hfp_hf_send_data(struct bt_hfp_hf *hf)
 		return;
 	}
 
-	buf = k_fifo_get(&hf->tx_pending, K_NO_WAIT);
+	buf = k_fifo_get(&hf->tx_pending, 0);
 	if (!buf) {
 		atomic_clear_bit(hf->flags, BT_HFP_HF_FLAG_TX_ONGOING);
 		return;
@@ -572,7 +572,7 @@ static int hf_query_current_calls(struct bt_hfp_hf *hf)
 	}
 
 	if (atomic_test_and_set_bit(hf->flags, BT_HFP_HF_FLAG_CLCC_PENDING)) {
-		k_work_reschedule(&hf->deferred_work, K_MSEC(HF_ENHANCED_CALL_STATUS_TIMEOUT));
+		k_work_reschedule(&hf->deferred_work, MSEC2TICK(HF_ENHANCED_CALL_STATUS_TIMEOUT));
 		return 0;
 	}
 
@@ -609,11 +609,11 @@ static void hf_call_state_update(struct bt_hfp_hf_call *call, int state)
 		break;
 	case BT_HFP_HF_CALL_STATE_ALERTING:
 		k_work_reschedule(&call->hf->deferred_work,
-				  K_MSEC(HF_ENHANCED_CALL_STATUS_TIMEOUT));
+				  MSEC2TICK(HF_ENHANCED_CALL_STATUS_TIMEOUT));
 		break;
 	case BT_HFP_HF_CALL_STATE_WAITING:
 		k_work_reschedule(&call->hf->deferred_work,
-				  K_MSEC(HF_ENHANCED_CALL_STATUS_TIMEOUT));
+				  MSEC2TICK(HF_ENHANCED_CALL_STATUS_TIMEOUT));
 		break;
 	case BT_HFP_HF_CALL_STATE_ACTIVE:
 		break;
@@ -1227,7 +1227,7 @@ static void ag_indicator_handle_call_setup(struct bt_hfp_hf *hf, uint32_t value)
 			} else {
 				LOG_INF("Waiting for +CIEV: (callheld = 1)");
 				k_work_reschedule(&hf->deferred_work,
-						  K_MSEC(HF_ENHANCED_CALL_STATUS_TIMEOUT));
+						  MSEC2TICK(HF_ENHANCED_CALL_STATUS_TIMEOUT));
 			}
 		}
 		break;
@@ -1299,7 +1299,7 @@ static void ag_indicator_handle_call_held(struct bt_hfp_hf *hf, uint32_t value)
 	struct bt_hfp_hf_call *call;
 
 	if (atomic_test_bit(hf->flags, BT_HFP_HF_FLAG_CONNECTED)) {
-		k_work_reschedule(&hf->deferred_work, K_MSEC(HF_ENHANCED_CALL_STATUS_TIMEOUT));
+		k_work_reschedule(&hf->deferred_work, MSEC2TICK(HF_ENHANCED_CALL_STATUS_TIMEOUT));
 	}
 
 	LOG_DBG("call setup %d", value);
@@ -2138,7 +2138,7 @@ static int at_cmd_init_start(struct bt_hfp_hf *hf)
 		atomic_clear_bit(hf->flags, BT_HFP_HF_FLAG_INITIATING);
 		if (atomic_test_and_clear_bit(hf->flags, BT_HFP_HF_FLAG_QUERY_CALLS)) {
 			k_work_reschedule(&hf->deferred_work,
-					  K_MSEC(HF_ENHANCED_CALL_STATUS_TIMEOUT));
+					  MSEC2TICK(HF_ENHANCED_CALL_STATUS_TIMEOUT));
 		}
 	}
 
@@ -3782,7 +3782,7 @@ static int chld_release_all_held_finish(struct at_client *hf_at, enum at_result 
 
 	LOG_DBG("AT+CHLD=0 (result %d) on %p", result, hf);
 
-	k_work_reschedule(&hf->deferred_work, K_MSEC(HF_ENHANCED_CALL_STATUS_TIMEOUT));
+	k_work_reschedule(&hf->deferred_work, MSEC2TICK(HF_ENHANCED_CALL_STATUS_TIMEOUT));
 
 	return 0;
 }
@@ -3822,7 +3822,7 @@ static int chld_set_udub_finish(struct at_client *hf_at, enum at_result result,
 
 	LOG_DBG("AT+CHLD=0 (result %d) on %p", result, hf);
 
-	k_work_reschedule(&hf->deferred_work, K_MSEC(HF_ENHANCED_CALL_STATUS_TIMEOUT));
+	k_work_reschedule(&hf->deferred_work, MSEC2TICK(HF_ENHANCED_CALL_STATUS_TIMEOUT));
 
 	return 0;
 }
@@ -3862,7 +3862,7 @@ static int chld_release_active_accept_other_finish(struct at_client *hf_at,
 
 	LOG_DBG("AT+CHLD=1 (result %d) on %p", result, hf);
 
-	k_work_reschedule(&hf->deferred_work, K_MSEC(HF_ENHANCED_CALL_STATUS_TIMEOUT));
+	k_work_reschedule(&hf->deferred_work, MSEC2TICK(HF_ENHANCED_CALL_STATUS_TIMEOUT));
 
 	return 0;
 }
@@ -3898,7 +3898,7 @@ static int chld_hold_active_accept_other_finish(struct at_client *hf_at,
 
 	LOG_DBG("AT+CHLD=2 (result %d) on %p", result, hf);
 
-	k_work_reschedule(&hf->deferred_work, K_MSEC(HF_ENHANCED_CALL_STATUS_TIMEOUT));
+	k_work_reschedule(&hf->deferred_work, MSEC2TICK(HF_ENHANCED_CALL_STATUS_TIMEOUT));
 
 	return 0;
 }
@@ -3934,7 +3934,7 @@ static int chld_join_conversation_finish(struct at_client *hf_at,
 
 	LOG_DBG("AT+CHLD=3 (result %d) on %p", result, hf);
 
-	k_work_reschedule(&hf->deferred_work, K_MSEC(HF_ENHANCED_CALL_STATUS_TIMEOUT));
+	k_work_reschedule(&hf->deferred_work, MSEC2TICK(HF_ENHANCED_CALL_STATUS_TIMEOUT));
 
 	return 0;
 }
@@ -3975,7 +3975,7 @@ static int chld_explicit_call_transfer_finish(struct at_client *hf_at,
 
 	LOG_DBG("AT+CHLD=4 (result %d) on %p", result, hf);
 
-	k_work_reschedule(&hf->deferred_work, K_MSEC(HF_ENHANCED_CALL_STATUS_TIMEOUT));
+	k_work_reschedule(&hf->deferred_work, MSEC2TICK(HF_ENHANCED_CALL_STATUS_TIMEOUT));
 
 	return 0;
 }
@@ -4016,7 +4016,7 @@ static int chld_release_specified_call_finish(struct at_client *hf_at,
 
 	LOG_DBG("AT+CHLD=1<idx> (result %d) on %p", result, hf);
 
-	k_work_reschedule(&hf->deferred_work, K_MSEC(HF_ENHANCED_CALL_STATUS_TIMEOUT));
+	k_work_reschedule(&hf->deferred_work, MSEC2TICK(HF_ENHANCED_CALL_STATUS_TIMEOUT));
 
 	return 0;
 }
@@ -4080,7 +4080,7 @@ static int chld_private_consultation_mode_finish(struct at_client *hf_at,
 
 	LOG_DBG("AT+CHLD=2<idx> (result %d) on %p", result, hf);
 
-	k_work_reschedule(&hf->deferred_work, K_MSEC(HF_ENHANCED_CALL_STATUS_TIMEOUT));
+	k_work_reschedule(&hf->deferred_work, MSEC2TICK(HF_ENHANCED_CALL_STATUS_TIMEOUT));
 
 	return 0;
 }
@@ -4279,13 +4279,13 @@ static void hfp_hf_disconnected(struct bt_rfcomm_dlc *dlc)
 	 * leaving them on the FIFO would leak them from hf_pool for good:
 	 * hfp_hf_create() wipes the FIFO with memset() when the slot is
 	 * reused. Freeing them also unblocks a work handler that is stuck
-	 * in the K_FOREVER allocation in hfp_hf_send_cmd() waiting for the
+	 * in the ((clock_t)-1) allocation in hfp_hf_send_cmd() waiting for the
 	 * exhausted pool to be refilled.
 	 */
-	buf = k_fifo_get(&hf->tx_pending, K_NO_WAIT);
+	buf = k_fifo_get(&hf->tx_pending, 0);
 	while (buf != NULL) {
 		net_buf_unref(buf);
-		buf = k_fifo_get(&hf->tx_pending, K_NO_WAIT);
+		buf = k_fifo_get(&hf->tx_pending, 0);
 	}
 
 	hf->acl = NULL;
@@ -4451,7 +4451,7 @@ static struct bt_hfp_hf *hfp_hf_create(struct bt_conn *conn)
 	/* The work items are canceled on disconnect, but a handler that was
 	 * already running at that point may still be executing: cancellation
 	 * does not wait for a running handler, and the handlers can block for
-	 * a long time in the K_FOREVER buffer allocation in
+	 * a long time in the ((clock_t)-1) buffer allocation in
 	 * hfp_hf_send_cmd(). Wiping the object under a running handler would
 	 * corrupt the work items and the TX FIFO, so refuse to reuse the
 	 * object until the handlers have finished. This is a transient

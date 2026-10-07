@@ -77,7 +77,7 @@ struct bt_dev_raw bt_dev = {
 	.hci = BT_HCI_DEV,
 };
 
-struct net_buf *bt_buf_get_rx(enum bt_buf_type type, k_timeout_t timeout)
+struct net_buf *bt_buf_get_rx(enum bt_buf_type type, clock_t timeout)
 {
 	struct net_buf *buf;
 
@@ -91,7 +91,7 @@ struct net_buf *bt_buf_get_rx(enum bt_buf_type type, k_timeout_t timeout)
 		return NULL;
 	}
 
-	buf = net_buf_alloc(&hci_rx_pool, timeout);
+	buf = net_buf_alloc(&hci_rx_pool, bt_net_buf_timeout(timeout));
 	if (!buf) {
 		return buf;
 	}
@@ -106,7 +106,7 @@ void bt_buf_rx_freed_cb_set(bt_buf_rx_freed_cb_t cb)
 	buf_rx_freed_cb = cb;
 }
 
-struct net_buf *bt_buf_get_tx(enum bt_buf_type type, k_timeout_t timeout,
+struct net_buf *bt_buf_get_tx(enum bt_buf_type type, clock_t timeout,
 			      const void *data, size_t size)
 {
 	struct net_buf_pool *pool;
@@ -129,7 +129,7 @@ struct net_buf *bt_buf_get_tx(enum bt_buf_type type, k_timeout_t timeout,
 		return NULL;
 	}
 
-	buf = net_buf_alloc(pool, timeout);
+	buf = net_buf_alloc(pool, bt_net_buf_timeout(timeout));
 	if (!buf) {
 		return buf;
 	}
@@ -148,7 +148,7 @@ struct net_buf *bt_buf_get_tx(enum bt_buf_type type, k_timeout_t timeout,
 	return buf;
 }
 
-struct net_buf *bt_buf_get_evt(uint8_t evt, bool discardable, k_timeout_t timeout)
+struct net_buf *bt_buf_get_evt(uint8_t evt, bool discardable, clock_t timeout)
 {
 	ARG_UNUSED(evt);
 	ARG_UNUSED(discardable);

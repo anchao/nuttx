@@ -86,7 +86,7 @@ void bt_mesh_adv_send_end(int err, struct bt_mesh_adv_ctx const *ctx)
 static struct bt_mesh_adv *adv_create_from_pool(struct k_mem_slab *buf_pool,
 						enum bt_mesh_adv_type type,
 						enum bt_mesh_adv_tag tag,
-						uint8_t xmit, k_timeout_t timeout)
+						uint8_t xmit, clock_t timeout)
 {
 	struct bt_mesh_adv_ctx *ctx;
 	struct bt_mesh_adv *adv;
@@ -154,7 +154,7 @@ void bt_mesh_adv_unref(struct bt_mesh_adv *adv)
 
 struct bt_mesh_adv *bt_mesh_adv_create(enum bt_mesh_adv_type type,
 				       enum bt_mesh_adv_tag tag,
-				       uint8_t xmit, k_timeout_t timeout)
+				       uint8_t xmit, clock_t timeout)
 {
 #if (defined(CONFIG_BT_MESH_RELAY) || defined(CONFIG_BT_MESH_BRG_CFG_SRV))
 	if (tag == BT_MESH_ADV_TAG_RELAY) {
@@ -181,7 +181,7 @@ static struct bt_mesh_adv *process_events(struct k_poll_event *ev, int count)
 
 		switch (ev->state) {
 		case K_POLL_STATE_FIFO_DATA_AVAILABLE:
-			return k_fifo_get(ev->fifo, K_NO_WAIT);
+			return k_fifo_get(ev->fifo, 0);
 		case K_POLL_STATE_NOT_READY:
 		case K_POLL_STATE_CANCELLED:
 			break;
@@ -194,7 +194,7 @@ static struct bt_mesh_adv *process_events(struct k_poll_event *ev, int count)
 	return NULL;
 }
 
-struct bt_mesh_adv *bt_mesh_adv_get(k_timeout_t timeout)
+struct bt_mesh_adv *bt_mesh_adv_get(clock_t timeout)
 {
 	int err;
 	struct k_poll_event events[] = {
@@ -221,7 +221,7 @@ struct bt_mesh_adv *bt_mesh_adv_get(k_timeout_t timeout)
 	return process_events(events, ARRAY_SIZE(events));
 }
 
-struct bt_mesh_adv *bt_mesh_adv_get_by_tag(enum bt_mesh_adv_tag_bit tags, k_timeout_t timeout)
+struct bt_mesh_adv *bt_mesh_adv_get_by_tag(enum bt_mesh_adv_tag_bit tags, clock_t timeout)
 {
 	if (IS_ENABLED(CONFIG_BT_MESH_ADV_EXT_FRIEND_SEPARATE) &&
 	    tags & BT_MESH_ADV_TAG_BIT_FRIEND) {

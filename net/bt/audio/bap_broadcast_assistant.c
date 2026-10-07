@@ -458,7 +458,7 @@ static void long_bap_read(struct bt_conn *conn, uint16_t handle)
 
 		/* Wait a connection interval to retry */
 		err = k_work_reschedule(&inst->bap_read_work,
-					K_USEC(conn_info.le.interval_us));
+					USEC2TICK(conn_info.le.interval_us));
 		if (err < 0) {
 			LOG_DBG("Failed to reschedule read work: %d", err);
 			bap_long_read_reset(inst);

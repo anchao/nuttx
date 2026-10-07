@@ -46,7 +46,7 @@ extern "C" {
 #endif
 
 /** Recommended timer for member discovery */
-#define BT_CSIP_SET_COORDINATOR_DISCOVER_TIMER_VALUE        K_SECONDS(10)
+#define BT_CSIP_SET_COORDINATOR_DISCOVER_TIMER_VALUE        SEC2TICK(10)
 
 /**
  * Defines the maximum number of Coordinated Set Identification service instances for the

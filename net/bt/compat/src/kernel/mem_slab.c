@@ -24,7 +24,7 @@ void k_mem_slab_init(struct k_mem_slab *slab, void *buffer, size_t block_size,
         }
 }
 
-int k_mem_slab_alloc(struct k_mem_slab *slab, void **mem, k_timeout_t timeout)
+int k_mem_slab_alloc(struct k_mem_slab *slab, void **mem, clock_t timeout)
 {
     (void)timeout;
 

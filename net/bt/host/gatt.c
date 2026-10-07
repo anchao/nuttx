@@ -59,8 +59,8 @@
 #define LOG_LEVEL CONFIG_BT_GATT_LOG_LEVEL
 LOG_MODULE_REGISTER(bt_gatt);
 
-#define SC_TIMEOUT	K_MSEC(10)
-#define DB_HASH_TIMEOUT	K_MSEC(10)
+#define SC_TIMEOUT	MSEC2TICK(10)
+#define DB_HASH_TIMEOUT	MSEC2TICK(10)
 
 static uint16_t last_static_handle;
 
@@ -1218,7 +1218,7 @@ populate:
 }
 #endif /* CONFIG_BT_GATT_DYNAMIC_DB */
 
-static inline void sc_work_submit(k_timeout_t timeout)
+static inline void sc_work_submit(clock_t timeout)
 {
 #if defined(CONFIG_BT_GATT_SERVICE_CHANGED)
 	bt_work_reschedule(&gatt_sc.work, timeout);
@@ -1240,7 +1240,7 @@ static void sc_indicate_rsp(struct bt_conn *conn,
 	/* Check if there is new change in the meantime */
 	if (atomic_test_bit(gatt_sc.flags, SC_RANGE_CHANGED)) {
 		/* Reschedule without any delay since it is waiting already */
-		sc_work_submit(K_NO_WAIT);
+		sc_work_submit(0);
 	}
 
 #if defined(CONFIG_BT_GATT_CACHING)
@@ -1384,7 +1384,7 @@ static void gatt_delayed_store_enqueue(uint8_t id, const bt_addr_le_t *peer_addr
 		atomic_set_bit(el->flags, flag);
 
 		bt_work_reschedule(&gatt_delayed_store.work,
-				   K_MSEC(CONFIG_BT_SETTINGS_DELAYED_STORE_MS));
+				   MSEC2TICK(CONFIG_BT_SETTINGS_DELAYED_STORE_MS));
 	}
 }
 
@@ -2543,7 +2543,7 @@ static int gatt_notify_mult(struct bt_conn *conn, uint16_t handle,
 	/* Use `bt_work_schedule` to keep the original deadline, instead of
 	 * re-setting the timeout whenever a new notification is appended.
 	 */
-	bt_work_schedule(&nfy_mult_work, K_MSEC(CONFIG_BT_GATT_NOTIFY_MULTIPLE_FLUSH_MS));
+	bt_work_schedule(&nfy_mult_work, MSEC2TICK(CONFIG_BT_GATT_NOTIFY_MULTIPLE_FLUSH_MS));
 
 	return 0;
 }

@@ -123,7 +123,7 @@ static int mesh_commit(void)
 SETTINGS_STATIC_HANDLER_DEFINE_WITH_CPRIO(bt_mesh, "bt/mesh", NULL, NULL, mesh_commit, NULL,
 					  BT_SETTINGS_CPRIO_2);
 
-/* Pending flags that use K_NO_WAIT as the storage timeout */
+/* Pending flags that use 0 as the storage timeout */
 #define NO_WAIT_PENDING_BITS (BIT(BT_MESH_SETTINGS_NET_PENDING) |           \
 			      BIT(BT_MESH_SETTINGS_IV_PENDING)  |           \
 			      BIT(BT_MESH_SETTINGS_SEQ_PENDING) |           \
@@ -139,7 +139,7 @@ static void schedule_store(struct k_work_delayable *dwork, uint32_t timeout_ms)
 {
 	uint32_t remaining_ms;
 
-	remaining_ms = k_ticks_to_ms_floor32(k_work_delayable_remaining_get(dwork));
+	remaining_ms = TICK2MSEC(k_work_delayable_remaining_get(dwork));
 	LOG_DBG("Waiting %u ms vs rem %u ms", timeout_ms, remaining_ms);
 
 	/* If the new deadline is sooner, override any existing
@@ -148,15 +148,15 @@ static void schedule_store(struct k_work_delayable *dwork, uint32_t timeout_ms)
 	 */
 	if (timeout_ms < remaining_ms) {
 		if (IS_ENABLED(CONFIG_BT_MESH_SETTINGS_WORKQ)) {
-			k_work_reschedule_for_queue(&settings_work_q, dwork, K_MSEC(timeout_ms));
+			k_work_reschedule_for_queue(&settings_work_q, dwork, MSEC2TICK(timeout_ms));
 		} else {
-			k_work_reschedule(dwork, K_MSEC(timeout_ms));
+			k_work_reschedule(dwork, MSEC2TICK(timeout_ms));
 		}
 	} else {
 		if (IS_ENABLED(CONFIG_BT_MESH_SETTINGS_WORKQ)) {
-			k_work_schedule_for_queue(&settings_work_q, dwork, K_MSEC(timeout_ms));
+			k_work_schedule_for_queue(&settings_work_q, dwork, MSEC2TICK(timeout_ms));
 		} else {
-			k_work_schedule(dwork, K_MSEC(timeout_ms));
+			k_work_schedule(dwork, MSEC2TICK(timeout_ms));
 		}
 	}
 }

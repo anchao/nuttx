@@ -863,7 +863,7 @@ static int cmd_send_media(const struct shell *sh, int32_t argc, char *argv[])
 		return -ENOEXEC;
 	}
 
-	buf = bt_a2dp_stream_create_pdu(&a2dp_tx_pool, K_FOREVER);
+	buf = bt_a2dp_stream_create_pdu(&a2dp_tx_pool, ((clock_t)-1));
 	if (buf == NULL) {
 		bt_shell_error("fail to allocate buffer");
 		return -ENOEXEC;

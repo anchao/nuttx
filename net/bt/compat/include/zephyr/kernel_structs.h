@@ -291,7 +291,7 @@ struct _timeout {
 	struct list_node node;
 	_timeout_func_t fn;
 #ifdef CONFIG_TIMEOUT_64BIT
-	/* Can't use k_ticks_t for header dependency reasons */
+	/* Can't use clock_t for header dependency reasons */
 	int64_t dticks;
 #else
 	int32_t dticks;

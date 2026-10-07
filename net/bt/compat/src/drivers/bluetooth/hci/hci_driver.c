@@ -34,24 +34,24 @@ int bt_hci_driver_register(const struct bt_hci_driver_ops *ops)
     return 0;
 }
 
-struct net_buf *bt_buf_get_cmd_complete(k_timeout_t timeout)
+struct net_buf *bt_buf_get_cmd_complete(clock_t timeout)
 {
-    return net_buf_alloc(&hci_cmd_pool, (int32_t)timeout.ticks);
+    return net_buf_alloc(&hci_cmd_pool, bt_net_buf_timeout(timeout));
 }
 
-struct net_buf *bt_buf_get_evt(uint8_t evt, bool discardable, k_timeout_t timeout)
+struct net_buf *bt_buf_get_evt(uint8_t evt, bool discardable, clock_t timeout)
 {
     (void)evt;
     (void)discardable;
-    return net_buf_alloc(&hci_evt_pool, (int32_t)timeout.ticks);
+    return net_buf_alloc(&hci_evt_pool, bt_net_buf_timeout(timeout));
 }
 
-struct net_buf *bt_buf_get_acl(k_timeout_t timeout)
+struct net_buf *bt_buf_get_acl(clock_t timeout)
 {
-    return net_buf_alloc(&hci_acl_rx_pool, (int32_t)timeout.ticks);
+    return net_buf_alloc(&hci_acl_rx_pool, bt_net_buf_timeout(timeout));
 }
 
-struct net_buf *bt_buf_get_iso(k_timeout_t timeout)
+struct net_buf *bt_buf_get_iso(clock_t timeout)
 {
     (void)timeout;
     return NULL;

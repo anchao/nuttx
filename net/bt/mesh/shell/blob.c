@@ -184,7 +184,7 @@ static int blob_srv_start(struct bt_mesh_blob_srv *srv,
 			  struct bt_mesh_blob_xfer *xfer)
 {
 	bt_shell_print("BLOB start");
-	blob_time = k_uptime_get();
+	blob_time = TICK2MSEC(clock_systime_ticks());
 	return 0;
 }
 
@@ -192,7 +192,7 @@ static void blob_srv_end(struct bt_mesh_blob_srv *srv, uint64_t id,
 			 bool success)
 {
 	if (success) {
-		int64_t duration = k_uptime_delta(&blob_time);
+		int64_t duration = TICK2MSEC(clock_systime_ticks()) - blob_time;
 
 		bt_shell_print("BLOB completed in %u.%03u s",
 			       (uint32_t)(duration / MSEC_PER_SEC),

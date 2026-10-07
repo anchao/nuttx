@@ -167,7 +167,7 @@ static int prov_link_open(const uint8_t uuid[16], uint8_t timeout,
 	link.cb = cb;
 	link.cb_data = cb_data;
 
-	k_work_reschedule(&link.prot_timer, K_SECONDS(timeout));
+	k_work_reschedule(&link.prot_timer, SEC2TICK(timeout));
 
 	return bt_mesh_pb_gatt_cli_setup(uuid);
 }

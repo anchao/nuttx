@@ -102,7 +102,7 @@ void bt_tx_irq_raise(void);
 #if defined(CONFIG_BT_CONN)
 static void notify_recycled_conn_slot(void);
 /* Peripheral timeout to initialize Connection Parameter Update procedure */
-#define CONN_UPDATE_TIMEOUT  K_MSEC(CONFIG_BT_CONN_PARAM_UPDATE_TIMEOUT)
+#define CONN_UPDATE_TIMEOUT  MSEC2TICK(CONFIG_BT_CONN_PARAM_UPDATE_TIMEOUT)
 
 static void deferred_work(struct k_work *work);
 static void notify_connected(struct bt_conn *conn);
@@ -173,7 +173,7 @@ static struct net_buf *get_data_frag(struct net_buf *outside, size_t winsize)
 	__ASSERT_NO_MSG(!bt_buf_has_view(outside));
 
 	/* Keeping a ref is the caller's responsibility */
-	window = net_buf_alloc_len(&fragments, 0, 0);  /* NuttX: K_NO_WAIT -> 0 ticks */
+	window = net_buf_alloc_len(&fragments, 0, 0);  /* NuttX: 0 -> 0 ticks */
 	if (!window) {
 		return window;
 	}
@@ -521,7 +521,7 @@ static bool dont_have_tx_context(struct bt_conn *conn)
 
 static struct bt_conn_tx *conn_tx_alloc(void)
 {
-	struct bt_conn_tx *ret = k_fifo_get(&free_tx, K_NO_WAIT);
+	struct bt_conn_tx *ret = k_fifo_get(&free_tx, 0);
 
 	LOG_DBG("%p", ret);
 
@@ -1250,7 +1250,7 @@ void bt_conn_set_state(struct bt_conn *conn, bt_conn_state_t state)
 			bt_conn_reset_rx_state(conn);
 
 			LOG_DBG("trigger disconnect work");
-			bt_work_reschedule(&conn->deferred_work, K_NO_WAIT);
+			bt_work_reschedule(&conn->deferred_work, 0);
 
 			/* The last ref will be dropped during cleanup */
 			break;
@@ -1333,7 +1333,7 @@ void bt_conn_set_state(struct bt_conn *conn, bt_conn_state_t state)
 		if (IS_ENABLED(CONFIG_BT_CENTRAL) && bt_conn_is_le(conn) &&
 		    bt_dev.create_param.timeout != 0) {
 			bt_work_schedule(&conn->deferred_work,
-					 K_MSEC(10 * bt_dev.create_param.timeout));
+					 MSEC2TICK(10 * bt_dev.create_param.timeout));
 		}
 
 		break;
@@ -1588,25 +1588,25 @@ uint8_t bt_conn_index(const struct bt_conn *conn)
 #if defined(CONFIG_NET_BUF_LOG)
 struct net_buf *bt_conn_create_pdu_timeout_debug(struct net_buf_pool *pool,
 						 size_t reserve,
-						 k_timeout_t timeout,
+						 clock_t timeout,
 						 const char *func, int line)
 #else
 struct net_buf *bt_conn_create_pdu_timeout(struct net_buf_pool *pool,
-					   size_t reserve, k_timeout_t timeout)
+					   size_t reserve, clock_t timeout)
 #endif
 {
 	struct net_buf *buf;
 
 	/*
-	 * PDU must not be allocated from ISR as we block with 'K_FOREVER'
+	 * PDU must not be allocated from ISR as we block with '((clock_t)-1)'
 	 * during the allocation
 	 */
 	__ASSERT_NO_MSG(!k_is_in_isr());
 
-	if (!K_TIMEOUT_EQ(timeout, K_NO_WAIT) &&
+	if (!((timeout) == (0)) &&
 	    k_current_get() == k_work_queue_thread_get(&k_sys_work_q)) {
 		LOG_WRN("Timeout discarded. No blocking in syswq.");
-		timeout = K_NO_WAIT;
+		timeout = 0;
 	}
 
 	if (!pool) {
@@ -1619,17 +1619,17 @@ struct net_buf *bt_conn_create_pdu_timeout(struct net_buf_pool *pool,
 
 	if (IS_ENABLED(CONFIG_BT_CONN_LOG_LEVEL_DBG)) {
 #if defined(CONFIG_NET_BUF_LOG)
-		buf = net_buf_alloc_fixed_debug(pool, K_NO_WAIT, func, line);
+		buf = net_buf_alloc_fixed_debug(pool, 0, func, line);
 #else
 		buf = net_buf_alloc(pool, 0);
 #endif
 		if (!buf) {
-			LOG_WRN("Unable to allocate buffer with K_NO_WAIT");
+			LOG_WRN("Unable to allocate buffer with 0");
 #if defined(CONFIG_NET_BUF_LOG)
 			buf = net_buf_alloc_fixed_debug(pool, timeout, func,
 							line);
 #else
-			buf = net_buf_alloc(pool, timeout.ticks);
+			buf = net_buf_alloc(pool, bt_net_buf_timeout(timeout));
 #endif
 		}
 	} else {
@@ -1637,7 +1637,7 @@ struct net_buf *bt_conn_create_pdu_timeout(struct net_buf_pool *pool,
 		buf = net_buf_alloc_fixed_debug(pool, timeout, func,
 							line);
 #else
-		buf = net_buf_alloc(pool, timeout.ticks);
+		buf = net_buf_alloc(pool, bt_net_buf_timeout(timeout));
 #endif
 	}
 
@@ -2333,7 +2333,7 @@ static void deferred_work(struct k_work *work)
 		 */
 		if (bt_le_create_conn_cancel() == -ENOBUFS) {
 			LOG_WRN("No buffers to cancel connection, retrying in 10 ms");
-			bt_work_reschedule(dwork, K_MSEC(10));
+			bt_work_reschedule(dwork, MSEC2TICK(10));
 		}
 		return;
 	}
@@ -2562,7 +2562,7 @@ int bt_conn_le_start_encryption(struct bt_conn *conn, uint8_t rand[8],
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -3098,7 +3098,7 @@ static int bt_conn_get_tx_power_level(struct bt_conn *conn, uint8_t type,
 	struct bt_hci_cp_read_tx_power_level *cp;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -3154,7 +3154,7 @@ int bt_conn_le_enhanced_get_tx_power_level(struct bt_conn *conn,
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -3192,7 +3192,7 @@ int bt_conn_le_get_remote_tx_power_level(struct bt_conn *conn,
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -3216,7 +3216,7 @@ int bt_conn_le_set_tx_power_report_enable(struct bt_conn *conn,
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -3290,7 +3290,7 @@ int bt_conn_le_set_path_loss_mon_param(struct bt_conn *conn,
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -3316,7 +3316,7 @@ int bt_conn_le_set_path_loss_mon_enable(struct bt_conn *conn, bool reporting_ena
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -3407,7 +3407,7 @@ int bt_conn_le_subrate_set_defaults(const struct bt_conn_le_subrate_param *param
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -3437,7 +3437,7 @@ int bt_conn_le_subrate_request(struct bt_conn *conn,
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -3574,7 +3574,7 @@ int bt_conn_le_conn_rate_set_defaults(const struct bt_conn_le_conn_rate_param *p
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (buf == NULL) {
 		return -ENOBUFS;
 	}
@@ -3609,7 +3609,7 @@ int bt_conn_le_conn_rate_request(struct bt_conn *conn,
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (buf == NULL) {
 		return -ENOBUFS;
 	}
@@ -3662,7 +3662,7 @@ int bt_conn_le_read_all_remote_features(struct bt_conn *conn, uint8_t pages_requ
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (buf == NULL) {
 		return -ENOBUFS;
 	}
@@ -3731,7 +3731,7 @@ int bt_conn_le_frame_space_update(struct bt_conn *conn,
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (buf == NULL) {
 		return -ENOBUFS;
 	}
@@ -4313,7 +4313,7 @@ int bt_conn_le_conn_update(struct bt_conn *conn,
 	struct hci_cp_le_conn_update *conn_update;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -4688,7 +4688,7 @@ int bt_conn_br_enter_sniff_mode(struct bt_conn *conn, uint16_t min_interval, uin
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -4720,7 +4720,7 @@ int bt_conn_br_exit_sniff_mode(struct bt_conn *conn)
 		return -EBUSY;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -4752,7 +4752,7 @@ int bt_conn_br_set_sniff_subrating(struct bt_conn *conn, uint16_t max_latency,
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}

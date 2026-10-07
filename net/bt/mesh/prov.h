@@ -178,7 +178,7 @@ static inline uint8_t bt_mesh_prov_auth_size_get(void)
 	}
 }
 
-static inline k_timeout_t bt_mesh_prov_protocol_timeout_get(void)
+static inline clock_t bt_mesh_prov_protocol_timeout_get(void)
 {
 	return (bt_mesh_prov_link.oob_method == AUTH_METHOD_INPUT ||
 		bt_mesh_prov_link.oob_method == AUTH_METHOD_OUTPUT)

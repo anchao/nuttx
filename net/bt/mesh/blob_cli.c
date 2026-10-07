@@ -59,7 +59,7 @@ static void transfer_cancel(struct bt_mesh_blob_cli *cli);
 
 static void start_retry_timer(struct bt_mesh_blob_cli *cli)
 {
-	k_timeout_t next_timeout;
+	clock_t next_timeout;
 
 	if (SENDING_CHUNKS_IN_PULL_MODE(cli)) {
 		int64_t next_timeout_ms = cli->tx.cli_timestamp;
@@ -76,10 +76,10 @@ static void start_retry_timer(struct bt_mesh_blob_cli *cli)
 		/* cli_timestamp and block_report_timestamp represent absolute time, while
 		 * k_work_* functions use relative time.
 		 */
-		next_timeout_ms -= k_uptime_get();
-		next_timeout = next_timeout_ms <= 0 ? K_NO_WAIT : K_MSEC(next_timeout_ms);
+		next_timeout_ms -= TICK2MSEC(clock_systime_ticks());
+		next_timeout = next_timeout_ms <= 0 ? 0 : MSEC2TICK(next_timeout_ms);
 	} else {
-		next_timeout = K_MSEC(CLIENT_TIMEOUT_MSEC(cli) /
+		next_timeout = MSEC2TICK(CLIENT_TIMEOUT_MSEC(cli) /
 				      CONFIG_BT_MESH_BLOB_CLI_BLOCK_RETRIES);
 	}
 
@@ -364,7 +364,7 @@ static struct bt_mesh_blob_target *next_target(struct bt_mesh_blob_cli *cli,
 		}
 
 		if (SENDING_CHUNKS_IN_PULL_MODE(cli) &&
-		    (k_uptime_get() < (*current)->pull->block_report_timestamp ||
+		    (TICK2MSEC(clock_systime_ticks()) < (*current)->pull->block_report_timestamp ||
 		     !blob_chunk_missing_get((*current)->pull->missing, cli->chunk_idx))) {
 			/* Skip targets that didn't time out or timed out, but confirmed
 			 * the currently transmitted chunk (cli->chunk_idx).
@@ -474,7 +474,7 @@ static void retry_timeout(struct k_work *work)
 	 * Retry logic for all other procedures in Pull mode is handled as in Push mode.
 	 */
 	if (SENDING_CHUNKS_IN_PULL_MODE(cli)) {
-		if (k_uptime_get() >= cli->tx.cli_timestamp) {
+		if (TICK2MSEC(clock_systime_ticks()) >= cli->tx.cli_timestamp) {
 			LOG_DBG("Transfer timed out.");
 
 			if (!cli->tx.ctx.optional) {
@@ -542,7 +542,7 @@ void blob_cli_broadcast(struct bt_mesh_blob_cli *cli,
 
 void blob_cli_broadcast_tx_complete(struct bt_mesh_blob_cli *cli)
 {
-	k_work_schedule(&cli->tx.complete, K_MSEC(cli->tx.ctx.post_send_delay_ms));
+	k_work_schedule(&cli->tx.complete, MSEC2TICK(cli->tx.ctx.post_send_delay_ms));
 }
 
 void blob_cli_broadcast_rsp(struct bt_mesh_blob_cli *cli,
@@ -913,7 +913,7 @@ static void chunk_tx_complete(struct bt_mesh_blob_cli *cli, uint16_t dst)
 	/* This was the last chunk sent for this target. Now start the Block Report Timeout Timer.
 	 */
 	struct bt_mesh_blob_target *target;
-	int64_t timestamp = k_uptime_get() + BLOCK_REPORT_TIME_MSEC;
+	int64_t timestamp = TICK2MSEC(clock_systime_ticks()) + BLOCK_REPORT_TIME_MSEC;
 
 	if (!UNICAST_MODE(cli)) {
 		/* If using group addressing, reset timestamp for all targets after all chunks are
@@ -1017,7 +1017,7 @@ static void block_report_wait(struct bt_mesh_blob_cli *cli)
 
 	/* Start Client Timeout Timer in Send Data sub-procedure for the first time. */
 	if (!cli->tx.cli_timestamp) {
-		cli->tx.cli_timestamp = k_uptime_get() + CLIENT_TIMEOUT_MSEC(cli);
+		cli->tx.cli_timestamp = TICK2MSEC(clock_systime_ticks()) + CLIENT_TIMEOUT_MSEC(cli);
 	}
 
 	start_retry_timer(cli);
@@ -1334,7 +1334,7 @@ static int handle_block_report(const struct bt_mesh_model *mod, struct bt_mesh_m
 		return 0;
 	}
 
-	cli->tx.cli_timestamp = k_uptime_get() + CLIENT_TIMEOUT_MSEC(cli);
+	cli->tx.cli_timestamp = TICK2MSEC(clock_systime_ticks()) + CLIENT_TIMEOUT_MSEC(cli);
 
 	rx_block_status(cli, target, &status);
 

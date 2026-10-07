@@ -253,7 +253,7 @@ static void bt_sdp_disconnected(struct bt_l2cap_chan *chan)
  */
 static struct net_buf *sdp_svc_create_pdu(void)
 {
-	return bt_l2cap_create_pdu_timeout(&sdp_pool, sizeof(struct bt_sdp_hdr), K_NO_WAIT);
+	return bt_l2cap_create_pdu_timeout(&sdp_pool, sizeof(struct bt_sdp_hdr), 0);
 }
 
 /* @brief Allocates a net buffer for SDP Client
@@ -266,7 +266,7 @@ static struct net_buf *sdp_svc_create_pdu(void)
  */
 static struct net_buf *sdp_client_create_pdu(void)
 {
-	return bt_l2cap_create_pdu_timeout(&sdp_pool, sizeof(struct bt_sdp_hdr), K_NO_WAIT);
+	return bt_l2cap_create_pdu_timeout(&sdp_pool, sizeof(struct bt_sdp_hdr), 0);
 }
 
 /* @brief Sends out an SDP PDU
@@ -2188,7 +2188,7 @@ static void sdp_client_reqs_pending_not_resolved(struct bt_conn *conn,
 	irqstate_t key;
 
 	key = spin_lock_irqsave(&sdp_client_lock);
-	node = k_queue_get(&session->reqs_pending, K_NO_WAIT);
+	node = k_queue_get(&session->reqs_pending, 0);
 	while (node != NULL) {
 		session->param = GET_PARAM(node);
 		spin_unlock_irqrestore(&sdp_client_lock, key);
@@ -2196,7 +2196,7 @@ static void sdp_client_reqs_pending_not_resolved(struct bt_conn *conn,
 		bt_conn_unref(conn);
 
 		key = spin_lock_irqsave(&sdp_client_lock);
-		node = k_queue_get(&session->reqs_pending, K_NO_WAIT);
+		node = k_queue_get(&session->reqs_pending, 0);
 	}
 	spin_unlock_irqrestore(&sdp_client_lock, key);
 }
@@ -2604,7 +2604,7 @@ static void sdp_client_get_pending_req(struct bt_sdp_client *session)
 	irqstate_t key;
 
 	key = spin_lock_irqsave(&sdp_client_lock);
-	node = k_queue_get(&session->reqs_pending, K_NO_WAIT);
+	node = k_queue_get(&session->reqs_pending, 0);
 	if (node != NULL) {
 		session->param = GET_PARAM(node);
 	}

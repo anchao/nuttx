@@ -62,7 +62,7 @@ static struct list_node seps;
 #define SET_CONF_REQ(_req) CONTAINER_OF(_req, struct bt_avdtp_set_configuration_params, req)
 #define CTRL_REQ(_req)     CONTAINER_OF(_req, struct bt_avdtp_ctrl_params, req)
 
-#define AVDTP_TIMEOUT K_SECONDS(6)
+#define AVDTP_TIMEOUT SEC2TICK(6)
 
 sem_t avdtp_sem_lock = NXSEM_INITIALIZER(1U, 0);
 
@@ -222,7 +222,7 @@ static void avdtp_schedule_media_disconnect_work(struct bt_avdtp_sep *sep, uint8
 		timeout = CHECK_MEDIA_DISCONNECT_TIMEOUT;
 	}
 
-	k_work_schedule(&sep->_delay_work, K_MSEC(timeout));
+	k_work_schedule(&sep->_delay_work, MSEC2TICK(timeout));
 }
 
 static void avdtp_cancel_media_disconnect_work(struct bt_avdtp_sep *sep)
@@ -360,7 +360,7 @@ static int avdtp_media_connect(struct bt_avdtp *session, struct bt_avdtp_sep *se
 }
 
 static struct net_buf *avdtp_create_pdu_timeout(uint8_t msg_type, uint8_t sig_id, uint8_t tid,
-						k_timeout_t timeout)
+						clock_t timeout)
 {
 	struct net_buf *buf;
 	struct bt_avdtp_single_sig_hdr *hdr;
@@ -386,7 +386,7 @@ static struct net_buf *avdtp_create_pdu_timeout(uint8_t msg_type, uint8_t sig_id
 
 static struct net_buf *avdtp_create_pdu(uint8_t msg_type, uint8_t sig_id, uint8_t tid)
 {
-	return avdtp_create_pdu_timeout(msg_type, sig_id, tid, K_FOREVER);
+	return avdtp_create_pdu_timeout(msg_type, sig_id, tid, ((clock_t)-1));
 }
 
 static struct net_buf *avdtp_create_rsp(uint8_t msg_type, uint8_t sig_id, uint8_t tid)
@@ -397,7 +397,7 @@ static struct net_buf *avdtp_create_rsp(uint8_t msg_type, uint8_t sig_id, uint8_
 	 * Waiting for a buffer here would therefore block the workqueue instead
 	 * of making progress. Let the remote side time out instead.
 	 */
-	return avdtp_create_pdu_timeout(msg_type, sig_id, tid, K_NO_WAIT);
+	return avdtp_create_pdu_timeout(msg_type, sig_id, tid, 0);
 }
 
 static void avdtp_tx_raise(void)
@@ -454,9 +454,9 @@ static void avdtp_tx_multi(struct bt_avdtp *session, struct net_buf *buf,
 	while (user_data->frag_count > user_data->current_frag && buf->len > 0) {
 		uint16_t len;
 
-		frag = bt_l2cap_create_pdu_timeout(NULL, 0, K_NO_WAIT);
+		frag = bt_l2cap_create_pdu_timeout(NULL, 0, 0);
 		if (frag == NULL) {
-			frag = bt_l2cap_create_pdu_timeout(&avdtp_frag_pool, 0, K_NO_WAIT);
+			frag = bt_l2cap_create_pdu_timeout(&avdtp_frag_pool, 0, 0);
 		}
 
 		if (frag == NULL) {

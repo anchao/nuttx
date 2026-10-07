@@ -74,7 +74,7 @@ static void notify_work_handler(struct k_work *work)
 	}
 
 	if (err == -ENOMEM &&
-	    k_work_reschedule(d_work, K_USEC(BT_AUDIO_NOTIFY_RETRY_DELAY_US)) >= 0) {
+	    k_work_reschedule(d_work, USEC2TICK(BT_AUDIO_NOTIFY_RETRY_DELAY_US)) >= 0) {
 		LOG_WRN("Out of buffers for mute state notification. Will retry in %dms",
 			BT_AUDIO_NOTIFY_RETRY_DELAY_US);
 		return;
@@ -116,7 +116,7 @@ static ssize_t write_mute(struct bt_conn *conn, const struct bt_gatt_attr *attr,
 
 		micp_inst.mute = *val;
 
-		err = k_work_reschedule(&micp_inst.notify_work, K_NO_WAIT);
+		err = k_work_reschedule(&micp_inst.notify_work, 0);
 		if (err < 0) {
 			LOG_ERR("Failed to schedule mute state notification err %d", err);
 		}

@@ -134,7 +134,7 @@ static void avrcp_tx_buf_destroy(struct net_buf *buf)
 		struct bt_avrcp_tg *tg = &bt_avrcp_tg_pool[i];
 
 		if ((tg->avrcp != NULL) && (tg->avrcp->acl_conn != NULL)) {
-			(void)k_work_reschedule(&tg->vd_rsp_tx_work, K_NO_WAIT);
+			(void)k_work_reschedule(&tg->vd_rsp_tx_work, 0);
 		}
 	}
 
@@ -1040,7 +1040,7 @@ static void bt_avrcp_tg_vendor_tx_work(struct k_work *work)
 			goto done;
 		}
 		avrcp_tg_tx_remove(tg, buf);
-		k_work_reschedule(&tg->vd_rsp_tx_work, K_NO_WAIT);
+		k_work_reschedule(&tg->vd_rsp_tx_work, 0);
 		return;
 	}
 	/* Multi-packet fragmented response */
@@ -1091,7 +1091,7 @@ static void bt_avrcp_tg_vendor_tx_work(struct k_work *work)
 	if (err < 0) {
 		if (err == -ENOBUFS) {
 			LOG_WRN("Retry send fragment %p", buf);
-			k_work_reschedule(&tg->vd_rsp_tx_work, K_MSEC(AVRCP_TX_RETRY_DELAY_MS));
+			k_work_reschedule(&tg->vd_rsp_tx_work, MSEC2TICK(AVRCP_TX_RETRY_DELAY_MS));
 			return;
 		}
 		LOG_ERR("Failed to send fragment offset %u len: %u", tx->sent_len, chunk_size);
@@ -1114,7 +1114,7 @@ done:
 		net_buf_unref(buf);
 	}
 	/* restart the tx work */
-	k_work_reschedule(&tg->vd_rsp_tx_work, K_NO_WAIT);
+	k_work_reschedule(&tg->vd_rsp_tx_work, 0);
 }
 
 static int bt_avrcp_tg_send_vendor_rsp(struct bt_avrcp_tg *tg, uint8_t tid, uint8_t pdu_id,
@@ -1142,7 +1142,7 @@ static int bt_avrcp_tg_send_vendor_rsp(struct bt_avrcp_tg *tg, uint8_t tid, uint
 	list_add_tail(&tg->vd_rsp_tx_pending, &buf->node);
 	avrcp_tg_unlock(tg);
 
-	k_work_reschedule(&tg->vd_rsp_tx_work, K_NO_WAIT);
+	k_work_reschedule(&tg->vd_rsp_tx_work, 0);
 
 	return 0;
 }
@@ -2108,7 +2108,7 @@ static int handle_avrcp_continuing_rsp(struct bt_avrcp *avrcp, uint8_t tid, uint
 {
 	LOG_DBG("Received Continuing Response");
 	bt_avrcp_tg_process_continuing_cmd(get_avrcp_tg(avrcp), false, tid, buf);
-	k_work_reschedule(&get_avrcp_tg(avrcp)->vd_rsp_tx_work, K_NO_WAIT);
+	k_work_reschedule(&get_avrcp_tg(avrcp)->vd_rsp_tx_work, 0);
 	return BT_AVRCP_STATUS_OPERATION_COMPLETED;
 }
 
@@ -2117,7 +2117,7 @@ static int handle_avrcp_abort_continuing_rsp(struct bt_avrcp *avrcp, uint8_t tid
 {
 	LOG_DBG("Received Abort Continuing Response");
 	bt_avrcp_tg_process_continuing_cmd(get_avrcp_tg(avrcp), true, tid, buf);
-	k_work_reschedule(&get_avrcp_tg(avrcp)->vd_rsp_tx_work, K_NO_WAIT);
+	k_work_reschedule(&get_avrcp_tg(avrcp)->vd_rsp_tx_work, 0);
 	return BT_AVRCP_STATUS_OPERATION_COMPLETED;
 }
 

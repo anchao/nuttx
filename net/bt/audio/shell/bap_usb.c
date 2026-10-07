@@ -122,7 +122,7 @@ static void usb_data_request(const struct device *dev)
 		return;
 	}
 
-	err = k_mem_slab_alloc(&usb_in_buf_pool, &pcm_buf, K_NO_WAIT);
+	err = k_mem_slab_alloc(&usb_in_buf_pool, &pcm_buf, 0);
 	if (err != 0) {
 		LOG_WRN("Could not allocate pcm_buf: %d", err);
 		return;
@@ -451,7 +451,7 @@ static void *usb_get_recv_buf_cb(const struct device *dev, uint8_t terminal, uin
 
 	__ASSERT(size <= USB_STEREO_FRAME_SIZE, "%u was not <= %d", size, USB_STEREO_FRAME_SIZE);
 
-	ret = k_mem_slab_alloc(&usb_out_buf_pool, &buf, K_NO_WAIT);
+	ret = k_mem_slab_alloc(&usb_out_buf_pool, &buf, 0);
 	if (ret != 0) {
 		LOG_WRN("Failed to allocate buffer: %d", ret);
 	}

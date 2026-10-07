@@ -45,7 +45,7 @@
 LOG_MODULE_REGISTER(bt_tbs, CONFIG_BT_TBS_LOG_LEVEL);
 
 #define BT_TBS_VALID_STATUS_FLAGS(val) ((val) <= (BIT(0U) | BIT(1U)))
-#define MUTEX_TIMEOUT                  K_MSEC(CONFIG_BT_TBS_LOCK_TIMEOUT)
+#define MUTEX_TIMEOUT                  MSEC2TICK(CONFIG_BT_TBS_LOCK_TIMEOUT)
 
 struct tbs_flags {
 	bool bearer_provider_name_changed: 1;
@@ -381,7 +381,7 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 
 	conn_index = bt_conn_index(conn);
 
-	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT);
 	if (err != 0) {
 		LOG_WRN("Failed to take mutex: %d", err);
 		/* In this case we still need to clear the data, so continue and hope for
@@ -472,7 +472,7 @@ static void set_value_changed_cb(struct bt_conn *conn, void *data)
 		/* We may schedule the same work multiple times, but that is OK as scheduling the
 		 * same work multiple times is a no-op
 		 */
-		err = k_work_schedule(&inst->notify_work, K_NO_WAIT);
+		err = k_work_schedule(&inst->notify_work, 0);
 		__ASSERT(err >= 0, "Failed to schedule work: %d", err);
 	} else {
 		/* Not subscribed, set the specific flag based on the provided callback */
@@ -1029,7 +1029,7 @@ static void notify_handler_cb(struct bt_conn *conn, void *data)
 		notify_handler_cb(conn, &gtbs_inst);
 	}
 
-	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT);
 	if (err != 0) {
 		LOG_DBG("Failed to take mutex: %d", err);
 		goto reschedule;
@@ -1213,7 +1213,7 @@ fail:
 		LOG_DBG("Notify failed (%d), retrying next connection interval", err);
 reschedule:
 		err = k_work_reschedule(&inst->notify_work,
-					K_USEC(info.le.interval_us));
+					USEC2TICK(info.le.interval_us));
 		__ASSERT(err >= 0, "Failed to reschedule work: %d", err);
 	}
 
@@ -1239,7 +1239,7 @@ static ssize_t read_provider_name(struct bt_conn *conn, const struct bt_gatt_att
 	ssize_t ret;
 	int err;
 
-	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT);
 	if (err != 0) {
 		LOG_DBG("Failed to lock mutex");
 		return -EBUSY;
@@ -1268,7 +1268,7 @@ static void cfg_changed_clear_pending(struct tbs_inst *inst, uint16_t value,
 				      const struct bt_uuid *uuid)
 {
 	if (value == 0U) {
-		int err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT.ticks);
+		int err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT);
 
 		if (err != 0) {
 			LOG_DBG("Failed to lock mutex");
@@ -1333,7 +1333,7 @@ static ssize_t read_uri_scheme_list(struct bt_conn *conn, const struct bt_gatt_a
 	ssize_t ret;
 	int err;
 
-	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT);
 	if (err != 0) {
 		LOG_DBG("Failed to lock mutex");
 		return -EBUSY;
@@ -1445,7 +1445,7 @@ static void current_calls_cfg_changed(const struct bt_gatt_attr *attr, uint16_t 
 	LOG_DBG("Index %u: value 0x%04x", inst_index(inst), value);
 
 	if (value == 0U) {
-		int err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT.ticks);
+		int err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT);
 
 		if (err != 0) {
 			LOG_DBG("Failed to lock mutex: %d", err);
@@ -1471,7 +1471,7 @@ static ssize_t read_current_calls(struct bt_conn *conn, const struct bt_gatt_att
 	ssize_t ret;
 	int err;
 
-	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT);
 	if (err != 0) {
 		LOG_DBG("Failed to lock mutex");
 		return -EBUSY;
@@ -1542,7 +1542,7 @@ static ssize_t read_incoming_uri(struct bt_conn *conn, const struct bt_gatt_attr
 	ssize_t ret;
 	int err;
 
-	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT);
 	if (err != 0) {
 		LOG_DBG("Failed to lock mutex");
 		return -EBUSY;
@@ -1600,7 +1600,7 @@ static ssize_t read_call_state(struct bt_conn *conn, const struct bt_gatt_attr *
 	ssize_t ret;
 	int err;
 
-	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT);
 	if (err != 0) {
 		LOG_DBG("Failed to lock mutex");
 		return -EBUSY;
@@ -1640,7 +1640,7 @@ static void call_state_cfg_changed(const struct bt_gatt_attr *attr, uint16_t val
 	LOG_DBG("Index %u: value 0x%04x", inst_index(inst), value);
 
 	if (value == 0U) {
-		int err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT.ticks);
+		int err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT);
 
 		if (err != 0) {
 			LOG_DBG("Failed to lock mutex: %d", err);
@@ -2009,7 +2009,7 @@ static ssize_t write_call_cp(struct bt_conn *conn, const struct bt_gatt_attr *at
 	LOG_DBG("Index %u: Processing the %s opcode", inst_index(inst),
 		bt_tbs_opcode_str(ccp->opcode));
 
-	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT);
 	if (err != 0) {
 		LOG_DBG("Failed to lock mutex");
 		return -EBUSY;
@@ -2161,7 +2161,7 @@ static ssize_t write_call_cp(struct bt_conn *conn, const struct bt_gatt_attr *at
 		/* We may schedule the same work multiple times, but that is OK as scheduling the
 		 * same work multiple times is a no-op
 		 */
-		err = k_work_schedule(&inst->notify_work, K_NO_WAIT);
+		err = k_work_schedule(&inst->notify_work, 0);
 		__ASSERT(err >= 0, "Failed to schedule work: %d", err);
 	} /* else local operation; don't notify */
 
@@ -2213,7 +2213,7 @@ static void call_cp_cfg_changed(const struct bt_gatt_attr *attr, uint16_t value)
 
 	/* Clear the pending notification only when its owning connection unsubscribes */
 	if (value == 0U) {
-		int err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT.ticks);
+		int err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT);
 
 		if (err != 0) {
 			LOG_DBG("Failed to lock mutex");
@@ -2262,7 +2262,7 @@ static ssize_t read_friendly_name(struct bt_conn *conn, const struct bt_gatt_att
 	ssize_t ret;
 	int err;
 
-	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT);
 	if (err != 0) {
 		LOG_DBG("Failed to lock mutex");
 		return -EBUSY;
@@ -2317,7 +2317,7 @@ static ssize_t read_incoming_call(struct bt_conn *conn, const struct bt_gatt_att
 	ssize_t ret;
 	int err;
 
-	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&tbs_mutex, MUTEX_TIMEOUT);
 	if (err != 0) {
 		LOG_DBG("Failed to lock mutex");
 		return -EBUSY;
@@ -2481,7 +2481,7 @@ static void signal_interval_timeout(struct k_work *work)
 
 	if (inst->signal_strength_interval) {
 		k_work_reschedule(&inst->reporting_interval_work,
-				  K_SECONDS(inst->signal_strength_interval));
+				  SEC2TICK(inst->signal_strength_interval));
 	}
 
 	inst->pending_signal_strength_notification = false;
@@ -2697,7 +2697,7 @@ int bt_tbs_unregister_bearer(uint8_t bearer_index)
 			 * dream anyways
 			 */
 			k_work_schedule(&inst->reporting_interval_work,
-					K_SECONDS(inst->signal_strength_interval));
+					SEC2TICK(inst->signal_strength_interval));
 		}
 
 		return -ENOEXEC;
@@ -3259,11 +3259,11 @@ int bt_tbs_set_signal_strength(uint8_t bearer_index, uint8_t new_signal_strength
 
 		timer_status = k_work_delayable_remaining_get(&inst->reporting_interval_work);
 		if (timer_status == 0U) {
-			k_work_reschedule(&inst->reporting_interval_work, K_NO_WAIT);
+			k_work_reschedule(&inst->reporting_interval_work, 0);
 		}
 
 		LOG_DBG("Index %u: Reporting signal strength in %u ms", bearer_index,
-			k_ticks_to_ms_ceil32(timer_status));
+			TICK2MSEC(timer_status));
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);

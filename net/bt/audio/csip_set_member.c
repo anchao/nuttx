@@ -49,7 +49,7 @@
 #include "csip_internal.h"
 #include "csip_crypto.h"
 
-#define CSIP_SET_LOCK_TIMER_VALUE       K_SECONDS(60)
+#define CSIP_SET_LOCK_TIMER_VALUE       SEC2TICK(60)
 
 #define CSIS_CHAR_ATTR_COUNT	  3 /* declaration + value + cccd */
 #define CSIS_RANK_CHAR_ATTR_COUNT 2 /* declaration + value */
@@ -140,7 +140,7 @@ static bool is_last_client_to_write(const struct bt_csip_set_member_svc_inst *sv
 }
 #endif /* CONFIG_BT_CSIP_SET_MEMBER_LOCK_SUPPORT */
 
-static void notify_work_reschedule(k_timeout_t delay)
+static void notify_work_reschedule(clock_t delay)
 {
 	int err;
 
@@ -179,7 +179,7 @@ static void notify_clients(struct bt_csip_set_member_svc_inst *svc_inst,
 
 	/* Reschedule work for notifying */
 	if (submit_work) {
-		notify_work_reschedule(K_NO_WAIT);
+		notify_work_reschedule(0);
 	}
 }
 
@@ -600,7 +600,7 @@ static void csip_security_changed(struct bt_conn *conn, bt_security_t level,
 		if (atomic_test_bit(client->flags, FLAG_NOTIFY_LOCK) ||
 		    atomic_test_bit(client->flags, FLAG_NOTIFY_SIRK) ||
 		    atomic_test_bit(client->flags, FLAG_NOTIFY_SIZE)) {
-			notify_work_reschedule(K_NO_WAIT);
+			notify_work_reschedule(0);
 			break;
 		}
 	}
@@ -680,7 +680,7 @@ static void handle_csip_auth_complete(struct bt_csip_set_member_svc_inst *svc_in
 			memcpy(&client->addr, bt_conn_get_dst(conn), sizeof(bt_addr_le_t));
 
 			/* Send out all pending notifications */
-			notify_work_reschedule(K_NO_WAIT);
+			notify_work_reschedule(0);
 			return;
 		}
 	}
@@ -836,7 +836,7 @@ static void notify_cb(struct bt_conn *conn, void *data)
 		err = nxrmutex_trylock(&svc_inst->mutex);
 		if (err != 0) {
 			LOG_DBG("Mutex lock failed (%d) for svc_inst[%zu], rescheduling", err, i);
-			notify_work_reschedule(K_USEC(BT_AUDIO_NOTIFY_RETRY_DELAY_US));
+			notify_work_reschedule(USEC2TICK(BT_AUDIO_NOTIFY_RETRY_DELAY_US));
 			continue;
 		}
 

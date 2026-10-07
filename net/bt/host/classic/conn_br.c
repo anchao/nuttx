@@ -78,7 +78,7 @@ struct bt_conn *bt_conn_create_br(const bt_addr_t *peer,
 		return NULL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		bt_conn_unref(conn);
 		return NULL;
@@ -112,7 +112,7 @@ int bt_hci_connect_br_cancel(struct bt_conn *conn)
 	struct net_buf *buf, *rsp;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -195,7 +195,7 @@ int bt_conn_br_switch_role(const struct bt_conn *conn, uint8_t role)
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -216,7 +216,7 @@ static int bt_conn_br_read_link_policy_settings(const struct bt_conn *conn,
 	struct bt_hci_rp_read_link_policy_settings *rp;
 	struct net_buf *rsp;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -239,7 +239,7 @@ static int bt_conn_br_write_link_policy_settings(const struct bt_conn *conn,
 	struct net_buf *buf;
 	struct bt_hci_cp_write_link_policy_settings *cp;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -303,7 +303,7 @@ int bt_conn_br_get_supervision_timeout(struct bt_conn *conn, uint16_t *timeout)
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (buf == NULL) {
 		return -ENOBUFS;
 	}
@@ -343,7 +343,7 @@ int bt_conn_br_set_supervision_timeout(struct bt_conn *conn, uint16_t timeout)
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (buf == NULL) {
 		return -ENOBUFS;
 	}
@@ -380,7 +380,7 @@ int bt_conn_br_change_packet_type(const struct bt_conn *conn, uint16_t packet_ty
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (buf == NULL) {
 		return -ENOBUFS;
 	}

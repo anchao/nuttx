@@ -4708,7 +4708,7 @@ const char *bt_obex_rsp_code_to_str(enum bt_obex_rsp_code rsp_code)
 int bt_obex_generate_nonce(const uint8_t *pwd, size_t pwd_len,
 			   uint8_t nonce[BT_OBEX_CHALLENGE_TAG_NONCE_LEN])
 {
-	int64_t timestamp = k_uptime_get();
+	int64_t timestamp = TICK2MSEC(clock_systime_ticks());
 	uint8_t data[CONFIG_BT_OBEX_AUTH_PWD_LEN + 1U + sizeof(timestamp)];
 	struct net_buf_simple buf;
 	size_t len;

@@ -47,8 +47,8 @@ LOG_MODULE_REGISTER(bt_mesh_pb_adv);
 #define XACT_ID_NVAL 0xff
 #define SEG_NVAL     0xff
 
-#define RETRANSMIT_TIMEOUT  K_MSEC(CONFIG_BT_MESH_PB_ADV_RETRANS_TIMEOUT)
-#define BUF_TIMEOUT         K_MSEC(400)
+#define RETRANSMIT_TIMEOUT  MSEC2TICK(CONFIG_BT_MESH_PB_ADV_RETRANS_TIMEOUT)
+#define BUF_TIMEOUT         MSEC2TICK(400)
 #define CLOSING_TIMEOUT     3
 #define TRANSACTION_TIMEOUT 30
 
@@ -166,7 +166,7 @@ static void tx_schedule(void)
 
 	LOG_DBG("Next PDU delayed by %ums", random_delay);
 
-	(void)k_work_schedule(&tx_work, K_MSEC(random_delay));
+	(void)k_work_schedule(&tx_work, MSEC2TICK(random_delay));
 }
 
 static int send_unacked(struct bt_mesh_adv *adv, prov_bearer_send_complete_t cb,
@@ -757,7 +757,7 @@ static void prov_retransmit(struct k_work *work)
 		return;
 	}
 
-	if (k_uptime_get() - pb_adv_link.tx.start > pb_adv_link.tx.timeout * MSEC_PER_SEC) {
+	if (TICK2MSEC(clock_systime_ticks()) - pb_adv_link.tx.start > pb_adv_link.tx.timeout * MSEC_PER_SEC) {
 		LOG_WRN("Giving up transaction");
 		prov_link_close(PROV_BEARER_LINK_STATUS_TIMEOUT);
 		return;
@@ -796,7 +796,7 @@ static int bearer_ctl_send(struct bt_mesh_adv *adv)
 	prov_clear_tx();
 	k_work_reschedule(&pb_adv_link.prot_timer, bt_mesh_prov_protocol_timeout_get());
 
-	pb_adv_link.tx.start = k_uptime_get();
+	pb_adv_link.tx.start = TICK2MSEC(clock_systime_ticks());
 	pb_adv_link.tx.adv[0] = adv;
 	send_reliable();
 
@@ -859,7 +859,7 @@ static int prov_send_adv(struct net_buf_simple *msg,
 	pb_adv_link.tx.adv[0] = start;
 	pb_adv_link.tx.cb = cb;
 	pb_adv_link.tx.cb_data = cb_data;
-	pb_adv_link.tx.start = k_uptime_get();
+	pb_adv_link.tx.start = TICK2MSEC(clock_systime_ticks());
 
 	LOG_DBG("xact_id: 0x%x len: %u", pb_adv_link.tx.id, msg->len);
 

@@ -20,7 +20,7 @@ static void *thread_wrapper(void *arg)
 k_tid_t k_thread_create(struct k_thread *new_thread, char *stack,
                         size_t stack_size, k_thread_entry_t entry,
                         void *p1, void *p2, void *p3,
-                        int prio, uint32_t options, k_timeout_t delay)
+                        int prio, uint32_t options, clock_t delay)
 {
     pthread_attr_t attr;
     int ret;
@@ -62,7 +62,7 @@ void k_thread_start(k_tid_t thread)
     (void)thread;
 }
 
-int k_thread_join(struct k_thread *thread, k_timeout_t timeout)
+int k_thread_join(struct k_thread *thread, clock_t timeout)
 {
     (void)timeout;
     return pthread_join(thread->pthread, NULL);

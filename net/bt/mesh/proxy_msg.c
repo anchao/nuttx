@@ -41,7 +41,7 @@ LOG_MODULE_REGISTER(bt_mesh_proxy);
  * "The timeout for the SAR transfer is 20 seconds. When the timeout
  *  expires, the Proxy Server shall disconnect."
  */
-#define PROXY_SAR_TIMEOUT  K_SECONDS(20)
+#define PROXY_SAR_TIMEOUT  SEC2TICK(20)
 
 #define SAR_COMPLETE       0x00
 #define SAR_FIRST          0x01
@@ -65,7 +65,7 @@ static struct bt_mesh_adv *proxy_queue_get(struct bt_mesh_proxy_role *role)
 {
 	void *gatt_bearer;
 
-	gatt_bearer = k_fifo_get(&role->pending, K_NO_WAIT);
+	gatt_bearer = k_fifo_get(&role->pending, 0);
 	if (!gatt_bearer) {
 		return NULL;
 	}

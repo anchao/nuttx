@@ -57,7 +57,7 @@ static int cmd_timeout(const struct shell *sh, size_t argc, char *argv[])
 		}
 
 		if (timeout_s < 0 || timeout_s > (INT32_MAX / 1000)) {
-			timeout_ms = SYS_FOREVER_MS;
+			timeout_ms = -1;
 		} else {
 			timeout_ms = timeout_s * MSEC_PER_SEC;
 		}
@@ -66,7 +66,7 @@ static int cmd_timeout(const struct shell *sh, size_t argc, char *argv[])
 	}
 
 	timeout_ms = bt_mesh_cfg_cli_timeout_get();
-	if (timeout_ms == SYS_FOREVER_MS) {
+	if (timeout_ms == -1) {
 		shell_print(sh, "Message timeout: forever");
 	} else {
 		shell_print(sh, "Message timeout: %u seconds", timeout_ms / 1000);

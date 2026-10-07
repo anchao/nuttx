@@ -41,10 +41,10 @@ int bt_recv(struct net_buf *buf);
 int bt_recv_iso(struct net_buf *buf);
 
 /* Get a buffer for HCI command/event/ACL data */
-struct net_buf *bt_buf_get_cmd_complete(k_timeout_t timeout);
-struct net_buf *bt_buf_get_evt(uint8_t evt, bool discardable, k_timeout_t timeout);
-struct net_buf *bt_buf_get_acl(k_timeout_t timeout);
-struct net_buf *bt_buf_get_iso(k_timeout_t timeout);
+struct net_buf *bt_buf_get_cmd_complete(clock_t timeout);
+struct net_buf *bt_buf_get_evt(uint8_t evt, bool discardable, clock_t timeout);
+struct net_buf *bt_buf_get_acl(clock_t timeout);
+struct net_buf *bt_buf_get_iso(clock_t timeout);
 
 #ifdef __cplusplus
 }

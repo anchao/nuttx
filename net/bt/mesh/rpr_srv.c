@@ -146,7 +146,7 @@ static void scan_status_send(struct bt_mesh_msg_ctx *ctx,
 	uint8_t timeout = 0;
 
 	if (atomic_test_bit(srv.flags, SCANNING)) {
-		timeout = k_ticks_to_ms_floor32(
+		timeout = TICK2MSEC(
 			k_work_delayable_remaining_get(&srv.scan.timeout)) /
 			MSEC_PER_SEC;
 	}
@@ -202,13 +202,13 @@ static void scan_report_schedule(void)
 	(void)bt_rand(&delay, sizeof(uint32_t));
 	delay = (delay % 480) + 20;
 
-	k_work_reschedule(&srv.scan.report, K_MSEC(delay));
+	k_work_reschedule(&srv.scan.report, MSEC2TICK(delay));
 }
 
 static void scan_report_sent(int err, void *cb_data)
 {
 	atomic_clear_bit(srv.flags, SCAN_REPORT_PENDING);
-	k_work_reschedule(&srv.scan.report, K_NO_WAIT);
+	k_work_reschedule(&srv.scan.report, 0);
 }
 
 static const struct bt_mesh_send_cb report_cb = {
@@ -314,7 +314,7 @@ static void scan_ext_stop(uint32_t remaining_time)
 	    srv.scan.state != BT_MESH_RPR_SCAN_IDLE) {
 		k_work_reschedule(
 			&srv.scan.timeout,
-			K_MSEC(remaining_time + srv.scan.additional_time));
+			MSEC2TICK(remaining_time + srv.scan.additional_time));
 	} else if (srv.scan.state == BT_MESH_RPR_SCAN_MULTI) {
 		/* Extended scan might have finished early */
 		scan_ext_report_send();
@@ -612,7 +612,7 @@ static int handle_scan_start(const struct bt_mesh_model *mod, struct bt_mesh_msg
 	status = BT_MESH_RPR_SUCCESS;
 
 	atomic_set_bit(srv.flags, SCANNING);
-	k_work_reschedule(&srv.scan.timeout, K_SECONDS(timeout));
+	k_work_reschedule(&srv.scan.timeout, SEC2TICK(timeout));
 
 rsp:
 	scan_status_send(ctx, status);
@@ -760,18 +760,18 @@ static int handle_extended_scan_start(const struct bt_mesh_model *mod, struct bt
 	if (srv.scan.state == BT_MESH_RPR_SCAN_IDLE) {
 		srv.scan.additional_time = 0;
 		srv.scan.cli = cli;
-	} else if (k_ticks_to_ms_floor32(
+	} else if (TICK2MSEC(
 			k_work_delayable_remaining_get(&srv.scan.timeout)) <
 			(timeout * MSEC_PER_SEC)) {
 		srv.scan.additional_time = 0;
 	} else {
 		srv.scan.additional_time =
-			k_ticks_to_ms_floor32(k_work_delayable_remaining_get(&srv.scan.timeout)) -
+			TICK2MSEC(k_work_delayable_remaining_get(&srv.scan.timeout)) -
 			(timeout * MSEC_PER_SEC);
 	}
 
 	bt_mesh_scan_active_set(true);
-	k_work_reschedule(&srv.scan.timeout, K_SECONDS(timeout));
+	k_work_reschedule(&srv.scan.timeout, SEC2TICK(timeout));
 	return 0;
 
 rsp:

@@ -26,7 +26,7 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_beacon);
 
-#define PROVISIONED_INTERVAL       K_SECONDS(10)
+#define PROVISIONED_INTERVAL       SEC2TICK(10)
 
 #define BEACON_TYPE_UNPROVISIONED  0x00
 #define BEACON_TYPE_SECURE         0x01
@@ -117,7 +117,7 @@ static void beacon_start(uint16_t duration, int err, void *user_data)
 	if (err) {
 		LOG_ERR("Failed to send beacon: err %d", err);
 		if (beacon_send_sub_curr) {
-			k_work_reschedule(&beacon_timer, K_NO_WAIT);
+			k_work_reschedule(&beacon_timer, 0);
 		}
 	}
 }
@@ -127,10 +127,10 @@ static void beacon_complete(int err, void *user_data)
 	struct bt_mesh_beacon *beacon = user_data;
 
 	LOG_DBG("err %d", err);
-	beacon->sent = k_uptime_get_32();
+	beacon->sent = (uint32_t)TICK2MSEC(clock_systime_ticks());
 
 	if (beacon_send_sub_curr) {
-		k_work_reschedule(&beacon_timer, K_MSEC(20));
+		k_work_reschedule(&beacon_timer, MSEC2TICK(20));
 	}
 }
 
@@ -165,7 +165,7 @@ static int secure_beacon_create(struct bt_mesh_subnet *sub,
 static int private_random_update(void)
 {
 	uint8_t interval = bt_mesh_priv_beacon_update_interval_get();
-	uint64_t uptime = k_uptime_get();
+	uint64_t uptime = TICK2MSEC(clock_systime_ticks());
 	int err;
 
 	/* The Private beacon random value should change every N seconds to maintain privacy.
@@ -269,7 +269,7 @@ static int net_beacon_send(struct bt_mesh_subnet *sub, struct bt_mesh_beacon *be
 		.start = beacon_start,
 		.end = beacon_complete,
 	};
-	uint32_t now = k_uptime_get_32();
+	uint32_t now = (uint32_t)TICK2MSEC(clock_systime_ticks());
 	struct bt_mesh_adv *adv;
 	uint32_t time_diff;
 	uint32_t time_since_last_recv;
@@ -286,7 +286,7 @@ static int net_beacon_send(struct bt_mesh_subnet *sub, struct bt_mesh_beacon *be
 	}
 
 	adv = bt_mesh_adv_create(BT_MESH_ADV_BEACON, BT_MESH_ADV_TAG_LOCAL,
-				 PROV_XMIT, K_NO_WAIT);
+				 PROV_XMIT, 0);
 	if (!adv) {
 		LOG_ERR("Unable to allocate beacon adv");
 		return -ENOMEM; /* Bail out */
@@ -350,7 +350,7 @@ static int unprovisioned_beacon_send(void)
 	LOG_DBG("");
 
 	adv = bt_mesh_adv_create(BT_MESH_ADV_BEACON, BT_MESH_ADV_TAG_LOCAL,
-				 UNPROV_XMIT, K_NO_WAIT);
+				 UNPROV_XMIT, 0);
 	if (!adv) {
 		LOG_ERR("Unable to allocate beacon adv");
 		return -ENOBUFS;
@@ -377,7 +377,7 @@ static int unprovisioned_beacon_send(void)
 		size_t len;
 
 		adv = bt_mesh_adv_create(BT_MESH_ADV_URI, BT_MESH_ADV_TAG_LOCAL,
-					 UNPROV_XMIT, K_NO_WAIT);
+					 UNPROV_XMIT, 0);
 		if (!adv) {
 			LOG_ERR("Unable to allocate URI adv");
 			return -ENOBUFS;
@@ -514,7 +514,7 @@ static void beacon_send(struct k_work *work)
 			unprovisioned_beacon_send();
 		}
 
-		k_work_schedule(&beacon_timer, K_SECONDS(CONFIG_BT_MESH_UNPROV_BEACON_INT));
+		k_work_schedule(&beacon_timer, SEC2TICK(CONFIG_BT_MESH_UNPROV_BEACON_INT));
 	}
 }
 
@@ -614,7 +614,7 @@ static void net_beacon_register(struct bt_mesh_beacon *beacon, bool priv)
 	if (((priv && bt_mesh_priv_beacon_get() == BT_MESH_PRIV_GATT_PROXY_ENABLED) ||
 	     bt_mesh_beacon_enabled()) && beacon->cur < 0xff) {
 		beacon->cur++;
-		beacon->recv = k_uptime_get_32();
+		beacon->recv = (uint32_t)TICK2MSEC(clock_systime_ticks());
 	}
 }
 
@@ -800,7 +800,7 @@ void bt_mesh_beacon_ivu_initiator(bool enable)
 	 * just use this every time.
 	 */
 	beacon_send_sub_curr = NULL;
-	k_work_schedule(&beacon_timer, K_NO_WAIT);
+	k_work_schedule(&beacon_timer, 0);
 }
 
 static void subnet_beacon_enable(struct bt_mesh_subnet *sub)
@@ -823,7 +823,7 @@ void bt_mesh_beacon_enable(void)
 	}
 
 	beacon_send_sub_curr = NULL;
-	k_work_reschedule(&beacon_timer, K_NO_WAIT);
+	k_work_reschedule(&beacon_timer, 0);
 }
 
 void bt_mesh_beacon_disable(void)

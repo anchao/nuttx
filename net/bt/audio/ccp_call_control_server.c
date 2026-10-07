@@ -26,7 +26,7 @@
 
 LOG_MODULE_REGISTER(bt_ccp_call_control_server, CONFIG_BT_CCP_CALL_CONTROL_SERVER_LOG_LEVEL);
 
-#define MUTEX_TIMEOUT K_MSEC(1000U)
+#define MUTEX_TIMEOUT MSEC2TICK(1000U)
 
 /* A service instance can either be a GTBS or a TBS instance */
 struct bt_ccp_call_control_server_bearer {
@@ -224,7 +224,7 @@ int bt_ccp_call_control_server_unregister_bearer(struct bt_ccp_call_control_serv
 		return -EINVAL;
 	}
 
-	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	if (!bearer->registered) {
@@ -275,7 +275,7 @@ int bt_ccp_call_control_server_set_bearer_provider_name(
 		return -EINVAL;
 	}
 
-	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	if (!bearer->registered) {
@@ -324,7 +324,7 @@ int bt_ccp_call_control_server_get_bearer_provider_name(
 		return -EINVAL;
 	}
 
-	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	if (!bearer->registered) {
@@ -370,7 +370,7 @@ int bt_ccp_call_control_server_get_bearer_uci(struct bt_ccp_call_control_server_
 		return -EINVAL;
 	}
 
-	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	if (!bearer->registered) {
@@ -477,7 +477,7 @@ int bt_ccp_call_control_server_set_bearer_uri_schemes(
 		return -ENOMEM;
 	}
 
-	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	if (!bearer->registered) {
@@ -521,7 +521,7 @@ int bt_ccp_call_control_server_get_bearer_uri_schemes(
 		return -EINVAL;
 	}
 
-	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	if (!bearer->registered) {

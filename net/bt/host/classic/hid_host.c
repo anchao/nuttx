@@ -47,14 +47,14 @@ LOG_MODULE_REGISTER(bt_hid_host);
 	(((ch) == NULL) ? BT_HID_CHANNEL_UNKNOWN : HID_SESSION_BY_CHAN((ch))->type)
 
 /* Timeout for INTR channel connection after CTRL is established (seconds) */
-#define HID_INTR_CONN_TIMEOUT K_SECONDS(30)
+#define HID_INTR_CONN_TIMEOUT SEC2TICK(30)
 
 /* Timeout for a Control channel transaction to be answered by the device.
  * HID spec v1.1.2 Section 5.2.6 notes that default supervisory timeouts are
  * typically 30 seconds, after which the connection to the device is considered
  * lost, so the same value is used to bound a pending transaction.
  */
-#define HID_TRANS_TIMEOUT K_SECONDS(30)
+#define HID_TRANS_TIMEOUT SEC2TICK(30)
 
 /* HID host callback. Non-NULL exactly while the L2CAP servers are registered. */
 static const struct bt_hid_host_cb *hid_cb;
@@ -308,7 +308,7 @@ static bool hid_req_take(struct bt_hid_host *hid, struct bt_hid_req *req)
  * reported the first channel gone, because that callback runs while L2CAP is
  * still processing the peer's signalling packet and holding the buffer for its
  * response: br_sig_pool has one buffer per connection and
- * bt_l2cap_br_chan_disconnect() waits for one with K_FOREVER
+ * bt_l2cap_br_chan_disconnect() waits for one with ((clock_t)-1)
  * (l2cap_br.c), so issuing a request from there deadlocks the receive thread.
  *
  * It also serves as the INTR channel connect timeout on the acceptor path, where
@@ -438,7 +438,7 @@ static void hid_l2cap_ctrl_connected(struct bt_l2cap_chan *chan)
 		LOG_ERR("INTR connect failed (%d)", err);
 		atomic_clear_bit(&hid->flags, BT_HID_HOST_FLAG_INTR_ATTACHED);
 		hid_set_state(hid, BT_HID_STATE_DISCONNECTING);
-		bt_work_reschedule(&hid->close_work, K_NO_WAIT);
+		bt_work_reschedule(&hid->close_work, 0);
 		return;
 	}
 
@@ -461,7 +461,7 @@ static void hid_l2cap_intr_connected(struct bt_l2cap_chan *chan)
 	 */
 	if (!atomic_test_bit(&hid->flags, BT_HID_HOST_FLAG_CTRL_CONNECTED)) {
 		LOG_WRN("CTRL not connected, reject INTR");
-		bt_work_reschedule(&hid->close_work, K_NO_WAIT);
+		bt_work_reschedule(&hid->close_work, 0);
 		return;
 	}
 
@@ -521,7 +521,7 @@ static void hid_l2cap_ctrl_disconnected(struct bt_l2cap_chan *chan)
 	if (atomic_test_bit(&hid->flags, BT_HID_HOST_FLAG_INTR_CONNECTED)) {
 		hid_set_state(hid, BT_HID_STATE_DISCONNECTING);
 		/* Closed from hid_close_handler(), not from here: see its comment. */
-		bt_work_reschedule(&hid->close_work, K_NO_WAIT);
+		bt_work_reschedule(&hid->close_work, 0);
 
 		return;
 	}
@@ -565,7 +565,7 @@ static void hid_l2cap_intr_disconnected(struct bt_l2cap_chan *chan)
 	if (atomic_test_bit(&hid->flags, BT_HID_HOST_FLAG_CTRL_CONNECTED)) {
 		hid_set_state(hid, BT_HID_STATE_DISCONNECTING);
 		/* Closed from hid_close_handler(), not from here: see its comment. */
-		bt_work_reschedule(&hid->close_work, K_NO_WAIT);
+		bt_work_reschedule(&hid->close_work, 0);
 
 		return;
 	}
@@ -766,7 +766,7 @@ static int hid_control_handle(struct bt_hid_host *hid, struct net_buf *buf, uint
 	 * disconnected from inside the receive callback. Destroying the bonding is
 	 * left to the application, see the vc_unplug callback.
 	 */
-	bt_work_schedule(&hid->vcu_work, K_NO_WAIT);
+	bt_work_schedule(&hid->vcu_work, 0);
 
 	return 0;
 }
@@ -1585,7 +1585,7 @@ static void hid_vcu_tx_cb(struct bt_conn *conn, void *user_data, int err)
 		 * seen the unplug and no acknowledgment is coming.
 		 */
 		LOG_WRN("VCU control message send failed (%d)", err);
-		bt_work_schedule(&hid->vcu_work, K_NO_WAIT);
+		bt_work_schedule(&hid->vcu_work, 0);
 	} else {
 		bt_work_schedule(&hid->vcu_work, HID_TRANS_TIMEOUT);
 	}

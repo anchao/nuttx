@@ -64,7 +64,7 @@ static void avctp_tx_raise(int msec)
 		return;
 	}
 	LOG_DBG("kick TX");
-	bt_work_schedule(&avctp_tx_work, K_MSEC(msec));
+	bt_work_schedule(&avctp_tx_work, MSEC2TICK(msec));
 }
 
 static void bt_avctp_clear_tx(struct bt_avctp *session)

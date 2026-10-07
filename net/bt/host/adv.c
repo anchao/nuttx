@@ -308,7 +308,7 @@ int bt_le_adv_set_enable_legacy(struct bt_le_ext_adv *adv, bool enable)
 	struct bt_hci_cmd_state_set state;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -337,7 +337,7 @@ int bt_le_adv_set_enable_ext(struct bt_le_ext_adv *adv,
 	struct bt_hci_cmd_state_set state;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -553,7 +553,7 @@ static int hci_set_ad(uint16_t hci_op, const struct bt_ad *ad, size_t ad_len)
 	struct net_buf *buf;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -587,7 +587,7 @@ static int hci_set_adv_ext_complete(struct bt_le_ext_adv *adv, uint16_t hci_op,
 
 	cmd_size = sizeof(*set_data) + total_data_len;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -627,7 +627,7 @@ static int hci_set_adv_ext_fragmented(struct bt_le_ext_adv *adv, uint16_t hci_op
 		const size_t data_len = MIN(BT_HCI_LE_EXT_ADV_FRAG_MAX_LEN, stream.remaining_size);
 		const size_t cmd_size = sizeof(*set_data) + data_len;
 
-		buf = bt_hci_cmd_alloc(K_FOREVER);
+		buf = bt_hci_cmd_alloc(((clock_t)-1));
 		if (!buf) {
 			return -ENOBUFS;
 		}
@@ -740,7 +740,7 @@ static int hci_set_per_adv_data(const struct bt_le_ext_adv *adv,
 		const size_t data_len = MIN(BT_HCI_LE_PER_ADV_FRAG_MAX_LEN, stream.remaining_size);
 		const size_t cmd_size = sizeof(*set_data) + data_len;
 
-		buf = bt_hci_cmd_alloc(K_FOREVER);
+		buf = bt_hci_cmd_alloc(((clock_t)-1));
 		if (!buf) {
 			return -ENOBUFS;
 		}
@@ -1019,7 +1019,7 @@ static int adv_start_legacy(struct bt_le_ext_adv *adv,
 		set_param.type = BT_HCI_ADV_NONCONN_IND;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1124,7 +1124,7 @@ static int le_ext_adv_param_set(struct bt_le_ext_adv *adv,
 		size = sizeof(struct bt_hci_cp_le_set_ext_adv_param);
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1392,7 +1392,7 @@ int bt_le_adv_start(const struct bt_le_adv_param *param,
 	if (ad_is_limited(ad, ad_len)) {
 		k_work_init_delayable(&adv->lim_adv_timeout_work, adv_timeout);
 		bt_work_reschedule(&adv->lim_adv_timeout_work,
-				   K_SECONDS(CONFIG_BT_LIM_ADV_TIMEOUT));
+				   SEC2TICK(CONFIG_BT_LIM_ADV_TIMEOUT));
 	}
 
 	return err;
@@ -1733,7 +1733,7 @@ int bt_le_ext_adv_delete(struct bt_le_ext_adv *adv)
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		LOG_WRN("No HCI buffers");
 		return -ENOBUFS;
@@ -1832,7 +1832,7 @@ int bt_le_per_adv_set_param(struct bt_le_ext_adv *adv,
 		return -ENOTSUP;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1935,7 +1935,7 @@ int bt_le_per_adv_update_did(const struct bt_le_ext_adv *adv)
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (buf == NULL) {
 		return -ENOBUFS;
 	}
@@ -1976,7 +1976,7 @@ int bt_le_per_adv_set_subevent_data(const struct bt_le_ext_adv *adv, uint8_t num
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -2023,7 +2023,7 @@ static int bt_le_per_adv_enable(struct bt_le_ext_adv *adv, bool enable)
 		return -EALREADY;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -2267,7 +2267,7 @@ int bt_le_per_adv_set_info_transfer(const struct bt_le_ext_adv *adv,
 		return -ENOTSUP;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}

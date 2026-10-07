@@ -1778,7 +1778,7 @@ static void long_ase_read(struct bt_bap_unicast_client_ep *client_ep)
 
 		/* Wait a connection interval to retry */
 		err = k_work_reschedule(&client_ep->ase_read_work,
-					K_USEC(conn_info.le.interval_us));
+					USEC2TICK(conn_info.le.interval_us));
 		if (err < 0) {
 			LOG_DBG("Failed to reschedule ASE long read work: %d", err);
 		}

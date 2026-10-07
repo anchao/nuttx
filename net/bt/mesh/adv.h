@@ -82,15 +82,15 @@ void bt_mesh_adv_unref(struct bt_mesh_adv *adv);
 /* xmit_count: Number of retransmissions, i.e. 0 == 1 transmission */
 struct bt_mesh_adv *bt_mesh_adv_create(enum bt_mesh_adv_type type,
 				       enum bt_mesh_adv_tag tag,
-				       uint8_t xmit, k_timeout_t timeout);
+				       uint8_t xmit, clock_t timeout);
 
 void bt_mesh_adv_send(struct bt_mesh_adv *adv, const struct bt_mesh_send_cb *cb,
 		      void *cb_data);
 void bt_mesh_adv_send_end(int err, struct bt_mesh_adv_ctx const *ctx);
 
-struct bt_mesh_adv *bt_mesh_adv_get(k_timeout_t timeout);
+struct bt_mesh_adv *bt_mesh_adv_get(clock_t timeout);
 
-struct bt_mesh_adv *bt_mesh_adv_get_by_tag(enum bt_mesh_adv_tag_bit tags, k_timeout_t timeout);
+struct bt_mesh_adv *bt_mesh_adv_get_by_tag(enum bt_mesh_adv_tag_bit tags, clock_t timeout);
 
 void bt_mesh_adv_gatt_update(void);
 

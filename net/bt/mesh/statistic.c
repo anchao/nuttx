@@ -71,12 +71,12 @@ static int64_t scan_start_ts;
 
 void bt_mesh_stat_lpn_timing_update_poll_tx(void)
 {
-	poll_tx_end_ts = k_uptime_ticks();
+	poll_tx_end_ts = clock_systime_ticks();
 }
 
 void bt_mesh_stat_lpn_timing_update_scan_start(void)
 {
-	int64_t now = k_uptime_ticks();
+	int64_t now = clock_systime_ticks();
 	uint32_t delay;
 
 	scan_start_ts = now;
@@ -85,7 +85,7 @@ void bt_mesh_stat_lpn_timing_update_scan_start(void)
 		return;
 	}
 
-	delay = k_ticks_to_us_floor32(now - poll_tx_end_ts);
+	delay = TICK2USEC(now - poll_tx_end_ts);
 	lpn_timing.recv_delay_us = delay;
 
 	if (lpn_timing.cnt == 0 && lpn_timing.recv_delay_min_us == 0) {
@@ -103,14 +103,14 @@ void bt_mesh_stat_lpn_timing_update_scan_start(void)
 
 void bt_mesh_stat_lpn_timing_update_response_rx(void)
 {
-	int64_t now = k_uptime_ticks();
+	int64_t now = clock_systime_ticks();
 	uint32_t win;
 
 	if (scan_start_ts == 0) {
 		return;
 	}
 
-	win = k_ticks_to_us_floor32(now - scan_start_ts);
+	win = TICK2USEC(now - scan_start_ts);
 	lpn_timing.recv_win_us = win;
 
 	if (lpn_timing.cnt == 0) {
@@ -130,13 +130,13 @@ void bt_mesh_stat_lpn_timing_update_response_rx(void)
 
 void bt_mesh_stat_lpn_timing_update_win_expired(void)
 {
-	int64_t now = k_uptime_ticks();
+	int64_t now = clock_systime_ticks();
 
 	if (scan_start_ts == 0) {
 		return;
 	}
 
-	lpn_timing.recv_win_expected_us = k_ticks_to_us_floor32(now - scan_start_ts);
+	lpn_timing.recv_win_expected_us = TICK2USEC(now - scan_start_ts);
 	lpn_timing.cnt_failed++;
 }
 

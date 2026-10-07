@@ -100,7 +100,7 @@ static struct delayable_msg_ctx *peek_pending_msg(void)
 static void reschedule_delayable_msg(struct delayable_msg_ctx *msg)
 {
 	int32_t remaining;
-	k_timeout_t delay = K_NO_WAIT;
+	clock_t delay = 0;
 	struct delayable_msg_ctx *pending_msg;
 	irqstate_t key = spin_lock_irqsave(&lock);
 
@@ -115,9 +115,9 @@ static void reschedule_delayable_msg(struct delayable_msg_ctx *msg)
 		return;
 	}
 
-	remaining = (int32_t)(pending_msg->fired_time - k_uptime_get_32());
+	remaining = (int32_t)(pending_msg->fired_time - (uint32_t)TICK2MSEC(clock_systime_ticks()));
 	if (remaining > 0) {
-		delay = K_MSEC(remaining);
+		delay = MSEC2TICK(remaining);
 	}
 
 	/* k_work_reschedule() is safe to call under our spinlock: it uses its own internal spinlock
@@ -224,7 +224,7 @@ static void complete_delayable_msg(struct delayable_msg_ctx *msg, int err)
 /* Signed delta keeps this correct across the 32-bit uptime wrap. */
 static bool msg_expired(const struct delayable_msg_ctx *msg)
 {
-	return (int32_t)(k_uptime_get_32() - msg->fired_time) >= 0;
+	return (int32_t)((uint32_t)TICK2MSEC(clock_systime_ticks()) - msg->fired_time) >= 0;
 }
 
 /* Takes the head off busy_ctx only if it is due. k_work_reschedule() cannot withdraw a submission
@@ -393,7 +393,7 @@ int bt_mesh_delayable_msg_manage(struct bt_mesh_msg_ctx *ctx, struct net_buf_sim
 
 	bt_rand(&random_delay, sizeof(uint16_t));
 	random_delay = 20 + random_delay % (BT_MESH_ADDR_IS_UNICAST(ctx->recv_dst) ? 30 : 480);
-	msg->fired_time = k_uptime_get_32() + random_delay;
+	msg->fired_time = (uint32_t)TICK2MSEC(clock_systime_ticks()) + random_delay;
 	msg->ctx = *ctx;
 	msg->src_addr = src_addr;
 	msg->cb = cb;

@@ -148,11 +148,11 @@ static int req_setup(struct bt_mesh_dfu_cli *cli, enum req type, uint16_t addr,
 	return 0;
 }
 
-static int req_wait(struct bt_mesh_dfu_cli *cli, k_timeout_t timeout)
+static int req_wait(struct bt_mesh_dfu_cli *cli, clock_t timeout)
 {
 	int err;
 
-	err = nxsem_tickwait(&cli->req.sem, timeout.ticks);
+	err = nxsem_tickwait(&cli->req.sem, timeout);
 	cli->req.type = REQ_NONE;
 
 	return err;
@@ -1159,7 +1159,7 @@ int bt_mesh_dfu_cli_cancel(struct bt_mesh_dfu_cli *cli,
 			return err;
 		}
 
-		return req_wait(cli, K_MSEC(dfu_cli_timeout));
+		return req_wait(cli, MSEC2TICK(dfu_cli_timeout));
 	}
 
 	if (cli->xfer.state == STATE_IDLE) {
@@ -1248,7 +1248,7 @@ int bt_mesh_dfu_cli_imgs_get(struct bt_mesh_dfu_cli *cli,
 		return err;
 	}
 
-	err = req_wait(cli, K_MSEC(dfu_cli_timeout));
+	err = req_wait(cli, MSEC2TICK(dfu_cli_timeout));
 
 	cli->req.img_cb = NULL;
 
@@ -1286,7 +1286,7 @@ int bt_mesh_dfu_cli_metadata_check(struct bt_mesh_dfu_cli *cli,
 		return err;
 	}
 
-	return req_wait(cli, K_MSEC(dfu_cli_timeout));
+	return req_wait(cli, MSEC2TICK(dfu_cli_timeout));
 }
 
 int bt_mesh_dfu_cli_status_get(struct bt_mesh_dfu_cli *cli,
@@ -1309,7 +1309,7 @@ int bt_mesh_dfu_cli_status_get(struct bt_mesh_dfu_cli *cli,
 		return err;
 	}
 
-	return req_wait(cli, K_MSEC(dfu_cli_timeout));
+	return req_wait(cli, MSEC2TICK(dfu_cli_timeout));
 }
 
 int32_t bt_mesh_dfu_cli_timeout_get(void)

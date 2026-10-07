@@ -175,7 +175,7 @@ int bt_mesh_op_agg_cli_seq_send(void)
 		return err;
 	}
 
-	return bt_mesh_msg_ack_ctx_wait(&cli.ack_ctx, K_MSEC(msg_timeout));
+	return bt_mesh_msg_ack_ctx_wait(&cli.ack_ctx, MSEC2TICK(msg_timeout));
 }
 
 void bt_mesh_op_agg_cli_seq_abort(void)

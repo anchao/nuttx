@@ -348,7 +348,7 @@ static uint64_t monitor_ts_get(void)
 		 * use the tick counter instead, like the logging core does
 		 * (it uses uptime for cycle rates above 1 MHz).
 		 */
-		us = k_ticks_to_us_floor64(k_uptime_ticks());
+		us = TICK2USEC(clock_systime_ticks());
 	} else {
 		us = k_cyc_to_us_floor64(k_cycle_get_32());
 	}

@@ -67,13 +67,13 @@ LOG_MODULE_REGISTER(bt_l2cap, CONFIG_BT_L2CAP_LOG_LEVEL);
 #define L2CAP_LE_PSM_IS_DYN(_psm) \
 	(_psm >= L2CAP_LE_PSM_DYN_START && _psm <= L2CAP_LE_PSM_DYN_END)
 
-#define L2CAP_CONN_TIMEOUT	K_SECONDS(CONFIG_BT_L2CAP_CONN_RTX_TIMEOUT)
-#define L2CAP_DISC_TIMEOUT	K_SECONDS(2)
+#define L2CAP_CONN_TIMEOUT	SEC2TICK(CONFIG_BT_L2CAP_CONN_RTX_TIMEOUT)
+#define L2CAP_DISC_TIMEOUT	SEC2TICK(2)
 /** @brief Local L2CAP RTX (Response Timeout eXpired)
  *
  *  Specification-allowed range for the value of RTX is 1 to 60 seconds.
  */
-#define L2CAP_RTX_TIMEOUT	K_SECONDS(2)
+#define L2CAP_RTX_TIMEOUT	SEC2TICK(2)
 
 #if defined(CONFIG_BT_L2CAP_DYNAMIC_CHANNEL)
 /* Dedicated pool for disconnect buffers so they are guaranteed to be send
@@ -277,7 +277,7 @@ static void l2cap_chan_del(struct bt_l2cap_chan *chan)
 	/* Remove buffers on the PDU TX queue. We can't do that in
 	 * `l2cap_chan_destroy()` as it is not called for fixed channels.
 	 */
-	while ((buf = k_fifo_get(&le_chan->tx_queue, K_NO_WAIT))) {
+	while ((buf = k_fifo_get(&le_chan->tx_queue, 0))) {
 		bt_conn_tx_cb_t cb = closure_cb(buf->user_data);
 
 		if (cb != NULL) {
@@ -335,7 +335,7 @@ static void l2cap_rx_process(struct k_work *work)
 	struct bt_l2cap_le_chan *ch = CHAN_RX(work);
 	struct net_buf *buf;
 
-	while ((buf = k_fifo_get(&ch->rx_queue, K_NO_WAIT))) {
+	while ((buf = k_fifo_get(&ch->rx_queue, 0))) {
 		LOG_DBG("ch %p buf %p", ch, buf);
 		l2cap_chan_le_recv(ch, buf);
 		net_buf_unref(buf);
@@ -524,7 +524,7 @@ static int l2cap_send_sig(struct bt_conn *conn, struct net_buf *buf)
 
 #if defined(CONFIG_BT_L2CAP_DYNAMIC_CHANNEL)
 static void l2cap_chan_send_req(struct bt_l2cap_chan *chan,
-				struct net_buf *buf, k_timeout_t timeout)
+				struct net_buf *buf, clock_t timeout)
 {
 	if (l2cap_send_sig(chan->conn, buf)) {
 		return;
@@ -704,11 +704,11 @@ void bt_l2cap_security_changed(struct bt_conn *conn, uint8_t hci_status)
 
 struct net_buf *bt_l2cap_create_pdu_timeout(struct net_buf_pool *pool,
 					    size_t reserve,
-					    k_timeout_t timeout)
+					    clock_t timeout)
 {
-	if (!K_TIMEOUT_EQ(timeout, K_NO_WAIT) &&
+	if (!((timeout) == (0)) &&
 	    k_current_get() == k_work_queue_thread_get(&k_sys_work_q)) {
-		timeout = K_NO_WAIT;
+		timeout = 0;
 	}
 
 	return bt_conn_create_pdu_timeout(pool,
@@ -1030,7 +1030,7 @@ struct net_buf *l2cap_data_pull(struct bt_conn *conn,
 
 	if (last_frag && last_seg) {
 		LOG_DBG("last frag of last seg, dequeuing %p", pdu);
-		fifo_pdu = k_fifo_get(&lechan->tx_queue, K_NO_WAIT);
+		fifo_pdu = k_fifo_get(&lechan->tx_queue, 0);
 
 		__ASSERT_NO_MSG(fifo_pdu == pdu);
 
@@ -1401,7 +1401,7 @@ static void l2cap_chan_destroy(struct bt_l2cap_chan *chan)
 	(void)k_work_cancel(&le_chan->rx_work);
 
 	/* Remove buffers on the SDU RX queue */
-	while ((buf = k_fifo_get(&le_chan->rx_queue, K_NO_WAIT))) {
+	while ((buf = k_fifo_get(&le_chan->rx_queue, 0))) {
 		net_buf_unref(buf);
 	}
 
@@ -2430,12 +2430,12 @@ static void l2cap_chan_shutdown(struct bt_l2cap_chan *chan)
 	}
 
 	/* Remove buffers on the TX queue */
-	while ((buf = k_fifo_get(&le_chan->tx_queue, K_NO_WAIT))) {
+	while ((buf = k_fifo_get(&le_chan->tx_queue, 0))) {
 		net_buf_unref(buf);
 	}
 
 	/* Remove buffers on the RX queue */
-	while ((buf = k_fifo_get(&le_chan->rx_queue, K_NO_WAIT))) {
+	while ((buf = k_fifo_get(&le_chan->rx_queue, 0))) {
 		net_buf_unref(buf);
 	}
 
@@ -2589,7 +2589,7 @@ int bt_l2cap_chan_recv_complete(struct bt_l2cap_chan *chan, struct net_buf *buf)
 	return 0;
 }
 
-static struct net_buf *l2cap_alloc_frag(k_timeout_t timeout, void *user_data)
+static struct net_buf *l2cap_alloc_frag(clock_t timeout, void *user_data)
 {
 	struct bt_l2cap_le_chan *chan = user_data;
 	struct net_buf *frag = NULL;

@@ -79,7 +79,7 @@ struct bt_iso_big {
 void hci_iso(struct net_buf *buf);
 
 /* Allocates RX buffer */
-struct net_buf *bt_iso_get_rx(k_timeout_t timeout);
+struct net_buf *bt_iso_get_rx(clock_t timeout);
 
 /** A callback used to notify about freed buffer in the iso rx pool. */
 typedef void (*bt_iso_buf_rx_freed_cb_t)(void);

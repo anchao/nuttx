@@ -146,7 +146,7 @@ int bt_mesh_sar_cfg_cli_transmitter_get(uint16_t net_idx, uint16_t addr,
 		return err;
 	}
 
-	return bt_mesh_msg_ack_ctx_wait(&cli->ack_ctx, K_MSEC(cli->timeout));
+	return bt_mesh_msg_ack_ctx_wait(&cli->ack_ctx, MSEC2TICK(cli->timeout));
 }
 
 int bt_mesh_sar_cfg_cli_transmitter_set(uint16_t net_idx, uint16_t addr,
@@ -172,7 +172,7 @@ int bt_mesh_sar_cfg_cli_transmitter_set(uint16_t net_idx, uint16_t addr,
 		return err;
 	}
 
-	return bt_mesh_msg_ack_ctx_wait(&cli->ack_ctx, K_MSEC(cli->timeout));
+	return bt_mesh_msg_ack_ctx_wait(&cli->ack_ctx, MSEC2TICK(cli->timeout));
 }
 
 int bt_mesh_sar_cfg_cli_receiver_get(uint16_t net_idx, uint16_t addr,
@@ -196,7 +196,7 @@ int bt_mesh_sar_cfg_cli_receiver_get(uint16_t net_idx, uint16_t addr,
 		return err;
 	}
 
-	return bt_mesh_msg_ack_ctx_wait(&cli->ack_ctx, K_MSEC(cli->timeout));
+	return bt_mesh_msg_ack_ctx_wait(&cli->ack_ctx, MSEC2TICK(cli->timeout));
 }
 
 int bt_mesh_sar_cfg_cli_receiver_set(uint16_t net_idx, uint16_t addr,
@@ -222,5 +222,5 @@ int bt_mesh_sar_cfg_cli_receiver_set(uint16_t net_idx, uint16_t addr,
 		return err;
 	}
 
-	return bt_mesh_msg_ack_ctx_wait(&cli->ack_ctx, K_MSEC(cli->timeout));
+	return bt_mesh_msg_ack_ctx_wait(&cli->ack_ctx, MSEC2TICK(cli->timeout));
 }

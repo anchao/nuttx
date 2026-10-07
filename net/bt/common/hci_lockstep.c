@@ -31,7 +31,29 @@
 LOG_MODULE_REGISTER(bt_hci_lockstep);
 
 /* The Bluetooth Host's own command timeout */
-#define LOCKSTEP_CMD_TIMEOUT K_SECONDS(10)
+#define LOCKSTEP_CMD_TIMEOUT SEC2TICK(10)
+
+static clock_t lockstep_deadline(clock_t timeout)
+{
+	return timeout < 0 ? (clock_t)-1 : clock_systime_ticks() + timeout;
+}
+
+static bool lockstep_expired(clock_t deadline)
+{
+	return deadline >= 0 && !clock_compare(clock_systime_ticks(), deadline);
+}
+
+static clock_t lockstep_remaining(clock_t deadline)
+{
+	clock_t remaining;
+
+	if (deadline < 0) {
+		return (clock_t)-1;
+	}
+
+	remaining = deadline - clock_systime_ticks();
+	return remaining > 0 ? remaining : 0;
+}
 
 /* The helper's state: whether the controller allows a command, and where
  * the command in progress stands. One byte under a short spinlock, with a
@@ -156,7 +178,7 @@ int bt_hci_lockstep_cmd_send_sync(struct bt_hci_lockstep *ls, uint16_t opcode,
 	uint8_t no_params[BT_HCI_PKT_CMD_HDR_SIZE];
 	struct net_buf_simple no_params_buf;
 	irqstate_t key;
-	k_timepoint_t end;
+	clock_t end;
 	uint8_t status;
 	int err;
 
@@ -177,7 +199,7 @@ int bt_hci_lockstep_cmd_send_sync(struct bt_hci_lockstep *ls, uint16_t opcode,
 	 * controller allows it, if only with the NOP Command Complete it sends
 	 * for that purpose.
 	 */
-	end = sys_timepoint_calc(ls->timeout);
+	end = lockstep_deadline(ls->timeout);
 	while (true) {
 		key = spin_lock_irqsave(&ls->lock);
 
@@ -199,8 +221,8 @@ int bt_hci_lockstep_cmd_send_sync(struct bt_hci_lockstep *ls, uint16_t opcode,
 
 		spin_unlock_irqrestore(&ls->lock, key);
 
-		if (sys_timepoint_expired(end) ||
-		    nxsem_tickwait(&ls->changed, sys_timepoint_timeout(end).ticks) != 0) {
+		if (lockstep_expired(end) ||
+		    nxsem_tickwait(&ls->changed, lockstep_remaining(end)) != 0) {
 			LOG_ERR("opcode 0x%04x: controller allows no command", opcode);
 			return -EAGAIN;
 		}
@@ -249,7 +271,7 @@ int bt_hci_lockstep_cmd_send_sync(struct bt_hci_lockstep *ls, uint16_t opcode,
 			break;
 		}
 
-		if (sys_timepoint_expired(end)) {
+		if (lockstep_expired(end)) {
 			/* The unanswered command used up the allowance: the next
 			 * one waits for the controller to allow it again.
 			 */
@@ -263,7 +285,7 @@ int bt_hci_lockstep_cmd_send_sync(struct bt_hci_lockstep *ls, uint16_t opcode,
 		spin_unlock_irqrestore(&ls->lock, key);
 
 		/* A stale wakeup or a NOP only leads back to the check */
-		(void)nxsem_tickwait(&ls->changed, sys_timepoint_timeout(end).ticks);
+		(void)nxsem_tickwait(&ls->changed, lockstep_remaining(end));
 	}
 
 	if (status != BT_HCI_ERR_SUCCESS) {

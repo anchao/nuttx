@@ -44,10 +44,10 @@
 LOG_MODULE_REGISTER(bt_mcs, CONFIG_BT_MCS_LOG_LEVEL);
 
 /* The value 1000 was arbitrarily chosen. No action should take longer than this, and using a
- * non-K_FOREVER value may help catch any programming issues as locking the mutexes may trigger
+ * non-((clock_t)-1) value may help catch any programming issues as locking the mutexes may trigger
  * assertions
  */
-#define MUTEX_TIMEOUT K_MSEC(1000U)
+#define MUTEX_TIMEOUT MSEC2TICK(1000U)
 
 static int notify(struct bt_conn *conn, const struct bt_uuid *uuid, const void *data, uint16_t len);
 
@@ -106,7 +106,7 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 		return;
 	}
 
-	err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	/* Clear data on disconnect */
@@ -152,7 +152,7 @@ static void set_value_changed_cb(struct bt_conn *conn, void *data)
 		/* We may schedule the same work multiple times, but that is OK as scheduling the
 		 * same work multiple times is a no-op
 		 */
-		err = k_work_schedule(&mcs_inst.notify_work, K_NO_WAIT);
+		err = k_work_schedule(&mcs_inst.notify_work, 0);
 		__ASSERT(err >= 0, "Failed to schedule work: %d", err);
 		cb_info->any_pending_notifications = true;
 	} else {
@@ -179,7 +179,7 @@ static void set_value_changed(void (*value_cb)(struct mcs_flags *flags, bool set
 	};
 	__maybe_unused int err;
 
-	err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	__ASSERT(cb_info.attr != NULL, "Failed to find attribute for %s", bt_uuid_str(uuid));
@@ -307,7 +307,7 @@ static ssize_t read_player_name(struct bt_conn *conn,
 		struct mcs_flags *flags;
 		__maybe_unused int err;
 
-		err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 		flags = &mcs_inst.clients[bt_conn_index(conn)].flags;
@@ -371,7 +371,7 @@ static ssize_t read_icon_url(struct bt_conn *conn,
 		struct mcs_flags *flags;
 		__maybe_unused int err;
 
-		err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 		flags = &mcs_inst.clients[bt_conn_index(conn)].flags;
@@ -418,7 +418,7 @@ static ssize_t read_track_title(struct bt_conn *conn,
 		struct mcs_flags *flags;
 		__maybe_unused int err;
 
-		err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 		flags = &mcs_inst.clients[bt_conn_index(conn)].flags;
@@ -954,7 +954,7 @@ static ssize_t write_control_point(struct bt_conn *conn, const struct bt_gatt_at
 		struct mcs_flags *flags;
 		__maybe_unused int err;
 
-		err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 		client = &mcs_inst.clients[bt_conn_index(conn)];
@@ -993,7 +993,7 @@ static ssize_t write_control_point(struct bt_conn *conn, const struct bt_gatt_at
 			__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
 			LOG_DBG("Opcode 0x%02X is invalid", command.opcode);
 
-			err = k_work_schedule(&mcs_inst.notify_work, K_NO_WAIT);
+			err = k_work_schedule(&mcs_inst.notify_work, 0);
 			__ASSERT(err >= 0, "Failed to schedule work: %d", err);
 
 			return BT_GATT_ERR(BT_ATT_ERR_VALUE_NOT_ALLOWED);
@@ -1080,7 +1080,7 @@ static ssize_t write_search_control_point(struct bt_conn *conn, const struct bt_
 		struct mcs_flags *flags;
 		__maybe_unused int err;
 
-		err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 		flags = &mcs_inst.clients[bt_conn_index(conn)].flags;
@@ -1392,7 +1392,7 @@ static void notify_cb(struct bt_conn *conn, void *data)
 	err = nxrmutex_trylock(&mcs_inst.mutex);
 	if (err != 0) {
 		LOG_DBG("Failed to take mutex: %d", err);
-		err = k_work_schedule(&mcs_inst.notify_work, K_USEC(info.le.interval_us));
+		err = k_work_schedule(&mcs_inst.notify_work, USEC2TICK(info.le.interval_us));
 		__ASSERT(err >= 0, "Failed to reschedule work: %d", err);
 		return;
 	}
@@ -1644,7 +1644,7 @@ static void notify_cb(struct bt_conn *conn, void *data)
 exit:
 	if (err != 0) {
 		LOG_DBG("Notify failed (%d), retrying next connection interval", err);
-		err = k_work_schedule(&mcs_inst.notify_work, K_USEC(info.le.interval_us));
+		err = k_work_schedule(&mcs_inst.notify_work, USEC2TICK(info.le.interval_us));
 		__ASSERT(err >= 0, "Failed to reschedule work: %d", err);
 	}
 
@@ -1770,7 +1770,7 @@ static void defer_media_control_point_ntf(struct bt_conn *conn, void *data)
 		return;
 	}
 
-	err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	client = &mcs_inst.clients[bt_conn_index(conn)];
@@ -1786,7 +1786,7 @@ static void defer_media_control_point_ntf(struct bt_conn *conn, void *data)
 
 		if (bt_gatt_is_subscribed(conn, cp_attr, BT_GATT_CCC_NOTIFY)) {
 			flags->media_control_point_result = true;
-			err = k_work_schedule(&mcs_inst.notify_work, K_NO_WAIT);
+			err = k_work_schedule(&mcs_inst.notify_work, 0);
 			__ASSERT(err >= 0, "Failed to schedule work: %d", err);
 		}
 	}
@@ -1827,7 +1827,7 @@ static void defer_search_control_point_ntf(struct bt_conn *conn, void *data)
 		return;
 	}
 
-	err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	client = &mcs_inst.clients[bt_conn_index(conn)];
@@ -1843,7 +1843,7 @@ static void defer_search_control_point_ntf(struct bt_conn *conn, void *data)
 
 		if (bt_gatt_is_subscribed(conn, cp_attr, BT_GATT_CCC_NOTIFY)) {
 			flags->search_control_point_result = true;
-			err = k_work_schedule(&mcs_inst.notify_work, K_NO_WAIT);
+			err = k_work_schedule(&mcs_inst.notify_work, 0);
 			__ASSERT(err >= 0, "Failed to schedule work: %d", err);
 		}
 	}

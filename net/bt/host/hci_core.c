@@ -112,7 +112,7 @@ BUILD_ASSERT(IS_ENABLED(CONFIG_ZTEST), "Missing DT chosen property for HCI");
 
 void bt_tx_irq_raise(void);
 
-#define HCI_CMD_TIMEOUT      K_SECONDS(10)
+#define HCI_CMD_TIMEOUT      SEC2TICK(10)
 
 /* Stacks for the threads */
 static void rx_work_handler(struct k_work *work);
@@ -130,12 +130,12 @@ int bt_work_submit(struct k_work *work)
 	return k_work_submit_to_queue(&bt_workq, work);
 }
 
-int bt_work_schedule(struct k_work_delayable *work, k_timeout_t delay)
+int bt_work_schedule(struct k_work_delayable *work, clock_t delay)
 {
 	return k_work_schedule_for_queue(&bt_workq, work, delay);
 }
 
-int bt_work_reschedule(struct k_work_delayable *work, k_timeout_t delay)
+int bt_work_reschedule(struct k_work_delayable *work, clock_t delay)
 {
 	return k_work_reschedule_for_queue(&bt_workq, work, delay);
 }
@@ -301,7 +301,7 @@ void bt_send_one_host_num_completed_packets(uint16_t handle)
 
 	LOG_DBG("Reporting completed packet for handle %u", handle);
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	BT_ASSERT_MSG(buf, "Unable to alloc for Host NCP");
 
 	cp = net_buf_add(buf, sizeof(*cp));
@@ -363,7 +363,7 @@ void bt_hci_host_num_completed_packets(struct net_buf *buf)
 
 	LOG_DBG("Reporting completed packet for handle %u", handle);
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		LOG_ERR("Unable to allocate new HCI command");
 		return;
@@ -380,11 +380,11 @@ void bt_hci_host_num_completed_packets(struct net_buf *buf)
 }
 #endif /* defined(CONFIG_BT_HCI_ACL_FLOW_CONTROL) */
 
-struct net_buf *bt_hci_cmd_alloc(k_timeout_t timeout)
+struct net_buf *bt_hci_cmd_alloc(clock_t timeout)
 {
 	struct net_buf *buf;
 
-	buf = net_buf_alloc(&hci_cmd_pool, timeout.ticks);
+	buf = net_buf_alloc(&hci_cmd_pool, bt_net_buf_timeout(timeout));
 	if (!buf) {
 		LOG_DBG("Unable to allocate a command buffer");
 		return NULL;
@@ -410,7 +410,7 @@ static void hci_cmd_queue_purge(void)
 	struct net_buf *buf;
 
 	while (true) {
-		buf = k_fifo_get(&bt_dev.cmd_tx_queue, K_NO_WAIT);
+		buf = k_fifo_get(&bt_dev.cmd_tx_queue, 0);
 		if (buf == NULL) {
 			break;
 		}
@@ -440,7 +440,7 @@ int bt_hci_cmd_send(uint16_t opcode, struct net_buf *buf)
 	}
 
 	if (buf == NULL) {
-		buf = bt_hci_cmd_alloc(K_FOREVER);
+		buf = bt_hci_cmd_alloc(((clock_t)-1));
 		if (!buf) {
 			return -ENOBUFS;
 		}
@@ -492,7 +492,7 @@ int bt_hci_cmd_send(uint16_t opcode, struct net_buf *buf)
 	return 0;
 }
 
-static bool process_pending_cmd(k_timeout_t timeout);
+static bool process_pending_cmd(clock_t timeout);
 int bt_hci_cmd_send_sync(uint16_t opcode, struct net_buf *buf,
 			 struct net_buf **rsp)
 {
@@ -501,7 +501,7 @@ int bt_hci_cmd_send_sync(uint16_t opcode, struct net_buf *buf,
 	int err;
 
 	if (!buf) {
-		buf = bt_hci_cmd_alloc(K_FOREVER);
+		buf = bt_hci_cmd_alloc(((clock_t)-1));
 		if (!buf) {
 			return -ENOBUFS;
 		}
@@ -568,7 +568,7 @@ int bt_hci_cmd_send_sync(uint16_t opcode, struct net_buf *buf,
 	}
 
 	/* Now that we have sent the command, suspend until the LL replies */
-	err = nxsem_tickwait(&sync_sem, HCI_CMD_TIMEOUT.ticks);
+	err = nxsem_tickwait(&sync_sem, HCI_CMD_TIMEOUT);
 	BT_ASSERT_MSG(err == 0,
 		      "Controller unresponsive, command opcode 0x%04x timeout with err %d",
 		      opcode, err);
@@ -844,7 +844,7 @@ int bt_le_create_conn_ext(const struct bt_conn *conn)
 		return err;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -914,7 +914,7 @@ int bt_le_create_conn_synced(const struct bt_conn *conn, const struct bt_le_ext_
 	}
 
 	/* There shall only be one Initiating_PHYs */
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -964,7 +964,7 @@ static int bt_le_create_conn_legacy(const struct bt_conn *conn)
 		return err;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1019,7 +1019,7 @@ int bt_le_create_conn_cancel(void)
 	struct net_buf *buf;
 	struct bt_hci_cmd_state_set state;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1036,7 +1036,7 @@ int bt_hci_disconnect(uint16_t handle, uint8_t reason)
 	struct net_buf *buf;
 	struct bt_hci_cp_disconnect *disconn;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1181,7 +1181,7 @@ int bt_hci_le_read_remote_features(struct bt_conn *conn)
 	struct bt_hci_cp_le_read_remote_features *cp;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1206,7 +1206,7 @@ int bt_hci_read_remote_version(struct bt_conn *conn)
 		return 0;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1226,7 +1226,7 @@ int bt_le_set_data_len(struct bt_conn *conn, uint16_t tx_octets, uint16_t tx_tim
 	struct bt_hci_cp_le_set_data_len *cp;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1247,7 +1247,7 @@ static int hci_le_read_phy(struct bt_conn *conn)
 	struct net_buf *buf, *rsp;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1274,7 +1274,7 @@ int bt_le_set_default_phy(uint8_t all_phys, uint8_t pref_tx_phy, uint8_t pref_rx
 	struct bt_hci_cp_le_set_default_phy *cp;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1293,7 +1293,7 @@ int bt_le_set_phy(struct bt_conn *conn, uint8_t all_phys,
 	struct bt_hci_cp_le_set_phy *cp;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -2069,7 +2069,7 @@ static void le_conn_param_neg_reply(uint16_t handle, uint8_t reason)
 	struct bt_hci_cp_le_conn_param_req_neg_reply *cp;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		LOG_ERR("Unable to allocate buffer");
 		return;
@@ -2088,7 +2088,7 @@ static int le_conn_param_req_reply(uint16_t handle,
 	struct bt_hci_cp_le_conn_param_req_reply *cp;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -2202,7 +2202,7 @@ static void le_conn_update_complete(struct net_buf *buf)
 			   conn->le.conn_param_retry_countdown) {
 			conn->le.conn_param_retry_countdown--;
 			bt_work_schedule(&conn->deferred_work,
-					 K_MSEC(CONFIG_BT_CONN_PARAM_RETRY_TIMEOUT));
+					 MSEC2TICK(CONFIG_BT_CONN_PARAM_RETRY_TIMEOUT));
 		} else {
 			if (IS_ENABLED(CONFIG_BT_USER_CONN_PARAM_REJECTED)) {
 				/* A host-initiated (auto) update is only reported as a
@@ -2256,7 +2256,7 @@ static int set_flow_control(void)
 		return 0;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -2271,7 +2271,7 @@ static int set_flow_control(void)
 		return err;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -2602,7 +2602,7 @@ static void le_ltk_neg_reply(uint16_t handle)
 	struct bt_hci_cp_le_ltk_req_neg_reply *cp;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		LOG_ERR("Out of command buffers");
 
@@ -2620,7 +2620,7 @@ static void le_ltk_reply(uint16_t handle, uint8_t *ltk)
 	struct bt_hci_cp_le_ltk_req_reply *cp;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		LOG_ERR("Out of command buffers");
 		return;
@@ -3421,7 +3421,7 @@ static void hci_core_send_cmd(void)
 
 	/* Get next command */
 	LOG_DBG("fetch cmd");
-	buf = k_fifo_get(&bt_dev.cmd_tx_queue, K_NO_WAIT);
+	buf = k_fifo_get(&bt_dev.cmd_tx_queue, 0);
 	BT_ASSERT(buf);
 
 	/* Clear out any existing sent command */
@@ -3612,7 +3612,7 @@ static int le_set_host_feature(uint8_t bit_number, uint8_t bit_value)
 	struct bt_hci_cp_le_set_host_feature *cp;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -3739,7 +3739,7 @@ static int le_set_event_mask(void)
 	uint64_t mask = 0U;
 
 	/* Set LE event mask */
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -4018,7 +4018,7 @@ static int le_init(void)
 #endif /* CONFIG_BT_BROADCASTER */
 
 	if (BT_FEAT_BREDR(bt_dev.features)) {
-		buf = bt_hci_cmd_alloc(K_FOREVER);
+		buf = bt_hci_cmd_alloc(((clock_t)-1));
 		if (!buf) {
 			return -ENOBUFS;
 		}
@@ -4059,7 +4059,7 @@ static int le_init(void)
 			return err;
 		}
 
-		buf = bt_hci_cmd_alloc(K_FOREVER);
+		buf = bt_hci_cmd_alloc(((clock_t)-1));
 		if (!buf) {
 			return -ENOBUFS;
 		}
@@ -4080,7 +4080,7 @@ static int le_init(void)
 #if defined(CONFIG_BT_PRIVACY)
 		struct bt_hci_cp_le_set_rpa_timeout *cp;
 
-		buf = bt_hci_cmd_alloc(K_FOREVER);
+		buf = bt_hci_cmd_alloc(((clock_t)-1));
 		if (!buf) {
 			return -ENOBUFS;
 		}
@@ -4181,7 +4181,7 @@ static int set_event_mask(void)
 	struct net_buf *buf;
 	uint64_t mask = 0U;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -4433,7 +4433,7 @@ static int hci_vs_write_bd_addr(bt_addr_t *bdaddr)
 	struct bt_hci_cp_vs_write_bd_addr *cp;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (buf == NULL) {
 		return -ENOBUFS;
 	}
@@ -5265,7 +5265,7 @@ int bt_le_filter_accept_list_add(const bt_addr_le_t *addr)
 		return -EAGAIN;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -5293,7 +5293,7 @@ int bt_le_filter_accept_list_remove(const bt_addr_le_t *addr)
 		return -EAGAIN;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -5343,7 +5343,7 @@ int bt_le_set_chan_map(uint8_t chan_map[5])
 		return -ENOTSUP;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -5384,7 +5384,7 @@ int bt_configure_data_path(uint8_t dir, uint8_t id, uint8_t vs_config_len,
 	struct net_buf *buf;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -5412,7 +5412,7 @@ int bt_configure_data_path(uint8_t dir, uint8_t id, uint8_t vs_config_len,
 }
 
 /* Return `true` if a command was processed/sent */
-static bool process_pending_cmd(k_timeout_t timeout)
+static bool process_pending_cmd(clock_t timeout)
 {
 	if (!atomic_test_bit(bt_dev.flags, BT_DEV_OPEN)) {
 		hci_cmd_queue_purge();
@@ -5420,7 +5420,7 @@ static bool process_pending_cmd(k_timeout_t timeout)
 	}
 
 	if (!k_fifo_is_empty(&bt_dev.cmd_tx_queue)) {
-		if (nxsem_tickwait(&bt_dev.ncmd_sem, timeout.ticks) == 0) {
+		if (nxsem_tickwait(&bt_dev.ncmd_sem, timeout) == 0) {
 			hci_core_send_cmd();
 			return true;
 		}
@@ -5441,7 +5441,7 @@ static void tx_processor(struct k_work *item)
 	 *
 	 * Ordering rule: no code may wait, while holding the host lock,
 	 * on anything produced by the HCI prio path (ncmd_sem, command
-	 * completion). All resource acquisitions on this path are K_NO_WAIT.
+	 * completion). All resource acquisitions on this path are 0.
 	 * Note that the HCI driver's send() is called with the lock held;
 	 * drivers that deliver events synchronously from send() (e.g. the
 	 * native controller) re-enter bt_recv() on this thread, which is
@@ -5449,7 +5449,7 @@ static void tx_processor(struct k_work *item)
 	 */
 	bt_dev_lock();
 
-	if (process_pending_cmd(K_NO_WAIT)) {
+	if (process_pending_cmd(0)) {
 		/* If we processed a command, let the scheduler run before
 		 * processing another command (or data).
 		 */

@@ -55,7 +55,7 @@ LOG_MODULE_REGISTER(bt_ascs, CONFIG_BT_ASCS_LOG_LEVEL);
 #include "cap_internal.h"
 #include "pacs_internal.h"
 
-#define ASE_BUF_SEM_TIMEOUT K_MSEC(CONFIG_BT_ASCS_ASE_BUF_TIMEOUT)
+#define ASE_BUF_SEM_TIMEOUT MSEC2TICK(CONFIG_BT_ASCS_ASE_BUF_TIMEOUT)
 
 #define MAX_ASES_SESSIONS CONFIG_BT_MAX_CONN * \
 				(CONFIG_BT_ASCS_MAX_ASE_SNK_COUNT + \
@@ -236,7 +236,7 @@ static int ase_state_notify(struct bt_ascs_ase *ase)
 		return 0;
 	}
 
-	err = nxsem_tickwait(&ase_buf_sem, ASE_BUF_SEM_TIMEOUT.ticks);
+	err = nxsem_tickwait(&ase_buf_sem, ASE_BUF_SEM_TIMEOUT);
 	if (err != 0) {
 		LOG_WRN("Failed to take ase_buf_sem: %d", err);
 
@@ -329,7 +329,7 @@ static int ascs_disconnect_stream(struct bt_bap_stream *stream)
 	LOG_DBG("%p", stream);
 
 	return k_work_reschedule(&ase->disconnect_work,
-				 K_MSEC(CONFIG_BT_ASCS_ISO_DISCONNECT_DELAY));
+				 MSEC2TICK(CONFIG_BT_ASCS_ISO_DISCONNECT_DELAY));
 }
 
 static void ase_enter_state_idle(struct bt_ascs_ase *ase)
@@ -656,7 +656,7 @@ static void reschedule_notify_work(struct ascs_client *client)
 	retry_delay_us = info.le.interval_us;
 
 	/* Reschedule the state transition */
-	err = k_work_reschedule(&client->notify_work, K_USEC(retry_delay_us));
+	err = k_work_reschedule(&client->notify_work, USEC2TICK(retry_delay_us));
 	__ASSERT(err >= 0, "Failed to reschedule notify_work for client %p (conn %p): %d", client,
 		 client->conn, err);
 
@@ -732,7 +732,7 @@ int ascs_ep_set_state(struct bt_bap_ep *ep, enum bt_bap_ep_state state)
 	/* Take semaphore here in case that `ase_state_notify` is constructing the new state
 	 * to avoid modifying the `state_pending` value.
 	 */
-	err = nxsem_tickwait(&ase_buf_sem, ASE_BUF_SEM_TIMEOUT.ticks);
+	err = nxsem_tickwait(&ase_buf_sem, ASE_BUF_SEM_TIMEOUT);
 	if (err != 0) {
 		LOG_WRN("Failed to take ase_buf_sem: %d", err);
 
@@ -744,7 +744,7 @@ int ascs_ep_set_state(struct bt_bap_ep *ep, enum bt_bap_ep_state state)
 
 	nxsem_post(&ase_buf_sem);
 
-	err = k_work_schedule(&client->notify_work, K_NO_WAIT);
+	err = k_work_schedule(&client->notify_work, 0);
 	if (err < 0) {
 		LOG_ERR("Failed to schedule state transition work err %d", err);
 		return err;
@@ -1653,7 +1653,7 @@ static ssize_t ascs_ase_read(struct bt_conn *conn,
 		return ascs_ase_read_status_idle(conn, attr, buf, len, offset);
 	}
 
-	err = nxsem_tickwait(&ase_buf_sem, ASE_BUF_SEM_TIMEOUT.ticks);
+	err = nxsem_tickwait(&ase_buf_sem, ASE_BUF_SEM_TIMEOUT);
 	if (err != 0) {
 		LOG_DBG("Failed to take ase_buf_sem: %d", err);
 
@@ -3354,7 +3354,7 @@ static void control_point_respond(struct ascs_client *client)
 	client->rsp_pending = true;
 	client->rsp_building = false;
 
-	err = k_work_reschedule(&client->notify_work, K_NO_WAIT);
+	err = k_work_reschedule(&client->notify_work, 0);
 	__ASSERT(err >= 0, "Failed to schedule notify_work: %d", err);
 }
 

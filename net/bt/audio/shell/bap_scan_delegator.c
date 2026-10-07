@@ -234,7 +234,7 @@ static int pa_sync_past(struct bt_conn *conn, struct scan_delegator_sync_state *
 		bt_shell_info("Syncing with PAST: %d", err);
 		state->pa_syncing = true;
 		k_work_init_delayable(&state->pa_timer, pa_timer_handler);
-		(void)k_work_reschedule(&state->pa_timer, K_MSEC(param.timeout * 10U));
+		(void)k_work_reschedule(&state->pa_timer, MSEC2TICK(param.timeout * 10U));
 	}
 
 	return err;
@@ -277,7 +277,7 @@ static int pa_sync_no_past(struct scan_delegator_sync_state *state, uint16_t pa_
 		bt_shell_info("PA sync pending for addr %s", bt_addr_le_str(&recv_state->addr));
 		state->pa_syncing = true;
 		k_work_init_delayable(&state->pa_timer, pa_timer_handler);
-		(void)k_work_reschedule(&state->pa_timer, K_MSEC(param.timeout * 10U));
+		(void)k_work_reschedule(&state->pa_timer, MSEC2TICK(param.timeout * 10U));
 	}
 
 	return err;

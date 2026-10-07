@@ -1405,7 +1405,7 @@ static int cmd_hci_cmd(const struct shell *sh, size_t argc, char *argv[])
 			return -ENOEXEC;
 		}
 
-		buf = bt_hci_cmd_alloc(K_FOREVER);
+		buf = bt_hci_cmd_alloc(((clock_t)-1));
 		if (buf == NULL) {
 			shell_error(sh, "Unable to allocate HCI buffer");
 			return -ENOMEM;
@@ -1622,7 +1622,7 @@ static int cmd_active_scan_on(const struct shell *sh, uint32_t options,
 
 	if (timeout != 0U) {
 		/* Schedule the k_work to act as a timeout */
-		(void)k_work_reschedule(&active_scan_timeout_work, K_MSEC(timeout * 10U));
+		(void)k_work_reschedule(&active_scan_timeout_work, MSEC2TICK(timeout * 10U));
 	}
 
 	return 0;
@@ -3876,7 +3876,7 @@ static int cmd_connect_le_name(const struct shell *sh, size_t argc, char *argv[]
 	auto_connect.connect_name = true;
 
 	/* Schedule the k_work to act as a timeout */
-	(void)k_work_reschedule(&active_scan_timeout_work, K_SECONDS(DEFAULT_SCAN_TIMEOUT_SEC));
+	(void)k_work_reschedule(&active_scan_timeout_work, SEC2TICK(DEFAULT_SCAN_TIMEOUT_SEC));
 
 	return 0;
 }

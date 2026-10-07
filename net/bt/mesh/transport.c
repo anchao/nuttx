@@ -56,7 +56,7 @@ LOG_MODULE_REGISTER(bt_mesh_transport);
 #define SEQ_AUTH(iv_index, seq)     (((uint64_t)iv_index) << 24 | (uint64_t)seq)
 
 /* How long to wait for available buffers before giving up */
-#define BUF_TIMEOUT                 K_NO_WAIT
+#define BUF_TIMEOUT                 0
 
 #define ACK_DELAY(seg_n)                                                       \
 	(MIN(2 * seg_n + 1, BT_MESH_SAR_RX_ACK_DELAY_INC_X2) *                 \
@@ -223,7 +223,7 @@ static void seg_tx_unblock_check(struct seg_tx *tx)
 	if (blocked) {
 		LOG_DBG("Unblocked 0x%04x", (uint16_t)(blocked->seq_auth & TRANS_SEQ_ZERO_MASK));
 		blocked->blocked = false;
-		k_work_reschedule(&blocked->retransmit, K_NO_WAIT);
+		k_work_reschedule(&blocked->retransmit, 0);
 	}
 }
 
@@ -298,8 +298,8 @@ static void schedule_transmit_continue(struct seg_tx *tx, uint32_t delta)
 	 */
 	k_work_reschedule(&tx->retransmit,
 			  (tx->seg_o <= tx->seg_n) ?
-					K_MSEC(timeout) :
-					K_NO_WAIT);
+					MSEC2TICK(timeout) :
+					0);
 }
 
 static void seg_send_start(uint16_t duration, int err, void *user_data)
@@ -312,7 +312,7 @@ static void seg_send_start(uint16_t duration, int err, void *user_data)
 	}
 
 	tx->seg_send_started = 1U;
-	tx->adv_start_timestamp = k_uptime_get();
+	tx->adv_start_timestamp = TICK2MSEC(clock_systime_ticks());
 
 	/* If there's an error in transmitting the 'sent' callback will never
 	 * be called. Make sure that we kick the retransmit timer also in this
@@ -326,7 +326,7 @@ static void seg_send_start(uint16_t duration, int err, void *user_data)
 static void seg_sent(int err, void *user_data)
 {
 	struct seg_tx *tx = user_data;
-	uint32_t delta_ms = (uint32_t)(k_uptime_get() - tx->adv_start_timestamp);
+	uint32_t delta_ms = (uint32_t)(TICK2MSEC(clock_systime_ticks()) - tx->adv_start_timestamp);
 
 	if (!tx->seg_send_started) {
 		return;
@@ -455,7 +455,7 @@ end:
 		bt_mesh_lpn_poll();
 	}
 
-	delta_ms = (uint32_t)(k_uptime_get() - tx->adv_start_timestamp);
+	delta_ms = (uint32_t)(TICK2MSEC(clock_systime_ticks()) - tx->adv_start_timestamp);
 	if (tx->ack_received) {
 		/* Schedule retransmission immediately but keep SAR segment interval time if
 		 * SegAck was received while sending last segment.
@@ -471,7 +471,7 @@ end:
 	}
 
 	/* Schedule a retransmission */
-	k_work_reschedule(&tx->retransmit, K_MSEC(timeout));
+	k_work_reschedule(&tx->retransmit, MSEC2TICK(timeout));
 }
 
 static void seg_retransmit(struct k_work *work)
@@ -919,7 +919,7 @@ static int trans_ack(struct bt_mesh_net_rx *rx, uint8_t hdr,
 		 * that Retransmission Timer is running
 		 */
 		if (tx->seg_o == 0) {
-			k_timeout_t timeout = K_NO_WAIT;
+			clock_t timeout = 0;
 
 			/* If there are no retransmission attempts left we
 			 * immediately trigger the retransmit call that will
@@ -931,7 +931,7 @@ static int trans_ack(struct bt_mesh_net_rx *rx, uint8_t hdr,
 				goto reschedule;
 			}
 
-			uint32_t delta_ms = (uint32_t)(k_uptime_get() - tx->adv_start_timestamp);
+			uint32_t delta_ms = (uint32_t)(TICK2MSEC(clock_systime_ticks()) - tx->adv_start_timestamp);
 
 			/* According to MshPRTv1.1: 3.5.3.3.2, we should reset the retransmit timer
 			 * and retransmit immediately when receiving a valid ack message while
@@ -939,7 +939,7 @@ static int trans_ack(struct bt_mesh_net_rx *rx, uint8_t hdr,
 			 * segment transmission interval time between transmission of each segment.
 			 */
 			if (delta_ms < BT_MESH_SAR_TX_SEG_INT_MS) {
-				timeout = K_MSEC(BT_MESH_SAR_TX_SEG_INT_MS - delta_ms);
+				timeout = MSEC2TICK(BT_MESH_SAR_TX_SEG_INT_MS - delta_ms);
 			}
 
 reschedule:
@@ -1216,7 +1216,7 @@ static void seg_ack(struct k_work *work)
 	send_ack(rx->sub, rx->dst, rx->src, rx->ttl, &rx->seq_auth,
 		 rx->block, rx->obo);
 
-	rx->last_ack = k_uptime_get_32();
+	rx->last_ack = (uint32_t)TICK2MSEC(clock_systime_ticks());
 
 	if (rx->attempts_left == 0) {
 		LOG_DBG("Ran out of ack retransmit attempts");
@@ -1225,7 +1225,7 @@ static void seg_ack(struct k_work *work)
 
 	if (rx->seg_n > BT_MESH_SAR_RX_SEG_THRESHOLD) {
 		--rx->attempts_left;
-		k_work_schedule(&rx->ack, K_MSEC(BT_MESH_SAR_RX_SEG_INT_MS));
+		k_work_schedule(&rx->ack, MSEC2TICK(BT_MESH_SAR_RX_SEG_INT_MS));
 	}
 }
 
@@ -1419,12 +1419,12 @@ static int trans_seg(struct net_buf_simple *buf, struct bt_mesh_net_rx *net_rx,
 			 * [acknowledgment delay increment * segment transmission interval]
 			 *  milliseconds
 			 */
-			if (k_uptime_get_32() - rx->last_ack >
+			if ((uint32_t)TICK2MSEC(clock_systime_ticks()) - rx->last_ack >
 			    SEQAUTH_ALREADY_PROCESSED_TIMEOUT) {
 				send_ack(net_rx->sub, net_rx->ctx.recv_dst,
 					 net_rx->ctx.addr, net_rx->ctx.send_ttl,
 					 seq_auth, rx->block, rx->obo);
-				rx->last_ack = k_uptime_get_32();
+				rx->last_ack = (uint32_t)TICK2MSEC(clock_systime_ticks());
 			}
 
 			if (rpl) {
@@ -1534,16 +1534,16 @@ found_rx:
 
 	LOG_DBG("discard timeout %u", BT_MESH_SAR_RX_DISCARD_TIMEOUT_MS);
 	k_work_schedule(&rx->discard,
-			K_MSEC(BT_MESH_SAR_RX_DISCARD_TIMEOUT_MS));
+			MSEC2TICK(BT_MESH_SAR_RX_DISCARD_TIMEOUT_MS));
 	rx->attempts_left = BT_MESH_SAR_RX_ACK_RETRANS_COUNT;
 
 	if (!bt_mesh_lpn_established() && BT_MESH_ADDR_IS_UNICAST(rx->dst)) {
 		LOG_DBG("ack delay %u", ACK_DELAY(rx->seg_n));
-		k_work_reschedule(&rx->ack, K_MSEC(ACK_DELAY(rx->seg_n)));
+		k_work_reschedule(&rx->ack, MSEC2TICK(ACK_DELAY(rx->seg_n)));
 	}
 
 	/* Allocated segment here */
-	err = k_mem_slab_alloc(&segs, &rx->seg[seg_o], K_NO_WAIT);
+	err = k_mem_slab_alloc(&segs, &rx->seg[seg_o], 0);
 	if (err) {
 		LOG_WRN("Unable allocate buffer for Seg %u", seg_o);
 		return -ENOBUFS;
@@ -1571,7 +1571,7 @@ found_rx:
 
 	send_ack(net_rx->sub, net_rx->ctx.recv_dst, net_rx->ctx.addr,
 		 net_rx->ctx.send_ttl, seq_auth, rx->block, rx->obo);
-	rx->last_ack = k_uptime_get_32();
+	rx->last_ack = (uint32_t)TICK2MSEC(clock_systime_ticks());
 
 	if (net_rx->ctl) {
 		NET_BUF_SIMPLE_DEFINE(sdu, BT_MESH_RX_CTL_MAX);

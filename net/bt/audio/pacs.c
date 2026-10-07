@@ -46,8 +46,8 @@
 
 LOG_MODULE_REGISTER(bt_pacs, CONFIG_BT_PACS_LOG_LEVEL);
 
-#define PAC_NOTIFY_TIMEOUT   K_MSEC(10U)
-#define READ_BUF_SEM_TIMEOUT K_MSEC(50U)
+#define PAC_NOTIFY_TIMEOUT   MSEC2TICK(10U)
+#define READ_BUF_SEM_TIMEOUT MSEC2TICK(50U)
 
 #if defined(CONFIG_BT_PAC_SRC)
 static struct list_node src_pac_list = LIST_INITIAL_VALUE(src_pac_list);
@@ -407,7 +407,7 @@ static ssize_t snk_read(struct bt_conn *conn, const struct bt_gatt_attr *attr,
 
 	LOG_DBG("conn %p attr %p buf %p len %u offset %u", (void *)conn, attr, buf, len, offset);
 
-	err = nxsem_tickwait(&read_buf_sem, READ_BUF_SEM_TIMEOUT.ticks);
+	err = nxsem_tickwait(&read_buf_sem, READ_BUF_SEM_TIMEOUT);
 	if (err != 0) {
 		LOG_DBG("Failed to take read_buf_sem: %d", err);
 
@@ -520,7 +520,7 @@ static ssize_t src_read(struct bt_conn *conn, const struct bt_gatt_attr *attr,
 
 	LOG_DBG("conn %p attr %p buf %p len %u offset %u", (void *)conn, attr, buf, len, offset);
 
-	err = nxsem_tickwait(&read_buf_sem, READ_BUF_SEM_TIMEOUT.ticks);
+	err = nxsem_tickwait(&read_buf_sem, READ_BUF_SEM_TIMEOUT);
 	if (err != 0) {
 		LOG_DBG("Failed to take read_buf_sem: %d", err);
 

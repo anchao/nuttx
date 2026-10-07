@@ -200,7 +200,7 @@ int bt_mesh_pb_gatt_srv_enable(void)
 
 	(void)bt_gatt_service_register(&prov_svc);
 	service_registered = true;
-	fast_adv_timestamp = k_uptime_get();
+	fast_adv_timestamp = TICK2MSEC(clock_systime_ticks());
 
 	return 0;
 }
@@ -303,8 +303,8 @@ int bt_mesh_pb_gatt_srv_adv_start(void)
 	};
 	struct bt_data prov_sd[2];
 	size_t prov_sd_len;
-	int64_t timestamp = fast_adv_timestamp;
-	int64_t elapsed_time = k_uptime_delta(&timestamp);
+	int64_t elapsed_time = TICK2MSEC(clock_systime_ticks()) -
+		fast_adv_timestamp;
 
 	prov_sd_len = gatt_prov_adv_create(prov_sd);
 
@@ -315,7 +315,7 @@ int bt_mesh_pb_gatt_srv_adv_start(void)
 			ADV_SLOW_INT,
 		};
 
-		return bt_mesh_adv_gatt_start(&slow_adv_param, SYS_FOREVER_MS, prov_ad,
+		return bt_mesh_adv_gatt_start(&slow_adv_param, -1, prov_ad,
 					      ARRAY_SIZE(prov_ad), prov_sd, prov_sd_len);
 	}
 

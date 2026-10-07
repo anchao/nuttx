@@ -324,11 +324,11 @@ static struct bt_ag_tx *bt_ag_tx_alloc(void)
 	 * contexts available, there's no chance we'll get one by waiting.
 	 */
 	if (k_current_get() == k_sys_work_q.thread_id) {
-		return k_fifo_get(&ag_tx_free, K_NO_WAIT);
+		return k_fifo_get(&ag_tx_free, 0);
 	}
 
 	if (IS_ENABLED(CONFIG_BT_HFP_AG_LOG_LEVEL_DBG)) {
-		struct bt_ag_tx *tx = k_fifo_get(&ag_tx_free, K_NO_WAIT);
+		struct bt_ag_tx *tx = k_fifo_get(&ag_tx_free, 0);
 
 		if (tx) {
 			return tx;
@@ -337,7 +337,7 @@ static struct bt_ag_tx *bt_ag_tx_alloc(void)
 		LOG_WRN("Unable to get an immediate free bt_ag_tx");
 	}
 
-	return k_fifo_get(&ag_tx_free, K_FOREVER);
+	return k_fifo_get(&ag_tx_free, ((clock_t)-1));
 }
 
 static void bt_ag_tx_free(struct bt_ag_tx *tx)
@@ -375,7 +375,7 @@ static int hfp_ag_next_step(struct bt_hfp_ag *ag, bt_hfp_ag_tx_cb_t cb, void *us
 	} else {
 		list_add_tail(&ag->tx_pending, &tx->node);
 		/* Always active tx work */
-		bt_work_reschedule(&ag->tx_work, K_NO_WAIT);
+		bt_work_reschedule(&ag->tx_work, 0);
 	}
 	hfp_ag_unlock(ag);
 
@@ -439,7 +439,7 @@ static int hfp_ag_send_data(struct bt_hfp_ag *ag, bt_hfp_ag_tx_cb_t cb, void *us
 	hfp_ag_unlock(ag);
 
 	/* Always active tx work */
-	bt_work_reschedule(&ag->tx_work, K_NO_WAIT);
+	bt_work_reschedule(&ag->tx_work, 0);
 
 	return 0;
 
@@ -735,20 +735,20 @@ static void bt_hfp_ag_set_call_state(struct bt_hfp_ag_call *call, bt_hfp_call_st
 		break;
 	case BT_HFP_CALL_OUTGOING:
 		bt_work_reschedule(&call->deferred_work,
-				   K_SECONDS(CONFIG_BT_HFP_AG_OUTGOING_TIMEOUT));
+				   SEC2TICK(CONFIG_BT_HFP_AG_OUTGOING_TIMEOUT));
 		break;
 	case BT_HFP_CALL_INCOMING:
 		bt_work_reschedule(&call->deferred_work,
-				   K_SECONDS(CONFIG_BT_HFP_AG_INCOMING_TIMEOUT));
+				   SEC2TICK(CONFIG_BT_HFP_AG_INCOMING_TIMEOUT));
 		break;
 	case BT_HFP_CALL_ALERTING:
 		if (!atomic_test_bit(call->flags, BT_HFP_AG_CALL_INCOMING_3WAY)) {
-			bt_work_reschedule(&call->ringing_work, K_NO_WAIT);
+			bt_work_reschedule(&call->ringing_work, 0);
 		} else {
 			k_work_cancel_delayable(&call->ringing_work);
 		}
 		bt_work_reschedule(&call->deferred_work,
-				   K_SECONDS(CONFIG_BT_HFP_AG_ALERTING_TIMEOUT));
+				   SEC2TICK(CONFIG_BT_HFP_AG_ALERTING_TIMEOUT));
 		break;
 	case BT_HFP_CALL_ACTIVE:
 		k_work_cancel_delayable(&call->ringing_work);
@@ -861,7 +861,7 @@ static void bt_ag_notify_work(struct k_work *work)
 	bt_hfp_state_t state;
 	int err;
 
-	tx = (struct bt_ag_tx *)k_fifo_get(&ag_tx_notify, K_NO_WAIT);
+	tx = (struct bt_ag_tx *)k_fifo_get(&ag_tx_notify, 0);
 
 	if (tx == NULL) {
 		return;
@@ -911,7 +911,7 @@ static void bt_ag_tx_done_with_err(struct bt_hfp_ag *ag, struct bt_ag_tx *tx, in
 		LOG_WRN("tx ongoing flag is not set");
 	}
 	/* Due to the work is done, restart the tx work */
-	bt_work_reschedule(&ag->tx_work, K_NO_WAIT);
+	bt_work_reschedule(&ag->tx_work, 0);
 }
 
 static void bt_ag_tx_work(struct k_work *work)
@@ -1283,7 +1283,7 @@ static int bt_hfp_ag_cind_handler(struct bt_hfp_ag *ag, struct net_buf *buf)
 			err = -EINPROGRESS;
 			atomic_set_bit(ag->flags, BT_HGP_AG_ONGOING_CALLS);
 			bt_work_reschedule(&ag->ongoing_call_work,
-					   K_MSEC(CONFIG_BT_HFP_AG_GET_ONGOING_CALL_TIMEOUT));
+					   MSEC2TICK(CONFIG_BT_HFP_AG_GET_ONGOING_CALL_TIMEOUT));
 		}
 	}
 
@@ -3731,7 +3731,7 @@ static void hfp_ag_postprocess_at_cmd(struct bt_hfp_ag *ag)
 	hfp_ag_unlock(ag);
 
 	/* Always active tx work */
-	bt_work_reschedule(&ag->tx_work, K_NO_WAIT);
+	bt_work_reschedule(&ag->tx_work, 0);
 }
 
 static int hfp_ag_at_cmd_ack(struct bt_hfp_ag *ag, int err)
@@ -3829,7 +3829,7 @@ static void hfp_ag_sent(struct bt_rfcomm_dlc *dlc, int err)
 	LOG_DBG("Completed pending tx %p", tx);
 
 	/* Restart the tx work */
-	bt_work_reschedule(&ag->tx_work, K_NO_WAIT);
+	bt_work_reschedule(&ag->tx_work, 0);
 
 	tx->err = err;
 	bt_ag_tx_notify(tx);
@@ -3974,7 +3974,7 @@ static void bt_ag_ringing_work_cb(struct bt_hfp_ag *ag, void *user_data)
 		}
 
 		bt_work_reschedule(&call->ringing_work,
-				   K_SECONDS(CONFIG_BT_HFP_AG_RING_NOTIFY_INTERVAL));
+				   SEC2TICK(CONFIG_BT_HFP_AG_RING_NOTIFY_INTERVAL));
 
 		err = hfp_ag_send_data(ag, NULL, NULL, "\r\nRING\r\n");
 		if (err) {

@@ -69,7 +69,7 @@ static struct scanner_state scan_state;
 #if defined(CONFIG_BT_EXT_ADV)
 /* A buffer used to reassemble advertisement data from the controller. */
 NET_BUF_SIMPLE_DEFINE(ext_scan_buf, CONFIG_BT_EXT_SCAN_BUF_SIZE);
-#define REASSEMBLY_TIMEOUT K_MSEC(CONFIG_BT_EXT_ADV_REASSEMBLY_TIMEOUT)
+#define REASSEMBLY_TIMEOUT MSEC2TICK(CONFIG_BT_EXT_ADV_REASSEMBLY_TIMEOUT)
 
 #if defined(CONFIG_BT_TESTING)
 __weak void bt_testing_trace_ext_adv_reassembly_timeout(void) {}
@@ -173,7 +173,7 @@ static int cmd_le_set_ext_scan_enable(bool enable, bool filter_duplicates, uint1
 	struct net_buf *buf;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -203,7 +203,7 @@ static int cmd_le_set_scan_enable_legacy(bool enable, bool filter_duplicates)
 	struct net_buf *buf;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -308,7 +308,7 @@ static int start_le_scan_ext(struct bt_le_scan_param *scan_param)
 		return err;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -368,7 +368,7 @@ static int start_le_scan_legacy(struct bt_le_scan_param *param)
 		return err;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1284,7 +1284,7 @@ static int per_adv_sync_terminate(uint16_t handle)
 	struct bt_hci_cp_le_per_adv_terminate_sync *cp;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1484,7 +1484,7 @@ int bt_le_per_adv_sync_subevent(struct bt_le_per_adv_sync *per_adv_sync,
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1527,7 +1527,7 @@ int bt_le_per_adv_set_response_data(struct bt_le_per_adv_sync *per_adv_sync,
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -2139,7 +2139,7 @@ int bt_le_per_adv_sync_create(const struct bt_le_per_adv_sync_param *param,
 		return -ENOMEM;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		per_adv_sync_delete(per_adv_sync);
 		return -ENOBUFS;
@@ -2238,7 +2238,7 @@ static int bt_le_per_adv_sync_create_cancel(struct bt_le_per_adv_sync *per_adv_s
 		return err;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -2357,7 +2357,7 @@ static int bt_le_set_per_adv_recv_enable(struct bt_le_per_adv_sync *per_adv_sync
 		return -EALREADY;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -2416,7 +2416,7 @@ int bt_le_per_adv_sync_transfer(const struct bt_le_per_adv_sync *per_adv_sync,
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -2453,7 +2453,7 @@ static int past_param_set(const struct bt_conn *conn, uint8_t mode, uint16_t ski
 	struct net_buf *buf;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -2477,7 +2477,7 @@ static int default_past_param_set(uint8_t mode, uint16_t skip, uint16_t timeout,
 	struct net_buf *buf;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -2605,7 +2605,7 @@ int bt_le_per_adv_list_add(const bt_addr_le_t *addr, uint8_t sid)
 		return -EAGAIN;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -2632,7 +2632,7 @@ int bt_le_per_adv_list_remove(const bt_addr_le_t *addr, uint8_t sid)
 		return -EAGAIN;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}

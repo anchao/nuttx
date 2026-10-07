@@ -21,7 +21,7 @@
 #define BT_EATT_PSM		0x27
 #define BT_ATT_DEFAULT_LE_MTU	23
 #define BT_ATT_TIMEOUT_SEC	30
-#define BT_ATT_TIMEOUT		K_SECONDS(BT_ATT_TIMEOUT_SEC)
+#define BT_ATT_TIMEOUT		SEC2TICK(BT_ATT_TIMEOUT_SEC)
 
 /* Local ATT Rx MTU
  *
@@ -309,7 +309,7 @@ struct net_buf *bt_att_create_pdu(struct bt_conn *conn, uint8_t op,
 				  size_t len);
 
 /* Allocate a new request */
-struct bt_att_req *bt_att_req_alloc(k_timeout_t timeout);
+struct bt_att_req *bt_att_req_alloc(clock_t timeout);
 
 /* Free a request */
 void bt_att_req_free(struct bt_att_req *req);

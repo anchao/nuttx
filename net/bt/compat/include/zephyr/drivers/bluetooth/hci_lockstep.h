@@ -38,7 +38,7 @@ struct bt_hci_lockstep {
   uint16_t opcode;
   uint8_t state;
   uint8_t status;
-  k_timeout_t timeout;
+  clock_t timeout;
 };
 
 void bt_hci_lockstep_init(struct bt_hci_lockstep *ls, const struct device *dev,

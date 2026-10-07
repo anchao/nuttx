@@ -94,7 +94,7 @@ static void l2cap_recv_cb(struct k_work *work)
 	struct l2ch *c = L2CH_WORK(work);
 	struct net_buf *buf;
 
-	while ((buf = k_fifo_get(&l2cap_recv_fifo, K_NO_WAIT))) {
+	while ((buf = k_fifo_get(&l2cap_recv_fifo, 0))) {
 		bt_shell_print("Confirming reception");
 		bt_l2cap_chan_recv_complete(&c->ch.chan, buf);
 	}
@@ -123,7 +123,7 @@ static int l2cap_recv(struct bt_l2cap_chan *chan, struct net_buf *buf)
 		}
 
 		k_fifo_put(&l2cap_recv_fifo, buf);
-		k_work_schedule(&l2ch->recv_work, K_MSEC(l2cap_recv_delay_ms));
+		k_work_schedule(&l2ch->recv_work, MSEC2TICK(l2cap_recv_delay_ms));
 
 		return -EINPROGRESS;
 	}
@@ -434,7 +434,7 @@ static int cmd_send(const struct shell *sh, size_t argc, char *argv[])
 
 	while (count--) {
 		shell_print(sh, "Rem %d", count);
-		buf = net_buf_alloc(&data_tx_pool, k_sec_to_ticks_ceil32(2));
+		buf = net_buf_alloc(&data_tx_pool, 2 * MSEC_PER_SEC);
 		if (!buf) {
 			if (l2ch_chan.ch.state != BT_L2CAP_CONNECTED) {
 				shell_print(sh, "Channel disconnected, stopping TX");

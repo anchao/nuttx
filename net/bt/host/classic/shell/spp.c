@@ -258,10 +258,10 @@ static void bt_spp_disconnected(struct bt_rfcomm_dlc *dlci)
 	atomic_set(&ep->state, SPP_STATE_DISCONNECTED);
 	bt_shell_print("SPP: disconnected (ep=%p)", ep);
 
-	buf = k_fifo_get(&ep->rx_fifo, K_NO_WAIT);
+	buf = k_fifo_get(&ep->rx_fifo, 0);
 	while (buf != NULL) {
 		net_buf_unref(buf);
-		buf = k_fifo_get(&ep->rx_fifo, K_NO_WAIT);
+		buf = k_fifo_get(&ep->rx_fifo, 0);
 	}
 }
 
@@ -824,7 +824,7 @@ static int cmd_spp_recv_complete(const struct shell *sh, size_t argc, char *argv
 		return -ENOEXEC;
 	}
 
-	buf = k_fifo_get(&ep->rx_fifo, K_NO_WAIT);
+	buf = k_fifo_get(&ep->rx_fifo, 0);
 	if (buf == NULL) {
 		shell_error(sh, "SPP: no inprogress buffer");
 		return -ENOEXEC;

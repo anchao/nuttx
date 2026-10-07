@@ -59,7 +59,7 @@ static int bt_smp_recv(struct bt_l2cap_chan *chan, struct net_buf *req_buf)
 	 */
 
 	buf = bt_l2cap_create_pdu(NULL, 0);
-	/* NULL is not a possible return due to K_FOREVER */
+	/* NULL is not a possible return due to ((clock_t)-1) */
 
 	hdr = net_buf_add(buf, sizeof(*hdr));
 	hdr->code = BT_SMP_CMD_PAIRING_FAIL;

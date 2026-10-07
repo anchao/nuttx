@@ -244,7 +244,7 @@ static inline bool bt_mesh_msg_ack_ctx_busy(struct bt_mesh_msg_ack_ctx *ack)
  *
  *  @return 0 on success, or (negative) error code on failure.
  */
-int bt_mesh_msg_ack_ctx_wait(struct bt_mesh_msg_ack_ctx *ack, k_timeout_t timeout);
+int bt_mesh_msg_ack_ctx_wait(struct bt_mesh_msg_ack_ctx *ack, clock_t timeout);
 
 /** @brief Mark a message as acknowledged.
  *

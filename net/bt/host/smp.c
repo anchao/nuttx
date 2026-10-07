@@ -51,7 +51,7 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(bt_smp);
 
-#define SMP_TIMEOUT K_SECONDS(30)
+#define SMP_TIMEOUT SEC2TICK(30)
 
 /* Number of confirm/random rounds in the LE Secure Connections Passkey Entry
  * protocol. The passkey is a 6-digit decimal number, which is carried one bit
@@ -587,11 +587,11 @@ static struct net_buf *smp_create_pdu(struct bt_smp *smp, uint8_t op, size_t len
 {
 	struct bt_smp_hdr *hdr;
 	struct net_buf *buf;
-	k_timeout_t timeout;
+	clock_t timeout;
 
 	/* Don't if session had already timed out */
 	if (atomic_test_bit(smp->flags, SMP_FLAG_TIMEOUT)) {
-		timeout = K_NO_WAIT;
+		timeout = 0;
 	} else {
 		timeout = SMP_TIMEOUT;
 	}
@@ -1155,11 +1155,11 @@ static struct net_buf *smp_br_create_pdu(struct bt_smp_br *smp, uint8_t op,
 {
 	struct bt_smp_hdr *hdr;
 	struct net_buf *buf;
-	k_timeout_t timeout;
+	clock_t timeout;
 
 	/* Don't if session had already timed out */
 	if (atomic_test_bit(smp->flags, SMP_FLAG_TIMEOUT)) {
-		timeout = K_NO_WAIT;
+		timeout = 0;
 	} else {
 		timeout = SMP_TIMEOUT;
 	}
@@ -5141,7 +5141,7 @@ static void bt_smp_encrypt_change(struct bt_l2cap_chan *chan,
 		 * HCI events can be re-ordered, and pairing information appears
 		 * to be sent unencrypted.
 		 */
-		k_sleep(K_MSEC(100));
+		k_sleep(MSEC2TICK(100));
 	}
 
 	if (bt_smp_distribute_keys(smp)) {
@@ -6071,7 +6071,7 @@ int bt_smp_le_oob_generate_sc_data(struct bt_le_oob_sc_data *le_sc_oob)
 		 */
 		err = k_condvar_wait(&pub_key_gen.condvar,
 				     &pub_key_gen.lock,
-				     K_SECONDS(30));
+				     SEC2TICK(30));
 		if (err != 0) {
 			LOG_WRN("Public key generation timeout");
 

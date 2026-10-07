@@ -21,7 +21,7 @@ LOG_MODULE_REGISTER(bt_mesh_blob_srv);
 /* The Receive BLOB Timeout Timer */
 #define SERVER_TIMEOUT_SECS(srv) (10 * (1 + (srv)->state.timeout_base))
 /* The initial timer value used by an instance of the Pull BLOB State machine - T_BPI */
-#define REPORT_TIMER_TIMEOUT K_SECONDS(CONFIG_BT_MESH_BLOB_REPORT_TIMEOUT)
+#define REPORT_TIMER_TIMEOUT SEC2TICK(CONFIG_BT_MESH_BLOB_REPORT_TIMEOUT)
 
 BUILD_ASSERT(BLOB_BLOCK_SIZE_LOG_MIN <= BLOB_BLOCK_SIZE_LOG_MAX,
 	     "The must be at least one number between the min and "
@@ -122,7 +122,7 @@ static void reset_timer(struct bt_mesh_blob_srv *srv)
 			MAX(SERVER_TIMEOUT_SECS(srv),
 			    CONFIG_BT_MESH_BLOB_REPORT_TIMEOUT + 1) :
 			SERVER_TIMEOUT_SECS(srv);
-	k_work_reschedule(&srv->rx_timeout, K_SECONDS(timeout_secs));
+	k_work_reschedule(&srv->rx_timeout, SEC2TICK(timeout_secs));
 }
 
 static void buf_chunk_index_add(struct net_buf_simple *buf, uint16_t chunk)

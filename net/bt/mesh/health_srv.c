@@ -235,7 +235,7 @@ static int send_attention_status(const struct bt_mesh_model *model,
 	struct bt_mesh_health_srv *srv = model->rt->user_data;
 	uint8_t time;
 
-	time = k_ticks_to_ms_floor32(
+	time = TICK2MSEC(
 		k_work_delayable_remaining_get(&srv->attn_timer)) / 1000U;
 	LOG_DBG("%u second%s", time, (time == 1U) ? "" : "s");
 
@@ -468,5 +468,5 @@ void bt_mesh_attention(const struct bt_mesh_model *model, uint8_t time)
 		srv->cb->attn_on(model);
 	}
 
-	k_work_reschedule(&srv->attn_timer, K_SECONDS(time));
+	k_work_reschedule(&srv->attn_timer, SEC2TICK(time));
 }

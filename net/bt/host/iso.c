@@ -221,7 +221,7 @@ static int hci_le_setup_iso_data_path(const struct bt_conn *iso, uint8_t dir,
 	uint8_t *cc;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -370,7 +370,7 @@ static int hci_le_remove_iso_data_path(struct bt_conn *iso, uint8_t dir)
 	struct net_buf *buf, *rsp;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -487,7 +487,7 @@ static void bt_iso_chan_disconnected(struct bt_iso_chan *chan, uint8_t reason)
 	struct net_buf *buf;
 
 	/* release buffers from tx_queue */
-	while ((buf = k_fifo_get(&chan->iso->iso.txq, K_NO_WAIT))) {
+	while ((buf = k_fifo_get(&chan->iso->iso.txq, 0))) {
 		__ASSERT_NO_MSG(!bt_buf_has_view(buf));
 		net_buf_unref(buf);
 	}
@@ -652,11 +652,11 @@ int bt_iso_chan_get_info(const struct bt_iso_chan *chan, struct bt_iso_info *inf
 }
 
 #if defined(CONFIG_BT_ISO_RX)
-struct net_buf *bt_iso_get_rx(k_timeout_t timeout)
+struct net_buf *bt_iso_get_rx(clock_t timeout)
 {
 	struct net_buf *buf = net_buf_alloc(&iso_rx_pool,
-		K_TIMEOUT_EQ(timeout, K_FOREVER) ? -1 :
-		(int32_t)k_ticks_to_ms_ceil32(timeout.ticks));
+		((timeout) == (((clock_t)-1))) ? -1 :
+		(int32_t)TICK2MSEC(timeout));
 
 	if (buf) {
 		net_buf_add_u8(buf, BT_HCI_H4_ISO);
@@ -896,7 +896,7 @@ static struct net_buf *iso_data_pull(struct bt_conn *conn, size_t amount, size_t
 	bool last_frag = amount >= frag->len;
 
 	if (last_frag) {
-		q_frag = k_fifo_get(&conn->iso.txq, K_NO_WAIT);
+		q_frag = k_fifo_get(&conn->iso.txq, 0);
 
 		BT_ISO_DATA_DBG("last frag, pop buf");
 		__ASSERT_NO_MSG(q_frag == frag);
@@ -1125,7 +1125,7 @@ int bt_iso_chan_get_tx_sync(const struct bt_iso_chan *chan, struct bt_iso_tx_inf
 		return -ENOTCONN;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOMEM;
 	}
@@ -1230,7 +1230,7 @@ void bt_iso_cleanup_acl(struct bt_conn *iso)
 			LOG_DBG("Trigger disconnect work for ACL %p", acl);
 
 			__maybe_unused const int err =
-				bt_work_schedule(&acl->deferred_work, K_NO_WAIT);
+				bt_work_schedule(&acl->deferred_work, 0);
 
 			__ASSERT(err >= 0, "Failed to retrigger conn->deferred_work for %p", acl);
 		}
@@ -1600,7 +1600,7 @@ static int hci_le_reject_cis(uint16_t handle, uint8_t reason)
 	struct net_buf *buf;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1623,7 +1623,7 @@ static int hci_le_accept_cis(uint16_t handle)
 	struct net_buf *buf;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1759,7 +1759,7 @@ static int hci_le_remove_cig(uint8_t cig_id)
 	struct bt_hci_cp_le_remove_cig *req;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -1782,7 +1782,7 @@ static struct net_buf *hci_le_set_cig_params(const struct bt_iso_cig *cig,
 	struct net_buf *rsp;
 	int i, err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return NULL;
 	}
@@ -1870,7 +1870,7 @@ static struct net_buf *hci_le_set_cig_test_params(const struct bt_iso_cig *cig,
 	struct net_buf *rsp;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return NULL;
 	}
@@ -2429,7 +2429,7 @@ static int hci_le_create_cis(const struct bt_iso_connect_param *param, size_t co
 	struct bt_hci_cp_le_create_cis *req;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -2697,7 +2697,7 @@ static int hci_le_create_big(struct bt_le_ext_adv *padv, struct bt_iso_big *big,
 	int err;
 	struct bt_iso_chan *bis;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 
 	if (!buf) {
 		return -ENOBUFS;
@@ -2757,7 +2757,7 @@ static int hci_le_create_big_test(const struct bt_le_ext_adv *padv, struct bt_is
 	struct net_buf *buf;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 
 	if (!buf) {
 		return -ENOBUFS;
@@ -3133,7 +3133,7 @@ static int hci_le_terminate_big(struct bt_iso_big *big)
 	struct bt_hci_cp_le_terminate_big *req;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -3153,7 +3153,7 @@ static int hci_le_big_sync_term(struct bt_iso_big *big)
 	struct net_buf *rsp;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -3343,7 +3343,7 @@ static int hci_le_big_create_sync(const struct bt_le_per_adv_sync *sync, struct 
 	int err;
 	uint8_t bit_idx = 0;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}

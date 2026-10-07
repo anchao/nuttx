@@ -296,7 +296,7 @@ static void l2cap_disconnected(struct bt_l2cap_chan *chan)
 
 #if defined(CONFIG_BT_L2CAP_RET_FC)
 	do {
-		buf = k_fifo_get(&br_chan->l2cap_recv_fifo, K_NO_WAIT);
+		buf = k_fifo_get(&br_chan->l2cap_recv_fifo, 0);
 		if (buf != NULL) {
 			net_buf_unref(buf);
 		}
@@ -600,7 +600,7 @@ static int cmd_l2cap_send(const struct shell *sh, size_t argc, char *argv[])
 
 	while (count--) {
 		shell_print(sh, "Rem %d", count);
-		buf = net_buf_alloc(&data_tx_pool, k_sec_to_ticks_ceil32(2));
+		buf = net_buf_alloc(&data_tx_pool, 2 * MSEC_PER_SEC);
 		if (!buf) {
 			if (l2cap_chan.chan.state != BT_L2CAP_CONNECTED) {
 				shell_error(sh, "Channel disconnected, stopping TX");
@@ -632,7 +632,7 @@ static int cmd_l2cap_credits(const struct shell *sh, size_t argc, char *argv[])
 	int err;
 	struct net_buf *buf;
 
-	buf = k_fifo_get(&l2cap_chan.l2cap_recv_fifo, K_NO_WAIT);
+	buf = k_fifo_get(&l2cap_chan.l2cap_recv_fifo, 0);
 	if (buf != NULL) {
 		err = bt_l2cap_chan_recv_complete(&l2cap_chan.chan.chan, buf);
 		if (err < 0) {
@@ -707,7 +707,7 @@ static int cmd_l2cap_echo_req(const struct shell *sh, size_t argc, char *argv[])
 		return -ENOEXEC;
 	}
 
-	buf = net_buf_alloc(&data_tx_pool, k_sec_to_ticks_ceil32(2));
+	buf = net_buf_alloc(&data_tx_pool, 2 * MSEC_PER_SEC);
 	if (!buf) {
 		shell_error(sh, "Allocation timeout, stopping TX");
 		return -EAGAIN;
@@ -743,7 +743,7 @@ static int cmd_l2cap_echo_rsp(const struct shell *sh, size_t argc, char *argv[])
 		return -ENOEXEC;
 	}
 
-	buf = net_buf_alloc(&data_tx_pool, k_sec_to_ticks_ceil32(2));
+	buf = net_buf_alloc(&data_tx_pool, 2 * MSEC_PER_SEC);
 	if (!buf) {
 		shell_error(sh, "Allocation timeout, stopping TX");
 		return -EAGAIN;
@@ -2020,7 +2020,7 @@ static int cmd_l2cap_connless_send(const struct shell *sh, size_t argc, char *ar
 		return -ENOEXEC;
 	}
 
-	buf = net_buf_alloc(&data_tx_pool, k_sec_to_ticks_ceil32(2));
+	buf = net_buf_alloc(&data_tx_pool, 2 * MSEC_PER_SEC);
 	if (!buf) {
 		shell_error(sh, "Allocation timeout, stopping TX");
 		return -EAGAIN;

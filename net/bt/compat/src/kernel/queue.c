@@ -24,12 +24,12 @@ void k_fifo_put(struct k_fifo *fifo, void *data)
     spin_unlock_irqrestore(&fifo->lock, flags);
 }
 
-void *k_fifo_get(struct k_fifo *fifo, k_timeout_t timeout)
+void *k_fifo_get(struct k_fifo *fifo, clock_t timeout)
 {
     irqstate_t flags;
     struct list_node *node;
 
-    if (K_TIMEOUT_EQ(timeout, K_NO_WAIT))
+    if (((timeout) == (0)))
         {
             flags = spin_lock_irqsave(&fifo->lock);
             node = list_remove_head(&fifo->data_q);
@@ -38,7 +38,7 @@ void *k_fifo_get(struct k_fifo *fifo, k_timeout_t timeout)
         }
 
     /* Blocking wait - spin then poll with delay */
-    if (K_TIMEOUT_EQ(timeout, K_FOREVER))
+    if (((timeout) == (((clock_t)-1))))
         {
             while (1)
                 {
@@ -54,8 +54,8 @@ void *k_fifo_get(struct k_fifo *fifo, k_timeout_t timeout)
 
     /* Timed wait */
     {
-        k_ticks_t deadline = k_uptime_ticks() + timeout.ticks;
-        while (k_uptime_ticks() < deadline)
+        clock_t deadline = clock_systime_ticks() + timeout;
+        while (clock_systime_ticks() < deadline)
             {
                 flags = spin_lock_irqsave(&fifo->lock);
                 node = list_remove_head(&fifo->data_q);
@@ -113,15 +113,15 @@ bool z_k_queue_remove_fifo(struct k_fifo *fifo, void *data)
     return removed;
 }
 
-int k_poll(struct k_poll_event *events, int num_events, k_timeout_t timeout)
+int k_poll(struct k_poll_event *events, int num_events, clock_t timeout)
 {
-    k_ticks_t deadline = 0;
+    clock_t deadline = 0;
     int i;
 
-    if (!K_TIMEOUT_EQ(timeout, K_NO_WAIT) &&
-        !K_TIMEOUT_EQ(timeout, K_FOREVER))
+    if (!((timeout) == (0)) &&
+        !((timeout) == (((clock_t)-1))))
         {
-            deadline = k_uptime_ticks() + timeout.ticks;
+            deadline = clock_systime_ticks() + timeout;
         }
 
     while (1)
@@ -165,13 +165,13 @@ int k_poll(struct k_poll_event *events, int num_events, k_timeout_t timeout)
                         }
                 }
 
-            if (K_TIMEOUT_EQ(timeout, K_NO_WAIT))
+            if (((timeout) == (0)))
                 {
                     return -EAGAIN;
                 }
 
-            if (!K_TIMEOUT_EQ(timeout, K_FOREVER) &&
-                (k_ticks_t)k_uptime_ticks() >= deadline)
+            if (!((timeout) == (((clock_t)-1))) &&
+                (clock_t)clock_systime_ticks() >= deadline)
                 {
                     return -EAGAIN;
                 }

@@ -48,9 +48,9 @@ LOG_MODULE_REGISTER(bt_rfcomm);
 #define _RFCOMM_DLC_CREDITS_THRESHOLD(_dlc) (RFCOMM_DLC_CREDITS_MAX(_dlc) / 2)
 #define RFCOMM_DLC_CREDITS_THRESHOLD(_dlc) MAX(_RFCOMM_DLC_CREDITS_THRESHOLD(_dlc), 1)
 
-#define RFCOMM_CONN_TIMEOUT     K_SECONDS(60)
-#define RFCOMM_DISC_TIMEOUT     K_SECONDS(20)
-#define RFCOMM_IDLE_TIMEOUT     K_SECONDS(2)
+#define RFCOMM_CONN_TIMEOUT     SEC2TICK(60)
+#define RFCOMM_DISC_TIMEOUT     SEC2TICK(20)
+#define RFCOMM_IDLE_TIMEOUT     SEC2TICK(2)
 
 #define DLC_RTX(_w) CONTAINER_OF(k_work_delayable_from_work(_w), struct bt_rfcomm_dlc, rtx_work)
 #define DLC_TX(_w) CONTAINER_OF(k_work_delayable_from_work(_w), struct bt_rfcomm_dlc, tx_work)
@@ -72,9 +72,9 @@ static struct list_node servers = LIST_INITIAL_VALUE(servers);
 static struct bt_rfcomm_session bt_rfcomm_pool[CONFIG_BT_MAX_CONN];
 
 #define RFCOMM_RETRY_INTERVAL_MAX 100
-#define RFCOMM_RETRY_INTERVAL (K_MSEC((sys_rand32_get() % RFCOMM_RETRY_INTERVAL_MAX)))
+#define RFCOMM_RETRY_INTERVAL (MSEC2TICK((sys_rand32_get() % RFCOMM_RETRY_INTERVAL_MAX)))
 
-#define RFCOMM_RETRY_TIMEOUT (K_SECONDS(5))
+#define RFCOMM_RETRY_TIMEOUT (SEC2TICK(5))
 
 #define RFCOMM_CRC_POLY CRC8_REFLECT_POLY
 #define RFCOMM_CRC_INIT 0xff
@@ -223,7 +223,7 @@ static void rfcomm_dlc_tx_trigger(struct bt_rfcomm_dlc *dlc)
 
 	LOG_DBG("DLC %p TX trigger", dlc);
 
-	err = bt_work_reschedule(&dlc->tx_work, K_NO_WAIT);
+	err = bt_work_reschedule(&dlc->tx_work, 0);
 	if (err < 0) {
 		LOG_ERR("Failed to reschedule tx work: %d", err);
 	}
@@ -358,7 +358,7 @@ static struct net_buf *rfcomm_create_pdu(uint16_t len)
 {
 	struct net_buf *buf;
 
-	buf = bt_l2cap_create_pdu_timeout(NULL, 0, K_NO_WAIT);
+	buf = bt_l2cap_create_pdu_timeout(NULL, 0, 0);
 	if (buf == NULL) {
 		LOG_WRN("net buffer allocation failure");
 		return NULL;
@@ -434,7 +434,7 @@ static void rfcomm_session_disconnect(struct bt_rfcomm_session *session)
 		bt_work_reschedule(&session->rtx_work, RFCOMM_DISC_TIMEOUT);
 	} else {
 		LOG_ERR("Failed to send disc on session %p (%d)", session, err);
-		bt_work_reschedule(&session->rtx_work, K_NO_WAIT);
+		bt_work_reschedule(&session->rtx_work, 0);
 	}
 }
 
@@ -493,7 +493,7 @@ static void rfcomm_session_disconn_req(struct bt_rfcomm_session *session)
 		return;
 	}
 
-	bt_work_reschedule(&session->rtx_work, K_NO_WAIT);
+	bt_work_reschedule(&session->rtx_work, 0);
 }
 
 static void rfcomm_connected(struct bt_l2cap_chan *chan)
@@ -567,7 +567,7 @@ static void rfcomm_dlc_retry_timeout(struct k_work *work)
 
 	LOG_WRN("dlc %p state %d retry timeout", dlc, dlc->state);
 
-	bt_work_reschedule(&dlc->rtx_work, K_NO_WAIT);
+	bt_work_reschedule(&dlc->rtx_work, 0);
 }
 
 static void rfcomm_dlc_tx_worker(struct k_work *work);
@@ -1013,7 +1013,7 @@ static void rfcomm_dlc_disconn(struct bt_rfcomm_dlc *dlc)
 		bt_work_schedule(&dlc->tx_work, RFCOMM_RETRY_INTERVAL);
 	} else {
 		LOG_ERR("Failed to send disc on DLC %p (%d)", dlc, err);
-		bt_work_reschedule(&dlc->rtx_work, K_NO_WAIT);
+		bt_work_reschedule(&dlc->rtx_work, 0);
 	}
 }
 
@@ -1611,7 +1611,7 @@ static void rfcomm_dlc_tx_worker(struct k_work *work)
 			goto user_disconnect;
 		}
 
-		buf = k_fifo_get(&dlc->tx_queue, K_NO_WAIT);
+		buf = k_fifo_get(&dlc->tx_queue, 0);
 		LOG_DBG("Tx buf %p", buf);
 		if (rfcomm_send_cb(dlc->session, buf, rfcomm_sent, dlc) < 0) {
 			/* This fails only if channel is disconnected */
@@ -1642,7 +1642,7 @@ disconnect:
 	LOG_DBG("dlc %p disconnected - cleaning up", dlc);
 
 	/* Give back any allocated buffers */
-	while ((buf = k_fifo_get(&dlc->tx_queue, K_NO_WAIT))) {
+	while ((buf = k_fifo_get(&dlc->tx_queue, 0))) {
 		bt_rfcomm_tx_destroy(dlc, buf);
 		net_buf_unref(buf);
 	}
@@ -1842,9 +1842,9 @@ static void rfcomm_handle_msc(struct bt_rfcomm_session *session,
 		/* Only FC bit affects the flow on RFCOMM level */
 		if (BT_RFCOMM_V24_SIGNALS_GET_FC(msc->v24_signal)) {
 			/* If FC bit is 1 the device is unable to accept frames.
-			 * Take the semaphore with timeout K_NO_WAIT so that
+			 * Take the semaphore with timeout 0 so that
 			 * dlc thread will be blocked when it tries sem_take
-			 * before sending the data. K_NO_WAIT timeout will make
+			 * before sending the data. 0 timeout will make
 			 * sure that RX thread will not be blocked while taking
 			 * the semaphore.
 			 */
@@ -2205,9 +2205,9 @@ static void rfcomm_handle_msg(struct bt_rfcomm_session *session, struct net_buf 
 		}
 
 		atomic_clear_bit(&session->flags, RFCOMM_SESSION_FLAG_FC_ON_RSP);
-		/* Take the semaphore with timeout K_NO_WAIT so that all the
+		/* Take the semaphore with timeout 0 so that all the
 		 * dlc threads in this session will be blocked when it tries
-		 * sem_take before sending the data. K_NO_WAIT timeout will
+		 * sem_take before sending the data. 0 timeout will
 		 * make sure that RX thread will not be blocked while taking
 		 * the semaphore.
 		 */
@@ -2547,7 +2547,7 @@ static void rfcomm_session_retry_timeout(struct k_work *work)
 		return;
 	}
 
-	bt_work_reschedule(&session->rtx_work, K_NO_WAIT);
+	bt_work_reschedule(&session->rtx_work, 0);
 }
 
 static struct bt_rfcomm_session *rfcomm_session_new(bt_rfcomm_role_t role)

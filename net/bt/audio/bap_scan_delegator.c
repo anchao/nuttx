@@ -54,9 +54,9 @@ LOG_MODULE_REGISTER(bt_bap_scan_delegator, CONFIG_BT_BAP_SCAN_DELEGATOR_LOG_LEVE
 #include "bap_internal.h"
 #include "common/bt_settings_commit.h"
 
-#define PAST_TIMEOUT              K_SECONDS(10)
+#define PAST_TIMEOUT              SEC2TICK(10)
 
-#define SCAN_DELEGATOR_BUF_SEM_TIMEOUT K_MSEC(CONFIG_BT_BAP_SCAN_DELEGATOR_BUF_TIMEOUT)
+#define SCAN_DELEGATOR_BUF_SEM_TIMEOUT MSEC2TICK(CONFIG_BT_BAP_SCAN_DELEGATOR_BUF_TIMEOUT)
 NET_BUF_SIMPLE_DEFINE_STATIC(read_buf, BT_ATT_MAX_ATTRIBUTE_LEN);
 
 struct bass_recv_state_flags {
@@ -155,7 +155,7 @@ static void set_receive_state_changed(struct bass_recv_state_internal *internal_
 		/* We may schedule the same work multiple times, but that is OK as scheduling the
 		 * same work multiple times is a no-op
 		 */
-		err = k_work_schedule(&internal_state->notify_work, K_NO_WAIT);
+		err = k_work_schedule(&internal_state->notify_work, 0);
 		__ASSERT(err >= 0, "Failed to schedule work: %d", err);
 	}
 }
@@ -216,7 +216,7 @@ static void bt_debug_dump_recv_state(struct bass_recv_state_internal *internal_s
 {
 	__maybe_unused int err;
 
-	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	if (internal_state->active) {
@@ -309,7 +309,7 @@ static void notify_work_handler(struct k_work *work)
 		return;
 	}
 
-	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	net_buf_put_recv_state(internal_state);
@@ -362,7 +362,7 @@ static void notify_work_handler(struct k_work *work)
 			} else {
 				LOG_DBG("Could not notify receive state: %d", err);
 				err = k_work_reschedule(&internal_state->notify_work,
-							K_USEC(conn_info.le.interval_us));
+							USEC2TICK(conn_info.le.interval_us));
 				__ASSERT(err >= 0, "Failed to reschedule work: %d", err);
 			}
 		}
@@ -416,7 +416,7 @@ static void add_addr_to_client_list(struct bass_recv_state_internal *internal_st
 	__maybe_unused bool added = false;
 	__maybe_unused int err;
 
-	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	__ASSERT(get_bass_client(internal_state, id, addr) == NULL,
@@ -473,7 +473,7 @@ static void rem_conn_from_client_list(const struct bt_conn *conn)
 	ARRAY_FOR_EACH_PTR(scan_delegator.recv_states, internal_state) {
 		struct bass_client *client;
 
-		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 		/* Client may be NULL if a device disconnects before security changed */
@@ -497,7 +497,7 @@ static void settings_foreach_bond_cb(const struct bt_bond_info *info, void *data
 		const struct bass_client *client;
 		__maybe_unused int err;
 
-		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 		/* Client may be non-NULL if settings were loaded after a connection or if settings
@@ -578,7 +578,7 @@ static void security_changed_cb(struct bt_conn *conn, bt_security_t level,
 
 	ARRAY_FOR_EACH_PTR(scan_delegator.recv_states, internal_state) {
 
-		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 		/* If a bonded client reconnects, we shall send a notification to it if the BRS is
@@ -592,7 +592,7 @@ static void security_changed_cb(struct bt_conn *conn, bt_security_t level,
 			client = get_bass_client_by_conn(internal_state, conn);
 			if (client != NULL) {
 				client->flags.updated = true;
-				err = k_work_schedule(&internal_state->notify_work, K_NO_WAIT);
+				err = k_work_schedule(&internal_state->notify_work, 0);
 				__ASSERT(err >= 0, "Failed to schedule work: %d", err);
 			}
 		}
@@ -644,7 +644,7 @@ static void pairing_complete_cb(struct bt_conn *conn, bool bonded)
 
 	LOG_DBG("%s paired (%sbonded)", bt_conn_dst_str(conn), bonded ? "" : "not ");
 
-	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	/* We can just search the first state, as the address is always added and removed from all
@@ -665,7 +665,7 @@ static void bond_deleted_cb(uint8_t id, const bt_addr_le_t *addr)
 		struct bass_client *client;
 		__maybe_unused int err;
 
-		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 		client = get_bass_client(internal_state, id, addr);
@@ -727,7 +727,7 @@ static struct bass_recv_state_internal *bass_lookup_state(uint8_t addr_type, uin
 			continue;
 		}
 
-		err = nxrmutex_ticklock(&recv_state_internal->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&recv_state_internal->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 		if (recv_state_internal->state.addr.type == addr_type &&
@@ -919,7 +919,7 @@ static int scan_delegator_add_src(struct bt_conn *conn,
 		return BT_GATT_ERR(BT_ATT_ERR_INSUFFICIENT_RESOURCES);
 	}
 
-	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	state = &internal_state->state;
@@ -1004,7 +1004,7 @@ static int scan_delegator_add_src(struct bt_conn *conn,
 
 		err = scan_delegator_cbs->add_source(conn, state);
 		if (err != 0) {
-			err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+			err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 			__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 			(void)memset(state, 0, sizeof(*state));
@@ -1017,7 +1017,7 @@ static int scan_delegator_add_src(struct bt_conn *conn,
 			return BT_GATT_ERR(BT_ATT_ERR_WRITE_REQ_REJECTED);
 		}
 
-		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 	}
 
@@ -1033,7 +1033,7 @@ static int scan_delegator_add_src(struct bt_conn *conn,
 
 		err = pa_sync_request(conn, state, pa_sync, pa_interval);
 		if (err != 0) {
-			err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+			err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 			__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 			free_recv_state(internal_state);
@@ -1047,7 +1047,7 @@ static int scan_delegator_add_src(struct bt_conn *conn,
 			return BT_GATT_ERR(BT_ATT_ERR_WRITE_REQ_REJECTED);
 		}
 
-		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 		internal_state->pa_sync_requested = true;
@@ -1153,7 +1153,7 @@ static int scan_delegator_mod_src(struct bt_conn *conn,
 		return BT_GATT_ERR(BT_ATT_ERR_INSUFFICIENT_RESOURCES);
 	}
 
-	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	bis_sync_change_requested = false;
@@ -1263,7 +1263,7 @@ static int scan_delegator_mod_src(struct bt_conn *conn,
 
 		err = scan_delegator_cbs->modify_source(conn, state);
 		if (err != 0) {
-			err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+			err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 			__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 			/* Restore backup */
@@ -1277,7 +1277,7 @@ static int scan_delegator_mod_src(struct bt_conn *conn,
 			return BT_GATT_ERR(BT_ATT_ERR_WRITE_REQ_REJECTED);
 		}
 
-		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 	}
 
@@ -1294,7 +1294,7 @@ static int scan_delegator_mod_src(struct bt_conn *conn,
 
 		err = pa_sync_request(conn, state, pa_sync, pa_interval);
 		if (err != 0) {
-			err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+			err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 			__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 			/* Restore backup */
@@ -1316,7 +1316,7 @@ static int scan_delegator_mod_src(struct bt_conn *conn,
 			state_changed = true;
 		}
 
-		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 		internal_state->pa_sync_requested = true;
@@ -1338,7 +1338,7 @@ static int scan_delegator_mod_src(struct bt_conn *conn,
 			LOG_DBG("PA sync term from %p was rejected with reason %d", (void *)conn,
 				err);
 
-			err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+			err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 			__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 			/* Restore backup */
@@ -1353,7 +1353,7 @@ static int scan_delegator_mod_src(struct bt_conn *conn,
 
 		state_changed = true;
 
-		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 		internal_state->pa_sync_requested = false;
@@ -1370,7 +1370,7 @@ static int scan_delegator_mod_src(struct bt_conn *conn,
 	if (state_changed) {
 		LOG_DBG("Source modified");
 
-		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 		set_receive_state_changed(internal_state);
@@ -1451,7 +1451,7 @@ static int scan_delegator_rem_src(struct bt_conn *conn,
 		return BT_GATT_ERR(BT_BAP_BASS_ERR_INVALID_SRC_ID);
 	}
 
-	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	state = &internal_state->state;
@@ -1504,7 +1504,7 @@ static int scan_delegator_rem_src(struct bt_conn *conn,
 			return BT_GATT_ERR(BT_ATT_ERR_WRITE_REQ_REJECTED);
 		}
 
-		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 	}
 
@@ -1645,7 +1645,7 @@ static ssize_t read_recv_state(struct bt_conn *conn,
 		bt_debug_dump_recv_state(internal_state);
 	}
 
-	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	if (internal_state->active) {
@@ -1766,7 +1766,7 @@ int bt_bap_scan_delegator_unregister(void)
 	scan_delegator_cbs = NULL;
 
 	ARRAY_FOR_EACH_PTR(scan_delegator.recv_states, internal_state) {
-		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+		err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 		ARRAY_FOR_EACH_PTR(internal_state->clients, client) {
@@ -1800,7 +1800,7 @@ int bt_bap_scan_delegator_set_pa_state(uint8_t src_id,
 		return -EINVAL;
 	}
 
-	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	recv_state = &internal_state->state;
@@ -1840,7 +1840,7 @@ int bt_bap_scan_delegator_set_bis_sync_state(
 		return -EINVAL;
 	}
 
-	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	/* Verify state for all subgroups before assigning any data */
@@ -1999,7 +1999,7 @@ int bt_bap_scan_delegator_add_src(const struct bt_bap_scan_delegator_add_src_par
 		return -ENOMEM;
 	}
 
-	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	state = &internal_state->state;
@@ -2101,7 +2101,7 @@ int bt_bap_scan_delegator_mod_src(const struct bt_bap_scan_delegator_mod_src_par
 		return -ENOENT;
 	}
 
-	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&internal_state->mutex, SCAN_DELEGATOR_BUF_SEM_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	state = &internal_state->state;

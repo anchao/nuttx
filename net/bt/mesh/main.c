@@ -508,7 +508,7 @@ static void model_resume(const struct bt_mesh_model *mod, const struct bt_mesh_e
 
 		if (period_ms) {
 			k_work_reschedule(&mod->pub->timer,
-					  K_MSEC(period_ms));
+					  MSEC2TICK(period_ms));
 		}
 	}
 }

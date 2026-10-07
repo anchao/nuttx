@@ -44,14 +44,14 @@ LOG_MODULE_REGISTER(bt_hid_device);
 	(((ch) == NULL) ? BT_HID_CHANNEL_UNKNOWN : HID_SESSION_BY_CHAN((ch))->type)
 
 /* Timeout for INTR channel connection after CTRL is established (seconds) */
-#define HID_INTR_CONN_TIMEOUT K_SECONDS(30)
+#define HID_INTR_CONN_TIMEOUT SEC2TICK(30)
 
 /* Fallback timeout after a device-initiated Virtual Cable Unplug PDU is sent.
  * After sending VC unplug the initiator waits for the remote to tear down the
  * L2CAP channels. This timer only fires as a safety net when the remote never
  * disconnects, so the local link is not left up forever.
  */
-#define HID_VCU_DISCONNECT_TIMEOUT K_SECONDS(5)
+#define HID_VCU_DISCONNECT_TIMEOUT SEC2TICK(5)
 
 /* Dedicated buffer pool for HANDSHAKE responses.  HANDSHAKE is a mandatory
  * protocol response (HID spec v1.1.2 Section 3.2) that must not fail due to
@@ -935,7 +935,7 @@ static void virtual_cable_unplug_tx_cb(struct bt_conn *conn, void *user_data, in
 	 */
 	if (err != 0) {
 		LOG_WRN("VCU control message send failed (%d)", err);
-		bt_work_schedule(&hid->vcu_disconnect, K_NO_WAIT);
+		bt_work_schedule(&hid->vcu_disconnect, 0);
 		return;
 	}
 

@@ -41,7 +41,7 @@
 		.rtn = 2u,                                                                         \
 	}
 
-#define TX_BUF_TIMEOUT K_SECONDS(1)
+#define TX_BUF_TIMEOUT MSEC_PER_SEC
 
 static struct bt_iso_chan_io_qos iso_tx_qos = DEFAULT_IO_QOS;
 static uint32_t cis_sn_last;
@@ -68,11 +68,11 @@ static uint32_t get_next_sn(uint32_t last_sn, int64_t *last_ticks, uint32_t inte
 	/* Note: This does not handle wrapping of ticks when they go above
 	 * 2^(62-1)
 	 */
-	uptime_ticks = k_uptime_ticks();
+	uptime_ticks = clock_systime_ticks();
 	delta_ticks = uptime_ticks - *last_ticks;
 	*last_ticks = uptime_ticks;
 
-	delta_us = k_ticks_to_us_near64((uint64_t)delta_ticks);
+	delta_us = TICK2USEC((uint64_t)delta_ticks);
 	sn_incr = delta_us / interval_us;
 	next_sn = (sn_incr + last_sn);
 
@@ -112,10 +112,10 @@ static void iso_connected(struct bt_iso_chan *chan)
 	if (iso_info.type == BT_ISO_CHAN_TYPE_CENTRAL ||
 	    iso_info.type == BT_ISO_CHAN_TYPE_PERIPHERAL) {
 		cis_sn_last = 0U;
-		cis_sn_last_updated_ticks = k_uptime_ticks();
+		cis_sn_last_updated_ticks = clock_systime_ticks();
 	} else {
 		bis_sn_last = 0U;
-		bis_sn_last_updated_ticks = k_uptime_ticks();
+		bis_sn_last_updated_ticks = clock_systime_ticks();
 	}
 #endif /* CONFIG_BT_ISO_TX */
 

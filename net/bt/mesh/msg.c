@@ -59,11 +59,11 @@ int bt_mesh_msg_ack_ctx_prepare(struct bt_mesh_msg_ack_ctx *ack,
 	return 0;
 }
 
-int bt_mesh_msg_ack_ctx_wait(struct bt_mesh_msg_ack_ctx *ack, k_timeout_t timeout)
+int bt_mesh_msg_ack_ctx_wait(struct bt_mesh_msg_ack_ctx *ack, clock_t timeout)
 {
 	int err;
 
-	err = nxsem_tickwait(&ack->sem, timeout.ticks);
+	err = nxsem_tickwait(&ack->sem, timeout);
 	bt_mesh_msg_ack_ctx_clear(ack);
 
 	if (err == -EAGAIN) {
@@ -125,7 +125,7 @@ int bt_mesh_msg_ackd_send(const struct bt_mesh_model *model, struct bt_mesh_msg_
 	}
 
 	if (!err) {
-		return bt_mesh_msg_ack_ctx_wait(rsp->ack, K_MSEC(rsp->timeout));
+		return bt_mesh_msg_ack_ctx_wait(rsp->ack, MSEC2TICK(rsp->timeout));
 	}
 
 	bt_mesh_msg_ack_ctx_clear(rsp->ack);

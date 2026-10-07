@@ -62,7 +62,7 @@ static inline const char *bt_hci_err_to_str(uint8_t hci_err)
  *
  * @return Newly allocated buffer or NULL if allocation failed.
  */
-struct net_buf *bt_hci_cmd_alloc(k_timeout_t timeout);
+struct net_buf *bt_hci_cmd_alloc(clock_t timeout);
 
 /** Send a HCI command asynchronously.
   *

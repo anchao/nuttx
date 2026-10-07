@@ -39,13 +39,13 @@ static const struct bt_uuid *cas_uuid = BT_UUID_CAS;
 static struct bt_cap_common_proc active_proc;
 
 static rmutex_t active_proc_mutex = NXRMUTEX_INITIALIZER;
-#define CAP_ACTIVE_PROC_MUTEX_TIMEOUT K_MSEC(10000U)
+#define CAP_ACTIVE_PROC_MUTEX_TIMEOUT MSEC2TICK(10000U)
 
 struct bt_cap_common_proc *bt_cap_common_get_active_proc(void)
 {
 	__maybe_unused int err;
 
-	err = nxrmutex_ticklock(&active_proc_mutex, CAP_ACTIVE_PROC_MUTEX_TIMEOUT.ticks);
+	err = nxrmutex_ticklock(&active_proc_mutex, CAP_ACTIVE_PROC_MUTEX_TIMEOUT);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	LOG_DBG("Took active_proc_mutex (count: %u)", active_proc_mutex.count);

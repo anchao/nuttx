@@ -197,7 +197,7 @@ static const char *aics_notify_str(enum bt_aics_notify notify)
 }
 
 static void notify_work_reschedule(struct bt_aics *inst, enum bt_aics_notify notify,
-				   k_timeout_t delay)
+				   clock_t delay)
 {
 	int err;
 
@@ -217,7 +217,7 @@ static void notify(struct bt_aics *inst, enum bt_aics_notify notify, const struc
 
 	err = bt_gatt_notify_uuid(NULL, uuid, inst->srv.service_p->attrs, data, len);
 	if (err == -ENOMEM) {
-		notify_work_reschedule(inst, notify, K_USEC(BT_AUDIO_NOTIFY_RETRY_DELAY_US));
+		notify_work_reschedule(inst, notify, USEC2TICK(BT_AUDIO_NOTIFY_RETRY_DELAY_US));
 	} else if (err < 0 && err != -ENOTCONN) {
 		LOG_ERR("Notify %s err %d", aics_notify_str(notify), err);
 	} else {
@@ -248,7 +248,7 @@ static void notify_work_handler(struct k_work *work)
 
 static void value_changed(struct bt_aics *inst, enum bt_aics_notify notify)
 {
-	notify_work_reschedule(inst, notify, K_NO_WAIT);
+	notify_work_reschedule(inst, notify, 0);
 }
 #else
 #define value_changed(...)

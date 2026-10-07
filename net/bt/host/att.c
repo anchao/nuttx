@@ -538,7 +538,7 @@ static struct net_buf *get_first_buf_matching_chan(struct k_fifo *fifo, struct b
 
 		k_fifo_init(&skipped);
 
-		while ((buf = k_fifo_get(fifo, K_NO_WAIT))) {
+		while ((buf = k_fifo_get(fifo, 0))) {
 			meta = att_get_tx_meta_data(buf);
 			if (!ret &&
 			    att_chan_matches_chan_opt(chan, meta->chan_opt)) {
@@ -550,7 +550,7 @@ static struct net_buf *get_first_buf_matching_chan(struct k_fifo *fifo, struct b
 
 		__ASSERT_NO_MSG(k_fifo_is_empty(fifo));
 
-		while ((buf = k_fifo_get(&skipped, K_NO_WAIT))) {
+		while ((buf = k_fifo_get(&skipped, 0))) {
 			k_fifo_put(fifo, buf);
 		}
 
@@ -558,7 +558,7 @@ static struct net_buf *get_first_buf_matching_chan(struct k_fifo *fifo, struct b
 
 		return ret;
 	} else {
-		return k_fifo_get(fifo, K_NO_WAIT);
+		return k_fifo_get(fifo, 0);
 	}
 }
 
@@ -797,7 +797,7 @@ static struct net_buf *bt_att_chan_create_pdu(struct bt_att_chan *chan, uint8_t 
 	struct bt_att_hdr *hdr;
 	struct net_buf *buf;
 	struct bt_att_tx_meta_data *data;
-	k_timeout_t timeout;
+	clock_t timeout;
 
 	if (len + sizeof(op) > bt_att_mtu(chan)) {
 		LOG_WRN("ATT MTU exceeded, max %u, wanted %zu", bt_att_mtu(chan),
@@ -816,12 +816,12 @@ static struct net_buf *bt_att_chan_create_pdu(struct bt_att_chan *chan, uint8_t 
 
 		if (current_thread == k_work_queue_thread_get(&k_sys_work_q)) {
 			/* No blocking in the sysqueue. */
-			timeout = K_NO_WAIT;
+			timeout = 0;
 		} else if (current_thread == att_handle_rsp_thread) {
 			/* Blocking would cause deadlock. */
-			timeout = K_NO_WAIT;
+			timeout = 0;
 		} else {
-			timeout = K_FOREVER;
+			timeout = ((clock_t)-1);
 		}
 	}
 	}
@@ -3129,7 +3129,7 @@ static struct net_buf *att_create_rsp_pdu(struct bt_att_chan *chan, uint8_t op)
 	struct bt_att_tx_meta_data *data;
 	struct net_buf *buf;
 
-	buf = net_buf_alloc(&att_pool, k_sec_to_ticks_ceil32(BT_ATT_TIMEOUT_SEC));
+	buf = net_buf_alloc(&att_pool, BT_ATT_TIMEOUT_SEC * MSEC_PER_SEC);
 	if (!buf) {
 		LOG_ERR("Unable to allocate buffer for op 0x%02x", op);
 		return NULL;
@@ -3169,7 +3169,7 @@ static void att_reset(struct bt_att *att)
 	(void)k_work_cancel_delayable_sync(&att->eatt.connection_work, &sync);
 #endif /* CONFIG_BT_EATT */
 
-	while ((buf = k_fifo_get(&att->tx_queue, K_NO_WAIT))) {
+	while ((buf = k_fifo_get(&att->tx_queue, 0))) {
 		net_buf_unref(buf);
 	}
 
@@ -3204,7 +3204,7 @@ static void att_chan_detach(struct bt_att_chan *chan)
 	list_find_and_remove(&chan->att->chans, &chan->node);
 
 	/* Release pending buffers */
-	while ((buf = k_fifo_get(&chan->tx_queue, K_NO_WAIT))) {
+	while ((buf = k_fifo_get(&chan->tx_queue, 0))) {
 		net_buf_unref(buf);
 	}
 
@@ -3493,7 +3493,7 @@ static struct bt_att_chan *att_chan_new(struct bt_att *att, int32_t flags)
 		}
 	}
 
-	if (k_mem_slab_alloc(&chan_slab, (void **)&chan, K_NO_WAIT)) {
+	if (k_mem_slab_alloc(&chan_slab, (void **)&chan, 0)) {
 		LOG_WRN("No available ATT channel for conn %p", att->conn);
 		return NULL;
 	}
@@ -3573,7 +3573,7 @@ static int bt_att_accept(struct bt_conn *conn, struct bt_l2cap_chan **ch)
 
 	LOG_DBG("conn %p handle %u", conn, conn->handle);
 
-	if (k_mem_slab_alloc(&att_slab, (void **)&att, K_NO_WAIT)) {
+	if (k_mem_slab_alloc(&att_slab, (void **)&att, 0)) {
 		LOG_ERR("No available ATT context for conn %p", conn);
 		return -ENOMEM;
 	}
@@ -3610,7 +3610,7 @@ BT_L2CAP_FIXED_CHANNEL_DEFINE(z_att_fixed_chan) = {
 };
 
 #if defined(CONFIG_BT_EATT)
-static k_timeout_t credit_based_connection_delay(struct bt_conn *conn)
+static clock_t credit_based_connection_delay(struct bt_conn *conn)
 {
 	/*
 	 * 5.3 Vol 3, Part G, Section 5.4 L2CAP COLLISION MITIGATION
@@ -3621,7 +3621,7 @@ static k_timeout_t credit_based_connection_delay(struct bt_conn *conn)
 	 */
 
 	if (IS_ENABLED(CONFIG_BT_CENTRAL) && conn->role == BT_CONN_ROLE_CENTRAL) {
-		return K_NO_WAIT;
+		return 0;
 	} else if (IS_ENABLED(CONFIG_BT_PERIPHERAL)) {
 		uint8_t random;
 		int err;
@@ -3641,7 +3641,7 @@ static k_timeout_t credit_based_connection_delay(struct bt_conn *conn)
 			2 * (conn->le.latency + 1) * conn->le.interval_us;
 		const uint32_t calculated_delay_ms = calculated_delay_us / USEC_PER_MSEC;
 
-		return K_MSEC(MAX(100, calculated_delay_ms + rand_delay));
+		return MSEC2TICK(MAX(100, calculated_delay_ms + rand_delay));
 	}
 
 	/* Must be either central or peripheral */
@@ -4057,7 +4057,7 @@ static void att_chan_mtu_updated(struct bt_att_chan *updated_chan)
 	}
 }
 
-struct bt_att_req *bt_att_req_alloc(k_timeout_t timeout)
+struct bt_att_req *bt_att_req_alloc(clock_t timeout)
 {
 	struct bt_att_req *req = NULL;
 	k_tid_t current_thread = k_current_get();
@@ -4079,7 +4079,7 @@ struct bt_att_req *bt_att_req_alloc(k_timeout_t timeout)
 		 * depending on kconfig.
 		 */
 		LOG_DBG("Timeout discarded. No blocking on BT RX WQ or SYS WQ threads.");
-		timeout = K_NO_WAIT;
+		timeout = 0;
 	}
 
 	/* Reserve space for request */

@@ -59,11 +59,11 @@ LOG_MODULE_REGISTER(bt_l2cap_br, CONFIG_BT_L2CAP_LOG_LEVEL);
 
 #define L2CAP_BR_PSM_SDP	0x0001
 
-#define L2CAP_BR_INFO_TIMEOUT    K_SECONDS(4)
-#define L2CAP_BR_CFG_TIMEOUT     K_SECONDS(4)
-#define L2CAP_BR_DISCONN_TIMEOUT K_SECONDS(1)
-#define L2CAP_BR_CONN_TIMEOUT    K_SECONDS(40)
-#define L2CAP_BR_ECHO_TIMEOUT    K_SECONDS(30)
+#define L2CAP_BR_INFO_TIMEOUT    SEC2TICK(4)
+#define L2CAP_BR_CFG_TIMEOUT     SEC2TICK(4)
+#define L2CAP_BR_DISCONN_TIMEOUT SEC2TICK(1)
+#define L2CAP_BR_CONN_TIMEOUT    SEC2TICK(40)
+#define L2CAP_BR_ECHO_TIMEOUT    SEC2TICK(30)
 
 #define L2CAP_FEAT_FC_MASK           BIT(0)
 #define L2CAP_FEAT_RET_MASK          BIT(1)
@@ -558,21 +558,21 @@ static void l2cap_br_start_timer(struct bt_l2cap_br_chan *br_chan, enum l2cap_br
 	if (type == BT_L2CAP_BR_TIMER_RET) {
 		if (!atomic_test_and_set_bit(br_chan->flags, L2CAP_FLAG_RET_TIMER)) {
 			k_work_cancel_delayable(&br_chan->monitor_work);
-			bt_work_schedule(&br_chan->ret_work, K_MSEC(br_chan->tx.ret_timeout));
+			bt_work_schedule(&br_chan->ret_work, MSEC2TICK(br_chan->tx.ret_timeout));
 			LOG_DBG("Start ret timer");
 		} else {
 			if (!restart) {
 				return;
 			}
 
-			bt_work_reschedule(&br_chan->ret_work, K_MSEC(br_chan->tx.ret_timeout));
+			bt_work_reschedule(&br_chan->ret_work, MSEC2TICK(br_chan->tx.ret_timeout));
 			LOG_DBG("Restart ret timer");
 		}
 	} else {
 		if (atomic_test_and_clear_bit(br_chan->flags, L2CAP_FLAG_RET_TIMER)) {
 			k_work_cancel_delayable(&br_chan->ret_work);
 			bt_work_schedule(&br_chan->monitor_work,
-					 K_MSEC(br_chan->tx.monitor_timeout));
+					 MSEC2TICK(br_chan->tx.monitor_timeout));
 			LOG_DBG("Start monitor timer");
 		} else {
 			if (!restart) {
@@ -580,7 +580,7 @@ static void l2cap_br_start_timer(struct bt_l2cap_br_chan *br_chan, enum l2cap_br
 			}
 
 			bt_work_reschedule(&br_chan->monitor_work,
-					   K_MSEC(br_chan->tx.monitor_timeout));
+					   MSEC2TICK(br_chan->tx.monitor_timeout));
 			LOG_DBG("Restart monitor timer");
 		}
 	}
@@ -608,7 +608,7 @@ static struct bt_l2cap_br_window *l2cap_br_find_window(struct bt_l2cap_br_chan *
 		return NULL;
 	}
 
-	win = k_fifo_get(&br_chan->_free_tx_win, K_NO_WAIT);
+	win = k_fifo_get(&br_chan->_free_tx_win, 0);
 	if (win) {
 		memset(win, 0, sizeof(*win));
 	}
@@ -831,7 +831,7 @@ static void l2cap_br_ret_timeout(struct k_work *work)
 
 	/* Restart the timer */
 	if (atomic_test_bit(br_chan->flags, L2CAP_FLAG_RET_TIMER)) {
-		bt_work_schedule(&br_chan->ret_work, K_MSEC(br_chan->tx.ret_timeout));
+		bt_work_schedule(&br_chan->ret_work, MSEC2TICK(br_chan->tx.ret_timeout));
 	}
 
 	LOG_DBG("chan %p retransmission timeout", br_chan);
@@ -897,7 +897,7 @@ static void l2cap_br_monitor_timeout(struct k_work *work)
 
 	/* Restart the timer */
 	if (!atomic_test_bit(br_chan->flags, L2CAP_FLAG_RET_TIMER)) {
-		bt_work_schedule(&br_chan->monitor_work, K_MSEC(br_chan->tx.monitor_timeout));
+		bt_work_schedule(&br_chan->monitor_work, MSEC2TICK(br_chan->tx.monitor_timeout));
 	}
 
 	LOG_DBG("chan %p monitor timeout", br_chan);
@@ -1067,7 +1067,7 @@ static inline void l2cap_send(struct bt_conn *conn, uint16_t cid,
 }
 
 static void l2cap_br_chan_send_req(struct bt_l2cap_br_chan *chan,
-				   struct net_buf *buf, k_timeout_t timeout)
+				   struct net_buf *buf, clock_t timeout)
 {
 
 	if (bt_l2cap_br_send_cb(chan->chan.conn, BT_L2CAP_CID_BR_SIG, buf,
@@ -1390,7 +1390,7 @@ static struct net_buf *l2cap_br_ret_fc_data_pull(struct bt_conn *conn, size_t am
 			int err;
 
 			/* Send S-Frame with R bit set. */
-			send_buf = bt_l2cap_create_pdu_timeout(&br_tx_pool, 0, K_NO_WAIT);
+			send_buf = bt_l2cap_create_pdu_timeout(&br_tx_pool, 0, 0);
 			if (send_buf == NULL) {
 				/* No buffer can be used for transmission.
 				 * Waiting for buffer available.
@@ -1495,7 +1495,7 @@ static struct net_buf *l2cap_br_ret_fc_data_pull(struct bt_conn *conn, size_t am
 		}
 
 send_i_frame:
-		send_buf = bt_l2cap_create_pdu_timeout(&br_tx_pool, 0, K_NO_WAIT);
+		send_buf = bt_l2cap_create_pdu_timeout(&br_tx_pool, 0, 0);
 		if (send_buf == NULL) {
 			/* No buffer can be used for transmission.
 			 * Waiting for buffer available.
@@ -1783,7 +1783,7 @@ struct net_buf *l2cap_br_data_pull(struct bt_conn *conn, size_t amount, size_t *
 	return pdu;
 }
 
-static struct net_buf *l2cap_br_create_pdu(struct net_buf_pool *pool, k_timeout_t timeout)
+static struct net_buf *l2cap_br_create_pdu(struct net_buf_pool *pool, clock_t timeout)
 {
 	struct net_buf *buf;
 
@@ -1792,7 +1792,7 @@ static struct net_buf *l2cap_br_create_pdu(struct net_buf_pool *pool, k_timeout_
 		LOG_WRN("Fail to allocate buffer from pool %p", pool);
 
 		/* If the pool is empty, try to allocate from the default pool without waiting. */
-		buf = bt_l2cap_create_pdu_timeout(NULL, 0, K_NO_WAIT);
+		buf = bt_l2cap_create_pdu_timeout(NULL, 0, 0);
 	}
 
 	if (buf == NULL) {
@@ -1826,7 +1826,7 @@ static void l2cap_br_get_info(struct bt_l2cap_br *l2cap, uint16_t info_type)
 		return;
 	}
 
-	buf = l2cap_br_create_pdu(&br_sig_pool, K_FOREVER);
+	buf = l2cap_br_create_pdu(&br_sig_pool, ((clock_t)-1));
 	if (buf == NULL) {
 		LOG_ERR("Fail to send info req");
 		/* Consider disconnect ACL here. */
@@ -2487,7 +2487,7 @@ static void l2cap_br_conf(struct bt_l2cap_chan *chan, bool init)
 	(void)init;
 #endif /* CONFIG_BT_L2CAP_RET_FC */
 
-	buf = l2cap_br_create_pdu(&br_sig_pool, K_FOREVER);
+	buf = l2cap_br_create_pdu(&br_sig_pool, ((clock_t)-1));
 	if (buf == NULL) {
 		l2cap_br_chan_disconn(chan);
 		return;
@@ -4062,7 +4062,7 @@ static void l2cap_br_send_reject(struct bt_conn *conn, uint8_t ident, uint16_t r
 	struct bt_l2cap_sig_hdr *hdr;
 	struct net_buf *buf;
 
-	buf = l2cap_br_create_pdu(&br_sig_pool, K_FOREVER);
+	buf = l2cap_br_create_pdu(&br_sig_pool, ((clock_t)-1));
 	if (buf == NULL) {
 		LOG_ERR("Fail to send reject packet");
 		/* Consider disconnect ACL here. */
@@ -4995,7 +4995,7 @@ int bt_l2cap_br_chan_disconnect(struct bt_l2cap_chan *chan)
 
 	LOG_DBG("chan %p scid 0x%04x dcid 0x%04x", chan, br_chan->rx.cid, br_chan->tx.cid);
 
-	buf = l2cap_br_create_pdu(&br_sig_pool, K_FOREVER);
+	buf = l2cap_br_create_pdu(&br_sig_pool, ((clock_t)-1));
 	if (buf == NULL) {
 		return -ENOBUFS;
 	}
@@ -5128,7 +5128,7 @@ int bt_l2cap_br_chan_connect(struct bt_conn *conn, struct bt_l2cap_chan *chan, u
 		return -EIO;
 	}
 
-	buf = l2cap_br_create_pdu(&br_sig_pool, K_FOREVER);
+	buf = l2cap_br_create_pdu(&br_sig_pool, ((clock_t)-1));
 	if (buf == NULL) {
 		l2cap_br_chan_cleanup(chan);
 		return -ENOBUFS;
@@ -5450,7 +5450,7 @@ static void l2cap_br_conn_pend(struct bt_l2cap_chan *chan, uint8_t status)
 		 */
 		l2cap_br_conf(chan, true);
 	} else if (atomic_test_and_clear_bit(BR_CHAN(chan)->flags, L2CAP_FLAG_CONN_PENDING)) {
-		buf = l2cap_br_create_pdu(&br_sig_pool, K_FOREVER);
+		buf = l2cap_br_create_pdu(&br_sig_pool, ((clock_t)-1));
 		if (buf == NULL) {
 			l2cap_br_chan_disconn(chan);
 			return;
@@ -5938,7 +5938,7 @@ failed:
 }
 #endif /* CONFIG_BT_L2CAP_SEG_RECV */
 
-static struct net_buf *l2cap_br_alloc_frag(k_timeout_t timeout, void *user_data)
+static struct net_buf *l2cap_br_alloc_frag(clock_t timeout, void *user_data)
 {
 	struct bt_l2cap_br_chan *chan = user_data;
 	struct net_buf *frag = NULL;

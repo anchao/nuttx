@@ -313,7 +313,7 @@ int bt_mesh_friend_clear(struct bt_mesh_net_rx *rx, struct net_buf_simple *buf)
 		(BT_MESH_TRANSMIT_INT(xmit) + 10);
 
 	frnd->pending_cfm = 1U;
-	k_work_reschedule(&frnd->clear.timer, K_MSEC(delay));
+	k_work_reschedule(&frnd->clear.timer, MSEC2TICK(delay));
 
 	return 0;
 }
@@ -636,7 +636,7 @@ static void friend_recv_delay(struct bt_mesh_friend *frnd)
 	int32_t delay = recv_delay(frnd);
 
 	frnd->pending_req = 1U;
-	k_work_reschedule(&frnd->timer, K_MSEC(delay));
+	k_work_reschedule(&frnd->timer, MSEC2TICK(delay));
 	LOG_DBG("Waiting RecvDelay of %d ms", delay);
 }
 
@@ -814,7 +814,7 @@ static void friend_clear_sent(int err, void *user_data)
 	struct bt_mesh_friend *frnd = user_data;
 
 	k_work_reschedule(&frnd->clear.timer,
-			  K_SECONDS(frnd->clear.repeat_sec));
+			  SEC2TICK(frnd->clear.repeat_sec));
 	frnd->clear.repeat_sec *= 2U;
 }
 
@@ -893,7 +893,7 @@ static void clear_timeout(struct k_work *work)
 
 	LOG_DBG("LPN 0x%04x (old) Friend 0x%04x", frnd->lpn, frnd->clear.frnd);
 
-	duration = k_uptime_get_32() - frnd->clear.start;
+	duration = (uint32_t)TICK2MSEC(clock_systime_ticks()) - frnd->clear.start;
 	if (duration > 2 * frnd->poll_to) {
 		LOG_DBG("Clear Procedure timer expired");
 		frnd->clear.frnd = BT_MESH_ADDR_UNASSIGNED;
@@ -907,7 +907,7 @@ static void clear_procedure_start(struct bt_mesh_friend *frnd)
 {
 	LOG_DBG("LPN 0x%04x (old) Friend 0x%04x", frnd->lpn, frnd->clear.frnd);
 
-	frnd->clear.start = k_uptime_get_32();
+	frnd->clear.start = (uint32_t)TICK2MSEC(clock_systime_ticks());
 	frnd->clear.repeat_sec = 1U;
 
 	send_friend_clear(frnd);
@@ -1114,7 +1114,7 @@ init_friend:
 	}
 
 	delay = offer_delay(frnd, rx->ctx.recv_rssi, msg->criteria);
-	k_work_reschedule(&frnd->timer, K_MSEC(delay));
+	k_work_reschedule(&frnd->timer, MSEC2TICK(delay));
 
 	enqueue_offer(frnd, rx->ctx.recv_rssi);
 
@@ -1235,11 +1235,11 @@ static void buf_send_end(int err, void *user_data)
 
 	if (frnd->established) {
 		/* Always restart poll timeout timer after sending */
-		k_work_reschedule(&frnd->timer, K_MSEC(frnd->poll_to));
+		k_work_reschedule(&frnd->timer, MSEC2TICK(frnd->poll_to));
 		LOG_DBG("Waiting %u ms for next poll", frnd->poll_to);
 	} else {
 		/* Friend offer timeout is 1 second */
-		k_work_reschedule(&frnd->timer, K_SECONDS(1));
+		k_work_reschedule(&frnd->timer, SEC2TICK(1));
 		LOG_DBG("Waiting for first poll");
 	}
 }
@@ -1328,7 +1328,7 @@ static void friend_timeout(struct k_work *work)
 
 send_last:
 	adv = bt_mesh_adv_create(BT_MESH_ADV_DATA, BT_MESH_ADV_TAG_FRIEND,
-				 FRIEND_XMIT, K_NO_WAIT);
+				 FRIEND_XMIT, 0);
 	if (!adv) {
 		LOG_ERR("Unable to allocate friend adv");
 		return;

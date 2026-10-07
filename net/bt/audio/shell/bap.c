@@ -279,10 +279,10 @@ uint16_t get_next_seq_num(struct bt_bap_stream *bap_stream)
 	}
 
 	/* Note: This does not handle wrapping of ticks when they go above 2^(62-1) */
-	uptime_ticks = k_uptime_ticks();
+	uptime_ticks = clock_systime_ticks();
 	delta_ticks = uptime_ticks - sh_stream->tx.connected_at_ticks;
 
-	delta_us = k_ticks_to_us_near64((uint64_t)delta_ticks);
+	delta_us = TICK2USEC((uint64_t)delta_ticks);
 	/* Calculate the sequence number by dividing the stream uptime by the SDU interval */
 	seq_num = (uint16_t)(delta_us / interval_us);
 
@@ -553,7 +553,7 @@ static void lc3_encoder_thread_func(void *arg1, void *arg2, void *arg3)
 	 */
 	while (true) {
 		bap_foreach_stream(encode_and_send_cb, NULL);
-		k_sleep(K_MSEC(1U));
+		k_sleep(MSEC2TICK(1U));
 	}
 }
 #endif /* CONFIG_LIBLC3 && CONFIG_BT_AUDIO_TX */
@@ -2724,7 +2724,7 @@ static void lc3_decoder_thread_func(void *arg1, void *arg2, void *arg3)
 	ARG_UNUSED(arg3);
 
 	while (true) {
-		struct lc3_data *data = k_fifo_get(&lc3_in_fifo, K_FOREVER);
+		struct lc3_data *data = k_fifo_get(&lc3_in_fifo, ((clock_t)-1));
 		struct shell_stream *sh_stream = data->sh_stream;
 
 		if (sh_stream->is_rx && sh_stream->rx.lc3_decoder == NULL) {
@@ -2805,7 +2805,7 @@ static void audio_recv(struct bt_bap_stream *stream,
 		 * send both of these values to the LC3 decoder thread as a single struct
 		 * in a FIFO
 		 */
-		if (k_mem_slab_alloc(&lc3_data_slab, (void **)&data, K_NO_WAIT)) {
+		if (k_mem_slab_alloc(&lc3_data_slab, (void **)&data, 0)) {
 			bt_shell_warn("Could not allocate LC3 data item");
 
 			return;
@@ -3042,7 +3042,7 @@ static void stream_started_cb(struct bt_bap_stream *bap_stream)
 
 #if defined(CONFIG_BT_AUDIO_TX)
 	if (sh_stream->is_tx) {
-		sh_stream->tx.connected_at_ticks = k_uptime_ticks();
+		sh_stream->tx.connected_at_ticks = clock_systime_ticks();
 	}
 #endif /* CONFIG_BT_AUDIO_TX */
 
@@ -4014,7 +4014,7 @@ static int cmd_init(const struct shell *sh, size_t argc, char *argv[])
 
 	k_thread_create(&lc3_decoder_thread, lc3_decoder_thread_stack,
 			K_KERNEL_STACK_SIZEOF(lc3_decoder_thread_stack), lc3_decoder_thread_func,
-			NULL, NULL, NULL, lc3_decoder_thread_prio, 0, K_NO_WAIT);
+			NULL, NULL, NULL, lc3_decoder_thread_prio, 0, 0);
 	k_thread_name_set(&lc3_decoder_thread, "LC3 Decoder");
 #endif /* CONFIG_BT_AUDIO_RX */
 
@@ -4025,7 +4025,7 @@ static int cmd_init(const struct shell *sh, size_t argc, char *argv[])
 
 	k_thread_create(&lc3_encoder_thread, lc3_encoder_thread_stack,
 			K_KERNEL_STACK_SIZEOF(lc3_encoder_thread_stack), lc3_encoder_thread_func,
-			NULL, NULL, NULL, lc3_encoder_thread_prio, 0, K_NO_WAIT);
+			NULL, NULL, NULL, lc3_encoder_thread_prio, 0, 0);
 	k_thread_name_set(&lc3_encoder_thread, "LC3 Encoder");
 
 #endif /* CONFIG_BT_AUDIO_TX */

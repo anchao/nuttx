@@ -183,7 +183,7 @@ static uint8_t _mod_pub_set(const struct bt_mesh_model *model, uint16_t pub_addr
 
 		if (period_ms > 0) {
 			k_work_reschedule(&model->pub->timer,
-					  K_MSEC(period_ms));
+					  MSEC2TICK(period_ms));
 		} else {
 			/* If this fails, publication will stop after the
 			 * ongoing set of retransmits.

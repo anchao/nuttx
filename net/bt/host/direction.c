@@ -108,7 +108,7 @@ static int hci_df_set_cl_cte_tx_params(const struct bt_le_ext_adv *adv,
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -194,7 +194,7 @@ static int hci_df_set_adv_cte_tx_enable(struct bt_le_ext_adv *adv,
 	struct bt_hci_cmd_state_set state;
 	struct net_buf *buf;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -274,7 +274,7 @@ prepare_cl_cte_rx_enable_cmd_params(struct net_buf **buf, struct bt_le_per_adv_s
 	/* If CTE Rx is enabled, command parameters total length must include
 	 * antenna ids, so command size if extended by num_and_ids.
 	 */
-	*buf = bt_hci_cmd_alloc(K_FOREVER);
+	*buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!(*buf)) {
 		return -ENOBUFS;
 	}
@@ -512,7 +512,7 @@ static int hci_df_set_conn_cte_tx_param(struct bt_conn *conn,
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -557,7 +557,7 @@ static int prepare_conn_cte_rx_enable_cmd_params(struct net_buf **buf, struct bt
 	/* If CTE Rx is enabled, command parameters total length must include
 	 * antenna ids, so command size if extended by num_and_ids.
 	 */
-	*buf = bt_hci_cmd_alloc(K_FOREVER);
+	*buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!(*buf)) {
 		return -ENOBUFS;
 	}
@@ -790,7 +790,7 @@ static int hci_df_set_conn_cte_req_enable(struct bt_conn *conn, bool enable,
 		return -EINVAL;
 	}
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}
@@ -875,7 +875,7 @@ static int hci_df_set_conn_cte_rsp_enable(struct bt_conn *conn, bool enable)
 	struct net_buf *buf, *rsp;
 	int err;
 
-	buf = bt_hci_cmd_alloc(K_FOREVER);
+	buf = bt_hci_cmd_alloc(((clock_t)-1));
 	if (!buf) {
 		return -ENOBUFS;
 	}

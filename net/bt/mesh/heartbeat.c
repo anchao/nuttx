@@ -50,7 +50,7 @@ static int64_t sub_remaining(void)
 		return 0U;
 	}
 
-	uint32_t rem_ms = k_ticks_to_ms_floor32(
+	uint32_t rem_ms = TICK2MSEC(
 		k_work_delayable_remaining_get(&sub_timer));
 
 	return rem_ms / MSEC_PER_SEC;
@@ -59,7 +59,7 @@ static int64_t sub_remaining(void)
 static void hb_publish_end_cb(int err, void *cb_data)
 {
 	if (pub.period && pub.count > 1) {
-		k_work_reschedule(&pub_timer, K_SECONDS(pub.period));
+		k_work_reschedule(&pub_timer, SEC2TICK(pub.period));
 	}
 
 	if (pub.count != 0xffff) {
@@ -278,7 +278,7 @@ uint8_t bt_mesh_hb_pub_set(struct bt_mesh_hb_pub *new_pub)
 	 * If the new configuration disables publishing this flushes
 	 * the work item.
 	 */
-	k_work_reschedule(&pub_timer, K_NO_WAIT);
+	k_work_reschedule(&pub_timer, 0);
 
 	if (IS_ENABLED(CONFIG_BT_SETTINGS)) {
 		bt_mesh_settings_store_schedule(
@@ -338,7 +338,7 @@ uint8_t bt_mesh_hb_sub_set(uint16_t src, uint16_t dst, uint32_t period)
 	/* Start the timer, which notifies immediately if the new
 	 * configuration disables the subscription.
 	 */
-	k_work_reschedule(&sub_timer, K_SECONDS(sub.period));
+	k_work_reschedule(&sub_timer, SEC2TICK(sub.period));
 
 	return STATUS_SUCCESS;
 }
@@ -389,7 +389,7 @@ void bt_mesh_hb_start(void)
 {
 	if (pub.count && pub.period) {
 		LOG_DBG("Starting heartbeat publication");
-		k_work_reschedule(&pub_timer, K_NO_WAIT);
+		k_work_reschedule(&pub_timer, 0);
 	}
 }
 
@@ -405,7 +405,7 @@ void bt_mesh_hb_resume(void)
 {
 	if (pub.period && pub.count) {
 		LOG_DBG("Starting heartbeat publication");
-		k_work_reschedule(&pub_timer, K_NO_WAIT);
+		k_work_reschedule(&pub_timer, 0);
 	}
 }
 

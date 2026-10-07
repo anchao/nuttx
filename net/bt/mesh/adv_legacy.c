@@ -49,7 +49,7 @@ static int bt_data_send(uint8_t num_events, uint16_t adv_int,
 			struct bt_mesh_adv_ctx *ctx)
 {
 	struct bt_le_adv_param param = {};
-	uint64_t uptime = k_uptime_get();
+	uint64_t uptime = TICK2MSEC(clock_systime_ticks());
 	uint16_t duration;
 	int err;
 	const int32_t adv_int_min =
@@ -109,7 +109,7 @@ static int bt_data_send(uint8_t num_events, uint16_t adv_int,
 	}
 
 	if (!is_mesh_suspended()) {
-		k_sleep(K_MSEC(duration));
+		k_sleep(MSEC2TICK(duration));
 	}
 
 	err = bt_le_adv_stop();
@@ -118,7 +118,8 @@ static int bt_data_send(uint8_t num_events, uint16_t adv_int,
 		return err;
 	}
 
-	LOG_DBG("Advertising stopped (%u ms)", (uint32_t) k_uptime_delta(&uptime));
+	LOG_DBG("Advertising stopped (%u ms)",
+		(uint32_t)(TICK2MSEC(clock_systime_ticks()) - uptime));
 
 	return 0;
 }
@@ -154,7 +155,7 @@ static void adv_thread(void *p1, void *p2, void *p3)
 
 	while (!is_mesh_suspended()) {
 		if (IS_ENABLED(CONFIG_BT_MESH_GATT_SERVER)) {
-			adv = bt_mesh_adv_get(K_NO_WAIT);
+			adv = bt_mesh_adv_get(0);
 			if (IS_ENABLED(CONFIG_BT_MESH_PROXY_SOLICITATION) && !adv) {
 				(void)bt_mesh_sol_send();
 			}
@@ -164,10 +165,11 @@ static void adv_thread(void *p1, void *p2, void *p3)
 				/* Adv timeout may be set by a call from proxy
 				 * to bt_mesh_adv_gatt_start:
 				 */
-				adv_timeout = SYS_FOREVER_MS;
+				adv_timeout = -1;
 				(void)bt_mesh_adv_gatt_send();
 
-				adv = bt_mesh_adv_get(SYS_TIMEOUT_MS(adv_timeout));
+				adv = bt_mesh_adv_get(adv_timeout == -1 ?
+					(clock_t)-1 : MSEC2TICK(adv_timeout));
 				bt_le_adv_stop();
 
 				if (IS_ENABLED(CONFIG_BT_MESH_PROXY_SOLICITATION) && !adv) {
@@ -175,7 +177,7 @@ static void adv_thread(void *p1, void *p2, void *p3)
 				}
 			}
 		} else {
-			adv = bt_mesh_adv_get(K_FOREVER);
+			adv = bt_mesh_adv_get(((clock_t)-1));
 		}
 
 		if (!adv) {
@@ -199,7 +201,7 @@ static void adv_thread(void *p1, void *p2, void *p3)
 	}
 
 	/* Empty the advertising pool when advertising is disabled */
-	while ((adv = bt_mesh_adv_get(K_NO_WAIT))) {
+	while ((adv = bt_mesh_adv_get(0))) {
 		bt_mesh_adv_send_start(0, -ENODEV, &adv->ctx);
 		bt_mesh_adv_unref(adv);
 	}
@@ -232,7 +234,7 @@ void bt_mesh_adv_init(void)
 	k_thread_create(&adv_thread_data, adv_thread_stack,
 			K_KERNEL_STACK_SIZEOF(adv_thread_stack), adv_thread,
 			NULL, NULL, NULL, K_PRIO_COOP(CONFIG_BT_MESH_ADV_PRIO),
-			0, K_FOREVER);
+			0, ((clock_t)-1));
 	k_thread_name_set(&adv_thread_data, "BT Mesh adv");
 }
 
@@ -261,7 +263,7 @@ int bt_mesh_adv_disable(void)
 		return -EINVAL;
 	}
 
-	err = k_thread_join(&adv_thread_data, K_FOREVER);
+	err = k_thread_join(&adv_thread_data, ((clock_t)-1));
 	LOG_DBG("Advertising disabled: %d", err);
 
 	/* Since the thread will immediately stop after this function call and won’t perform any
