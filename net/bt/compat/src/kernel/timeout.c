@@ -1,7 +1,5 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 #include <errno.h>
-#include <nuttx/clock.h>
-#include <nuttx/sched.h>
 #include <sched.h>
 #include <string.h>
 #include <zephyr/kernel.h>
@@ -255,17 +253,6 @@ int k_work_queue_start(struct k_work_q *queue, char *stack,
         }
 
     return 0;
-}
-
-/* ===== net_buf fifo integration ===== */
-void net_buf_put(struct k_fifo *fifo, struct net_buf *buf)
-{
-    k_fifo_put(fifo, buf);
-}
-
-struct net_buf *net_buf_get(struct k_fifo *fifo, clock_t timeout)
-{
-    return (struct net_buf *)k_fifo_get(fifo, timeout);
 }
 
 /* ===== Condvar ===== */

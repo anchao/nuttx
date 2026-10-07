@@ -1,5 +1,4 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-#include <string.h>
 #include <errno.h>
 #include <zephyr/kernel.h>
 
@@ -10,7 +9,6 @@ void k_mem_slab_init(struct k_mem_slab *slab, void *buffer, size_t block_size,
     slab->block_size = block_size;
     slab->num_blocks = num_blocks;
     slab->num_used = 0;
-    slab->max_used = 0;
     slab->lock = SP_UNLOCKED;
 
     /* Build free list */
@@ -40,9 +38,6 @@ int k_mem_slab_alloc(struct k_mem_slab *slab, void **mem, clock_t timeout)
     slab->free_list = *(char **)slab->free_list;
     slab->num_used++;
 
-    if (slab->num_used > slab->max_used)
-        slab->max_used = slab->num_used;
-
     spin_unlock_irqrestore(&slab->lock, flags);
     return 0;
 }
@@ -64,9 +59,4 @@ void k_mem_slab_free(struct k_mem_slab *slab, void **mem)
 uint32_t k_mem_slab_num_free_get(struct k_mem_slab *slab)
 {
     return slab->num_blocks - slab->num_used;
-}
-
-uint32_t k_mem_slab_max_used_get(struct k_mem_slab *slab)
-{
-    return slab->max_used;
 }

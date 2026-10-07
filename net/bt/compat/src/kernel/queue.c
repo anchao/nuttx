@@ -1,12 +1,11 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 #include <zephyr/kernel.h>
 #include <errno.h>
-#include <string.h>
+#include <sched.h>
 
 void k_fifo_init(struct k_fifo *fifo)
 {
     list_initialize(&fifo->data_q);
-    list_initialize(&fifo->wait_q);
     fifo->lock = SP_UNLOCKED;
 }
 
@@ -85,14 +84,6 @@ void *k_fifo_peek_head(struct k_fifo *fifo)
     return node;
 }
 
-void *k_fifo_peek_tail(struct k_fifo *fifo)
-{
-    irqstate_t flags = spin_lock_irqsave(&fifo->lock);
-    struct list_node *node = list_peek_tail(&fifo->data_q);
-    spin_unlock_irqrestore(&fifo->lock, flags);
-    return node;
-}
-
 void z_k_queue_prepend_fifo(struct k_fifo *fifo, void *data)
 {
     irqstate_t flags = spin_lock_irqsave(&fifo->lock);
@@ -137,25 +128,6 @@ int k_poll(struct k_poll_event *events, int num_events, clock_t timeout)
                                 k_fifo_peek_head(events[i].fifo) != NULL)
                                 {
                                     events[i].state = K_POLL_STATE_FIFO_DATA_AVAILABLE;
-                                    return 0;
-                                }
-                            break;
-
-                        case K_POLL_TYPE_SEM_AVAILABLE:
-                            if (events[i].sem != NULL &&
-                                ({ int sem_count; nxsem_get_value(events[i].sem,
-                                     &sem_count) == 0 && sem_count > 0; }))
-                                {
-                                    events[i].state = K_POLL_STATE_SEM_AVAILABLE;
-                                    return 0;
-                                }
-                            break;
-
-                        case K_POLL_TYPE_SIGNAL:
-                            if (events[i].signal != NULL &&
-                                events[i].signal->signaled != 0)
-                                {
-                                    events[i].state = K_POLL_STATE_SIGNALED;
                                     return 0;
                                 }
                             break;

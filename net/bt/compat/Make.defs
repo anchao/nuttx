@@ -1,8 +1,7 @@
 ifeq ($(CONFIG_BT),y)
 
 # Kernel compat layer
-BT_CSRCS += queue.c thread.c timeout.c mem_slab.c init.c device.c
-BT_CSRCS += atomic_c.c
+BT_CSRCS += queue.c thread.c timeout.c mem_slab.c
 
 # Support modules
 BT_CSRCS += assert.c defines.c fs.c flash.c

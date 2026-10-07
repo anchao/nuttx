@@ -1,10 +1,5 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-#include <stdlib.h>
-#include <string.h>
 #include <sched.h>
-#include <errno.h>
-#include <nuttx/kthread.h>
-#include <nuttx/sched.h>
 #include <zephyr/kernel.h>
 
 static void *thread_wrapper(void *arg)

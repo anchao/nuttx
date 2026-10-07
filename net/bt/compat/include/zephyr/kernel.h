@@ -30,7 +30,6 @@ extern "C" {
 /* ===== FIFO / Queue ===== */
 struct k_fifo {
     struct list_node data_q;
-    struct list_node wait_q;
     spinlock_t lock;  /* Use raw spinlock for ISR safety */
 };
 
@@ -40,7 +39,6 @@ void k_fifo_put(struct k_fifo *fifo, void *data);
 void *k_fifo_get(struct k_fifo *fifo, clock_t timeout);
 bool k_fifo_is_empty(struct k_fifo *fifo);
 void *k_fifo_peek_head(struct k_fifo *fifo);
-void *k_fifo_peek_tail(struct k_fifo *fifo);
 void z_k_queue_prepend_fifo(struct k_fifo *fifo, void *data);
 bool z_k_queue_remove_fifo(struct k_fifo *fifo, void *data);
 
@@ -55,7 +53,6 @@ bool z_k_queue_remove_fifo(struct k_fifo *fifo, void *data);
 #define K_FIFO_DEFINE(name) \
     struct k_fifo name = { \
         .data_q = LIST_INITIAL_VALUE(name.data_q), \
-        .wait_q = LIST_INITIAL_VALUE(name.wait_q), \
     }
 
 /* ===== Thread ===== */
@@ -195,9 +192,7 @@ struct k_mem_slab {
     size_t block_size;
     uint32_t num_blocks;
     uint32_t num_used;
-    uint32_t max_used;
     spinlock_t lock;
-    struct list_node wait_q;
 };
 
 void k_mem_slab_init(struct k_mem_slab *slab, void *buffer, size_t block_size,
@@ -205,7 +200,6 @@ void k_mem_slab_init(struct k_mem_slab *slab, void *buffer, size_t block_size,
 int k_mem_slab_alloc(struct k_mem_slab *slab, void **mem, clock_t timeout);
 void k_mem_slab_free(struct k_mem_slab *slab, void **mem);
 uint32_t k_mem_slab_num_free_get(struct k_mem_slab *slab);
-uint32_t k_mem_slab_max_used_get(struct k_mem_slab *slab);
 
 #define K_MEM_SLAB_DEFINE(name, slab_block_size, slab_num_blocks, slab_align) \
     static char __aligned(slab_align) _k_mem_slab_buf_##name[(slab_block_size) * (slab_num_blocks)]; \
@@ -225,35 +219,13 @@ uint32_t k_mem_slab_max_used_get(struct k_mem_slab *slab);
     static K_MEM_SLAB_DEFINE(name, slab_block_size, slab_num_blocks, slab_align)
 
 /* ===== Poll ===== */
-#define K_POLL_TYPE_SEM_AVAILABLE    0
-#define K_POLL_TYPE_DATA_AVAILABLE   1
-#define K_POLL_TYPE_SIGNAL           2
-#define K_POLL_TYPE_MSGQ_DATA_AVAILABLE 3
 #define K_POLL_TYPE_FIFO_DATA_AVAILABLE 4
 
-#define K_POLL_STATE_SEM_AVAILABLE    0x001
-#define K_POLL_STATE_DATA_AVAILABLE   0x002
 #define K_POLL_STATE_FIFO_DATA_AVAILABLE 0x004
-#define K_POLL_STATE_SIGNALED         0x008
-#define K_POLL_STATE_MSGQ_DATA_AVAILABLE 0x010
 #define K_POLL_STATE_CANCELLED        0x020
 #define K_POLL_STATE_NOT_READY        0x080
 
 #define K_POLL_MODE_NOTIFY_ONLY       0
-
-struct k_poll_signal {
-    struct list_node poll_events;
-    unsigned int signaled;
-    int result;
-};
-
-#define K_POLL_SIGNAL_INITIALIZER(obj) \
-    { .poll_events = LIST_INITIAL_VALUE(obj.poll_events), .signaled = 0, .result = 0 }
-
-void k_poll_signal_init(struct k_poll_signal *signal);
-void k_poll_signal_check(struct k_poll_signal *signal, unsigned int *signaled, int *result);
-int k_poll_signal_raise(struct k_poll_signal *signal, int result);
-void k_poll_signal_reset(struct k_poll_signal *signal);
 
 struct k_poll_event {
     int type;
@@ -261,8 +233,6 @@ struct k_poll_event {
     uint32_t state;
     union {
         void *obj;
-        struct k_poll_signal *signal;
-        sem_t *sem;
         struct k_fifo *fifo;
     };
     int tag;
@@ -273,11 +243,6 @@ struct k_poll_event {
       .obj = (void *)(_obj), .tag = (_tag) }
 
 int k_poll(struct k_poll_event *events, int num_events, clock_t timeout);
-
-/* ===== net_buf fifo integration ===== */
-struct net_buf;
-void net_buf_put(struct k_fifo *fifo, struct net_buf *buf);
-struct net_buf *net_buf_get(struct k_fifo *fifo, clock_t timeout);
 
 /* ===== Miscellaneous ===== */
 struct k_condvar {

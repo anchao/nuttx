@@ -11,9 +11,6 @@ set(BT_COMPAT_KERNEL_SRCS
   thread.c
   timeout.c
   mem_slab.c
-  init.c
-  device.c
-  atomic_c.c
 )
 
 # Support module sources
@@ -36,9 +33,6 @@ target_sources(net PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/src/kernel/thread.c
   ${CMAKE_CURRENT_LIST_DIR}/src/kernel/timeout.c
   ${CMAKE_CURRENT_LIST_DIR}/src/kernel/mem_slab.c
-  ${CMAKE_CURRENT_LIST_DIR}/src/kernel/init.c
-  ${CMAKE_CURRENT_LIST_DIR}/src/kernel/device.c
-  ${CMAKE_CURRENT_LIST_DIR}/src/kernel/atomic_c.c
   ${CMAKE_CURRENT_LIST_DIR}/src/lib/os/assert.c
   ${CMAKE_CURRENT_LIST_DIR}/src/sections/defines.c
   ${CMAKE_CURRENT_LIST_DIR}/src/subsys/fs/fs.c
