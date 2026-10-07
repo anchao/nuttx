@@ -8,32 +8,6 @@
 #include <nuttx/sched.h>
 #include <stdbool.h>
 
-/* Spinlock */
-struct k_spinlock {
-    spinlock_t lock;
-};
-typedef irqstate_t k_spinlock_key_t;
-
-static inline k_spinlock_key_t k_spin_lock(struct k_spinlock *l)
-{
-    return spin_lock_irqsave(&l->lock);
-}
-
-static inline void k_spin_unlock(struct k_spinlock *l, k_spinlock_key_t key)
-{
-    spin_unlock_irqrestore(&l->lock, key);
-}
-
-static inline void k_spinlock_init(struct k_spinlock *l)
-{
-    l->lock = SP_UNLOCKED;
-}
-
-static inline bool k_spinlock_is_locked(struct k_spinlock *l)
-{
-    return spin_is_locked(&l->lock);
-}
-
 /* IRQ lock/unlock - NuttX uses critical sections */
 static inline unsigned int arch_irq_lock(void)
 {

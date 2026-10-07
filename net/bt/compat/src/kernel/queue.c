@@ -100,13 +100,6 @@ void z_k_queue_prepend_fifo(struct k_fifo *fifo, void *data)
     spin_unlock_irqrestore(&fifo->lock, flags);
 }
 
-void z_k_queue_prepend_spinlock(struct k_spinlock *queue, void *data)
-{
-    struct k_fifo *fifo = container_of(queue, struct k_fifo, _queue);
-
-    z_k_queue_prepend_fifo(fifo, data);
-}
-
 bool z_k_queue_remove_fifo(struct k_fifo *fifo, void *data)
 {
     irqstate_t flags;
@@ -118,13 +111,6 @@ bool z_k_queue_remove_fifo(struct k_fifo *fifo, void *data)
     spin_unlock_irqrestore(&fifo->lock, flags);
 
     return removed;
-}
-
-bool z_k_queue_remove_spinlock(struct k_spinlock *queue, void *data)
-{
-    struct k_fifo *fifo = container_of(queue, struct k_fifo, _queue);
-
-    return z_k_queue_remove_fifo(fifo, data);
 }
 
 int k_poll(struct k_poll_event *events, int num_events, k_timeout_t timeout)

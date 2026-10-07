@@ -15,6 +15,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <nuttx/spinlock.h>
+
 #include <zephyr/bluetooth/hci_pkt.h>
 #include <zephyr/device.h>
 #include <zephyr/kernel.h>
@@ -31,7 +33,7 @@ struct bt_hci_lockstep {
   const struct device *dev;
   bt_hci_lockstep_send_t send;
   struct k_sem changed;
-  struct k_spinlock lock;
+  spinlock_t lock;
   struct net_buf_simple *rsp;
   uint16_t opcode;
   uint8_t state;

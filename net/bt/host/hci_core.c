@@ -482,7 +482,7 @@ int bt_hci_cmd_send(uint16_t opcode, struct net_buf *buf)
 	 * it completes the command like any other queued one.
 	 */
 	if (!atomic_test_bit(bt_dev.flags, BT_DEV_OPEN) &&
-	    k_queue_remove(&bt_dev.cmd_tx_queue._queue, buf)) {
+	    k_queue_remove(&bt_dev.cmd_tx_queue, buf)) {
 		net_buf_unref(buf);
 		return -EHOSTDOWN;
 	}

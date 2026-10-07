@@ -11,9 +11,11 @@
 
 #include <errno.h>
 #include <sys/types.h>
+
+#include <nuttx/spinlock.h>
+
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/spinlock.h>
 
 #include <zephyr/bluetooth/buf.h>
 #include <zephyr/bluetooth/classic/sdp.h>
@@ -2177,26 +2179,26 @@ static void sdp_client_req_not_resolved(struct bt_conn *conn, struct bt_sdp_clie
 	}
 }
 
-static struct k_spinlock sdp_client_lock;
+static spinlock_t sdp_client_lock;
 
 static void sdp_client_reqs_pending_not_resolved(struct bt_conn *conn,
 						 struct bt_sdp_client *session)
 {
 	void *node;
-	k_spinlock_key_t key;
+	irqstate_t key;
 
-	key = k_spin_lock(&sdp_client_lock);
+	key = spin_lock_irqsave(&sdp_client_lock);
 	node = k_queue_get(&session->reqs_pending, K_NO_WAIT);
 	while (node != NULL) {
 		session->param = GET_PARAM(node);
-		k_spin_unlock(&sdp_client_lock, key);
+		spin_unlock_irqrestore(&sdp_client_lock, key);
 		sdp_client_req_not_resolved(conn, session);
 		bt_conn_unref(conn);
 
-		key = k_spin_lock(&sdp_client_lock);
+		key = spin_lock_irqsave(&sdp_client_lock);
 		node = k_queue_get(&session->reqs_pending, K_NO_WAIT);
 	}
-	k_spin_unlock(&sdp_client_lock, key);
+	spin_unlock_irqrestore(&sdp_client_lock, key);
 }
 
 static void sdp_client_work_handler(struct k_work *work)
@@ -2599,14 +2601,14 @@ static int sdp_client_ssa_search(struct bt_sdp_client *session,
 static void sdp_client_get_pending_req(struct bt_sdp_client *session)
 {
 	void *node;
-	k_spinlock_key_t key;
+	irqstate_t key;
 
-	key = k_spin_lock(&sdp_client_lock);
+	key = spin_lock_irqsave(&sdp_client_lock);
 	node = k_queue_get(&session->reqs_pending, K_NO_WAIT);
 	if (node != NULL) {
 		session->param = GET_PARAM(node);
 	}
-	k_spin_unlock(&sdp_client_lock, key);
+	spin_unlock_irqrestore(&sdp_client_lock, key);
 
 	if (node != NULL) {
 		bt_conn_unref(session->chan.chan.conn);
@@ -3089,7 +3091,7 @@ int bt_sdp_discover_cancel(struct bt_conn *conn,
 {
 	struct bt_sdp_client *session;
 	size_t index;
-	k_spinlock_key_t key;
+	irqstate_t key;
 	bool found;
 
 	if (conn == NULL || params == NULL) {
@@ -3102,18 +3104,18 @@ int bt_sdp_discover_cancel(struct bt_conn *conn,
 
 	session = &bt_sdp_client_pool[index];
 
-	key = k_spin_lock(&sdp_client_lock);
+	key = spin_lock_irqsave(&sdp_client_lock);
 	if (session->param == params) {
 		/* The request is being resolved: a request PDU is out and its
 		 * response may already be under processing, so it is too late
 		 * to keep the callback from being called.
 		 */
-		k_spin_unlock(&sdp_client_lock, key);
+		spin_unlock_irqrestore(&sdp_client_lock, key);
 		return -EINPROGRESS;
 	}
 
 	found = k_queue_remove(&session->reqs_pending, &params->_node);
-	k_spin_unlock(&sdp_client_lock, key);
+	spin_unlock_irqrestore(&sdp_client_lock, key);
 
 	if (!found) {
 		return -ESRCH;

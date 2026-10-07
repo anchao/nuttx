@@ -11,6 +11,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <nuttx/spinlock.h>
+
 #include <zephyr/bluetooth/hci_pkt.h>
 #include <zephyr/bluetooth/hci_types.h>
 #include <zephyr/device.h>
@@ -74,14 +76,14 @@ void bt_hci_lockstep_init(struct bt_hci_lockstep *ls, const struct device *dev,
 
 void bt_hci_lockstep_reset(struct bt_hci_lockstep *ls)
 {
-	k_spinlock_key_t key;
+	irqstate_t key;
 
 	/* Under the lock, so that a packet being fed meanwhile sees the state
 	 * either before or after the reset.
 	 */
-	key = k_spin_lock(&ls->lock);
+	key = spin_lock_irqsave(&ls->lock);
 	lockstep_state_reset(ls);
-	k_spin_unlock(&ls->lock, key);
+	spin_unlock_irqrestore(&ls->lock, key);
 
 	/* A change of state like any other: a sender waiting for the controller
 	 * to allow its command finds that it does. Given rather than reset,
@@ -94,7 +96,7 @@ void bt_hci_lockstep_reset(struct bt_hci_lockstep *ls)
 bool bt_hci_lockstep_feed(struct bt_hci_lockstep *ls, const uint8_t *pkt, size_t len)
 {
 	struct bt_hci_pkt_cmd_rsp rsp;
-	k_spinlock_key_t key;
+	irqstate_t key;
 	bool consumed = false;
 	int err;
 
@@ -106,7 +108,7 @@ bool bt_hci_lockstep_feed(struct bt_hci_lockstep *ls, const uint8_t *pkt, size_t
 		return false;
 	}
 
-	key = k_spin_lock(&ls->lock);
+	key = spin_lock_irqsave(&ls->lock);
 
 	/* Every command response tells whether the controller allows another
 	 * command, whether or not it is the awaited one: the NOP Command
@@ -141,7 +143,7 @@ bool bt_hci_lockstep_feed(struct bt_hci_lockstep *ls, const uint8_t *pkt, size_t
 		consumed = true;
 	}
 
-	k_spin_unlock(&ls->lock, key);
+	spin_unlock_irqrestore(&ls->lock, key);
 
 	k_sem_give(&ls->changed);
 
@@ -153,7 +155,7 @@ int bt_hci_lockstep_cmd_send_sync(struct bt_hci_lockstep *ls, uint16_t opcode,
 {
 	uint8_t no_params[BT_HCI_PKT_CMD_HDR_SIZE];
 	struct net_buf_simple no_params_buf;
-	k_spinlock_key_t key;
+	irqstate_t key;
 	k_timepoint_t end;
 	uint8_t status;
 	int err;
@@ -177,7 +179,7 @@ int bt_hci_lockstep_cmd_send_sync(struct bt_hci_lockstep *ls, uint16_t opcode,
 	 */
 	end = sys_timepoint_calc(ls->timeout);
 	while (true) {
-		key = k_spin_lock(&ls->lock);
+		key = spin_lock_irqsave(&ls->lock);
 
 		if ((ls->state & CREDIT_MASK) == CREDIT_AVAILABLE) {
 			/* Armed before sending: the response may arrive, and be
@@ -191,11 +193,11 @@ int bt_hci_lockstep_cmd_send_sync(struct bt_hci_lockstep *ls, uint16_t opcode,
 				net_buf_simple_reset(rsp);
 			}
 
-			k_spin_unlock(&ls->lock, key);
+			spin_unlock_irqrestore(&ls->lock, key);
 			break;
 		}
 
-		k_spin_unlock(&ls->lock, key);
+		spin_unlock_irqrestore(&ls->lock, key);
 
 		if (sys_timepoint_expired(end) ||
 		    k_sem_take(&ls->changed, sys_timepoint_timeout(end)) != 0) {
@@ -208,7 +210,7 @@ int bt_hci_lockstep_cmd_send_sync(struct bt_hci_lockstep *ls, uint16_t opcode,
 	if (err != 0) {
 		bool responded;
 
-		key = k_spin_lock(&ls->lock);
+		key = spin_lock_irqsave(&ls->lock);
 
 		responded = (ls->state & PHASE_DONE) != 0;
 		if (!responded) {
@@ -222,7 +224,7 @@ int bt_hci_lockstep_cmd_send_sync(struct bt_hci_lockstep *ls, uint16_t opcode,
 			ls->rsp = NULL;
 		}
 
-		k_spin_unlock(&ls->lock, key);
+		spin_unlock_irqrestore(&ls->lock, key);
 
 		if (!responded) {
 			LOG_ERR("opcode 0x%04x: send failed (err %d)", opcode, err);
@@ -237,13 +239,13 @@ int bt_hci_lockstep_cmd_send_sync(struct bt_hci_lockstep *ls, uint16_t opcode,
 	}
 
 	while (true) {
-		key = k_spin_lock(&ls->lock);
+		key = spin_lock_irqsave(&ls->lock);
 
 		if ((ls->state & PHASE_DONE) != 0) {
 			status = ls->status;
 			ls->state &= CREDIT_MASK;
 			ls->rsp = NULL;
-			k_spin_unlock(&ls->lock, key);
+			spin_unlock_irqrestore(&ls->lock, key);
 			break;
 		}
 
@@ -253,12 +255,12 @@ int bt_hci_lockstep_cmd_send_sync(struct bt_hci_lockstep *ls, uint16_t opcode,
 			 */
 			ls->state &= CREDIT_MASK;
 			ls->rsp = NULL;
-			k_spin_unlock(&ls->lock, key);
+			spin_unlock_irqrestore(&ls->lock, key);
 			LOG_ERR("opcode 0x%04x: no response", opcode);
 			return -EAGAIN;
 		}
 
-		k_spin_unlock(&ls->lock, key);
+		spin_unlock_irqrestore(&ls->lock, key);
 
 		/* A stale wakeup or a NOP only leads back to the check */
 		(void)k_sem_take(&ls->changed, sys_timepoint_timeout(end));

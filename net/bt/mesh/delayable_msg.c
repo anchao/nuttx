@@ -7,6 +7,9 @@
 #include <zephyr/kernel.h>
 #include <errno.h>
 #include <stdlib.h>
+
+#include <nuttx/spinlock.h>
+
 #include <zephyr/sys/slist.h>
 
 #include <zephyr/net_buf.h>
@@ -50,7 +53,7 @@ static struct {
  * currently on busy_ctx. Must never be held across a call that can block (bt_mesh_access_send(),
  * bt_rand(), user callbacks).
  */
-static struct k_spinlock lock;
+static spinlock_t lock;
 
 /* Caller must hold `lock`. */
 static void put_ctx_to_busy_list(struct delayable_msg_ctx *ctx)
@@ -99,7 +102,7 @@ static void reschedule_delayable_msg(struct delayable_msg_ctx *msg)
 	int32_t remaining;
 	k_timeout_t delay = K_NO_WAIT;
 	struct delayable_msg_ctx *pending_msg;
-	k_spinlock_key_t key = k_spin_lock(&lock);
+	irqstate_t key = spin_lock_irqsave(&lock);
 
 	if (msg) {
 		put_ctx_to_busy_list(msg);
@@ -108,7 +111,7 @@ static void reschedule_delayable_msg(struct delayable_msg_ctx *msg)
 	pending_msg = peek_pending_msg();
 
 	if (!pending_msg) {
-		k_spin_unlock(&lock, key);
+		spin_unlock_irqrestore(&lock, key);
 		return;
 	}
 
@@ -122,48 +125,48 @@ static void reschedule_delayable_msg(struct delayable_msg_ctx *msg)
 	 * w.r.t. concurrent insertions.
 	 */
 	k_work_reschedule(&access_delayable_msg.random_delay, delay);
-	k_spin_unlock(&lock, key);
+	spin_unlock_irqrestore(&lock, key);
 }
 
 static int allocate_delayable_msg_chunks(struct delayable_msg_ctx *msg, int number)
 {
 	sys_snode_t *node;
-	k_spinlock_key_t key = k_spin_lock(&lock);
+	irqstate_t key = spin_lock_irqsave(&lock);
 
 	for (int i = 0; i < number; i++) {
 		node = sys_slist_get(&access_delayable_msg.free_chunks);
 		if (!node) {
-			k_spin_unlock(&lock, key);
+			spin_unlock_irqrestore(&lock, key);
 			LOG_WRN("Unable allocate %u chunks, allocated %u", number, i);
 			return i;
 		}
 		sys_slist_append(&msg->chunks, node);
 	}
 
-	k_spin_unlock(&lock, key);
+	spin_unlock_irqrestore(&lock, key);
 	return number;
 }
 
 static void release_delayable_msg_chunks(struct delayable_msg_ctx *msg)
 {
 	sys_snode_t *node;
-	k_spinlock_key_t key = k_spin_lock(&lock);
+	irqstate_t key = spin_lock_irqsave(&lock);
 
 	while ((node = sys_slist_get(&msg->chunks))) {
 		sys_slist_append(&access_delayable_msg.free_chunks, node);
 	}
-	k_spin_unlock(&lock, key);
+	spin_unlock_irqrestore(&lock, key);
 }
 
 static struct delayable_msg_ctx *allocate_delayable_msg_ctx(void)
 {
 	struct delayable_msg_ctx *msg;
 	sys_snode_t *node;
-	k_spinlock_key_t key;
+	irqstate_t key;
 
-	key = k_spin_lock(&lock);
+	key = spin_lock_irqsave(&lock);
 	node = sys_slist_get(&access_delayable_msg.free_ctx);
-	k_spin_unlock(&lock, key);
+	spin_unlock_irqrestore(&lock, key);
 
 	if (!node) {
 		LOG_WRN("Purge pending delayable message.");
@@ -172,9 +175,9 @@ static struct delayable_msg_ctx *allocate_delayable_msg_ctx(void)
 			return NULL;
 		}
 
-		key = k_spin_lock(&lock);
+		key = spin_lock_irqsave(&lock);
 		node = sys_slist_get(&access_delayable_msg.free_ctx);
-		k_spin_unlock(&lock, key);
+		spin_unlock_irqrestore(&lock, key);
 
 		/* Another context may have taken the purged ctx before we retried. */
 		if (!node) {
@@ -191,12 +194,12 @@ static struct delayable_msg_ctx *allocate_delayable_msg_ctx(void)
 
 static void release_delayable_msg_ctx(struct delayable_msg_ctx *ctx)
 {
-	k_spinlock_key_t key = k_spin_lock(&lock);
+	irqstate_t key = spin_lock_irqsave(&lock);
 
 	/* Not on busy_ctx when called from the manage() error path. */
 	(void)sys_slist_find_and_remove(&access_delayable_msg.busy_ctx, &ctx->node);
 	sys_slist_append(&access_delayable_msg.free_ctx, &ctx->node);
-	k_spin_unlock(&lock, key);
+	spin_unlock_irqrestore(&lock, key);
 }
 
 /* Releases `msg` and reports `err` to its sender, which is skipped for a successful send because
@@ -231,7 +234,7 @@ static bool msg_expired(const struct delayable_msg_ctx *msg)
 static struct delayable_msg_ctx *take_expired_msg(void)
 {
 	struct delayable_msg_ctx *msg;
-	k_spinlock_key_t key = k_spin_lock(&lock);
+	irqstate_t key = spin_lock_irqsave(&lock);
 
 	msg = peek_pending_msg();
 	if (msg && !msg_expired(msg)) {
@@ -239,7 +242,7 @@ static struct delayable_msg_ctx *take_expired_msg(void)
 	} else if (msg) {
 		(void)sys_slist_get(&access_delayable_msg.busy_ctx);
 	}
-	k_spin_unlock(&lock, key);
+	spin_unlock_irqrestore(&lock, key);
 
 	return msg;
 }
@@ -248,13 +251,13 @@ static struct delayable_msg_ctx *take_expired_msg(void)
 static struct delayable_msg_ctx *take_earliest_msg(void)
 {
 	sys_snode_t *node;
-	k_spinlock_key_t key = k_spin_lock(&lock);
+	irqstate_t key = spin_lock_irqsave(&lock);
 
 	/* Dequeueing under the lock stops concurrent callers from sending and releasing the same
 	 * msg twice.
 	 */
 	node = sys_slist_get(&access_delayable_msg.busy_ctx);
-	k_spin_unlock(&lock, key);
+	spin_unlock_irqrestore(&lock, key);
 
 	return node ? CONTAINER_OF(node, struct delayable_msg_ctx, node) : NULL;
 }
@@ -266,7 +269,7 @@ static bool send_delayable_msg(struct delayable_msg_ctx *msg)
 	struct delayable_msg_chunk *chunk;
 	uint16_t len = msg->len;
 	int err;
-	k_spinlock_key_t key;
+	irqstate_t key;
 
 	/* bt_mesh_suspend() sets BT_MESH_SUSPENDED and bt_mesh_reset() clears BT_MESH_VALID before
 	 * the queue is drained, so either one means the stack is down. Never hand a message to the
@@ -300,10 +303,10 @@ static bool send_delayable_msg(struct delayable_msg_ctx *msg)
 		/* Transient failure: retry the msg 10 ms later, re-sorted into busy_ctx, and
 		 * re-arm the timer for whatever is now the head.
 		 */
-		key = k_spin_lock(&lock);
+		key = spin_lock_irqsave(&lock);
 		msg->fired_time += 10;
 		put_ctx_to_busy_list(msg);
-		k_spin_unlock(&lock, key);
+		spin_unlock_irqrestore(&lock, key);
 
 		reschedule_delayable_msg(NULL);
 		return false;
@@ -420,14 +423,14 @@ void bt_mesh_delayable_msg_init(void)
 void bt_mesh_delayable_msg_stop(void)
 {
 	sys_snode_t *node;
-	k_spinlock_key_t key;
+	irqstate_t key;
 
 	k_work_cancel_delayable(&access_delayable_msg.random_delay);
 
 	for (;;) {
-		key = k_spin_lock(&lock);
+		key = spin_lock_irqsave(&lock);
 		node = sys_slist_get(&access_delayable_msg.busy_ctx);
-		k_spin_unlock(&lock, key);
+		spin_unlock_irqrestore(&lock, key);
 
 		if (!node) {
 			break;

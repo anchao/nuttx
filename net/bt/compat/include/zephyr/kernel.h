@@ -63,7 +63,6 @@ struct k_fifo {
     sys_sflist_t data_q;
     sys_dlist_t wait_q;
     spinlock_t lock;  /* Use raw spinlock for ISR safety */
-    struct k_spinlock _queue;  /* Internal queue wrapper for locking */
 };
 
 void k_fifo_init(struct k_fifo *fifo);
@@ -74,23 +73,15 @@ bool k_fifo_is_empty(struct k_fifo *fifo);
 void *k_fifo_peek_head(struct k_fifo *fifo);
 void *k_fifo_peek_tail(struct k_fifo *fifo);
 void z_k_queue_prepend_fifo(struct k_fifo *fifo, void *data);
-void z_k_queue_prepend_spinlock(struct k_spinlock *queue, void *data);
 bool z_k_queue_remove_fifo(struct k_fifo *fifo, void *data);
-bool z_k_queue_remove_spinlock(struct k_spinlock *queue, void *data);
 
 #define k_queue k_fifo
 #define k_queue_init(queue) k_fifo_init(queue)
 #define k_queue_append(queue, data) k_fifo_put(queue, data)
 #define k_queue_get(queue, timeout) k_fifo_get(queue, timeout)
 #define k_queue_peek_head(queue) k_fifo_peek_head(queue)
-#define k_queue_prepend(queue, data) \
-    _Generic((queue), \
-             struct k_spinlock *: z_k_queue_prepend_spinlock, \
-             default: z_k_queue_prepend_fifo)(queue, data)
-#define k_queue_remove(queue, data) \
-    _Generic((queue), \
-             struct k_spinlock *: z_k_queue_remove_spinlock, \
-             default: z_k_queue_remove_fifo)(queue, data)
+#define k_queue_prepend(queue, data) z_k_queue_prepend_fifo(queue, data)
+#define k_queue_remove(queue, data) z_k_queue_remove_fifo(queue, data)
 
 #define K_FIFO_DEFINE(name) \
     struct k_fifo name = { \

@@ -15,6 +15,8 @@
 #include <string.h>
 #include <time.h>
 
+#include <nuttx/spinlock.h>
+
 #include <zephyr/bluetooth/addr.h>
 #include <zephyr/bluetooth/buf.h>
 #include <zephyr/device.h>
@@ -179,7 +181,7 @@ static void monitor_poll_send(const struct bt_monitor_data *frags, size_t count)
 static uint8_t monitor_tx_data[CONFIG_BT_DEBUG_MONITOR_UART_BUFFER_SIZE];
 static struct ring_buf monitor_tx_buf = RING_BUF_INIT(monitor_tx_data, sizeof(monitor_tx_data));
 static atomic_t monitor_tx_busy;
-static struct k_spinlock monitor_tx_lock;
+static spinlock_t monitor_tx_lock;
 /* Set on panic or when the UART driver lacks interrupt support */
 static bool poll_mode;
 
@@ -222,14 +224,14 @@ static void monitor_uart_isr(const struct device *dev, void *user_data)
 {
 	ARG_UNUSED(user_data);
 
-	k_spinlock_key_t key = k_spin_lock(&monitor_tx_lock);
+	irqstate_t key = spin_lock_irqsave(&monitor_tx_lock);
 
 	uart_irq_update(dev);
 	if (uart_irq_tx_ready(dev) > 0) {
 		monitor_uart_tx();
 	}
 
-	k_spin_unlock(&monitor_tx_lock, key);
+	spin_unlock_irqrestore(&monitor_tx_lock, key);
 }
 
 static bool monitor_send(const struct bt_monitor_data *frags, size_t count)
@@ -556,7 +558,7 @@ static void monitor_log_panic(const struct log_backend *const backend)
 #if defined(CONFIG_BT_DEBUG_MONITOR_RTT)
 	panic_mode = true;
 #elif defined(CONFIG_BT_DEBUG_MONITOR_UART_INTERRUPT_DRIVEN)
-	k_spinlock_key_t key;
+	irqstate_t key;
 	bool locked = false;
 	uint8_t *data;
 	uint32_t len;
@@ -578,7 +580,7 @@ static void monitor_log_panic(const struct log_backend *const backend)
 	 * the panic path.
 	 */
 	for (int i = 0; i < 100; i++) {
-		if (k_spin_trylock(&monitor_tx_lock, &key) == 0) {
+		if (spin_trylock_irqsave(&monitor_tx_lock, key)) {
 			locked = true;
 			break;
 		}
@@ -596,7 +598,7 @@ static void monitor_log_panic(const struct log_backend *const backend)
 	}
 
 	if (locked) {
-		k_spin_unlock(&monitor_tx_lock, key);
+		spin_unlock_irqrestore(&monitor_tx_lock, key);
 	}
 #endif
 }
