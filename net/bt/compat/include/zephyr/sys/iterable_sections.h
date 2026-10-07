@@ -7,7 +7,7 @@
 #ifndef INCLUDE_ZEPHYR_SYS_ITERABLE_SECTIONS_H_
 #define INCLUDE_ZEPHYR_SYS_ITERABLE_SECTIONS_H_
 
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/toolchain.h>
 
 #ifdef __cplusplus

@@ -110,16 +110,16 @@ int bt_settings_encode_key(char *path, size_t path_size, const char *subsys,
 	for (int8_t i = 5; i >= 0; i--) {
 		/* We supply valid 0-15 as input */
 		err = hex2char(addr->a.val[i] >> 4, &path[offset]);
-		__ASSERT_NO_MSG(err == 0);
+		DEBUGASSERT(err == 0);
 		offset++;
 		/* We supply valid 0-15 as input */
 		err = hex2char(addr->a.val[i] & 0xf, &path[offset]);
-		__ASSERT_NO_MSG(err == 0);
+		DEBUGASSERT(err == 0);
 		offset++;
 	}
 	/* We are not checking hex2char return value as we supply valid 0-1 as input */
 	err = hex2char(addr->type, &path[offset]);
-	__ASSERT_NO_MSG(err == 0);
+	DEBUGASSERT(err == 0);
 	offset++;
 
 	if (key != NULL) {

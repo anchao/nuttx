@@ -16,7 +16,7 @@ ssize_t nus_bt_chr_write(struct bt_conn *conn, const struct bt_gatt_attr *attr,
 	struct bt_nus_inst *instance = NULL;
 
 	instance = bt_nus_inst_get_from_attr(attr);
-	__ASSERT_NO_MSG(instance);
+	DEBUGASSERT(instance);
 
 	list_for_every_container(instance->cbs, listener, _node) {
 		if (listener->received) {
@@ -33,7 +33,7 @@ void nus_ccc_cfg_changed(const struct bt_gatt_attr *attr, uint16_t value)
 	struct bt_nus_inst *instance = NULL;
 
 	instance = bt_nus_inst_get_from_attr(attr);
-	__ASSERT_NO_MSG(instance);
+	DEBUGASSERT(instance);
 
 	list_for_every_container(instance->cbs, listener, _node) {
 		if (listener->notif_enabled) {

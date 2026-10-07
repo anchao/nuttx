@@ -402,7 +402,7 @@ static void broadcast_complete(struct bt_mesh_blob_cli *cli)
 	if (cli->tx.cancelled) {
 		transfer_cancel(cli);
 	} else {
-		__ASSERT(cli->tx.ctx.next, "No next callback");
+		DEBUGASSERT(cli->tx.ctx.next);
 		cli->tx.ctx.next(cli);
 	}
 }
@@ -491,8 +491,8 @@ static void retry_timeout(struct k_work *work)
 	cli->tx.retries--;
 	cli->tx.target = NULL;
 
-	__ASSERT(!cli->tx.sending, "still sending");
-	__ASSERT(cli->tx.ctx.is_inited, "ctx is not initialized");
+	DEBUGASSERT(!cli->tx.sending);
+	DEBUGASSERT(cli->tx.ctx.is_inited);
 
 	if (!cli->tx.retries) {
 		LOG_DBG("Transfer timed out.");

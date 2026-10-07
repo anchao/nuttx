@@ -277,7 +277,7 @@ static inline void bt_l2cap_br_cid_init(struct bt_conn *conn)
 	size_t index;
 
 	index = (size_t)bt_conn_index(conn);
-	__ASSERT(index < ARRAY_SIZE(br_cid_next), "Index is out of bounds");
+	DEBUGASSERT(index < ARRAY_SIZE(br_cid_next));
 
 	br_cid_next[index] = L2CAP_BR_CID_DYN_START;
 }
@@ -311,7 +311,7 @@ static struct bt_l2cap_br_chan *l2cap_br_chan_alloc_cid(struct bt_conn *conn,
 	}
 
 	index = (size_t)bt_conn_index(conn);
-	__ASSERT(index < ARRAY_SIZE(br_cid_next), "Index is out of bounds");
+	DEBUGASSERT(index < ARRAY_SIZE(br_cid_next));
 
 	start = br_cid_next[index];
 	sentinel = br_cid_next[index];
@@ -460,11 +460,11 @@ static void lower_data_ready(struct bt_l2cap_br_chan *br_chan)
 
 	s = list_remove_head(&conn->l2cap_data_ready);
 
-	__ASSERT_NO_MSG(s == &br_chan->_pdu_ready);
+	DEBUGASSERT(s == &br_chan->_pdu_ready);
 
 	__maybe_unused int32_t old = atomic_xchg(&br_chan->_pdu_ready_lock, 0);
 
-	__ASSERT_NO_MSG(old);
+	DEBUGASSERT(old);
 }
 
 static void cancel_data_ready(struct bt_l2cap_br_chan *br_chan)
@@ -680,9 +680,7 @@ static bool bt_l2cap_br_check_req_seq_valid(struct bt_l2cap_br_chan *br_chan, ui
 	}
 
 	outstanding_count = bt_l2cap_br_get_outstanding_count(br_chan);
-	__ASSERT(outstanding_count == outstanding_frames,
-		 "Mismatch between window and seq %zu - %zu", outstanding_count,
-		 outstanding_frames);
+	DEBUGASSERT(outstanding_count == outstanding_frames);
 
 	if (ack_frames <= outstanding_frames) {
 		return true;
@@ -695,7 +693,7 @@ static void l2cap_br_sdu_is_done(struct bt_l2cap_br_chan *br_chan, struct net_bu
 {
 	bt_conn_tx_cb_t cb;
 
-	__ASSERT(sdu, "Invalid sdu buffer on chan %p", br_chan);
+	DEBUGASSERT(sdu);
 
 	/* The SDU is done */
 	LOG_DBG("SDU is done, removing %p", sdu);
@@ -744,7 +742,7 @@ static int bt_l2cap_br_update_req_seq_direct(struct bt_l2cap_br_chan *br_chan, u
 		tx_win = (void *)list_peek_head(&br_chan->_pdu_outstanding);
 		if (tx_win) {
 			sdu = tx_win->sdu;
-			__ASSERT(sdu, "Invalid sdu buffer on chan %p", br_chan);
+			DEBUGASSERT(sdu);
 			l2cap_br_sdu_restore(sdu, &tx_win->sdu_state);
 			br_chan->next_tx_seq = tx_win->tx_seq;
 		}
@@ -755,7 +753,7 @@ static int bt_l2cap_br_update_req_seq_direct(struct bt_l2cap_br_chan *br_chan, u
 			tx_win = (void *)list_peek_head(&br_chan->_pdu_outstanding);
 			if (tx_win) {
 				sdu = tx_win->sdu;
-				__ASSERT(sdu, "Invalid sdu buffer on chan %p", br_chan);
+				DEBUGASSERT(sdu);
 				if ((tx_win->sar == BT_L2CAP_CONTROL_SAR_UNSEG) ||
 				    (tx_win->sar == BT_L2CAP_CONTROL_SAR_START)) {
 					l2cap_br_sdu_restore(sdu, &tx_win->sdu_state);
@@ -1524,8 +1522,7 @@ send_i_frame:
 
 			sdu_len = l2cap_br_closure_sdu_len(pdu->user_data);
 			start_seg = sdu_len > pdu->len ? false : true;
-			__ASSERT(sdu_len >= pdu->len, "SDU length mismatch %u < %u", sdu_len,
-				 pdu->len);
+			DEBUGASSERT(sdu_len >= pdu->len);
 
 			net_buf_simple_save(&pdu->b, &tx_win->sdu_state);
 
@@ -1551,8 +1548,7 @@ send_i_frame:
 			if (net_buf_tailroom(send_buf) < actual_pdu_len) {
 				LOG_ERR("Tailroom of the buffer cannot be filled %zu / %zu",
 					net_buf_tailroom(send_buf), actual_pdu_len);
-				__ASSERT(false, "Tailroom of the buffer cannot be filled %zu / %zu",
-					 net_buf_tailroom(send_buf), actual_pdu_len);
+				DEBUGASSERT(false);
 				net_buf_unref(send_buf);
 				l2cap_br_free_window(br_chan, tx_win);
 				return NULL;
@@ -1708,7 +1704,7 @@ struct net_buf *l2cap_br_data_pull(struct bt_conn *conn, size_t amount, size_t *
 		return NULL;
 	}
 
-	__ASSERT_NO_MSG(conn->state == BT_CONN_CONNECTED);
+	DEBUGASSERT(conn->state == BT_CONN_CONNECTED);
 
 	struct bt_l2cap_br_chan *br_chan;
 
@@ -1741,7 +1737,7 @@ struct net_buf *l2cap_br_data_pull(struct bt_conn *conn, size_t amount, size_t *
 	 */
 	const struct list_node *tx_pdu = list_peek_head(&br_chan->_pdu_tx_queue);
 
-	__ASSERT(tx_pdu, "signaled ready but no PDUs in the TX queue");
+	DEBUGASSERT(tx_pdu);
 
 	struct net_buf *q_pdu = CONTAINER_OF(tx_pdu, struct net_buf, node);
 
@@ -1764,7 +1760,7 @@ struct net_buf *l2cap_br_data_pull(struct bt_conn *conn, size_t amount, size_t *
 
 		found = list_find_and_remove(&br_chan->_pdu_tx_queue, &q_pdu->node);
 
-		__ASSERT_NO_MSG(found);
+		DEBUGASSERT(found);
 
 		net_buf_unref(q_pdu);
 
@@ -2238,9 +2234,7 @@ static uint16_t l2cap_br_get_rx_mtu(struct bt_l2cap_br_chan *br_chan)
 	 */
 	rx_mtu -= BT_L2CAP_FCS_SIZE;
 
-	__ASSERT(rx_mtu >= L2CAP_BR_MIN_MTU,
-		 "Invalid MTU (%u < %u). Please increase CONFIG_BT_BUF_ACL_RX_SIZE.", rx_mtu,
-		 L2CAP_BR_MIN_MTU);
+	DEBUGASSERT(rx_mtu >= L2CAP_BR_MIN_MTU);
 
 	return rx_mtu;
 }
@@ -6502,7 +6496,7 @@ static int l2cap_br_accept(struct bt_conn *conn, struct bt_l2cap_chan **chan)
 	LOG_DBG("conn %p handle %u", conn, conn->handle);
 
 	index = bt_conn_index(conn);
-	__ASSERT(index < ARRAY_SIZE(bt_l2cap_br_pool), "Invalid ACL conn index");
+	DEBUGASSERT(index < ARRAY_SIZE(bt_l2cap_br_pool));
 
 	l2cap = &bt_l2cap_br_pool[index];
 
@@ -6843,7 +6837,7 @@ static int l2cap_br_connless_accept(struct bt_conn *conn, struct bt_l2cap_chan *
 	LOG_DBG("conn %p handle %u", conn, conn->handle);
 
 	index = bt_conn_index(conn);
-	__ASSERT(index < ARRAY_SIZE(bt_l2cap_br_connless_pool), "Invalid ACL conn index");
+	DEBUGASSERT(index < ARRAY_SIZE(bt_l2cap_br_connless_pool));
 
 	br_chan = &bt_l2cap_br_connless_pool[index];
 

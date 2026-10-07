@@ -32,7 +32,7 @@
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
@@ -244,7 +244,7 @@ static int parse_recv_state(const void *data, uint16_t length,
 	struct net_buf_simple buf;
 	bt_addr_t *addr;
 
-	__ASSERT(recv_state, "NULL receive state");
+	DEBUGASSERT(recv_state);
 
 	if (data == NULL || length == 0) {
 		LOG_DBG("NULL data");
@@ -534,7 +534,7 @@ static uint8_t notify_handler(struct bt_conn *conn,
 		const int max_ntf_size = bt_att_get_max_notify_size(conn, BT_ATT_CHAN_OPT_NONE);
 
 		if (max_ntf_size < 0) {
-			__ASSERT(max_ntf_size != -EINVAL, "Unexpected -EINVAL");
+			DEBUGASSERT(max_ntf_size != -EINVAL);
 			return BT_GATT_ITER_STOP;
 		}
 

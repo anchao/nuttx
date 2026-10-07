@@ -147,7 +147,7 @@ static struct bt_hid_host *hid_allocate(const struct bt_conn *conn)
 	size_t index;
 
 	index = (size_t)bt_conn_index(conn);
-	__ASSERT(index < ARRAY_SIZE(hid_conn_pool), "Index is out of bounds");
+	DEBUGASSERT(index < ARRAY_SIZE(hid_conn_pool));
 
 	hid = &hid_conn_pool[index];
 
@@ -169,7 +169,7 @@ static struct bt_hid_host *hid_find(const struct bt_conn *conn)
 	}
 
 	index = (size_t)bt_conn_index(conn);
-	__ASSERT(index < ARRAY_SIZE(hid_conn_pool), "Index is out of bounds");
+	DEBUGASSERT(index < ARRAY_SIZE(hid_conn_pool));
 
 	hid = &hid_conn_pool[index];
 
@@ -406,7 +406,7 @@ static void hid_l2cap_ctrl_connected(struct bt_l2cap_chan *chan)
 
 	LOG_DBG("session %d connected (state %s)", chtype, hid_state_str(hid->state));
 
-	__ASSERT_NO_MSG(chtype == BT_HID_CHANNEL_CTRL);
+	DEBUGASSERT(chtype == BT_HID_CHANNEL_CTRL);
 
 	/* A disconnect requested before this connect completed left the instance in
 	 * DISCONNECTING, so close the channel instead of advancing an abandoned one.
@@ -454,7 +454,7 @@ static void hid_l2cap_intr_connected(struct bt_l2cap_chan *chan)
 
 	LOG_DBG("session %d connected (state %s)", chtype, hid_state_str(hid->state));
 
-	__ASSERT_NO_MSG(chtype == BT_HID_CHANNEL_INTR);
+	DEBUGASSERT(chtype == BT_HID_CHANNEL_INTR);
 
 	/* HID spec v1.1.2 Section 5.2.2: both CTRL and INTR channels
 	 * must be established for the HID connection to be valid.
@@ -484,9 +484,8 @@ static void hid_cleanup(struct bt_hid_host *hid)
 	 * cleared only on the RX callback chain, so reading them together is not an
 	 * atomic snapshot but is still correct: nothing can set them while this runs.
 	 */
-	__ASSERT(!atomic_test_bit(&hid->flags, BT_HID_HOST_FLAG_CTRL_ATTACHED) &&
-			 !atomic_test_bit(&hid->flags, BT_HID_HOST_FLAG_INTR_ATTACHED),
-		 "release with channels still attached");
+	DEBUGASSERT(!atomic_test_bit(&hid->flags, BT_HID_HOST_FLAG_CTRL_ATTACHED) &&
+			 !atomic_test_bit(&hid->flags, BT_HID_HOST_FLAG_INTR_ATTACHED));
 
 	/* Publish the release before cancelling, so a context that arms a work item
 	 * concurrently settles the race itself: an arm before this point is undone
@@ -510,7 +509,7 @@ static void hid_l2cap_ctrl_disconnected(struct bt_l2cap_chan *chan)
 
 	LOG_DBG("session %d disconnected (state %s)", chtype, hid_state_str(hid->state));
 
-	__ASSERT_NO_MSG(chtype == BT_HID_CHANNEL_CTRL);
+	DEBUGASSERT(chtype == BT_HID_CHANNEL_CTRL);
 
 	atomic_clear_bit(&hid->flags, BT_HID_HOST_FLAG_CTRL_CONNECTED);
 	atomic_clear_bit(&hid->flags, BT_HID_HOST_FLAG_CTRL_ATTACHED);
@@ -552,7 +551,7 @@ static void hid_l2cap_intr_disconnected(struct bt_l2cap_chan *chan)
 
 	LOG_DBG("session %d disconnected (state %s)", chtype, hid_state_str(hid->state));
 
-	__ASSERT_NO_MSG(chtype == BT_HID_CHANNEL_INTR);
+	DEBUGASSERT(chtype == BT_HID_CHANNEL_INTR);
 
 	atomic_clear_bit(&hid->flags, BT_HID_HOST_FLAG_INTR_CONNECTED);
 	atomic_clear_bit(&hid->flags, BT_HID_HOST_FLAG_INTR_ATTACHED);
@@ -802,7 +801,7 @@ static int hid_l2cap_ctrl_recv(struct bt_l2cap_chan *chan, struct net_buf *buf)
 	uint8_t type;
 	uint8_t param;
 
-	__ASSERT_NO_MSG(HID_CHAN_TYPE(chan) == BT_HID_CHANNEL_CTRL);
+	DEBUGASSERT(HID_CHAN_TYPE(chan) == BT_HID_CHANNEL_CTRL);
 
 	/* HID spec v1.1.2 Section 5.2.2: the Control channel carries traffic as
 	 * soon as it is open, independently of the Interrupt channel. Drop anything
@@ -859,7 +858,7 @@ static int hid_l2cap_intr_recv(struct bt_l2cap_chan *chan, struct net_buf *buf)
 		return 0;
 	}
 
-	__ASSERT_NO_MSG(HID_CHAN_TYPE(chan) == BT_HID_CHANNEL_INTR);
+	DEBUGASSERT(HID_CHAN_TYPE(chan) == BT_HID_CHANNEL_INTR);
 
 	if (hid->state != BT_HID_STATE_CONNECTED) {
 		LOG_WRN("INTR recv in state %s, ignoring", hid_state_str(hid->state));

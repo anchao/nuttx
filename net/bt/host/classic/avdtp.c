@@ -373,7 +373,7 @@ static struct net_buf *avdtp_create_pdu_timeout(uint8_t msg_type, uint8_t sig_id
 		return NULL;
 	}
 
-	__ASSERT_NO_MSG(net_buf_tailroom(buf) >= sizeof(*hdr));
+	DEBUGASSERT(net_buf_tailroom(buf) >= sizeof(*hdr));
 	hdr = net_buf_add(buf, sizeof(*hdr));
 
 	hdr->hdr = AVDTP_MSG_PREP(msg_type) | AVDTP_PKT_PREP(BT_AVDTP_PACKET_TYPE_SINGLE) |
@@ -481,11 +481,11 @@ static void avdtp_tx_multi(struct bt_avdtp *session, struct net_buf *buf,
 			struct bt_avdtp_start_sig_hdr *start_hdr;
 			struct bt_avdtp_single_sig_hdr *sig_hdr;
 
-			__ASSERT_NO_MSG(buf->len >= sizeof(*sig_hdr));
+			DEBUGASSERT(buf->len >= sizeof(*sig_hdr));
 			sig_hdr = net_buf_pull_mem(buf, sizeof(*sig_hdr));
 			user_data->hdr = *sig_hdr;
 
-			__ASSERT_NO_MSG(net_buf_tailroom(frag) >= sizeof(*start_hdr));
+			DEBUGASSERT(net_buf_tailroom(frag) >= sizeof(*start_hdr));
 			start_hdr = net_buf_add(frag, sizeof(*start_hdr));
 			/* use same transaction label and message type */
 			start_hdr->hdr = (user_data->hdr.hdr & ~AVDTP_PKT_MASK) |
@@ -493,7 +493,7 @@ static void avdtp_tx_multi(struct bt_avdtp *session, struct net_buf *buf,
 			start_hdr->num_of_signal_pkts = user_data->frag_count;
 			start_hdr->signal_id = user_data->hdr.signal_id;
 
-			__ASSERT_NO_MSG(mtu >= sizeof(*start_hdr));
+			DEBUGASSERT(mtu >= sizeof(*start_hdr));
 			len = mtu - sizeof(*start_hdr);
 			if (len >= buf->len) {
 				LOG_ERR("The start packet can send all data");
@@ -507,13 +507,13 @@ static void avdtp_tx_multi(struct bt_avdtp *session, struct net_buf *buf,
 			uint8_t pkt_type = (user_data->frag_count == user_data->current_frag) ?
 					   BT_AVDTP_PACKET_TYPE_END : BT_AVDTP_PACKET_TYPE_CONTINUE;
 
-			__ASSERT_NO_MSG(net_buf_tailroom(frag) >= sizeof(*cont_hdr));
+			DEBUGASSERT(net_buf_tailroom(frag) >= sizeof(*cont_hdr));
 			cont_hdr = net_buf_add(frag, sizeof(*cont_hdr));
 			/* use same transaction label and message type */
 			cont_hdr->hdr = (user_data->hdr.hdr & ~AVDTP_PKT_MASK) |
 					AVDTP_PKT_PREP(pkt_type);
 
-			__ASSERT_NO_MSG(mtu >= sizeof(*cont_hdr));
+			DEBUGASSERT(mtu >= sizeof(*cont_hdr));
 			len = mtu - sizeof(*cont_hdr);
 			if (pkt_type == BT_AVDTP_PACKET_TYPE_CONTINUE && len >= buf->len) {
 				LOG_ERR("The continue packet can send all data");
@@ -566,7 +566,7 @@ static void avdtp_tx_processor(struct k_work *item)
 	user_data = net_buf_user_data(buf);
 
 	session = user_data->session;
-	__ASSERT_NO_MSG(session != NULL);
+	DEBUGASSERT(session != NULL);
 
 	/* The buf can be sent directly */
 	if (user_data->frag_count == 1) {
@@ -621,7 +621,7 @@ static void avdtp_send_common(struct bt_avdtp *session, struct net_buf *buf)
 static int avdtp_send_rsp(struct bt_avdtp *session, struct net_buf *buf)
 {
 	/* From all the calls, the session and buf can't be NULL. */
-	__ASSERT_NO_MSG((session != NULL && buf != NULL));
+	DEBUGASSERT((session != NULL && buf != NULL));
 
 	LOG_DBG("Response sent: buf=%p", buf);
 
@@ -695,7 +695,7 @@ static void avdtp_discover_cmd(struct bt_avdtp *session, struct net_buf *buf, ui
 
 		LOG_DBG("discover err code:%d", avdtp_err_code);
 
-		__ASSERT_NO_MSG(net_buf_tailroom(rsp_buf) >= sizeof(avdtp_err_code));
+		DEBUGASSERT(net_buf_tailroom(rsp_buf) >= sizeof(avdtp_err_code));
 		net_buf_add_u8(rsp_buf, avdtp_err_code);
 	} else {
 		struct bt_avdtp_sep_data sep_data;
@@ -815,7 +815,7 @@ static void avdtp_get_caps_cmd_internal(struct bt_avdtp *session, struct net_buf
 
 		LOG_DBG("get cap err code:%d", avdtp_err_code);
 
-		__ASSERT_NO_MSG(net_buf_tailroom(rsp_buf) >= sizeof(avdtp_err_code));
+		DEBUGASSERT(net_buf_tailroom(rsp_buf) >= sizeof(avdtp_err_code));
 		net_buf_add_u8(rsp_buf, avdtp_err_code);
 	}
 
@@ -1021,7 +1021,7 @@ static void avdtp_process_configuration_cmd(struct bt_avdtp *session, struct net
 
 		LOG_DBG("set configuration err code:%d", avdtp_err_code);
 
-		__ASSERT_NO_MSG(net_buf_tailroom(rsp_buf) >=
+		DEBUGASSERT(net_buf_tailroom(rsp_buf) >=
 				(sizeof(service_category) + sizeof(avdtp_err_code)));
 		/* error Service Category*/
 		net_buf_add_u8(rsp_buf, service_category);
@@ -1135,7 +1135,7 @@ static void avdtp_open_cmd(struct bt_avdtp *session, struct net_buf *buf, uint8_
 
 		LOG_DBG("open_ind err code:%d", avdtp_err_code);
 
-		__ASSERT_NO_MSG(net_buf_tailroom(rsp_buf) >= sizeof(avdtp_err_code));
+		DEBUGASSERT(net_buf_tailroom(rsp_buf) >= sizeof(avdtp_err_code));
 		net_buf_add_u8(rsp_buf, avdtp_err_code);
 	} else {
 		session->current_sep = sep;
@@ -1231,7 +1231,7 @@ static void avdtp_start_cmd(struct bt_avdtp *session, struct net_buf *buf, uint8
 
 		LOG_DBG("start err code:%d", avdtp_err_code);
 
-		__ASSERT_NO_MSG(net_buf_tailroom(rsp_buf) >=
+		DEBUGASSERT(net_buf_tailroom(rsp_buf) >=
 				(sizeof(acp_seid) + sizeof(avdtp_err_code)));
 		net_buf_add_u8(rsp_buf, acp_seid);
 		net_buf_add_u8(rsp_buf, avdtp_err_code);
@@ -1318,7 +1318,7 @@ static void avdtp_close_cmd(struct bt_avdtp *session, struct net_buf *buf, uint8
 
 		LOG_DBG("close err code:%d", avdtp_err_code);
 
-		__ASSERT_NO_MSG(net_buf_tailroom(rsp_buf) >= sizeof(avdtp_err_code));
+		DEBUGASSERT(net_buf_tailroom(rsp_buf) >= sizeof(avdtp_err_code));
 		net_buf_add_u8(rsp_buf, avdtp_err_code);
 	} else {
 		bt_avdtp_set_state(sep, AVDTP_CLOSING);
@@ -1432,7 +1432,7 @@ static void avdtp_suspend_cmd(struct bt_avdtp *session, struct net_buf *buf, uin
 
 		LOG_DBG("suspend err code:%d", avdtp_err_code);
 
-		__ASSERT_NO_MSG(net_buf_tailroom(rsp_buf) >=
+		DEBUGASSERT(net_buf_tailroom(rsp_buf) >=
 				(sizeof(acp_seid) + sizeof(avdtp_err_code)));
 		net_buf_add_u8(rsp_buf, acp_seid);
 		net_buf_add_u8(rsp_buf, avdtp_err_code);
@@ -1508,7 +1508,7 @@ static void avdtp_abort_cmd(struct bt_avdtp *session, struct net_buf *buf, uint8
 
 		LOG_DBG("abort err code:%d", avdtp_err_code);
 
-		__ASSERT_NO_MSG(net_buf_tailroom(rsp_buf) >= sizeof(avdtp_err_code));
+		DEBUGASSERT(net_buf_tailroom(rsp_buf) >= sizeof(avdtp_err_code));
 		net_buf_add_u8(rsp_buf, avdtp_err_code);
 	}
 
@@ -1616,7 +1616,7 @@ static void avdtp_delay_report_cmd(struct bt_avdtp *session, struct net_buf *buf
 
 		LOG_DBG("delay report err code:%d", avdtp_err_code);
 
-		__ASSERT_NO_MSG(net_buf_tailroom(rsp_buf) >= sizeof(avdtp_err_code));
+		DEBUGASSERT(net_buf_tailroom(rsp_buf) >= sizeof(avdtp_err_code));
 		net_buf_add_u8(rsp_buf, avdtp_err_code);
 	}
 
@@ -1682,7 +1682,7 @@ static void avdtp_get_configuration_cmd(struct bt_avdtp *session, struct net_buf
 
 		LOG_DBG("get config err code:%d", avdtp_err_code);
 
-		__ASSERT_NO_MSG(net_buf_tailroom(rsp_buf) >= sizeof(avdtp_err_code));
+		DEBUGASSERT(net_buf_tailroom(rsp_buf) >= sizeof(avdtp_err_code));
 		net_buf_add_u8(rsp_buf, avdtp_err_code);
 	}
 
@@ -1742,7 +1742,7 @@ static int avdtp_send_cmd(struct bt_avdtp *session, struct net_buf *buf, struct 
 	struct bt_avdtp_single_sig_hdr *hdr;
 
 	/* From all the calls, the session, buf and req can't be NULL. */
-	__ASSERT_NO_MSG((session != NULL && buf != NULL && req != NULL));
+	DEBUGASSERT((session != NULL && buf != NULL && req != NULL));
 
 	avdtp_lock(session);
 
@@ -2436,7 +2436,7 @@ int bt_avdtp_get_capabilities(struct bt_avdtp *session,
 		return -ENOMEM;
 	}
 
-	__ASSERT_NO_MSG(net_buf_tailroom(buf) >= sizeof(uint8_t));
+	DEBUGASSERT(net_buf_tailroom(buf) >= sizeof(uint8_t));
 	/* Body of the message */
 	net_buf_add_u8(buf, AVDTP_SEID_PREP(param->stream_endpoint_id));
 
@@ -2542,7 +2542,7 @@ static int avdtp_process_configure_command(struct bt_avdtp *session, uint8_t cmd
 
 	/* Body of the message */
 	/* ACP Stream Endpoint ID */
-	__ASSERT_NO_MSG(net_buf_tailroom(buf) >= sizeof(uint8_t));
+	DEBUGASSERT(net_buf_tailroom(buf) >= sizeof(uint8_t));
 	net_buf_add_u8(buf, AVDTP_SEID_PREP(param->acp_stream_ep_id));
 
 	if (cmd == BT_AVDTP_SET_CONFIGURATION) {
@@ -2645,7 +2645,7 @@ static int bt_avdtp_ctrl(struct bt_avdtp *session, struct bt_avdtp_ctrl_params *
 
 	/* Body of the message */
 	/* ACP Stream Endpoint ID */
-	__ASSERT_NO_MSG(net_buf_tailroom(buf) >= sizeof(uint8_t));
+	DEBUGASSERT(net_buf_tailroom(buf) >= sizeof(uint8_t));
 	net_buf_add_u8(buf, AVDTP_SEID_PREP(param->acp_stream_ep_id));
 
 	return avdtp_send_cmd(session, buf, &param->req);
@@ -2719,7 +2719,7 @@ int bt_avdtp_delay_report(struct bt_avdtp *session, struct bt_avdtp_delay_report
 		return -ENOMEM;
 	}
 
-	__ASSERT_NO_MSG(net_buf_tailroom(buf) >= (sizeof(uint8_t) + sizeof(uint16_t)));
+	DEBUGASSERT(net_buf_tailroom(buf) >= (sizeof(uint8_t) + sizeof(uint16_t)));
 	net_buf_add_u8(buf, AVDTP_SEID_PREP(param->acp_stream_ep_id));
 	net_buf_add_be16(buf, param->delay_report);
 

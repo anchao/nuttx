@@ -585,7 +585,7 @@ static struct net_buf *encode_update(struct bt_mesh_friend *frnd, uint8_t md)
 	struct bt_mesh_ctl_friend_update *upd;
 	NET_BUF_SIMPLE_DEFINE(sdu, 1 + sizeof(*upd));
 
-	__ASSERT_NO_MSG(friend_is_allocated(frnd));
+	DEBUGASSERT(friend_is_allocated(frnd));
 
 	LOG_DBG("lpn 0x%04x md 0x%02x", frnd->lpn, md);
 
@@ -1292,7 +1292,7 @@ static void friend_timeout(struct k_work *work)
 		return;
 	}
 
-	__ASSERT_NO_MSG(frnd->pending_buf == 0U);
+	DEBUGASSERT(frnd->pending_buf == 0U);
 
 	LOG_DBG("lpn 0x%04x send_last %u last %p", frnd->lpn, frnd->send_last, frnd->last);
 

@@ -465,19 +465,14 @@ int bt_ots_init(struct bt_ots *ots,
 		return -EINVAL;
 	}
 
-	__ASSERT(ots_init->cb->obj_created || !BT_OTS_OACP_GET_FEAT_CREATE(ots_init->features.oacp),
-		 "Callback for object creation is not set and object creation is enabled");
-	__ASSERT(ots_init->cb->obj_deleted || !BT_OTS_OACP_GET_FEAT_DELETE(ots_init->features.oacp),
-		 "Callback for object deletion is not set and object deletion is enabled");
+	DEBUGASSERT(ots_init->cb->obj_created || !BT_OTS_OACP_GET_FEAT_CREATE(ots_init->features.oacp));
+	DEBUGASSERT(ots_init->cb->obj_deleted || !BT_OTS_OACP_GET_FEAT_DELETE(ots_init->features.oacp));
 #if defined(CONFIG_BT_OTS_OACP_CHECKSUM_SUPPORT)
-	__ASSERT(ots_init->cb->obj_cal_checksum ||
-			 !BT_OTS_OACP_GET_FEAT_CHECKSUM(ots_init->features.oacp),
-		 "Callback for object calculate checksum is not set and checksum is enabled");
+	DEBUGASSERT(ots_init->cb->obj_cal_checksum ||
+			 !BT_OTS_OACP_GET_FEAT_CHECKSUM(ots_init->features.oacp));
 #endif
-	__ASSERT(ots_init->cb->obj_read || !BT_OTS_OACP_GET_FEAT_READ(ots_init->features.oacp),
-		 "Callback for object reading is not set and object read is enabled");
-	__ASSERT(ots_init->cb->obj_write || !BT_OTS_OACP_GET_FEAT_WRITE(ots_init->features.oacp),
-		 "Callback for object write is not set and object write is enabled");
+	DEBUGASSERT(ots_init->cb->obj_read || !BT_OTS_OACP_GET_FEAT_READ(ots_init->features.oacp));
+	DEBUGASSERT(ots_init->cb->obj_write || !BT_OTS_OACP_GET_FEAT_WRITE(ots_init->features.oacp));
 
 	/* Set callback structure. */
 	ots->cb = ots_init->cb;
@@ -487,9 +482,8 @@ int bt_ots_init(struct bt_ots *ots,
 		return -ENOTSUP;
 	}
 
-	__ASSERT(!BT_OTS_OACP_GET_FEAT_CREATE(ots_init->features.oacp) ||
-		 BT_OTS_OACP_GET_FEAT_WRITE(ots_init->features.oacp),
-		 "Object creation requires object write to be supported");
+	DEBUGASSERT(!BT_OTS_OACP_GET_FEAT_CREATE(ots_init->features.oacp) ||
+		 BT_OTS_OACP_GET_FEAT_WRITE(ots_init->features.oacp));
 
 	ots->features.oacp = ots_init->features.oacp;
 	LOG_DBG("OACP features: 0x%04X", ots->features.oacp);
@@ -633,9 +627,7 @@ static void ots_conn_disconnected(struct bt_conn *conn, uint8_t reason)
 		LOG_DBG("Processing disconnect for OTS instance %u", index);
 
 		if (instance->cur_obj != NULL) {
-			__ASSERT(instance->cur_obj->state.type == BT_GATT_OTS_OBJECT_IDLE_STATE,
-				"The current object is expected to be in idle state as part "
-				"of cleanup of the L2CAP channel connection close.");
+			DEBUGASSERT(instance->cur_obj->state.type == BT_GATT_OTS_OBJECT_IDLE_STATE);
 			instance->cur_obj = NULL;
 		}
 

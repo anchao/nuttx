@@ -29,7 +29,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/settings/settings.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/clock.h>
 #include <zephyr/sys/util.h>
@@ -354,7 +354,7 @@ static ssize_t read_set_size(struct bt_conn *conn,
 	ARG_UNUSED(len);
 	ARG_UNUSED(offset);
 
-	__ASSERT(false, "Unexpected read callback");
+	DEBUGASSERT(false);
 	return BT_GATT_ERR(BT_ATT_ERR_UNLIKELY);
 #endif /* CONFIG_BT_CSIP_SET_MEMBER_SIZE_SUPPORT */
 }
@@ -386,7 +386,7 @@ static ssize_t read_set_lock(struct bt_conn *conn,
 	ARG_UNUSED(len);
 	ARG_UNUSED(offset);
 
-	__ASSERT(false, "Unexpected read callback");
+	DEBUGASSERT(false);
 	return BT_GATT_ERR(BT_ATT_ERR_UNLIKELY);
 #endif /* CONFIG_BT_CSIP_SET_MEMBER_LOCK_SUPPORT */
 }
@@ -494,7 +494,7 @@ static ssize_t write_set_lock(struct bt_conn *conn,
 	ARG_UNUSED(len);
 	ARG_UNUSED(offset);
 
-	__ASSERT(false, "Unexpected write callback");
+	DEBUGASSERT(false);
 	return BT_GATT_ERR(BT_ATT_ERR_UNLIKELY);
 #endif /* CONFIG_BT_CSIP_SET_MEMBER_LOCK_SUPPORT */
 }
@@ -526,7 +526,7 @@ static ssize_t read_rank(struct bt_conn *conn, const struct bt_gatt_attr *attr,
 	ARG_UNUSED(len);
 	ARG_UNUSED(offset);
 
-	__ASSERT(false, "Unexpected read callback");
+	DEBUGASSERT(false);
 	return BT_GATT_ERR(BT_ATT_ERR_UNLIKELY);
 #endif /* CONFIG_BT_CSIP_SET_MEMBER_RANK_SUPPORT */
 }
@@ -881,7 +881,7 @@ static void notify_cb(struct bt_conn *conn, void *data)
 
 unlock_and_return:
 		err = nxrmutex_unlock(&svc_inst->mutex);
-		__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+		DEBUGASSERT(err == 0);
 	}
 }
 
@@ -1143,7 +1143,7 @@ int bt_csip_set_member_register(const struct bt_csip_set_member_register_param *
 			nxrmutex_init(&svc_insts[i].mutex);
 		}
 		err = bt_conn_auth_info_cb_register(&auth_callbacks);
-		__ASSERT(err == 0, "Failed to register auth_info callbacks: %d", err);
+		DEBUGASSERT(err == 0);
 
 		first_register = true;
 	}
@@ -1161,7 +1161,7 @@ int bt_csip_set_member_register(const struct bt_csip_set_member_register_param *
 			break;
 		} else {
 			err = nxrmutex_unlock(&si->mutex);
-			__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+			DEBUGASSERT(err == 0);
 		}
 	}
 
@@ -1178,7 +1178,7 @@ int bt_csip_set_member_register(const struct bt_csip_set_member_register_param *
 
 		LOG_DBG("CSIS service register failed: %d", err);
 		mutex_err = nxrmutex_unlock(&inst->mutex);
-		__ASSERT(mutex_err == 0, "Failed to unlock mutex: %d", mutex_err);
+		DEBUGASSERT(mutex_err == 0);
 		return err;
 	}
 #if defined(CONFIG_BT_CSIP_SET_MEMBER_RANK_SUPPORT)
@@ -1211,7 +1211,7 @@ int bt_csip_set_member_register(const struct bt_csip_set_member_register_param *
 	*svc_inst = inst;
 
 	err = nxrmutex_unlock(&inst->mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return 0;
 }
@@ -1237,7 +1237,7 @@ int bt_csip_set_member_unregister(struct bt_csip_set_member_svc_inst *svc_inst)
 
 		LOG_DBG("CSIS service unregister failed: %d", err);
 		mutex_err = nxrmutex_unlock(&svc_inst->mutex);
-		__ASSERT(mutex_err == 0, "Failed to unlock mutex: %d", mutex_err);
+		DEBUGASSERT(mutex_err == 0);
 
 		return err;
 	}
@@ -1248,7 +1248,7 @@ int bt_csip_set_member_unregister(struct bt_csip_set_member_svc_inst *svc_inst)
 	memset(svc_inst, 0, offsetof(struct bt_csip_set_member_svc_inst, mutex));
 
 	err = nxrmutex_unlock(&svc_inst->mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return 0;
 }

@@ -869,7 +869,7 @@ static int cmd_send_media(const struct shell *sh, int32_t argc, char *argv[])
 		return -ENOEXEC;
 	}
 
-	__ASSERT_NO_MSG(net_buf_tailroom(buf) >= sizeof(uint8_t));
+	DEBUGASSERT(net_buf_tailroom(buf) >= sizeof(uint8_t));
 	/* num of frames is 1 */
 	net_buf_add_u8(buf, (uint8_t)BT_A2DP_SBC_MEDIA_HDR_ENCODE(1, 0, 0, 0));
 

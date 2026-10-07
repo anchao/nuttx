@@ -26,7 +26,7 @@
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
@@ -631,7 +631,7 @@ static int vcp_vol_ctlr_common_vcs_cp(struct bt_vcp_vol_ctlr *vol_ctlr, uint8_t 
 #if defined(CONFIG_BT_VCP_VOL_CTLR_AICS)
 static struct bt_vcp_vol_ctlr *lookup_vcp_by_aics(const struct bt_aics *aics)
 {
-	__ASSERT(aics != NULL, "aics pointer cannot be NULL");
+	DEBUGASSERT(aics != NULL);
 
 	for (size_t i = 0U; i < ARRAY_SIZE(vol_ctlr_insts); i++) {
 		for (size_t j = 0U; j < ARRAY_SIZE(vol_ctlr_insts[i].aics); j++) {
@@ -788,7 +788,7 @@ static void vcp_vol_ctlr_aics_set_auto_mode_cb(struct bt_aics *inst, int err)
 #if defined(CONFIG_BT_VCP_VOL_CTLR_VOCS)
 static struct bt_vcp_vol_ctlr *lookup_vcp_by_vocs(const struct bt_vocs *vocs)
 {
-	__ASSERT(vocs != NULL, "VOCS pointer cannot be NULL");
+	DEBUGASSERT(vocs != NULL);
 
 	for (int i = 0; i < ARRAY_SIZE(vol_ctlr_insts); i++) {
 		for (int j = 0; j < ARRAY_SIZE(vol_ctlr_insts[i].vocs); j++) {

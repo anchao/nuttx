@@ -118,7 +118,7 @@ static int bip_rfcomm_accept(struct bt_conn *conn, struct bt_goep_transport_rfco
 		return err;
 	}
 
-	__ASSERT(bip != NULL && bip->ops != NULL, "Invalid bip instance");
+	DEBUGASSERT(bip != NULL && bip->ops != NULL);
 
 	bip->role = BT_BIP_ROLE_RESPONDER;
 	bip->goep.transport_ops = &bip_rfcomm_ops;
@@ -257,7 +257,7 @@ static int bip_l2cap_accept(struct bt_conn *conn, struct bt_goep_transport_l2cap
 		return err;
 	}
 
-	__ASSERT(bip != NULL && bip->ops != NULL, "Invalid bip instance");
+	DEBUGASSERT(bip != NULL && bip->ops != NULL);
 
 	bip->role = BT_BIP_ROLE_RESPONDER;
 	bip->goep.transport_ops = &bip_l2cap_ops;
@@ -1169,7 +1169,7 @@ static int bt_bip_server_register(struct bt_bip *bip, struct bt_bip_server *serv
 		uuid = btp_get_uuid_from_type(type);
 	}
 
-	__ASSERT(uuid != NULL, "Invalid UUID");
+	DEBUGASSERT(uuid != NULL);
 
 	list_for_every_container_safe(&bip->_servers, s, next, _node) {
 		if (bt_uuid_cmp(&uuid->uuid, &s->_uuid->uuid) == 0) {

@@ -82,7 +82,7 @@ static struct bt_a2dp *a2dp_get_connection(struct bt_conn *conn)
 	size_t index;
 
 	index = (size_t)bt_conn_index(conn);
-	__ASSERT(index < ARRAY_SIZE(connection), "Conn index is out of bounds");
+	DEBUGASSERT(index < ARRAY_SIZE(connection));
 
 	a2dp = &connection[index];
 
@@ -149,7 +149,7 @@ static int a2dp_get_capabilities_ind(struct bt_avdtp *session, struct bt_avdtp_s
 	struct bt_avdtp_generic_service_cap *cap;
 	struct bt_avdtp_media_codec_capabilities *media_cap;
 
-	__ASSERT(sep, "Invalid sep");
+	DEBUGASSERT(sep);
 	*errcode = 0;
 
 	if (net_buf_tailroom(rsp_buf) < sizeof(*cap)) {
@@ -319,7 +319,7 @@ static int a2dp_process_config_ind(struct bt_avdtp *session, struct bt_avdtp_sep
 
 	*errcode = 0;
 
-	__ASSERT(sep, "Invalid sep");
+	DEBUGASSERT(sep);
 
 	ep = CONTAINER_OF(sep, struct bt_a2dp_ep, sep);
 
@@ -420,14 +420,14 @@ process_done:
 static int a2dp_set_config_ind(struct bt_avdtp *session, struct bt_avdtp_sep *sep, uint8_t int_seid,
 			       struct net_buf *buf, uint8_t *errcode)
 {
-	__ASSERT(sep, "Invalid sep");
+	DEBUGASSERT(sep);
 	return a2dp_process_config_ind(session, sep, int_seid, buf, errcode, false);
 }
 
 static int a2dp_re_config_ind(struct bt_avdtp *session, struct bt_avdtp_sep *sep,
 			      struct net_buf *buf, uint8_t *errcode)
 {
-	__ASSERT(sep, "Invalid sep");
+	DEBUGASSERT(sep);
 	return a2dp_process_config_ind(session, sep, 0, buf, errcode, true);
 }
 
@@ -438,7 +438,7 @@ static void bt_a2dp_media_data_callback(struct bt_avdtp_sep *sep, struct net_buf
 	struct bt_a2dp_ep *ep;
 	struct bt_a2dp_stream *stream;
 
-	__ASSERT(sep, "Invalid sep");
+	DEBUGASSERT(sep);
 	ep = CONTAINER_OF(sep, struct bt_a2dp_ep, sep);
 	if (ep->stream == NULL || buf->len < sizeof(*media_hdr)) {
 		return;
@@ -495,7 +495,7 @@ static int a2dp_open_ind(struct bt_avdtp *session, struct bt_avdtp_sep *sep, uin
 {
 	bt_a2dp_ctrl_req_cb req_cb;
 
-	__ASSERT(sep, "Invalid sep");
+	DEBUGASSERT(sep);
 	req_cb = a2dp_cb != NULL ? a2dp_cb->establish_req : NULL;
 	return a2dp_ctrl_ind(session, sep, errcode, req_cb, NULL);
 }
@@ -506,7 +506,7 @@ static int a2dp_start_ind(struct bt_avdtp *session, struct bt_avdtp_sep *sep, ui
 	bt_a2dp_ctrl_req_cb req_cb;
 	bt_a2dp_ctrl_done_cb done_cb;
 
-	__ASSERT(sep, "Invalid sep");
+	DEBUGASSERT(sep);
 	req_cb = a2dp_cb != NULL ? a2dp_cb->start_req : NULL;
 	done_cb = (ep->stream != NULL && ep->stream->ops != NULL) ? ep->stream->ops->started : NULL;
 	return a2dp_ctrl_ind(session, sep, errcode, req_cb, done_cb);
@@ -518,7 +518,7 @@ static int a2dp_suspend_ind(struct bt_avdtp *session, struct bt_avdtp_sep *sep, 
 	bt_a2dp_ctrl_req_cb req_cb;
 	bt_a2dp_ctrl_done_cb done_cb;
 
-	__ASSERT(sep, "Invalid sep");
+	DEBUGASSERT(sep);
 	req_cb = a2dp_cb != NULL ? a2dp_cb->suspend_req : NULL;
 	done_cb =
 		(ep->stream != NULL && ep->stream->ops != NULL) ? ep->stream->ops->suspended : NULL;
@@ -529,7 +529,7 @@ static int a2dp_close_ind(struct bt_avdtp *session, struct bt_avdtp_sep *sep, ui
 {
 	bt_a2dp_ctrl_req_cb req_cb;
 
-	__ASSERT(sep, "Invalid sep");
+	DEBUGASSERT(sep);
 	req_cb = a2dp_cb != NULL ? a2dp_cb->release_req : NULL;
 
 	/* When stream is released, the `stream->ops->released` will be called. */
@@ -540,7 +540,7 @@ static int a2dp_abort_ind(struct bt_avdtp *session, struct bt_avdtp_sep *sep, ui
 {
 	bt_a2dp_ctrl_req_cb req_cb;
 
-	__ASSERT(sep, "Invalid sep");
+	DEBUGASSERT(sep);
 	req_cb = a2dp_cb != NULL ? a2dp_cb->abort_req : NULL;
 
 	/* When stream is released, the `stream->ops->released` will be called. */
@@ -554,7 +554,7 @@ static int a2dp_get_config_ind(struct bt_avdtp *session, struct bt_avdtp_sep *se
 	struct bt_avdtp_generic_service_cap *cap;
 	struct bt_avdtp_media_codec_capabilities *media_cap;
 
-	__ASSERT(sep, "Invalid sep");
+	DEBUGASSERT(sep);
 
 	ep = CONTAINER_OF(sep, struct bt_a2dp_ep, sep);
 	if (ep->stream == NULL) {
@@ -630,7 +630,7 @@ int a2dp_delay_report_ind(struct bt_avdtp *session, struct bt_avdtp_sep *sep, st
 	struct bt_a2dp_stream *stream;
 	uint16_t value;
 
-	__ASSERT(sep, "Invalid sep");
+	DEBUGASSERT(sep);
 
 	/* delay report value is 2 bytes */
 	if (buf->len != sizeof(value)) {
@@ -708,8 +708,7 @@ static int bt_a2dp_set_config_cb(struct bt_avdtp_req *req, struct net_buf *buf)
 	if (status == BT_AVDTP_SUCCESS) {
 		struct bt_avdtp_set_configuration_params *param = SET_CONF_REQ(req);
 
-		__ASSERT(param->codec_specific_ie_len <= CONFIG_BT_A2DP_CODEC_MAX_IE_LEN,
-			 "Invalid codec IE length");
+		DEBUGASSERT(param->codec_specific_ie_len <= CONFIG_BT_A2DP_CODEC_MAX_IE_LEN);
 
 		stream->codec_config.len = param->codec_specific_ie_len;
 		memcpy(&stream->codec_config.codec_ie[0], param->codec_specific_ie,
@@ -947,7 +946,7 @@ int bt_a2dp_discover(struct bt_a2dp *a2dp, struct bt_a2dp_discover_param *param)
 
 void bt_a2dp_stream_cb_register(struct bt_a2dp_stream *stream, struct bt_a2dp_stream_ops *ops)
 {
-	__ASSERT_NO_MSG(stream);
+	DEBUGASSERT(stream);
 	stream->ops = ops;
 }
 
@@ -957,8 +956,7 @@ static inline void bt_a2dp_stream_config_set_param(struct bt_a2dp *a2dp,
 						   uint8_t int_id, uint8_t codec_type,
 						   struct bt_avdtp_sep *sep)
 {
-	__ASSERT(config->codec_config->len <= CONFIG_BT_A2DP_CODEC_MAX_IE_LEN,
-		 "Invalid codec IE length");
+	DEBUGASSERT(config->codec_config->len <= CONFIG_BT_A2DP_CODEC_MAX_IE_LEN);
 
 	memset(&a2dp->set_config_param, 0U, sizeof(a2dp->set_config_param));
 	bt_a2dp_init_req(&a2dp->set_config_param.req, cb);
@@ -1447,7 +1445,7 @@ static void stream_connected(struct bt_avdtp_sep *sep)
 	struct bt_a2dp_ep *ep;
 	struct bt_a2dp_stream *stream;
 
-	__ASSERT(sep, "Invalid sep");
+	DEBUGASSERT(sep);
 	ep = CONTAINER_OF(sep, struct bt_a2dp_ep, sep);
 	if (ep->stream == NULL) {
 		return;
@@ -1464,7 +1462,7 @@ static void stream_disconnected(struct bt_avdtp_sep *sep)
 	struct bt_a2dp_ep *ep;
 	struct bt_a2dp_stream *stream;
 
-	__ASSERT(sep, "Invalid sep");
+	DEBUGASSERT(sep);
 	ep = CONTAINER_OF(sep, struct bt_a2dp_ep, sep);
 	if (ep->stream == NULL) {
 		return;
@@ -1537,7 +1535,7 @@ struct bt_a2dp *bt_a2dp_connect(struct bt_conn *conn)
 
 int bt_a2dp_disconnect(struct bt_a2dp *a2dp)
 {
-	__ASSERT_NO_MSG(a2dp);
+	DEBUGASSERT(a2dp);
 	return bt_avdtp_disconnect(&a2dp->session);
 }
 
@@ -1545,7 +1543,7 @@ int bt_a2dp_register_ep(struct bt_a2dp_ep *ep, uint8_t media_type, uint8_t sep_t
 {
 	int err;
 
-	__ASSERT_NO_MSG(ep);
+	DEBUGASSERT(ep);
 
 #if defined(CONFIG_BT_A2DP_SINK)
 	if (sep_type == BT_AVDTP_SINK) {

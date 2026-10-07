@@ -15,7 +15,7 @@
 #include <zephyr/bluetooth/audio/ccid.h>
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/uuid.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/toolchain.h>
 
 struct ccid_search_param {

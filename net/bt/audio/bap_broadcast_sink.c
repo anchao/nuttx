@@ -29,7 +29,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
@@ -511,7 +511,7 @@ static void broadcast_sink_add_src(struct bt_bap_broadcast_sink *sink)
 	int err;
 
 	err = bt_le_per_adv_sync_get_info(sink->pa_sync, &sync_info);
-	__ASSERT_NO_MSG(err == 0);
+	DEBUGASSERT(err == 0);
 
 	bt_addr_le_copy(&add_src_param.addr, &sync_info.addr);
 	add_src_param.sid = sync_info.sid;
@@ -844,7 +844,7 @@ static void update_recv_state_encryption(const struct bt_bap_broadcast_sink *sin
 	const struct bt_bap_scan_delegator_recv_state *recv_state;
 	int err;
 
-	__ASSERT(sink->big == NULL, "Encryption state shall not be updated while synced");
+	DEBUGASSERT(sink->big == NULL);
 
 	recv_state = bt_bap_scan_delegator_find_state(find_recv_state_by_src_id_cb, (void *)sink);
 	if (recv_state == NULL) {
@@ -998,7 +998,7 @@ int bt_bap_broadcast_sink_register_cb(struct bt_bap_broadcast_sink_cb *cb)
 		const int err = bt_iso_big_register_cb(&big_cb);
 
 		if (err != 0) {
-			__ASSERT(false, "Failed to register ISO BIG callbacks: %d", err);
+			DEBUGASSERT(false);
 		}
 
 		iso_big_cb_registered = true;

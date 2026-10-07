@@ -21,7 +21,7 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/l2cap.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/iterable_sections.h>
 #include <zephyr/sys/byteorder.h>
@@ -423,11 +423,10 @@ void bt_l2cap_connected(struct bt_conn *conn)
 	STRUCT_SECTION_FOREACH(bt_l2cap_fixed_chan, fchan) {
 		struct bt_l2cap_le_chan *le_chan;
 
-		__ASSERT(L2CAP_LE_CID_IS_FIXED(fchan->cid),
-			 "CID %u is not in the fixed channel range", fchan->cid);
+		DEBUGASSERT(L2CAP_LE_CID_IS_FIXED(fchan->cid));
 
 		chan = bt_l2cap_le_lookup_tx_cid(conn, fchan->cid);
-		__ASSERT(chan == NULL, "Fixed channel with CID %u already exists", fchan->cid);
+		DEBUGASSERT(chan == NULL);
 
 		if (fchan->accept(conn, &chan) < 0) {
 			continue;
@@ -615,10 +614,8 @@ static int l2cap_ecred_conn_req(struct bt_l2cap_chan **chan, int channels)
 	for (i = 0; i < channels; i++) {
 		ch = BT_L2CAP_LE_CHAN(chan[i]);
 
-		__ASSERT(ch->psm == req_psm,
-			 "The PSM shall be the same for channels in the same request.");
-		__ASSERT(ch->tx.mtu == req_mtu,
-			 "The MTU shall be the same for channels in the same request.");
+		DEBUGASSERT(ch->psm == req_psm);
+		DEBUGASSERT(ch->tx.mtu == req_mtu);
 
 		ch->ident = ident;
 		ch->pending_req = BT_L2CAP_ECRED_CONN_REQ;
@@ -655,9 +652,7 @@ static void l2cap_le_encrypt_change(struct bt_l2cap_chan *chan, uint8_t status)
 
 		list_for_every_container(&chan->conn->channels, ch, node) {
 			if (le->ident == BT_L2CAP_LE_CHAN(ch)->ident) {
-				__ASSERT(i < BT_L2CAP_ECRED_CHAN_MAX_PER_REQ,
-					 "There can only be BT_L2CAP_ECRED_CHAN_MAX_PER_REQ "
-					 "channels from the same request.");
+				DEBUGASSERT(i < BT_L2CAP_ECRED_CHAN_MAX_PER_REQ);
 				atomic_clear_bit(ch->status, BT_L2CAP_STATUS_ENCRYPT_PENDING);
 				echan[i++] = ch;
 			}
@@ -758,7 +753,7 @@ static void lower_data_ready(struct bt_l2cap_le_chan *le_chan)
 
 	LOG_DBG("%p", le_chan);
 
-	__ASSERT_NO_MSG(s == &le_chan->_pdu_ready);
+	DEBUGASSERT(s == &le_chan->_pdu_ready);
 }
 
 static void cancel_data_ready(struct bt_l2cap_le_chan *le_chan)
@@ -848,7 +843,7 @@ static void chan_take_credit(struct bt_l2cap_le_chan *lechan)
 
 	if (!test_and_dec(&lechan->tx.credits)) {
 		/* Always ensure you have credits before calling this fn */
-		__ASSERT_NO_MSG(0);
+		DEBUGASSERT(0);
 	}
 
 	/* Notify channel user that it can't send anymore on this channel. */
@@ -982,7 +977,7 @@ struct net_buf *l2cap_data_pull(struct bt_conn *conn,
 		return NULL;
 	}
 
-	__ASSERT_NO_MSG(conn->state == BT_CONN_CONNECTED);
+	DEBUGASSERT(conn->state == BT_CONN_CONNECTED);
 
 	if (bt_buf_has_view(fifo_pdu)) {
 		LOG_ERR("already have view on %p", fifo_pdu);
@@ -1032,7 +1027,7 @@ struct net_buf *l2cap_data_pull(struct bt_conn *conn,
 		LOG_DBG("last frag of last seg, dequeuing %p", pdu);
 		fifo_pdu = k_fifo_get(&lechan->tx_queue, 0);
 
-		__ASSERT_NO_MSG(fifo_pdu == pdu);
+		DEBUGASSERT(fifo_pdu == pdu);
 
 		net_buf_unref(fifo_pdu);
 	}
@@ -2451,7 +2446,7 @@ static void l2cap_chan_send_credits(struct bt_l2cap_le_chan *chan,
 	struct bt_l2cap_le_credits *ev;
 	struct net_buf *buf;
 
-	__ASSERT_NO_MSG(bt_l2cap_chan_get_state(&chan->chan) == BT_L2CAP_CONNECTED);
+	DEBUGASSERT(bt_l2cap_chan_get_state(&chan->chan) == BT_L2CAP_CONNECTED);
 
 	buf = l2cap_create_le_sig_pdu(BT_L2CAP_LE_CREDITS, get_ident(),
 				      sizeof(*ev));
@@ -2464,7 +2459,7 @@ static void l2cap_chan_send_credits(struct bt_l2cap_le_chan *chan,
 		return;
 	}
 
-	__ASSERT_NO_MSG(atomic_read(&chan->rx.credits) == 0);
+	DEBUGASSERT(atomic_read(&chan->rx.credits) == 0);
 	atomic_set(&chan->rx.credits, credits);
 
 	ev = net_buf_add(buf, sizeof(*ev));
@@ -2563,8 +2558,8 @@ int bt_l2cap_chan_recv_complete(struct bt_l2cap_chan *chan, struct net_buf *buf)
 	struct bt_l2cap_le_chan *le_chan = BT_L2CAP_LE_CHAN(chan);
 	struct bt_conn *conn = chan->conn;
 
-	__ASSERT_NO_MSG(chan);
-	__ASSERT_NO_MSG(buf);
+	DEBUGASSERT(chan);
+	DEBUGASSERT(buf);
 
 	net_buf_unref(buf);
 
@@ -2611,8 +2606,8 @@ static void l2cap_chan_le_recv_sdu(struct bt_l2cap_le_chan *chan,
 
 	LOG_DBG("chan %p len %u", chan, buf->len);
 
-	__ASSERT_NO_MSG(bt_l2cap_chan_get_state(&chan->chan) == BT_L2CAP_CONNECTED);
-	__ASSERT_NO_MSG(atomic_read(&chan->rx.credits) == 0);
+	DEBUGASSERT(bt_l2cap_chan_get_state(&chan->chan) == BT_L2CAP_CONNECTED);
+	DEBUGASSERT(atomic_read(&chan->rx.credits) == 0);
 
 	/* Receiving complete SDU, notify channel and reset SDU buf */
 	err = chan->chan.ops->recv(&chan->chan, buf);
@@ -3392,7 +3387,7 @@ static int bt_l2cap_dyn_chan_send(struct bt_l2cap_le_chan *le_chan, struct net_b
 	LOG_DBG("chan %p buf %p", le_chan, buf);
 
 	/* Frags are not supported. */
-	__ASSERT_NO_MSG(buf->frags == NULL);
+	DEBUGASSERT(buf->frags == NULL);
 
 	if (sdu_len > le_chan->tx.mtu) {
 		LOG_ERR("attempt to send %u bytes on %u MTU chan",
@@ -3490,7 +3485,7 @@ int bt_l2cap_chan_send(struct bt_l2cap_chan *chan, struct net_buf *buf)
 
 	struct bt_l2cap_le_chan *le_chan = BT_L2CAP_LE_CHAN(chan);
 
-	__ASSERT_NO_MSG(le_chan);
+	DEBUGASSERT(le_chan);
 
 #if defined(CONFIG_BT_L2CAP_DYNAMIC_CHANNEL)
 	if (L2CAP_LE_CID_IS_DYN(le_chan->tx.cid)) {

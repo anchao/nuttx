@@ -17,7 +17,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/sys/clock.h>
@@ -119,8 +119,8 @@ struct net_buf *bt_buf_get_rx(enum bt_buf_type type, clock_t timeout)
 {
 	struct net_buf *buf;
 
-	__ASSERT(type == BT_BUF_EVT || type == BT_BUF_ACL_IN ||
-		 type == BT_BUF_ISO_IN, "Invalid buffer type requested");
+	DEBUGASSERT(type == BT_BUF_EVT || type == BT_BUF_ACL_IN ||
+		 type == BT_BUF_ISO_IN);
 
 	if (IS_ENABLED(CONFIG_BT_ISO_RX) && type == BT_BUF_ISO_IN) {
 		return bt_iso_get_rx(timeout);
@@ -211,14 +211,14 @@ struct net_buf *bt_buf_make_view(struct net_buf *view,
 				 size_t len,
 				 struct bt_buf_view_meta *meta)
 {
-	__ASSERT_NO_MSG(len);
-	__ASSERT_NO_MSG(view);
+	DEBUGASSERT(len);
+	DEBUGASSERT(view);
 	/* The whole point of this API is to allow prepending data. If the
 	 * headroom is 0, that will not happen.
 	 */
-	__ASSERT_NO_MSG(net_buf_headroom(parent) > 0);
+	DEBUGASSERT(net_buf_headroom(parent) > 0);
 
-	__ASSERT_NO_MSG(!bt_buf_has_view(parent));
+	DEBUGASSERT(!bt_buf_has_view(parent));
 
 	LOG_DBG("make-view %p viewsize %zu meta %p", view, len, meta);
 
@@ -247,7 +247,7 @@ struct net_buf *bt_buf_make_view(struct net_buf *view,
 void bt_buf_destroy_view(struct net_buf *view, struct bt_buf_view_meta *meta)
 {
 	LOG_DBG("destroy-view %p meta %p", view, meta);
-	__ASSERT_NO_MSG(meta->parent);
+	DEBUGASSERT(meta->parent);
 
 	/* "unclip" the parent buf */
 	meta->parent->data = meta->backup.data;

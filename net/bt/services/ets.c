@@ -262,9 +262,9 @@ BT_GATT_SERVICE_DEFINE(ets_svc, BT_GATT_PRIMARY_SERVICE(BT_UUID_ETS),
 
 int bt_ets_init(const struct bt_ets_cb *cb)
 {
-	__ASSERT(cb != NULL, "Elapsed Time Service requires valid `struct bt_ets_cb` callback");
-	__ASSERT(cb->read_elapsed_time != NULL, "`read_elapsed_time` callback is required for ETS");
-	__ASSERT(cb->read_clock_status != NULL, "`read_clock_status` callback is required for ETS");
+	DEBUGASSERT(cb != NULL);
+	DEBUGASSERT(cb->read_elapsed_time != NULL);
+	DEBUGASSERT(cb->read_clock_status != NULL);
 
 	if ((cb == NULL) || (cb->read_elapsed_time == NULL) || (cb->read_clock_status == NULL)) {
 		LOG_ERR("Mandatory ETS callbacks are NULL");

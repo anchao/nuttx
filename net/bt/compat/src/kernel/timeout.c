@@ -70,6 +70,8 @@ void k_work_init_delayable(struct k_work_delayable *dwork, k_work_handler_t hand
 {
     memset(dwork, 0, sizeof(*dwork));
     dwork->work.handler = handler;
+    dwork->work.queue = &k_sys_work_q;
+    dwork->queue = &k_sys_work_q;
 }
 
 int k_work_submit(struct k_work *work)
@@ -109,7 +111,8 @@ int k_work_schedule_for_queue(struct k_work_q *queue,
                               struct k_work_delayable *dwork,
                               clock_t delay)
 {
-    dwork->work.queue = queue != NULL ? queue : &k_sys_work_q;
+    dwork->queue = queue != NULL ? queue : &k_sys_work_q;
+    dwork->work.queue = dwork->queue;
 
     return k_work_schedule(dwork, delay);
 }
@@ -134,8 +137,11 @@ int k_work_reschedule(struct k_work_delayable *dwork, clock_t delay)
 
     if (dwork->work.queue == NULL)
         {
-            dwork->work.queue = &k_sys_work_q;
+            dwork->work.queue = dwork->queue != NULL ? dwork->queue :
+                                                 &k_sys_work_q;
         }
+
+    dwork->queue = dwork->work.queue;
 
     if (delay < 0)
         {
@@ -160,7 +166,8 @@ int k_work_reschedule_for_queue(struct k_work_q *queue,
                                 struct k_work_delayable *dwork,
                                 clock_t delay)
 {
-    dwork->work.queue = queue != NULL ? queue : &k_sys_work_q;
+    dwork->queue = queue != NULL ? queue : &k_sys_work_q;
+    dwork->work.queue = dwork->queue;
 
     return k_work_reschedule(dwork, delay);
 }

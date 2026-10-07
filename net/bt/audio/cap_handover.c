@@ -21,7 +21,7 @@
 #include <zephyr/bluetooth/hci_types.h>
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
 
@@ -66,15 +66,15 @@ static bool unicast_group_foreach_stream_cb(struct bt_cap_stream *cap_stream, vo
 	struct cap_unicast_group_stream_lookup *data = user_data;
 	const struct bt_bap_stream *bap_stream = &cap_stream->bap_stream;
 
-	__ASSERT_NO_MSG(data->cnt < ARRAY_SIZE(data->streams));
-	__ASSERT_NO_MSG(data->active_sink_streams_cnt < ARRAY_SIZE(data->active_sink_streams));
+	DEBUGASSERT(data->cnt < ARRAY_SIZE(data->streams));
+	DEBUGASSERT(data->active_sink_streams_cnt < ARRAY_SIZE(data->active_sink_streams));
 
 	if (bap_stream->ep != NULL) {
 		struct bt_bap_ep_info ep_info;
 		int err;
 
 		err = bt_bap_ep_get_info(bap_stream->ep, &ep_info);
-		__ASSERT_NO_MSG(err == 0);
+		DEBUGASSERT(err == 0);
 
 		/* Only consider sink streams for handover to broadcast */
 		if (ep_info.state == BT_BAP_EP_STATE_STREAMING &&
@@ -150,7 +150,7 @@ void bt_cap_handover_unicast_proc_complete(struct bt_cap_common_proc *active_pro
 	} else {
 		bt_cap_common_unlock_proc();
 
-		__ASSERT(false, "invalid proc_type %d", proc_type);
+		DEBUGASSERT(false);
 	}
 }
 
@@ -214,7 +214,7 @@ void bt_cap_handover_commander_proc_complete(struct bt_cap_common_proc *active_p
 
 		bt_cap_common_unlock_proc();
 	} else {
-		__ASSERT(false, "invalid proc_type %d", proc_type);
+		DEBUGASSERT(false);
 	}
 }
 
@@ -230,7 +230,7 @@ void bt_cap_handover_broadcast_source_stopped(uint8_t reason)
 		__maybe_unused const int err = bt_cap_initiator_broadcast_audio_delete(
 			proc_param->unicast_to_broadcast.broadcast_source);
 
-		__ASSERT_NO_MSG(err == 0);
+		DEBUGASSERT(err == 0);
 		proc_param->unicast_to_broadcast.broadcast_source = NULL;
 
 		active_proc->err = reason;
@@ -277,7 +277,7 @@ void bt_cap_handover_unicast_to_broadcast_reception_start(void)
 	param.param = proc_param->unicast_to_broadcast.reception_start_member_params;
 
 	err = bt_le_ext_adv_get_info(proc_param->unicast_to_broadcast.ext_adv, &adv_info);
-	__ASSERT_NO_MSG(err != -EINVAL);
+	DEBUGASSERT(err != -EINVAL);
 	if (err != 0) {
 		/* May happen if the advertising set was deleted while in this procedure */
 		LOG_DBG("Failed to get adv info: %d", err);
@@ -307,7 +307,7 @@ void bt_cap_handover_unicast_to_broadcast_reception_start(void)
 		}
 
 		err = bt_le_ext_adv_get_info(proc_param->unicast_to_broadcast.ext_adv, &info);
-		__ASSERT_NO_MSG(err == 0);
+		DEBUGASSERT(err == 0);
 
 		LOG_DBG("Started advertising with addr %s", bt_addr_le_str(info.addr));
 
@@ -351,7 +351,7 @@ void bt_cap_handover_unicast_to_broadcast_reception_start(void)
 			 * bt_cap_handover_unicast_to_broadcast while we still had the ACL
 			 * references
 			 */
-			__ASSERT(subgroup->bis_sync != 0U, "BIS sync was not properly setup");
+			DEBUGASSERT(subgroup->bis_sync != 0U);
 		}
 
 		param.count++;
@@ -381,7 +381,7 @@ int bt_cap_handover_unicast_to_broadcast_setup_broadcast(struct bt_cap_common_pr
 	broadcast_source = &proc_param->unicast_to_broadcast.broadcast_source;
 
 	err = bt_cap_unicast_group_delete(proc_param->unicast_to_broadcast.unicast_group);
-	__ASSERT_NO_MSG(err == 0);
+	DEBUGASSERT(err == 0);
 	proc_param->unicast_to_broadcast.unicast_group = NULL;
 
 	err = bt_cap_initiator_broadcast_audio_create(broadcast_create_param, broadcast_source);
@@ -409,7 +409,7 @@ int bt_cap_handover_unicast_to_broadcast_setup_broadcast(struct bt_cap_common_pr
 		LOG_DBG("Failed to start broadcast source: %d", err);
 
 		del_err = bt_cap_initiator_broadcast_audio_delete(*broadcast_source);
-		__ASSERT_NO_MSG(del_err == 0);
+		DEBUGASSERT(del_err == 0);
 
 		return err;
 	}
@@ -622,7 +622,7 @@ valid_unicast_to_broadcast_param(const struct bt_cap_handover_unicast_to_broadca
 	}
 
 	err = bt_le_ext_adv_get_info(param->ext_adv, &adv_info);
-	__ASSERT_NO_MSG(err == 0);
+	DEBUGASSERT(err == 0);
 
 	if (adv_info.per_adv_state == BT_LE_PER_ADV_STATE_NONE) {
 		LOG_DBG("Advertising set %p not configured for periodic advertising",
@@ -643,7 +643,7 @@ valid_unicast_to_broadcast_param(const struct bt_cap_handover_unicast_to_broadca
 
 	err = bt_cap_unicast_group_foreach_stream(param->unicast_group,
 						  unicast_group_foreach_stream_cb, lookup_data);
-	__ASSERT_NO_MSG(err == 0);
+	DEBUGASSERT(err == 0);
 	if (lookup_data->active_sink_streams_cnt == 0U) {
 		LOG_DBG("param->unicast_group does not contain any active streams");
 
@@ -801,7 +801,7 @@ int bt_cap_handover_unicast_to_broadcast(
 	bt_cap_common_set_handover_active();
 	proc_param->is_unicast_to_broadcast = true;
 
-	__ASSERT_NO_MSG(bt_cap_initiator_valid_unicast_audio_stop_param(&stop_param));
+	DEBUGASSERT(bt_cap_initiator_valid_unicast_audio_stop_param(&stop_param));
 
 	err = cap_initiator_unicast_audio_stop(active_proc, &stop_param);
 	if (err != 0) {
@@ -827,7 +827,7 @@ static bool broadcast_source_foreach_stream_cb(struct bt_cap_stream *cap_stream,
 	struct cap_broadcast_source_stream_lookup *data = user_data;
 	const struct bt_bap_stream *bap_stream = &cap_stream->bap_stream;
 
-	__ASSERT_NO_MSG(data->cnt < ARRAY_SIZE(data->streams));
+	DEBUGASSERT(data->cnt < ARRAY_SIZE(data->streams));
 
 	if (!bt_cap_initiator_stream_is_in_state(bap_stream, BT_BAP_EP_STATE_STREAMING)) {
 		LOG_DBG("Stream %p is in invalid state %s", cap_stream,
@@ -969,7 +969,7 @@ valid_broadcast_to_unicast_param(const struct bt_cap_handover_broadcast_to_unica
 
 		return false;
 	}
-	__ASSERT_NO_MSG(err == 0);
+	DEBUGASSERT(err == 0);
 
 	if (lookup_data.cnt == 0U) {
 		LOG_DBG("param->broadcast_source does not contain any streams");

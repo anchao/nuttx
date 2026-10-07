@@ -405,7 +405,7 @@ static void bt_hid_l2cap_ctrl_connected(struct bt_l2cap_chan *chan)
 
 	LOG_DBG("session %d connected (state %d)", chtype, hid->state);
 
-	__ASSERT_NO_MSG(chtype == BT_HID_CHANNEL_CTRL);
+	DEBUGASSERT(chtype == BT_HID_CHANNEL_CTRL);
 
 	hid->state = BT_HID_STATE_CTRL_CONNECTED;
 	hid->ctrl_connected = true;
@@ -438,7 +438,7 @@ static void bt_hid_l2cap_intr_connected(struct bt_l2cap_chan *chan)
 
 	LOG_DBG("session %d connected (state %d)", chtype, hid->state);
 
-	__ASSERT_NO_MSG(chtype == BT_HID_CHANNEL_INTR);
+	DEBUGASSERT(chtype == BT_HID_CHANNEL_INTR);
 
 	/* HID spec v1.1.1 Section 5.2.2: both CTRL and INTR channels
 	 * must be established for the HID connection to be valid.
@@ -467,7 +467,7 @@ static void bt_hid_l2cap_ctrl_disconnected(struct bt_l2cap_chan *chan)
 
 	LOG_DBG("session %d disconnected (state %d)", chtype, hid->state);
 
-	__ASSERT_NO_MSG(chtype == BT_HID_CHANNEL_CTRL);
+	DEBUGASSERT(chtype == BT_HID_CHANNEL_CTRL);
 
 	hid->ctrl_connected = false;
 
@@ -499,7 +499,7 @@ static void bt_hid_l2cap_intr_disconnected(struct bt_l2cap_chan *chan)
 
 	LOG_DBG("session %d disconnected (state %d)", chtype, hid->state);
 
-	__ASSERT_NO_MSG(chtype == BT_HID_CHANNEL_INTR);
+	DEBUGASSERT(chtype == BT_HID_CHANNEL_INTR);
 
 	hid->intr_connected = false;
 
@@ -535,7 +535,7 @@ static int bt_hid_l2cap_ctrl_recv(struct bt_l2cap_chan *chan, struct net_buf *bu
 	uint8_t type;
 	uint8_t param;
 
-	__ASSERT_NO_MSG(HID_CHAN_TYPE(chan) == BT_HID_CHANNEL_CTRL);
+	DEBUGASSERT(HID_CHAN_TYPE(chan) == BT_HID_CHANNEL_CTRL);
 
 	/* HID spec v1.1.2 Section 5.2.2: once the Control channel is open the
 	 * host may send Control channel commands; the Interrupt channel need
@@ -597,7 +597,7 @@ static int bt_hid_l2cap_intr_recv(struct bt_l2cap_chan *chan, struct net_buf *bu
 		return 0;
 	}
 
-	__ASSERT_NO_MSG(HID_CHAN_TYPE(chan) == BT_HID_CHANNEL_INTR);
+	DEBUGASSERT(HID_CHAN_TYPE(chan) == BT_HID_CHANNEL_INTR);
 
 	if (hid->state != BT_HID_STATE_CONNECTED) {
 		LOG_WRN("INTR recv in state %d, ignoring", hid->state);

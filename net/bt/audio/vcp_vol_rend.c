@@ -27,7 +27,7 @@
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/clock.h>
@@ -353,7 +353,7 @@ static int prepare_vocs_inst(struct bt_vcp_vol_rend_register_param *param)
 		return 0;
 	}
 
-	__ASSERT(param, "NULL param");
+	DEBUGASSERT(param);
 
 	for (j = 0, i = 0; i < ARRAY_SIZE(vcs_attrs); i++) {
 		if (bt_uuid_cmp(vcs_attrs[i].uuid, BT_UUID_GATT_INCLUDE) == 0 &&
@@ -384,8 +384,7 @@ static int prepare_vocs_inst(struct bt_vcp_vol_rend_register_param *param)
 		}
 	}
 
-	__ASSERT(j == CONFIG_BT_VCP_VOL_REND_VOCS_INSTANCE_COUNT,
-		 "Invalid VOCS instance count");
+	DEBUGASSERT(j == CONFIG_BT_VCP_VOL_REND_VOCS_INSTANCE_COUNT);
 
 	return 0;
 }
@@ -400,7 +399,7 @@ static int prepare_aics_inst(struct bt_vcp_vol_rend_register_param *param)
 		return 0;
 	}
 
-	__ASSERT(param, "NULL param");
+	DEBUGASSERT(param);
 
 	for (j = 0, i = 0; i < ARRAY_SIZE(vcs_attrs); i++) {
 		if (bt_uuid_cmp(vcs_attrs[i].uuid, BT_UUID_GATT_INCLUDE) == 0 &&
@@ -432,8 +431,7 @@ static int prepare_aics_inst(struct bt_vcp_vol_rend_register_param *param)
 		}
 	}
 
-	__ASSERT(j == CONFIG_BT_VCP_VOL_REND_AICS_INSTANCE_COUNT,
-		 "Invalid AICS instance count");
+	DEBUGASSERT(j == CONFIG_BT_VCP_VOL_REND_AICS_INSTANCE_COUNT);
 
 	return 0;
 }

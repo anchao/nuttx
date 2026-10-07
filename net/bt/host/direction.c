@@ -18,7 +18,7 @@
 #include <zephyr/bluetooth/l2cap.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 
@@ -148,10 +148,10 @@ static int hci_df_read_ant_info(uint8_t *switch_sample_rates,
 				uint8_t *max_switch_pattern_len,
 				uint8_t *max_cte_len)
 {
-	__ASSERT_NO_MSG(switch_sample_rates);
-	__ASSERT_NO_MSG(num_ant);
-	__ASSERT_NO_MSG(max_switch_pattern_len);
-	__ASSERT_NO_MSG(max_cte_len);
+	DEBUGASSERT(switch_sample_rates);
+	DEBUGASSERT(num_ant);
+	DEBUGASSERT(max_switch_pattern_len);
+	DEBUGASSERT(max_cte_len);
 
 	struct bt_hci_rp_le_read_ant_info *rp;
 	struct net_buf *rsp;
@@ -930,8 +930,8 @@ int le_df_init(void)
 int bt_df_set_adv_cte_tx_param(struct bt_le_ext_adv *adv,
 				const struct bt_df_adv_cte_tx_param *params)
 {
-	__ASSERT_NO_MSG(adv);
-	__ASSERT_NO_MSG(params);
+	DEBUGASSERT(adv);
+	DEBUGASSERT(params);
 
 	int err;
 
@@ -979,13 +979,13 @@ static int bt_df_set_adv_cte_tx_enabled(struct bt_le_ext_adv *adv, bool enable)
 
 int bt_df_adv_cte_tx_enable(struct bt_le_ext_adv *adv)
 {
-	__ASSERT_NO_MSG(adv);
+	DEBUGASSERT(adv);
 	return bt_df_set_adv_cte_tx_enabled(adv, true);
 }
 
 int bt_df_adv_cte_tx_disable(struct bt_le_ext_adv *adv)
 {
-	__ASSERT_NO_MSG(adv);
+	DEBUGASSERT(adv);
 	return bt_df_set_adv_cte_tx_enabled(adv, false);
 }
 

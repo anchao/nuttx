@@ -21,7 +21,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
@@ -174,7 +174,7 @@ static uint8_t ad_stream_read(struct ad_stream *stream, uint8_t *buf, uint8_t bu
 		}
 	}
 
-	__ASSERT_NO_MSG(stream->remaining_size >= read_len);
+	DEBUGASSERT(stream->remaining_size >= read_len);
 	stream->remaining_size -= read_len;
 
 	return read_len;
@@ -188,7 +188,7 @@ static struct bt_le_ext_adv adv_pool[CONFIG_BT_EXT_ADV_MAX_ADV_SET];
 #if defined(CONFIG_BT_EXT_ADV)
 uint8_t bt_le_ext_adv_get_index(const struct bt_le_ext_adv *adv)
 {
-	__ASSERT(IS_ARRAY_ELEMENT(adv_pool, adv), "Invalid bt_adv pointer");
+	DEBUGASSERT(IS_ARRAY_ELEMENT(adv_pool, adv));
 
 	return (uint8_t)ARRAY_INDEX(adv_pool, adv);
 }

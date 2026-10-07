@@ -24,7 +24,7 @@
 #include <zephyr/bluetooth/testing.h>
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
@@ -1022,7 +1022,7 @@ void bt_hci_le_adv_ext_report(struct net_buf *buf)
 				/* Previous chain was abandoned (reassembly timeout). */
 				reset_reassembling_advertiser();
 			}
-			__ASSERT_NO_MSG(reassembling_advertiser.state == FRAG_ADV_INACTIVE);
+			DEBUGASSERT(reassembling_advertiser.state == FRAG_ADV_INACTIVE);
 			init_reassembling_advertiser(&evt->addr, evt->sid);
 		}
 
@@ -1053,7 +1053,7 @@ void bt_hci_le_adv_ext_report(struct net_buf *buf)
 		/* No more data coming from the controller.
 		 * Create event.
 		 */
-		__ASSERT_NO_MSG(is_report_complete);
+		DEBUGASSERT(is_report_complete);
 		create_ext_adv_info(evt, &scan_info, &direct_addr);
 		le_adv_recv(&evt->addr, &scan_info, &ext_scan_buf, ext_scan_buf.len);
 
@@ -1254,7 +1254,7 @@ static void bt_hci_le_per_adv_report_common(struct net_buf *buf)
 			bt_hci_le_per_adv_report_recv_failure(per_adv_sync, &info);
 #endif /* CONFIG_BT_PER_ADV_SYNC_RSP */
 		} else {
-			__ASSERT(false, "Invalid data status 0x%02X", evt->data_status);
+			DEBUGASSERT(false);
 		}
 #else  /* CONFIG_BT_PER_ADV_SYNC_BUF_SIZE > 0 */
 		if (evt->data_status == BT_HCI_LE_ADV_EVT_TYPE_DATA_STATUS_COMPLETE) {
@@ -2026,7 +2026,7 @@ int bt_le_scan_stop(void)
 	err = bt_le_scan_user_remove(BT_LE_SCAN_USER_EXPLICIT_SCAN);
 
 	unlock_err = nxrmutex_unlock(&scan_state.scan_explicit_params_mutex);
-	__ASSERT_NO_MSG(unlock_err == 0);
+	DEBUGASSERT(unlock_err == 0);
 
 	return err;
 }
@@ -2050,7 +2050,7 @@ void bt_le_scan_cb_unregister(struct bt_le_scan_cb *cb)
 #if defined(CONFIG_BT_PER_ADV_SYNC)
 uint8_t bt_le_per_adv_sync_get_index(struct bt_le_per_adv_sync *per_adv_sync)
 {
-	__ASSERT(IS_ARRAY_ELEMENT(per_adv_sync_pool, per_adv_sync), "Invalid per_adv_sync pointer");
+	DEBUGASSERT(IS_ARRAY_ELEMENT(per_adv_sync_pool, per_adv_sync));
 
 	return (uint8_t)ARRAY_INDEX(per_adv_sync_pool, per_adv_sync);
 }

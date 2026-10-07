@@ -25,10 +25,10 @@ static int bt_nus_auto_start(void)
 	int err;
 
 	err = bt_enable(NULL);
-	__ASSERT_NO_MSG(!err);
+	DEBUGASSERT(!err);
 
 	err = bt_le_adv_start(BT_LE_ADV_CONN_FAST_1, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
-	__ASSERT_NO_MSG(!err);
+	DEBUGASSERT(!err);
 
 	return 0;
 }

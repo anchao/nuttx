@@ -110,7 +110,7 @@ static struct hid_peer *hid_peer_by_conn(const struct bt_conn *conn)
 {
 	size_t index = (size_t)bt_conn_index(conn);
 
-	__ASSERT(index < ARRAY_SIZE(hid_peers), "Index is out of bounds");
+	DEBUGASSERT(index < ARRAY_SIZE(hid_peers));
 
 	return &hid_peers[index];
 }
@@ -729,7 +729,7 @@ static int cmd_hid_sdp_discover(const struct shell *sh, size_t argc, char *argv[
 	}
 
 	index = (size_t)bt_conn_index(default_conn);
-	__ASSERT(index < ARRAY_SIZE(hid_discov), "Index is out of bounds");
+	DEBUGASSERT(index < ARRAY_SIZE(hid_discov));
 
 	if (hid_discov[index].pending) {
 		shell_error(sh, "a service record query is already outstanding");

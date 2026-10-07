@@ -25,7 +25,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/init.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
@@ -399,7 +399,7 @@ static uint8_t internal_read_state_cb(struct bt_conn *conn, uint8_t err,
 		}
 	} else {
 		/* Since we return BT_GATT_ITER_STOP this should never happen */
-		__ASSERT(false, "Unexpected NULL data without error");
+		DEBUGASSERT(false);
 	}
 
 	if (cb_err) {
@@ -596,7 +596,7 @@ static int store_attr_handle_and_subscribe(struct bt_aics_client *client_inst, s
 			atomic_set_bit(client_inst->flags, BT_AICS_CLIENT_FLAG_DESC_WRITABLE);
 		}
 	} else {
-		__ASSERT(false, "Unexpected UUID %s discovered", bt_uuid_str(chrc->uuid));
+		DEBUGASSERT(false);
 	}
 
 	if (sub_params != NULL) {
@@ -650,7 +650,7 @@ static uint8_t aics_discover_func(struct bt_conn *conn, const struct bt_gatt_att
 
 	LOG_DBG("[ATTRIBUTE] handle 0x%04X", attr->handle);
 
-	__ASSERT_NO_MSG(params->type == BT_GATT_DISCOVER_CHARACTERISTIC);
+	DEBUGASSERT(params->type == BT_GATT_DISCOVER_CHARACTERISTIC);
 
 	chrc = (const struct bt_gatt_chrc *)attr->user_data;
 	if (inst->cli.start_handle == 0U) { /* if start handle is unset */

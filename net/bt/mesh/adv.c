@@ -120,7 +120,7 @@ static struct bt_mesh_adv *adv_create_from_pool(struct k_mem_slab *buf_pool,
 
 struct bt_mesh_adv *bt_mesh_adv_ref(struct bt_mesh_adv *adv)
 {
-	__ASSERT_NO_MSG(adv->__ref < UINT8_MAX);
+	DEBUGASSERT(adv->__ref < UINT8_MAX);
 
 	adv->__ref++;
 
@@ -129,7 +129,7 @@ struct bt_mesh_adv *bt_mesh_adv_ref(struct bt_mesh_adv *adv)
 
 void bt_mesh_adv_unref(struct bt_mesh_adv *adv)
 {
-	__ASSERT_NO_MSG(adv->__ref > 0);
+	DEBUGASSERT(adv->__ref > 0);
 
 	if (--adv->__ref > 0) {
 		return;

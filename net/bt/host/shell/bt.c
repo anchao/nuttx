@@ -39,7 +39,7 @@
 #include <zephyr/shell/shell.h>
 #include <zephyr/shell/shell_string_conv.h>
 #include <zephyr/shell/shell_types.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/sys/byteorder.h>
@@ -1984,7 +1984,7 @@ static ssize_t ad_init(struct bt_data *data_array, const size_t data_array_size,
 	}
 
 	if (ad_flags != 0) {
-		__ASSERT(data_array_size > ad_len, "No space for AD_FLAGS");
+		DEBUGASSERT(data_array_size > ad_len);
 		data_array[ad_len].type = BT_DATA_FLAGS;
 		data_array[ad_len].data_len = sizeof(ad_flags);
 		data_array[ad_len].data = &ad_flags;
@@ -1995,7 +1995,7 @@ static ssize_t ad_init(struct bt_data *data_array, const size_t data_array_size,
 		const uint16_t appearance2 = bt_get_appearance();
 		static uint8_t appearance_data[sizeof(appearance2)];
 
-		__ASSERT(data_array_size > ad_len, "No space for appearance");
+		DEBUGASSERT(data_array_size > ad_len);
 		sys_put_le16(appearance2, appearance_data);
 		data_array[ad_len].type = BT_DATA_GAP_APPEARANCE;
 		data_array[ad_len].data_len = sizeof(appearance_data);

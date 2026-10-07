@@ -252,7 +252,7 @@ extern int32_t _cpus_active;
  */
 bool z_smp_cpu_mobile(void);
 
-#define _current_cpu ({ __ASSERT_NO_MSG(!z_smp_cpu_mobile()); \
+#define _current_cpu ({ DEBUGASSERT(!z_smp_cpu_mobile()); \
 			arch_curr_cpu(); })
 #define _current k_sched_current_thread_query()
 

@@ -19,7 +19,7 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/shell/shell_string_conv.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/toolchain.h>
 
 #include "common/bt_shell_private.h"
@@ -202,7 +202,7 @@ __maybe_unused static struct bt_ccp_call_control_client_bearer *get_bearer_by_in
 	}
 
 	err = bt_ccp_call_control_client_get_bearers(client, &bearers);
-	__ASSERT_NO_MSG(err == 0);
+	DEBUGASSERT(err == 0);
 
 #if defined(CONFIG_BT_TBS_CLIENT_GTBS) && defined(CONFIG_BT_TBS_CLIENT_TBS)
 	/* If GTBS is enabled then it is at index 0. If the index is not 0, then we decrement it so

@@ -25,7 +25,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/time_units.h>
 #include <zephyr/sys/util.h>
@@ -1348,7 +1348,7 @@ static void mpl_set_state(uint8_t state)
 		(void)k_work_schedule(&media_player.pos_work, TRACK_POS_WORK_DELAY);
 		break;
 	default:
-		__ASSERT(false, "Invalid state: %u", state);
+		DEBUGASSERT(false);
 	}
 
 	media_player.state = state;
@@ -2061,9 +2061,9 @@ static void set_track_segment(struct mpl_track *track)
 	int32_t step;
 	int32_t pos = 0;
 
-	__ASSERT(track != NULL, "Track cannot be NULL");
+	DEBUGASSERT(track != NULL);
 	seg = track->segment;
-	__ASSERT(seg != NULL, "Track segment cannot be NULL");
+	DEBUGASSERT(seg != NULL);
 
 	/* Start from the first segment, even if the current segment has moved. */
 	first_seg = seg;
@@ -2506,17 +2506,17 @@ int media_proxy_pl_init(void)
 
 	/* Icon Object */
 	ret = add_icon_object();
-	__ASSERT(ret == 0, "Unable to add icon object, error %d", ret);
+	DEBUGASSERT(ret == 0);
 
 	/* Add all tracks and groups to OTS */
 	ret = add_group_and_track_objects(&media_player);
-	__ASSERT(ret == 0, "Error adding tracks and groups to OTS, error %d", ret);
+	DEBUGASSERT(ret == 0);
 
 	/* Initial setup of Track Segments Object */
 	/* TODO: Later, this should be done when the tracks are added */
 	/* but for no only one of the tracks has segments .*/
 	ret = add_current_track_segments_object(&media_player);
-	__ASSERT(ret == 0, "Error adding Track Segments Object to OTS, error %d", ret);
+	DEBUGASSERT(ret == 0);
 
 	atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
 #endif /* CONFIG_BT_MPL_OBJECTS */
@@ -2558,7 +2558,7 @@ int media_proxy_pl_init(void)
 	media_player.calls.get_content_ctrl_id          = get_content_ctrl_id;
 
 	ret = media_proxy_pl_register(&media_player.calls);
-	__ASSERT(ret == 0, "Unable to register player");
+	DEBUGASSERT(ret == 0);
 
 	k_work_init_delayable(&media_player.pos_work, pos_work_cb);
 

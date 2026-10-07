@@ -86,7 +86,7 @@ static void proxy_sar_timeout(struct k_work *work)
 	while (!k_fifo_is_empty(&role->pending)) {
 		struct bt_mesh_adv *adv = proxy_queue_get(role);
 
-		__ASSERT_NO_MSG(adv);
+		DEBUGASSERT(adv);
 
 		bt_mesh_adv_unref(adv);
 	}

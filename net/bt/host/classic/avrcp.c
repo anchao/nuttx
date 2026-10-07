@@ -425,7 +425,7 @@ static struct bt_avrcp *avrcp_get_connection(struct bt_conn *conn)
 	}
 
 	index = (size_t)bt_conn_index(conn);
-	__ASSERT(index < ARRAY_SIZE(avrcp_connection), "Conn index is out of bounds");
+	DEBUGASSERT(index < ARRAY_SIZE(avrcp_connection));
 
 	return &avrcp_connection[index];
 }
@@ -440,7 +440,7 @@ static inline struct bt_avrcp_ct *get_avrcp_ct(struct bt_avrcp *avrcp)
 	}
 
 	index = (size_t)bt_conn_index(avrcp->acl_conn);
-	__ASSERT(index < ARRAY_SIZE(avrcp_connection), "Conn index is out of bounds");
+	DEBUGASSERT(index < ARRAY_SIZE(avrcp_connection));
 
 	return &bt_avrcp_ct_pool[index];
 }
@@ -455,7 +455,7 @@ static inline struct bt_avrcp_tg *get_avrcp_tg(struct bt_avrcp *avrcp)
 	}
 
 	index = (size_t)bt_conn_index(avrcp->acl_conn);
-	__ASSERT(index < ARRAY_SIZE(avrcp_connection), "Conn index is out of bounds");
+	DEBUGASSERT(index < ARRAY_SIZE(avrcp_connection));
 
 	return &bt_avrcp_tg_pool[index];
 }
@@ -774,7 +774,7 @@ static int init_fragmentation_context(struct bt_avrcp_ct *ct, uint8_t tid, uint8
 		return -ENOBUFS;
 	}
 
-	__ASSERT_NO_MSG(ct->reassembly_buf->user_data_size >= sizeof(*ctx));
+	DEBUGASSERT(ct->reassembly_buf->user_data_size >= sizeof(*ctx));
 	ctx = net_buf_user_data(ct->reassembly_buf);
 
 	ctx->tid = tid;
@@ -958,7 +958,7 @@ static void bt_avrcp_tg_process_continuing_cmd(struct bt_avrcp_tg *tg, bool abor
 
 	tx_buf = CONTAINER_OF(node, struct net_buf, node);
 
-	__ASSERT_NO_MSG(tx_buf->user_data_size >= sizeof(*tx));
+	DEBUGASSERT(tx_buf->user_data_size >= sizeof(*tx));
 	tx = net_buf_user_data(tx_buf);
 
 	if (buf->len < sizeof(pdu_id)) {
@@ -1021,7 +1021,7 @@ static void bt_avrcp_tg_vendor_tx_work(struct k_work *work)
 
 	buf = CONTAINER_OF(node, struct net_buf, node);
 
-	__ASSERT_NO_MSG(buf->user_data_size >= sizeof(*tx));
+	DEBUGASSERT(buf->user_data_size >= sizeof(*tx));
 	tx = net_buf_user_data(buf);
 
 	if (atomic_test_bit(tx->flags, BT_AVRCP_TG_FLAG_TX_ONGOING)) {
@@ -1126,7 +1126,7 @@ static int bt_avrcp_tg_send_vendor_rsp(struct bt_avrcp_tg *tg, uint8_t tid, uint
 		return -EINVAL;
 	}
 
-	__ASSERT_NO_MSG(buf->user_data_size >= sizeof(*tx));
+	DEBUGASSERT(buf->user_data_size >= sizeof(*tx));
 	tx = net_buf_user_data(buf);
 
 	tx->tg = tg;
@@ -1662,7 +1662,7 @@ static inline uint8_t get_cmd_type_by_pdu(uint8_t pdu_id)
 			return rsp_vendor_handlers[i].cmd_type;
 		}
 	}
-	__ASSERT(false, "Unknown PDU ID: 0x%02X", pdu_id);
+	DEBUGASSERT(false);
 	return BT_AVRCP_RSP_NOT_IMPLEMENTED;
 }
 
@@ -1673,7 +1673,7 @@ static inline uint8_t get_rsp_min_len_by_pdu(uint8_t pdu_id)
 			return rsp_vendor_handlers[i].min_len;
 		}
 	}
-	__ASSERT(false, "Unknown PDU ID: 0x%02X", pdu_id);
+	DEBUGASSERT(false);
 	return 0;
 }
 
@@ -1690,7 +1690,7 @@ static inline int bt_avrcp_status_to_rsp(uint8_t pdu_id, uint8_t status, uint8_t
 		} else if (get_cmd_type_by_pdu(pdu_id) == BT_AVRCP_CTYPE_STATUS) {
 			*rsp_code = BT_AVRCP_RSP_STABLE;
 		} else {
-			__ASSERT(false, "Unknown PDU ID: 0x%02X", pdu_id);
+			DEBUGASSERT(false);
 			*rsp_code = BT_AVRCP_RSP_REJECTED;
 			return -EINVAL;
 		}
@@ -2352,7 +2352,7 @@ static inline uint8_t get_cmd_min_len_by_pdu(uint8_t pdu_id)
 			return cmd_vendor_handlers[i].min_len;
 		}
 	}
-	__ASSERT(false, "Unknown PDU ID: 0x%02X", pdu_id);
+	DEBUGASSERT(false);
 	return 0;
 }
 
@@ -2970,8 +2970,8 @@ void bt_avrcp_init(void)
 	static bool initialized;
 
 	/* Init CT and TG connection pool*/
-	__ASSERT(ARRAY_SIZE(bt_avrcp_ct_pool) == ARRAY_SIZE(avrcp_connection), "CT size mismatch");
-	__ASSERT(ARRAY_SIZE(bt_avrcp_tg_pool) == ARRAY_SIZE(avrcp_connection), "TG size mismatch");
+	DEBUGASSERT(ARRAY_SIZE(bt_avrcp_ct_pool) == ARRAY_SIZE(avrcp_connection));
+	DEBUGASSERT(ARRAY_SIZE(bt_avrcp_tg_pool) == ARRAY_SIZE(avrcp_connection));
 
 	ARRAY_FOR_EACH(avrcp_connection, i) {
 		bt_avrcp_ct_pool[i].avrcp = &avrcp_connection[i];
@@ -4641,7 +4641,7 @@ static int bt_avrcp_tg_send_vendor_dependent_rsp(struct bt_avrcp_tg *tg, uint8_t
 			return -ENOBUFS;
 		}
 	} else {
-		__ASSERT(buf != NULL, "Buffer is NULL for PDU ID: 0x%02X", pdu_id);
+		DEBUGASSERT(buf != NULL);
 	}
 
 	/* Set the REJECTED response with the status payload */
@@ -4946,7 +4946,7 @@ struct bt_avrcp_tg *bt_avrcp_get_tg(struct bt_conn *conn, uint16_t psm)
 	}
 
 	index = (size_t)bt_conn_index(conn);
-	__ASSERT(index < ARRAY_SIZE(bt_avrcp_tg_pool), "Conn index is out of bounds");
+	DEBUGASSERT(index < ARRAY_SIZE(bt_avrcp_tg_pool));
 
 	return &bt_avrcp_tg_pool[index];
 }

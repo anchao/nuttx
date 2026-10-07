@@ -27,7 +27,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
@@ -84,8 +84,7 @@ void bt_bap_stream_attach(struct bt_conn *conn, struct bt_bap_stream *stream, st
 	LOG_DBG("conn %p stream %p ep %p", (void *)conn, stream, ep);
 
 	if (conn != NULL) {
-		__ASSERT(stream->conn == NULL || stream->conn == conn,
-			 "stream->conn %p already attached", (void *)stream->conn);
+		DEBUGASSERT(stream->conn == NULL || stream->conn == conn);
 		if (stream->conn == NULL) {
 			stream->conn = bt_conn_ref(conn);
 		}
@@ -518,7 +517,7 @@ static uint8_t conn_get_role(const struct bt_conn *conn)
 	int err;
 
 	err = bt_conn_get_info(conn, &info);
-	__ASSERT(err == 0, "Failed to get conn info");
+	DEBUGASSERT(err == 0);
 
 	return info.role;
 }
@@ -864,8 +863,8 @@ static bool bap_stream_valid_server_ase_op(enum bt_audio_dir ep_dir, enum bt_bap
 static bool bap_stream_valid_ase_op(const struct bt_conn *conn, const struct bt_bap_ep *ep,
 				    uint8_t ase_op)
 {
-	__ASSERT_NO_MSG(ep != NULL);
-	__ASSERT_NO_MSG(ep->dir == BT_AUDIO_DIR_SINK || ep->dir == BT_AUDIO_DIR_SOURCE);
+	DEBUGASSERT(ep != NULL);
+	DEBUGASSERT(ep->dir == BT_AUDIO_DIR_SINK || ep->dir == BT_AUDIO_DIR_SOURCE);
 
 	const enum bt_bap_ep_state ep_state = ep->state;
 	const enum bt_audio_dir ep_dir = ep->dir;
@@ -1084,8 +1083,8 @@ bool bt_bap_stream_valid_state_transition(const struct bt_bap_ep *ep, enum bt_ba
 	 * state or the Disabling state, the server shall immediately transition
 	 * that ASE to the QoS Configured state.
 	 */
-	__ASSERT_NO_MSG(ep != NULL);
-	__ASSERT_NO_MSG(ep->dir == BT_AUDIO_DIR_SINK || ep->dir == BT_AUDIO_DIR_SOURCE);
+	DEBUGASSERT(ep != NULL);
+	DEBUGASSERT(ep->dir == BT_AUDIO_DIR_SINK || ep->dir == BT_AUDIO_DIR_SOURCE);
 
 	const enum bt_bap_ep_state ep_state = ep->state;
 	const enum bt_audio_dir ep_dir = ep->dir;
@@ -1246,7 +1245,7 @@ int bt_bap_stream_config(struct bt_conn *conn, struct bt_bap_stream *stream, str
 
 		return -EINVAL;
 	}
-	__ASSERT(ep->iso == NULL, "endpoint %p already bound to iso %p", ep, ep->iso);
+	DEBUGASSERT(ep->iso == NULL);
 
 	bt_bap_stream_attach(conn, stream, ep);
 

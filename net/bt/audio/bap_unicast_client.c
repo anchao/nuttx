@@ -34,7 +34,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
@@ -860,7 +860,7 @@ static void unicast_client_ep_qos_update(struct bt_bap_ep *ep,
 		 */
 		iso_io_qos = &ep->iso->tx.qos;
 	} else {
-		__ASSERT(false, "Invalid ep->dir: %u", ep->dir);
+		DEBUGASSERT(false);
 		return;
 	}
 
@@ -896,7 +896,7 @@ static void clear_and_reset_if_long_read(const struct bt_conn *conn,
 		 * flag for the remaining part of the discovery procedure
 		 */
 		if (!atomic_test_bit(client->flags, UNICAST_CLIENT_FLAG_DISCOVERY_IN_PROGRESS)) {
-			__ASSERT_NO_MSG(atomic_test_bit(client->flags, UNICAST_CLIENT_FLAG_BUSY));
+			DEBUGASSERT(atomic_test_bit(client->flags, UNICAST_CLIENT_FLAG_BUSY));
 			atomic_clear_bit(client->flags, UNICAST_CLIENT_FLAG_BUSY);
 		}
 	} /* else buf may just be a stack allocated net_buf_simple which isn't used for long reads
@@ -932,8 +932,7 @@ static bool unicast_client_ep_config_state(struct bt_bap_ep *ep, struct net_buf_
 		return false;
 	}
 
-	__ASSERT(stream->codec_cfg == &ep->codec_cfg, "Stream %p not attached to ep %p", stream,
-		 ep);
+	DEBUGASSERT(stream->codec_cfg == &ep->codec_cfg);
 
 	cfg = net_buf_simple_pull_mem(buf, sizeof(*cfg));
 
@@ -1025,7 +1024,7 @@ static bool unicast_client_ep_qos_state(struct bt_bap_ep *ep, struct net_buf_sim
 		ep->qos.interval, ep->qos.framing, ep->qos.phy, ep->qos.rtn, ep->qos.latency,
 		ep->qos.pd);
 
-	__ASSERT_NO_MSG(stream->group != NULL);
+	DEBUGASSERT(stream->group != NULL);
 	group = (struct bt_bap_unicast_group *)stream->group;
 	if (dir == BT_AUDIO_DIR_SINK) {
 		if (group->sink_pd == BT_BAP_PD_UNSET) {
@@ -1048,7 +1047,7 @@ static bool unicast_client_ep_qos_state(struct bt_bap_ep *ep, struct net_buf_sim
 			}
 		}
 	} else {
-		__ASSERT(false, "Invalid dir %d", dir);
+		DEBUGASSERT(false);
 	}
 
 	/* Disconnect ISO if connected */
@@ -1265,7 +1264,7 @@ static void unicast_client_ep_notify_app(struct bt_bap_stream *stream, bool stat
 				ops->stopped(stream, reason);
 			}
 		} else {
-			__ASSERT(false, "Invalid dir: %d", dir);
+			DEBUGASSERT(false);
 		}
 
 		if (ops->qos_configured != NULL) {
@@ -1345,8 +1344,8 @@ static void unicast_client_ep_set_status(const struct bt_conn *conn, struct bt_b
 	bool state_changed;
 	uint8_t reason;
 
-	__ASSERT_NO_MSG(ep != NULL);
-	__ASSERT_NO_MSG(buf != NULL);
+	DEBUGASSERT(ep != NULL);
+	DEBUGASSERT(buf != NULL);
 
 	client_ep = CONTAINER_OF(ep, struct bt_bap_unicast_client_ep, ep);
 
@@ -1453,7 +1452,7 @@ static void unicast_client_ep_set_status(const struct bt_conn *conn, struct bt_b
 		break;
 	default:
 		/* We verify the state change above, so this should never happen */
-		__ASSERT(false, "Invalid new_state %u", new_state);
+		DEBUGASSERT(false);
 	}
 
 	clear_and_reset_if_long_read(conn, buf);
@@ -1835,7 +1834,7 @@ static uint8_t unicast_client_ep_notify(struct bt_conn *conn,
 
 	max_ntf_size = bt_att_get_max_notify_size(conn, BT_ATT_CHAN_OPT_NONE);
 	if (max_ntf_size < 0) {
-		__ASSERT(max_ntf_size != -EINVAL, "Unexpected -EINVAL");
+		DEBUGASSERT(max_ntf_size != -EINVAL);
 		return BT_GATT_ITER_STOP;
 	}
 
@@ -2177,7 +2176,7 @@ int bt_bap_unicast_client_ep_send(struct bt_conn *conn, struct bt_bap_ep *ep,
 	/* Write commands have the same size as notifications */
 	max_write_command_size = bt_att_get_max_notify_size(conn, BT_ATT_CHAN_OPT_NONE);
 	if (max_write_command_size < 0) {
-		__ASSERT(max_write_command_size != -EINVAL, "Unexpected -EINVAL");
+		DEBUGASSERT(max_write_command_size != -EINVAL);
 		LOG_DBG("Failed to get max write size: %d", max_write_command_size);
 		return max_write_command_size; /* contains errno value */
 	}
@@ -2231,7 +2230,7 @@ static void unicast_client_reset(struct bt_bap_ep *ep, uint8_t reason)
 	/* Pretend we received an idle state notification from the server to trigger all cleanup */
 	unicast_client_ep_set_local_idle_state(ep);
 
-	__ASSERT(ep->iso == NULL, "CIS for ep %p was not disconnected before ACL", ep);
+	DEBUGASSERT(ep->iso == NULL);
 
 	(void)k_work_cancel_delayable(&client_ep->ase_read_work);
 	(void)memset(ep, 0, sizeof(*ep));
@@ -2420,8 +2419,8 @@ static int unicast_group_add_iso(struct bt_bap_unicast_group *group, struct bt_b
 {
 	struct bt_iso_chan **chan_slot = NULL;
 
-	__ASSERT_NO_MSG(group != NULL);
-	__ASSERT_NO_MSG(iso != NULL);
+	DEBUGASSERT(group != NULL);
+	DEBUGASSERT(iso != NULL);
 
 	/* Append iso channel to the group->cis array */
 	for (size_t i = 0U; i < ARRAY_SIZE(group->cis); i++) {
@@ -2448,8 +2447,8 @@ static void unicast_group_del_iso(struct bt_bap_unicast_group *group, struct bt_
 {
 	struct bt_bap_stream *stream;
 
-	__ASSERT_NO_MSG(group != NULL);
-	__ASSERT_NO_MSG(iso != NULL);
+	DEBUGASSERT(group != NULL);
+	DEBUGASSERT(iso != NULL);
 
 	list_for_every_container(&group->streams, stream, _node) {
 		if (stream->ep->iso == iso) {
@@ -2597,7 +2596,7 @@ static void unicast_group_add_stream(struct bt_bap_unicast_group *group,
 
 	LOG_DBG("group %p stream %p qos %p iso %p dir %u", group, stream, qos, iso, dir);
 
-	__ASSERT_NO_MSG(stream->ep == NULL || (stream->ep != NULL && stream->ep->iso == NULL));
+	DEBUGASSERT(stream->ep == NULL || (stream->ep != NULL && stream->ep->iso == NULL));
 
 	stream->group = group;
 
@@ -2618,9 +2617,9 @@ static int unicast_group_add_stream_pair(struct bt_bap_unicast_group *group,
 	struct bt_bap_iso *iso;
 	int err;
 
-	__ASSERT_NO_MSG(group != NULL);
-	__ASSERT_NO_MSG(param != NULL);
-	__ASSERT_NO_MSG(param->rx_param != NULL || param->tx_param != NULL);
+	DEBUGASSERT(group != NULL);
+	DEBUGASSERT(param != NULL);
+	DEBUGASSERT(param->rx_param != NULL || param->tx_param != NULL);
 
 	iso = bt_bap_unicast_client_new_audio_iso();
 	if (iso == NULL) {
@@ -2649,8 +2648,8 @@ static int unicast_group_add_stream_pair(struct bt_bap_unicast_group *group,
 static void unicast_group_del_stream(struct bt_bap_unicast_group *group,
 				     struct bt_bap_stream *stream, enum bt_audio_dir dir)
 {
-	__ASSERT_NO_MSG(group != NULL);
-	__ASSERT_NO_MSG(stream != NULL);
+	DEBUGASSERT(group != NULL);
+	DEBUGASSERT(stream != NULL);
 
 	if (list_find_and_remove(&group->streams, &stream->_node)) {
 		struct bt_bap_ep *ep = stream->ep;
@@ -2672,17 +2671,17 @@ static void unicast_group_del_stream(struct bt_bap_unicast_group *group,
 static void unicast_group_del_stream_pair(struct bt_bap_unicast_group *group,
 					  struct bt_bap_unicast_group_stream_pair_param *param)
 {
-	__ASSERT_NO_MSG(group != NULL);
-	__ASSERT_NO_MSG(param != NULL);
-	__ASSERT_NO_MSG(param->rx_param != NULL || param->tx_param != NULL);
+	DEBUGASSERT(group != NULL);
+	DEBUGASSERT(param != NULL);
+	DEBUGASSERT(param->rx_param != NULL || param->tx_param != NULL);
 
 	if (param->rx_param != NULL) {
-		__ASSERT_NO_MSG(param->rx_param->stream);
+		DEBUGASSERT(param->rx_param->stream);
 		unicast_group_del_stream(group, param->rx_param->stream, BT_AUDIO_DIR_SOURCE);
 	}
 
 	if (param->tx_param != NULL) {
-		__ASSERT_NO_MSG(param->tx_param->stream);
+		DEBUGASSERT(param->tx_param->stream);
 		unicast_group_del_stream(group, param->tx_param->stream, BT_AUDIO_DIR_SINK);
 	}
 }
@@ -2713,7 +2712,7 @@ static void unicast_group_free(struct bt_bap_unicast_group *group)
 {
 	struct bt_bap_stream *stream, *next;
 
-	__ASSERT_NO_MSG(group != NULL);
+	DEBUGASSERT(group != NULL);
 
 	list_for_every_container_safe(&group->streams, stream, next, _node) {
 		struct bt_bap_iso *bap_iso = CONTAINER_OF(stream->iso, struct bt_bap_iso, chan);
@@ -3447,7 +3446,7 @@ int bt_bap_unicast_client_qos(struct bt_conn *conn, struct bt_bap_unicast_group 
 			} else if (dir == BT_AUDIO_DIR_SOURCE) {
 				source_qos_configured_on_other_conn = true;
 			} else {
-				__ASSERT(false, "Invalid dir %d", dir);
+				DEBUGASSERT(false);
 			}
 		}
 	}
@@ -3461,8 +3460,8 @@ int bt_bap_unicast_client_qos(struct bt_conn *conn, struct bt_bap_unicast_group 
 		const struct bt_bap_ep *paired_ep;
 		struct bt_bap_qos_cfg qos;
 
-		__ASSERT_NO_MSG(stream->group == group);
-		__ASSERT_NO_MSG(stream->iso != NULL);
+		DEBUGASSERT(stream->group == group);
+		DEBUGASSERT(stream->iso != NULL);
 
 		if (stream->conn != conn) {
 			/* Channel not part of this ACL, skip */
@@ -4801,7 +4800,7 @@ int bt_bap_unicast_client_discover(struct bt_conn *conn, enum bt_audio_dir dir)
 	}
 
 	err = bt_conn_get_info(conn, &info);
-	__ASSERT(err == 0, "Failed to get conn info: %d", err);
+	DEBUGASSERT(err == 0);
 
 	if (info.role != BT_CONN_ROLE_CENTRAL) {
 		LOG_DBG("Invalid conn role: %u, shall be central", info.role);

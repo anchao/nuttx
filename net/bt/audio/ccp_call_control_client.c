@@ -18,7 +18,7 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/hci_types.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
@@ -80,7 +80,7 @@ get_client_by_bearer(const struct bt_ccp_call_control_client_bearer *bearer)
 
 static struct bt_ccp_call_control_client *get_client_by_conn(const struct bt_conn *conn)
 {
-	__ASSERT(bt_conn_is_type(conn, BT_CONN_TYPE_LE), "Invalid connection type for %p", conn);
+	DEBUGASSERT(bt_conn_is_type(conn, BT_CONN_TYPE_LE));
 
 	return &clients[bt_conn_index(conn)];
 }
@@ -580,7 +580,7 @@ static void connected_cb(struct bt_conn *conn, uint8_t err)
 		__maybe_unused int cb_err;
 
 		cb_err = bt_tbs_client_register_cb(&tbs_client_cbs);
-		__ASSERT(cb_err == 0, "Failed to register TBS callbacks: %d", cb_err);
+		DEBUGASSERT(cb_err == 0);
 
 		cbs_registered = true;
 	}

@@ -26,7 +26,7 @@
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/types.h>
@@ -39,8 +39,8 @@ static struct bt_vocs_client insts[CONFIG_BT_MAX_CONN * CONFIG_BT_VOCS_CLIENT_MA
 
 static struct bt_vocs_client *lookup_vocs_by_handle(struct bt_conn *conn, uint16_t handle)
 {
-	__ASSERT(handle != 0U, "Handle cannot be 0");
-	__ASSERT(conn, "Conn cannot be NULL");
+	DEBUGASSERT(handle != 0U);
+	DEBUGASSERT(conn);
 
 	for (int i = 0; i < ARRAY_SIZE(insts); i++) {
 		if (insts[i].conn == conn &&

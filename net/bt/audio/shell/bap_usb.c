@@ -24,7 +24,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/shell/shell.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/clock.h>
 #include <zephyr/sys/ring_buffer.h>
 #include <zephyr/sys/util.h>
@@ -449,7 +449,7 @@ static void *usb_get_recv_buf_cb(const struct device *dev, uint8_t terminal, uin
 		return NULL;
 	}
 
-	__ASSERT(size <= USB_STEREO_FRAME_SIZE, "%u was not <= %d", size, USB_STEREO_FRAME_SIZE);
+	DEBUGASSERT(size <= USB_STEREO_FRAME_SIZE);
 
 	ret = k_mem_slab_alloc(&usb_out_buf_pool, &buf, 0);
 	if (ret != 0) {

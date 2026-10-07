@@ -24,7 +24,7 @@
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
@@ -184,8 +184,7 @@ static int prepare_aics_inst(struct bt_micp_mic_dev_register_param *param)
 		}
 	}
 
-	__ASSERT(j == CONFIG_BT_MICP_MIC_DEV_AICS_INSTANCE_COUNT,
-		 "Invalid AICS instance count");
+	DEBUGASSERT(j == CONFIG_BT_MICP_MIC_DEV_AICS_INSTANCE_COUNT);
 
 	return 0;
 }
@@ -201,7 +200,7 @@ int bt_micp_mic_dev_register(struct bt_micp_mic_dev_register_param *param)
 		return -EALREADY;
 	}
 
-	__ASSERT(param, "MICS register parameter cannot be NULL");
+	DEBUGASSERT(param);
 
 #if defined(CONFIG_BT_MICP_MIC_DEV_AICS)
 	err = prepare_aics_inst(param);

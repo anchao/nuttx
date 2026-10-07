@@ -1536,8 +1536,7 @@ static struct bt_conn *bt_hfp_ag_create_sco(struct bt_hfp_ag *ag)
 	updated = atomic_ptr_cmpxchg(&ag->sco_conn, NULL, sco);
 	if (!updated) {
 		LOG_WRN("SCO is not NULL (%p), target (%p)", atomic_ptr_read(&ag->sco_conn), sco);
-		__ASSERT(atomic_ptr_read(&ag->sco_conn) == sco,
-				"Concurrent SCO connection creation detected");
+		DEBUGASSERT(atomic_ptr_read(&ag->sco_conn) == sco);
 		/* The `ag->sco_conn` has been updated in callback `hfp_ag_sco_connected()`.
 		 * The reference count has been increased in callback `hfp_ag_sco_connected()`.
 		 * The reference count should be decreased in this case.
@@ -2663,7 +2662,7 @@ static int bt_hfp_ag_ata_handler(struct bt_hfp_ag *ag, struct net_buf *buf)
 	}
 
 	call = get_call_with_flag(ag, BT_HFP_AG_CALL_IN_USING);
-	__ASSERT(call, "Invalid call object");
+	DEBUGASSERT(call);
 
 	if (call->call_state != BT_HFP_CALL_ALERTING) {
 		hfp_ag_unlock(ag);
@@ -4071,7 +4070,7 @@ static uint8_t bt_hfp_ag_discover_cb(struct bt_conn *conn, struct bt_sdp_client_
 	int err;
 
 	index = (size_t)bt_conn_index(conn);
-	__ASSERT(index < ARRAY_SIZE(bt_hfp_ag_pool), "Index is out of bounds");
+	DEBUGASSERT(index < ARRAY_SIZE(bt_hfp_ag_pool));
 
 	ag = &bt_hfp_ag_pool[index];
 
@@ -4168,7 +4167,7 @@ static struct bt_hfp_ag *hfp_ag_create(struct bt_conn *conn)
 	LOG_DBG("conn %p", conn);
 
 	index = (size_t)bt_conn_index(conn);
-	__ASSERT(index < ARRAY_SIZE(bt_hfp_ag_pool), "Conn index is out of bounds");
+	DEBUGASSERT(index < ARRAY_SIZE(bt_hfp_ag_pool));
 
 	ag = &bt_hfp_ag_pool[index];
 	if (ag->acl_conn) {
@@ -4345,7 +4344,7 @@ static int bt_hfp_ag_sco_accept(const struct bt_sco_accept_info *info,
 	LOG_DBG("conn %p", info->acl);
 
 	index = (size_t)bt_conn_index(info->acl);
-	__ASSERT(index < ARRAY_SIZE(bt_hfp_ag_pool), "Conn index is out of bounds");
+	DEBUGASSERT(index < ARRAY_SIZE(bt_hfp_ag_pool));
 
 	ag = &bt_hfp_ag_pool[index];
 	if (ag->acl_conn != info->acl) {
@@ -4374,7 +4373,7 @@ static void ag_sco_disconnected(struct bt_conn *conn, uint8_t reason)
 {
 	ARG_UNUSED(reason);
 
-	__ASSERT(conn != NULL, "Invalid SCO conn");
+	DEBUGASSERT(conn != NULL);
 
 	ARRAY_FOR_EACH(bt_hfp_ag_pool, i) {
 		if (atomic_ptr_cmpxchg(&bt_hfp_ag_pool[i].sco_conn, conn, NULL)) {
@@ -4438,7 +4437,7 @@ static void bt_hfp_ag_incoming_cb(struct bt_hfp_ag *ag, void *user_data)
 	struct bt_hfp_ag_call *call = (struct bt_hfp_ag_call *)user_data;
 	bool in_bond = false;
 
-	__ASSERT(call, "Invalid call object");
+	DEBUGASSERT(call);
 
 	bt_hfp_ag_set_call_state(call, BT_HFP_CALL_INCOMING);
 
@@ -4468,7 +4467,7 @@ static void bt_hfp_ag_2nd_incoming_cb(struct bt_hfp_ag *ag, void *user_data)
 
 	call = (struct bt_hfp_ag_call *)user_data;
 
-	__ASSERT(call, "Invalid call object");
+	DEBUGASSERT(call);
 
 	if (bt_ag && bt_ag->incoming) {
 		bt_ag->incoming(ag, call, call->number);

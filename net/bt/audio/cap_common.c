@@ -19,7 +19,7 @@
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/check.h>
 #include <zephyr/sys/util.h>
@@ -46,7 +46,7 @@ struct bt_cap_common_proc *bt_cap_common_get_active_proc(void)
 	__maybe_unused int err;
 
 	err = nxrmutex_ticklock(&active_proc_mutex, CAP_ACTIVE_PROC_MUTEX_TIMEOUT);
-	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	LOG_DBG("Took active_proc_mutex (count: %u)", active_proc_mutex.count);
 
@@ -58,16 +58,15 @@ void bt_cap_common_unlock_proc(void)
 	__maybe_unused int err;
 
 	err = nxrmutex_unlock(&active_proc_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	LOG_DBG("Released active_proc_mutex");
 }
 
 uint32_t bt_cap_common_get_active_proc_mutex_count(const struct bt_cap_common_proc *proc)
 {
-	__ASSERT(proc == &active_proc, "Caller did not provide the active_proc");
-	__ASSERT(active_proc_mutex.count > 0U, "Unexpected active_proc_mutex count: %u",
-		 active_proc_mutex.count);
+	DEBUGASSERT(proc == &active_proc);
+	DEBUGASSERT(active_proc_mutex.count > 0U);
 
 	return active_proc_mutex.count;
 }
@@ -447,7 +446,7 @@ static uint8_t bt_cap_common_discover_included_cb(struct bt_conn *conn,
 
 			if (!csis_cbs_registered) {
 				err = bt_csip_set_coordinator_register_cb(&csis_client_cb);
-				__ASSERT(err == 0, "Failed to register CSIP callbacks: %d", err);
+				DEBUGASSERT(err == 0);
 
 				csis_cbs_registered = true;
 			}

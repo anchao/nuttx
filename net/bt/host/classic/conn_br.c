@@ -20,7 +20,7 @@
 #include <zephyr/sys/util_macro.h>
 #include <nuttx/list.h>
 #include <zephyr/debug/stack.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 
 #include <zephyr/bluetooth/hci.h>
 #include <zephyr/bluetooth/bluetooth.h>

@@ -22,7 +22,7 @@
 #include <zephyr/net_buf.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/shell/shell_string_conv.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
 
@@ -74,7 +74,7 @@ size_t pbp_ad_data_add(struct bt_data data[], size_t data_size)
 		bt_shell_error("Failed to create Public Broadcast Announcement: %d", err);
 	}
 
-	__ASSERT(data_size > 0, "No space for Public Broadcast Announcement");
+	DEBUGASSERT(data_size > 0);
 	data[0].type = BT_DATA_SVC_DATA16;
 	data[0].data_len = pbp_ad_buf.len;
 	data[0].data = pbp_ad_buf.data;

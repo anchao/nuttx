@@ -570,7 +570,7 @@ static void binary_to_ascii_digits(const uint8_t *in, size_t in_len, char *out_s
 	uint8_t temp[PROV_IO_OOB_SIZE_MAX];
 	size_t digit_count = 0;
 
-	__ASSERT(in_len <= sizeof(temp), "Output numeric exceeds maximum");
+	DEBUGASSERT(in_len <= sizeof(temp));
 	memcpy(temp, in, in_len);
 
 	while (in_len > 0) {

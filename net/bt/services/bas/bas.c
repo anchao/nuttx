@@ -12,7 +12,7 @@
 
 #include <errno.h>
 #include <zephyr/init.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <stdbool.h>
 #include <zephyr/types.h>
 #include <zephyr/sys/util.h>

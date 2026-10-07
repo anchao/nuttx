@@ -1135,7 +1135,7 @@ static int pbap_pse_rfcomm_accept(struct bt_conn *conn,
 		return err;
 	}
 
-	__ASSERT(pbap_pse != NULL, "Invalid pbap pse instance");
+	DEBUGASSERT(pbap_pse != NULL);
 
 	pbap_pse->_goep.transport_ops = &pse_rfcomm_transport_ops;
 	BT_GOEP_INIT_V1(&pbap_pse->_goep, &pbap_pse->_goep_transport.v1);
@@ -1164,7 +1164,7 @@ static int pbap_pse_l2cap_accept(struct bt_conn *conn,
 		return err;
 	}
 
-	__ASSERT(pbap_pse != NULL, "Invalid pbap pse instance");
+	DEBUGASSERT(pbap_pse != NULL);
 
 	pbap_pse->_goep.transport_ops = &pse_l2cap_transport_ops;
 	BT_GOEP_INIT_V2(&pbap_pse->_goep, &pbap_pse->_goep_transport.v2);

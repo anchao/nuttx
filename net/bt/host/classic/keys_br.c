@@ -149,7 +149,7 @@ void bt_keys_link_key_store(struct bt_keys_link_key *link_key)
 void bt_br_foreach_bond(void (*func)(const struct bt_br_bond_info *info, void *user_data),
 			void *user_data)
 {
-	__ASSERT_NO_MSG(func != NULL);
+	DEBUGASSERT(func != NULL);
 
 	for (size_t i = 0; i < ARRAY_SIZE(key_pool); i++) {
 		const struct bt_keys_link_key *key = &key_pool[i];

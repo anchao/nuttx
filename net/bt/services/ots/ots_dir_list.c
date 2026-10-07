@@ -15,7 +15,7 @@
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
@@ -57,8 +57,7 @@ static size_t dir_list_object_record_size(const struct bt_gatt_ots_object *obj)
 
 	/* Name */
 	obj_name_len = strlen(obj->metadata.name);
-	__ASSERT(obj_name_len > 0 && obj_name_len <= CONFIG_BT_OTS_OBJ_MAX_NAME_LEN,
-		 "Dir list object len is incorrect %zu", obj_name_len);
+	DEBUGASSERT(obj_name_len > 0 && obj_name_len <= CONFIG_BT_OTS_OBJ_MAX_NAME_LEN);
 	len += obj_name_len;
 
 	/* Flags */
@@ -77,10 +76,8 @@ static size_t dir_list_object_record_size(const struct bt_gatt_ots_object *obj)
 	/* Object properties */
 	len += sizeof(obj->metadata.props);
 
-	__ASSERT(len >= DIR_LIST_OBJ_RECORD_MIN_SIZE,
-		 "Dir list object len is too small %u", len);
-	__ASSERT(len <= DIR_LIST_OBJ_RECORD_MAX_SIZE,
-		 "Dir list object len is too large %u", len);
+	DEBUGASSERT(len >= DIR_LIST_OBJ_RECORD_MIN_SIZE);
+	DEBUGASSERT(len <= DIR_LIST_OBJ_RECORD_MAX_SIZE);
 
 	return len;
 }
@@ -107,8 +104,7 @@ static void dir_list_object_encode(const struct bt_gatt_ots_object *obj,
 
 	/* Name length */
 	obj_name_len = strlen(obj->metadata.name);
-	__ASSERT(obj_name_len > 0 && obj_name_len <= CONFIG_BT_OTS_OBJ_MAX_NAME_LEN,
-		 "Dir list object len is incorrect %zu", obj_name_len);
+	DEBUGASSERT(obj_name_len > 0 && obj_name_len <= CONFIG_BT_OTS_OBJ_MAX_NAME_LEN);
 	net_buf_simple_add_u8(net_buf, obj_name_len);
 
 	/* Name */
@@ -133,10 +129,8 @@ static void dir_list_object_encode(const struct bt_gatt_ots_object *obj,
 
 	len = net_buf_simple_tail(net_buf) - start;
 
-	__ASSERT(len >= DIR_LIST_OBJ_RECORD_MIN_SIZE,
-		 "Dir list object len is too small %u", len);
-	__ASSERT(len <= DIR_LIST_OBJ_RECORD_MAX_SIZE,
-		 "Dir list object len is too large %u", len);
+	DEBUGASSERT(len >= DIR_LIST_OBJ_RECORD_MIN_SIZE);
+	DEBUGASSERT(len <= DIR_LIST_OBJ_RECORD_MAX_SIZE);
 
 	/* Update the record length at the beginning */
 	sys_put_le16(len, start);
@@ -260,8 +254,7 @@ static void dir_list_update_size(struct bt_ots_dir_list *dir_list, void *obj_man
 
 	err = bt_gatt_ots_obj_manager_first_obj_get(obj_manager, &obj);
 
-	__ASSERT(err == 0 && obj == dir_list->dir_list_obj,
-		 "Expecting first object to be the Directory Listing Object");
+	DEBUGASSERT(err == 0 && obj == dir_list->dir_list_obj);
 
 	do {
 		len += dir_list_object_record_size(obj);
@@ -293,7 +286,7 @@ void bt_ots_dir_list_init(struct bt_ots_dir_list **dir_list, void *obj_manager)
 	int err;
 	static char *dir_list_obj_name = CONFIG_BT_OTS_DIR_LIST_OBJ_NAME;
 
-	__ASSERT(*dir_list == NULL, "Already initialized");
+	DEBUGASSERT(*dir_list == NULL);
 
 	for (size_t i = 0; i < ARRAY_SIZE(dir_lists); i++) {
 		if (!dir_lists[i].dir_list_obj) {
@@ -301,11 +294,11 @@ void bt_ots_dir_list_init(struct bt_ots_dir_list **dir_list, void *obj_manager)
 		}
 	}
 
-	__ASSERT(*dir_list, "Could not assign Directory Listing Object");
+	DEBUGASSERT(*dir_list);
 
 	err = bt_gatt_ots_obj_manager_obj_add(obj_manager, &dir_list_obj);
 
-	__ASSERT(!err, "Could not add Directory Listing Object for object manager %p", obj_manager);
+	DEBUGASSERT(!err);
 
 	memset(&dir_list_obj->metadata, 0, sizeof(dir_list_obj->metadata));
 	dir_list_obj->metadata.name = dir_list_obj_name;

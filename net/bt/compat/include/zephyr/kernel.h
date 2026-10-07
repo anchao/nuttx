@@ -18,6 +18,7 @@
 
 #include "sys_clock.h"
 #include <nuttx/atomic.h>
+#include "sys/util.h"
 #include "toolchain.h"
 #include "arch/posix/arch.h"
 #include "irq.h"
@@ -120,6 +121,7 @@ struct k_work {
 
 struct k_work_delayable {
     struct k_work work;
+    struct k_work_q *queue;
 };
 
 struct k_work_q {

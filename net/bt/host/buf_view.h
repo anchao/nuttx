@@ -43,7 +43,7 @@ struct bt_buf_view_meta {
  *  The storage and allocation of the view buf pool and the view metadata is the
  *  application's responsibility.
  *
- *  @note The `headroom` param is only used for __ASSERT(). The idea is that
+ *  @note The `headroom` param is only used for DEBUGASSERT(). The idea is that
  *  it's easier to debug a headroom assert failure at allocation time, rather
  *  than later down the line when a lower layer tries to add its headers and
  *  fails.

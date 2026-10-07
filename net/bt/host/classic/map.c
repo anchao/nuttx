@@ -1345,7 +1345,7 @@ static int mce_mns_accept(struct bt_conn *conn, void *server, uint8_t type, stru
 		return err;
 	}
 
-	__ASSERT(mce_mns != NULL && mce_mns->_cb != NULL, "Invalid mce_mns instance or callback");
+	DEBUGASSERT(mce_mns != NULL && mce_mns->_cb != NULL);
 
 	mce_mns->goep.transport_ops = &mce_mns_transport_ops;
 	if (type == MAP_TRANSPORT_TYPE_RFCOMM) {
@@ -1947,7 +1947,7 @@ static int mse_mas_accept(struct bt_conn *conn, void *server, uint8_t type, stru
 		return err;
 	}
 
-	__ASSERT(mse_mas != NULL && mse_mas->_cb != NULL, "Invalid mse_mas instance or callback");
+	DEBUGASSERT(mse_mas != NULL && mse_mas->_cb != NULL);
 
 	mse_mas->goep.transport_ops = &mse_mas_transport_ops;
 	if (type == MAP_TRANSPORT_TYPE_RFCOMM) {

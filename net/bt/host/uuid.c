@@ -13,7 +13,7 @@
 #include <string.h>
 
 #include <zephyr/bluetooth/uuid.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/sys/uuid.h>
@@ -52,7 +52,7 @@ static void bt_uuid_to_uuid(const struct bt_uuid *src, struct uuid *dst)
 		sys_memcpy_swap(dst->val, BT_UUID_128(src)->val, UUID_SIZE);
 		return;
 	default:
-		__ASSERT(false, "Invalid UUID type: %d", src->type);
+		DEBUGASSERT(false);
 	}
 }
 
@@ -142,13 +142,11 @@ void bt_uuid_to_str(const struct bt_uuid *uuid, char *str, size_t len)
 	switch (uuid->type) {
 	case BT_UUID_TYPE_16:
 		err = snprintk(str, len, "%04x", BT_UUID_16(uuid)->val);
-		__ASSERT(err == BT_UUID_STR_LEN_16,
-			 "Unexpected snprintk result: %d", err);
+		DEBUGASSERT(err == BT_UUID_STR_LEN_16);
 		break;
 	case BT_UUID_TYPE_32:
 		err = snprintk(str, len, "%08x", BT_UUID_32(uuid)->val);
-		__ASSERT(err == BT_UUID_STR_LEN_32,
-			 "Unexpected snprintk result: %d", err);
+		DEBUGASSERT(err == BT_UUID_STR_LEN_32);
 		break;
 	case BT_UUID_TYPE_128: {
 		struct uuid gen_uuid;
@@ -161,8 +159,7 @@ void bt_uuid_to_str(const struct bt_uuid *uuid, char *str, size_t len)
 		}
 
 		err = snprintk(str, len, "%s", full);
-		__ASSERT(err == BT_UUID_STR_LEN_128,
-			 "Unexpected snprintk result: %d", err);
+		DEBUGASSERT(err == BT_UUID_STR_LEN_128);
 		break;
 	}
 	default:

@@ -27,7 +27,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
@@ -339,7 +339,7 @@ static void update_codec_cfg_data(struct bt_audio_codec_cfg *codec_cfg, const ui
 			}
 		}
 
-		__ASSERT(err == 0, "Failed codec merge not guarded by can_merge_codec_cfg_data");
+		DEBUGASSERT(err == 0);
 	}
 }
 
@@ -493,8 +493,7 @@ static bool encode_base(struct bt_bap_broadcast_source *source, struct net_buf_s
 			const struct bt_bap_stream *stream =
 				list_peek_head_container(&subgroup->streams, stream, _node);
 
-			__ASSERT(stream != NULL && stream->ep != NULL,
-				 "stream or stream->ep was NULL");
+			DEBUGASSERT(stream != NULL && stream->ep != NULL);
 			pd = stream->ep->qos.pd;
 		}
 
@@ -1022,7 +1021,7 @@ int bt_bap_broadcast_source_reconfig(struct bt_bap_broadcast_source *source,
 			/* Number of subgroups in `source` are verified in
 			 * valid_broadcast_source_reconfig_param so this should never happen
 			 */
-			__ASSERT_NO_MSG(subgroup != NULL);
+			DEBUGASSERT(subgroup != NULL);
 			subgroup = list_next_container(&source->subgroups, subgroup, _node);
 		}
 
@@ -1334,7 +1333,7 @@ int bt_bap_broadcast_source_register_cb(struct bt_bap_broadcast_source_cb *cb)
 		const int err = bt_iso_big_register_cb(&big_cb);
 
 		if (err != 0) {
-			__ASSERT(false, "Failed to register ISO BIG callbacks: %d", err);
+			DEBUGASSERT(false);
 		}
 
 		iso_big_cb_registered = true;

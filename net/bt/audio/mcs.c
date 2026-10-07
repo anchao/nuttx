@@ -28,7 +28,7 @@
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
@@ -107,13 +107,13 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 	}
 
 	err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
-	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	/* Clear data on disconnect */
 	memset(&mcs_inst.clients[bt_conn_index(conn)], 0, sizeof(struct client_state));
 
 	err = nxrmutex_unlock(&mcs_inst.mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 }
 
 BT_CONN_CB_DEFINE(conn_callbacks) = {
@@ -136,7 +136,7 @@ static void set_value_changed_cb(struct bt_conn *conn, void *data)
 	int err;
 
 	err = bt_conn_get_info(conn, &info);
-	__ASSERT(err == 0, "Failed to get conn info: %d", err);
+	DEBUGASSERT(err == 0);
 
 	if (info.state != BT_CONN_STATE_CONNECTED) {
 		/* Not connected */
@@ -153,7 +153,7 @@ static void set_value_changed_cb(struct bt_conn *conn, void *data)
 		 * same work multiple times is a no-op
 		 */
 		err = k_work_schedule(&mcs_inst.notify_work, 0);
-		__ASSERT(err >= 0, "Failed to schedule work: %d", err);
+		DEBUGASSERT(err >= 0);
 		cb_info->any_pending_notifications = true;
 	} else {
 		/* Set the specific flag based on the provided callback */
@@ -180,9 +180,9 @@ static void set_value_changed(void (*value_cb)(struct mcs_flags *flags, bool set
 	__maybe_unused int err;
 
 	err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
-	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
-	__ASSERT(cb_info.attr != NULL, "Failed to find attribute for %s", bt_uuid_str(uuid));
+	DEBUGASSERT(cb_info.attr != NULL);
 	bt_conn_foreach(BT_CONN_TYPE_LE, set_value_changed_cb, &cb_info);
 
 	if (!cb_info.any_pending_notifications) {
@@ -190,7 +190,7 @@ static void set_value_changed(void (*value_cb)(struct mcs_flags *flags, bool set
 	}
 
 	err = nxrmutex_unlock(&mcs_inst.mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 }
 
 static void set_player_name_changed_cb(struct mcs_flags *flags, bool set)
@@ -273,7 +273,7 @@ static void set_media_control_opcodes_changed_cb(struct mcs_flags *flags, bool s
 
 static void clear_media_control_ntf_cb(struct mcs_flags *flags, bool set)
 {
-	__ASSERT(!set, "Callback should only be triggered by a clear operation");
+	DEBUGASSERT(!set);
 	flags->media_control_point_result = false;
 }
 
@@ -285,7 +285,7 @@ static void set_search_results_obj_id_changed_cb(struct mcs_flags *flags, bool s
 
 static void clear_search_control_ntf_cb(struct mcs_flags *flags, bool set)
 {
-	__ASSERT(!set, "Callback should only be triggered by a clear operation");
+	DEBUGASSERT(!set);
 	flags->search_control_point_result = false;
 }
 #endif /* CONFIG_BT_OTS */
@@ -308,13 +308,13 @@ static ssize_t read_player_name(struct bt_conn *conn,
 		__maybe_unused int err;
 
 		err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
-		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
+		DEBUGASSERT(err == 0);
 
 		flags = &mcs_inst.clients[bt_conn_index(conn)].flags;
 
 		if (flags->player_name_dirty && offset != 0U) {
 			err = nxrmutex_unlock(&mcs_inst.mutex);
-			__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+			DEBUGASSERT(err == 0);
 
 			return BT_GATT_ERR(BT_MCS_ERR_LONG_VAL_CHANGED);
 		}
@@ -322,7 +322,7 @@ static ssize_t read_player_name(struct bt_conn *conn,
 		flags->player_name_dirty = false;
 
 		err = nxrmutex_unlock(&mcs_inst.mutex);
-		__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+		DEBUGASSERT(err == 0);
 	}
 
 	return bt_gatt_attr_read(conn, attr, buf, len, offset, name, strlen(name));
@@ -372,13 +372,13 @@ static ssize_t read_icon_url(struct bt_conn *conn,
 		__maybe_unused int err;
 
 		err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
-		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
+		DEBUGASSERT(err == 0);
 
 		flags = &mcs_inst.clients[bt_conn_index(conn)].flags;
 
 		if (flags->icon_url_dirty && offset != 0U) {
 			err = nxrmutex_unlock(&mcs_inst.mutex);
-			__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+			DEBUGASSERT(err == 0);
 
 			return BT_GATT_ERR(BT_MCS_ERR_LONG_VAL_CHANGED);
 		}
@@ -386,7 +386,7 @@ static ssize_t read_icon_url(struct bt_conn *conn,
 		flags->icon_url_dirty = false;
 
 		err = nxrmutex_unlock(&mcs_inst.mutex);
-		__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+		DEBUGASSERT(err == 0);
 	}
 
 	return bt_gatt_attr_read(conn, attr, buf, len, offset, url,
@@ -419,13 +419,13 @@ static ssize_t read_track_title(struct bt_conn *conn,
 		__maybe_unused int err;
 
 		err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
-		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
+		DEBUGASSERT(err == 0);
 
 		flags = &mcs_inst.clients[bt_conn_index(conn)].flags;
 
 		if (flags->track_title_dirty && offset != 0U) {
 			err = nxrmutex_unlock(&mcs_inst.mutex);
-			__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+			DEBUGASSERT(err == 0);
 
 			return BT_GATT_ERR(BT_MCS_ERR_LONG_VAL_CHANGED);
 		}
@@ -433,7 +433,7 @@ static ssize_t read_track_title(struct bt_conn *conn,
 		flags->track_title_dirty = false;
 
 		err = nxrmutex_unlock(&mcs_inst.mutex);
-		__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+		DEBUGASSERT(err == 0);
 	}
 
 	return bt_gatt_attr_read(conn, attr, buf, len, offset, title,
@@ -955,7 +955,7 @@ static ssize_t write_control_point(struct bt_conn *conn, const struct bt_gatt_at
 		__maybe_unused int err;
 
 		err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
-		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
+		DEBUGASSERT(err == 0);
 
 		client = &mcs_inst.clients[bt_conn_index(conn)];
 		flags = &client->flags;
@@ -971,7 +971,7 @@ static ssize_t write_control_point(struct bt_conn *conn, const struct bt_gatt_at
 			const bool media_control_point_result = flags->media_control_point_result;
 
 			err = nxrmutex_unlock(&mcs_inst.mutex);
-			__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+			DEBUGASSERT(err == 0);
 
 			LOG_DBG("Rejecting CP write as one is already pending (%d %d)",
 				media_control_point_busy, media_control_point_result);
@@ -990,11 +990,11 @@ static ssize_t write_control_point(struct bt_conn *conn, const struct bt_gatt_at
 			flags->media_control_point_result = true;
 
 			err = nxrmutex_unlock(&mcs_inst.mutex);
-			__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+			DEBUGASSERT(err == 0);
 			LOG_DBG("Opcode 0x%02X is invalid", command.opcode);
 
 			err = k_work_schedule(&mcs_inst.notify_work, 0);
-			__ASSERT(err >= 0, "Failed to schedule work: %d", err);
+			DEBUGASSERT(err >= 0);
 
 			return BT_GATT_ERR(BT_ATT_ERR_VALUE_NOT_ALLOWED);
 		}
@@ -1002,7 +1002,7 @@ static ssize_t write_control_point(struct bt_conn *conn, const struct bt_gatt_at
 		flags->media_control_point_busy = true;
 
 		err = nxrmutex_unlock(&mcs_inst.mutex);
-		__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+		DEBUGASSERT(err == 0);
 	} else {
 		if (!BT_MCS_VALID_OP(command.opcode)) {
 			return BT_GATT_ERR(BT_ATT_ERR_VALUE_NOT_ALLOWED);
@@ -1081,7 +1081,7 @@ static ssize_t write_search_control_point(struct bt_conn *conn, const struct bt_
 		__maybe_unused int err;
 
 		err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
-		__ASSERT(err == 0, "Failed to lock mutex: %d", err);
+		DEBUGASSERT(err == 0);
 
 		flags = &mcs_inst.clients[bt_conn_index(conn)].flags;
 
@@ -1096,7 +1096,7 @@ static ssize_t write_search_control_point(struct bt_conn *conn, const struct bt_
 			const bool search_control_point_result = flags->search_control_point_result;
 
 			err = nxrmutex_unlock(&mcs_inst.mutex);
-			__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+			DEBUGASSERT(err == 0);
 
 			LOG_DBG("Rejecting CP write as one is already pending (%d %d)",
 				search_control_point_busy, search_control_point_result);
@@ -1107,7 +1107,7 @@ static ssize_t write_search_control_point(struct bt_conn *conn, const struct bt_
 		flags->search_control_point_busy = true;
 
 		err = nxrmutex_unlock(&mcs_inst.mutex);
-		__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+		DEBUGASSERT(err == 0);
 	}
 
 	memcpy(&search.search, (char *)buf, len);
@@ -1343,7 +1343,7 @@ static int notify(struct bt_conn *conn, const struct bt_uuid *uuid, const void *
 	int err;
 
 	if (max_ntf_size < 0) {
-		__ASSERT(max_ntf_size != -EINVAL, "Unexpected -EINVAL");
+		DEBUGASSERT(max_ntf_size != -EINVAL);
 		LOG_DBG("Failed to get max notification size for %p: %d", conn, max_ntf_size);
 
 		/* Only return error if it makes sense to retry, else just treat as completed (e.g.
@@ -1364,7 +1364,7 @@ static int notify(struct bt_conn *conn, const struct bt_uuid *uuid, const void *
 		 */
 		return err;
 	}
-	__ASSERT(err != -EINVAL, "bt_gatt_notify_uuid returned -EINVAL");
+	DEBUGASSERT(err != -EINVAL);
 
 	return 0;
 }
@@ -1393,7 +1393,7 @@ static void notify_cb(struct bt_conn *conn, void *data)
 	if (err != 0) {
 		LOG_DBG("Failed to take mutex: %d", err);
 		err = k_work_schedule(&mcs_inst.notify_work, USEC2TICK(info.le.interval_us));
-		__ASSERT(err >= 0, "Failed to reschedule work: %d", err);
+		DEBUGASSERT(err >= 0);
 		return;
 	}
 
@@ -1645,11 +1645,11 @@ exit:
 	if (err != 0) {
 		LOG_DBG("Notify failed (%d), retrying next connection interval", err);
 		err = k_work_schedule(&mcs_inst.notify_work, USEC2TICK(info.le.interval_us));
-		__ASSERT(err >= 0, "Failed to reschedule work: %d", err);
+		DEBUGASSERT(err >= 0);
 	}
 
 	err = nxrmutex_unlock(&mcs_inst.mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 }
 
 static void deferred_nfy_work_handler(struct k_work *work)
@@ -1771,7 +1771,7 @@ static void defer_media_control_point_ntf(struct bt_conn *conn, void *data)
 	}
 
 	err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
-	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	client = &mcs_inst.clients[bt_conn_index(conn)];
 	flags = &client->flags;
@@ -1779,7 +1779,7 @@ static void defer_media_control_point_ntf(struct bt_conn *conn, void *data)
 	if (flags->media_control_point_busy) {
 		const struct bt_gatt_attr *cp_attr =
 			bt_gatt_find_by_uuid(mcs.attrs, 0, BT_UUID_MCS_MEDIA_CONTROL_POINT);
-		__ASSERT(cp_attr != NULL, "Could not find control point attribute");
+		DEBUGASSERT(cp_attr != NULL);
 
 		client->cmd_ntf = *cmd_ntf;
 		flags->media_control_point_busy = false;
@@ -1787,12 +1787,12 @@ static void defer_media_control_point_ntf(struct bt_conn *conn, void *data)
 		if (bt_gatt_is_subscribed(conn, cp_attr, BT_GATT_CCC_NOTIFY)) {
 			flags->media_control_point_result = true;
 			err = k_work_schedule(&mcs_inst.notify_work, 0);
-			__ASSERT(err >= 0, "Failed to schedule work: %d", err);
+			DEBUGASSERT(err >= 0);
 		}
 	}
 
 	err = nxrmutex_unlock(&mcs_inst.mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 }
 
 void media_proxy_sctrl_command_cb(const struct mpl_cmd_ntf *cmd_ntf)
@@ -1828,7 +1828,7 @@ static void defer_search_control_point_ntf(struct bt_conn *conn, void *data)
 	}
 
 	err = nxrmutex_ticklock(&mcs_inst.mutex, MUTEX_TIMEOUT);
-	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	client = &mcs_inst.clients[bt_conn_index(conn)];
 	flags = &client->flags;
@@ -1836,7 +1836,7 @@ static void defer_search_control_point_ntf(struct bt_conn *conn, void *data)
 	if (flags->search_control_point_busy) {
 		const struct bt_gatt_attr *cp_attr =
 			bt_gatt_find_by_uuid(mcs.attrs, 0, BT_UUID_MCS_SEARCH_CONTROL_POINT);
-		__ASSERT(cp_attr != NULL, "Could not find search control point attribute");
+		DEBUGASSERT(cp_attr != NULL);
 
 		client->search_control_point_result = POINTER_TO_UINT(data);
 		flags->search_control_point_busy = false;
@@ -1844,12 +1844,12 @@ static void defer_search_control_point_ntf(struct bt_conn *conn, void *data)
 		if (bt_gatt_is_subscribed(conn, cp_attr, BT_GATT_CCC_NOTIFY)) {
 			flags->search_control_point_result = true;
 			err = k_work_schedule(&mcs_inst.notify_work, 0);
-			__ASSERT(err >= 0, "Failed to schedule work: %d", err);
+			DEBUGASSERT(err >= 0);
 		}
 	}
 
 	err = nxrmutex_unlock(&mcs_inst.mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 }
 
 void media_proxy_sctrl_search_cb(uint8_t result_code)
@@ -1957,7 +1957,7 @@ static int mcs_init(void)
 	__maybe_unused int err;
 
 	err = nxrmutex_init(&mcs_inst.mutex);
-	__ASSERT(err == 0, "Failed to init mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return 0;
 }

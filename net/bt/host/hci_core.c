@@ -42,7 +42,7 @@
 #include <zephyr/sys/util.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/clock.h>
 #include <zephyr/toolchain.h>
 #include <soc.h>
@@ -508,7 +508,7 @@ int bt_hci_cmd_send_sync(uint16_t opcode, struct net_buf *buf,
 	} else {
 		/* `cmd(buf)` depends on this  */
 		if (buf->pool != &hci_cmd_pool) {
-			__ASSERT_NO_MSG(false);
+			DEBUGASSERT(false);
 			return -EINVAL;
 		}
 	}
@@ -735,7 +735,7 @@ static void hci_num_completed_packets(struct net_buf *buf)
 
 			if (!node) {
 				LOG_ERR("packets count mismatch");
-				__ASSERT_NO_MSG(0);
+				DEBUGASSERT(0);
 				break;
 			}
 
@@ -749,7 +749,7 @@ static void hci_num_completed_packets(struct net_buf *buf)
 			irq_unlock(key);
 
 			/* align the `pending` value */
-			__ASSERT_NO_MSG(atomic_read(&conn->in_ll));
+			DEBUGASSERT(atomic_read(&conn->in_ll));
 			atomic_sub(&conn->in_ll, 1);
 
 			/* TX context free + callback happens in there */
@@ -1476,8 +1476,7 @@ static void enh_conn_complete(struct bt_hci_evt_le_enh_conn_complete *evt)
 			}
 		}
 
-		__ASSERT(false, "No more cache entries available."
-				"This should not happen by design");
+		DEBUGASSERT(false);
 
 		return;
 	}
@@ -1523,7 +1522,7 @@ static void update_conn(struct bt_conn *conn, const bt_addr_le_t *id_addr,
 void bt_hci_le_enh_conn_complete(struct bt_hci_evt_le_enh_conn_complete *evt,
 				 const struct bt_le_ext_adv *ext_adv)
 {
-	__ASSERT_NO_MSG(evt->status == BT_HCI_ERR_SUCCESS);
+	DEBUGASSERT(evt->status == BT_HCI_ERR_SUCCESS);
 
 	uint16_t handle = sys_le16_to_cpu(evt->handle);
 	uint8_t disconnect_reason = conn_handle_is_disconnected(handle);
@@ -1676,7 +1675,7 @@ void bt_hci_le_enh_conn_complete(struct bt_hci_evt_le_enh_conn_complete *evt,
 void bt_hci_le_enh_conn_complete_sync(struct bt_hci_evt_le_enh_conn_complete_v2 *evt,
 				      struct bt_le_per_adv_sync *sync)
 {
-	__ASSERT_NO_MSG(evt->status == BT_HCI_ERR_SUCCESS);
+	DEBUGASSERT(evt->status == BT_HCI_ERR_SUCCESS);
 
 	uint16_t handle = sys_le16_to_cpu(evt->handle);
 	uint8_t disconnect_reason = conn_handle_is_disconnected(handle);
@@ -2708,7 +2707,7 @@ static void hci_cmd_done(uint16_t opcode, uint8_t status, struct net_buf *evt_bu
 		LOG_ERR("OpCode 0x%04x completed instead of expected 0x%04x", opcode,
 			cmd(buf)->opcode);
 		buf = atomic_ptr_xchg((void * *)&bt_dev.sent_cmd, buf);
-		__ASSERT_NO_MSG(!buf);
+		DEBUGASSERT(!buf);
 		goto exit;
 	}
 
@@ -5511,7 +5510,7 @@ void bt_tx_irq_raise(void)
 	LOG_DBG("kick TX");
 #if defined(CONFIG_BT_TX_PROCESSOR_THREAD)
 	err = k_work_submit_to_queue(&bt_tx_processor_workq, &tx_work);
-	__ASSERT(err >= 0, "%d", err);
+	DEBUGASSERT(err >= 0);
 	/* Assertions:
 	 *
 	 * EBUSY shall not occur because `bt_tx_processor_workq` shall

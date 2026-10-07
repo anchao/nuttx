@@ -621,7 +621,7 @@ static int bt_monitor_init(void)
 				  RTT_BUFFER_NAME, rtt_up_buf, RTT_BUF_SIZE,
 				  SEGGER_RTT_MODE_NO_BLOCK_SKIP);
 #elif defined(CONFIG_BT_DEBUG_MONITOR_UART)
-	__ASSERT_NO_MSG(device_is_ready(monitor_dev));
+	DEBUGASSERT(device_is_ready(monitor_dev));
 
 #if defined(CONFIG_BT_DEBUG_MONITOR_UART_INTERRUPT_DRIVEN)
 	/* SERIAL_SUPPORT_INTERRUPT only guarantees that some UART driver

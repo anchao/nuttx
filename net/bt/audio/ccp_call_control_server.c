@@ -19,7 +19,7 @@
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_utf8.h>
 #include <zephyr/toolchain.h>
@@ -64,7 +64,7 @@ static struct bt_ccp_call_control_server_bearer *get_free_bearer(void)
 		}
 
 		err = nxrmutex_unlock(&bearers[i].mutex);
-		__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+		DEBUGASSERT(err == 0);
 	}
 
 	return NULL;
@@ -208,7 +208,7 @@ int bt_ccp_call_control_server_register_bearer(const struct bt_tbs_register_para
 	}
 
 	err = nxrmutex_unlock(&free_bearer->mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -225,7 +225,7 @@ int bt_ccp_call_control_server_unregister_bearer(struct bt_ccp_call_control_serv
 	}
 
 	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT);
-	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	if (!bearer->registered) {
 		LOG_DBG("Bearer %p already unregistered", bearer);
@@ -244,7 +244,7 @@ int bt_ccp_call_control_server_unregister_bearer(struct bt_ccp_call_control_serv
 	}
 
 	err = nxrmutex_unlock(&bearer->mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -276,7 +276,7 @@ int bt_ccp_call_control_server_set_bearer_provider_name(
 	}
 
 	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT);
-	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	if (!bearer->registered) {
 		LOG_DBG("Bearer %p not registered", bearer);
@@ -300,7 +300,7 @@ int bt_ccp_call_control_server_set_bearer_provider_name(
 	}
 
 	err = nxrmutex_unlock(&bearer->mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -325,7 +325,7 @@ int bt_ccp_call_control_server_get_bearer_provider_name(
 	}
 
 	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT);
-	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	if (!bearer->registered) {
 		LOG_DBG("Bearer %p not registered", bearer);
@@ -346,7 +346,7 @@ int bt_ccp_call_control_server_get_bearer_provider_name(
 	}
 
 	err = nxrmutex_unlock(&bearer->mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -371,7 +371,7 @@ int bt_ccp_call_control_server_get_bearer_uci(struct bt_ccp_call_control_server_
 	}
 
 	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT);
-	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	if (!bearer->registered) {
 		LOG_DBG("Bearer %p not registered", bearer);
@@ -379,7 +379,7 @@ int bt_ccp_call_control_server_get_bearer_uci(struct bt_ccp_call_control_server_
 		ret = -EFAULT;
 	} else {
 		uci_len = strlen(bearer->uci);
-		__ASSERT_NO_MSG(uci_len < BT_TBS_MAX_UCI_SIZE);
+		DEBUGASSERT(uci_len < BT_TBS_MAX_UCI_SIZE);
 		(void)memcpy(uci, bearer->uci, uci_len);
 		uci[uci_len] = '\0';
 
@@ -387,7 +387,7 @@ int bt_ccp_call_control_server_get_bearer_uci(struct bt_ccp_call_control_server_
 	}
 
 	err = nxrmutex_unlock(&bearer->mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -478,7 +478,7 @@ int bt_ccp_call_control_server_set_bearer_uri_schemes(
 	}
 
 	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT);
-	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	if (!bearer->registered) {
 		LOG_DBG("Bearer %p not registered", bearer);
@@ -496,7 +496,7 @@ int bt_ccp_call_control_server_set_bearer_uri_schemes(
 	}
 
 	err = nxrmutex_unlock(&bearer->mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -522,7 +522,7 @@ int bt_ccp_call_control_server_get_bearer_uri_schemes(
 	}
 
 	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT);
-	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	if (!bearer->registered) {
 		LOG_DBG("Bearer %p not registered", bearer);
@@ -542,7 +542,7 @@ int bt_ccp_call_control_server_get_bearer_uri_schemes(
 	}
 
 	err = nxrmutex_unlock(&bearer->mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -553,7 +553,7 @@ static int ccp_server_init(void)
 		__maybe_unused int err;
 
 		err = nxrmutex_init(&bearer->mutex);
-		__ASSERT(err == 0, "Failed to init mutex: %d", err);
+		DEBUGASSERT(err == 0);
 	}
 
 	return 0;

@@ -33,7 +33,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
@@ -203,7 +203,7 @@ static bool is_valid_ase_id(uint8_t ase_id)
 
 static void ase_free(struct bt_ascs_ase *ase)
 {
-	__ASSERT(ase && ase->conn, "Non-existing ASE");
+	DEBUGASSERT(ase && ase->conn);
 
 	LOG_DBG("conn %p ase %p id 0x%02x", (void *)ase->conn, ase, ASE_ID(ase));
 
@@ -226,10 +226,10 @@ static int ase_state_notify(struct bt_ascs_ase *ase)
 	uint16_t ntf_size;
 	int err;
 
-	__ASSERT_NO_MSG(conn != NULL);
+	DEBUGASSERT(conn != NULL);
 
 	err = bt_conn_get_info(conn, &conn_info);
-	__ASSERT_NO_MSG(err == 0);
+	DEBUGASSERT(err == 0);
 
 	if (conn_info.state != BT_CONN_STATE_CONNECTED ||
 	    !bt_gatt_is_subscribed(conn, ase->attr, BT_GATT_CCC_NOTIFY)) {
@@ -247,7 +247,7 @@ static int ase_state_notify(struct bt_ascs_ase *ase)
 
 	max_ntf_size = bt_att_get_max_notify_size(conn, BT_ATT_CHAN_OPT_NONE);
 	if (max_ntf_size < 0) {
-		__ASSERT(max_ntf_size != -EINVAL, "Unexpected -EINVAL");
+		DEBUGASSERT(max_ntf_size != -EINVAL);
 		nxsem_post(&ase_buf_sem);
 		return max_ntf_size;
 	}
@@ -274,9 +274,7 @@ static void ascs_disconnect_stream_work_handler(struct k_work *work)
 	struct bt_bap_stream *stream = ep->stream;
 	struct bt_bap_stream *pair_stream;
 
-	__ASSERT(ep != NULL && ep->iso && stream != NULL,
-		 "Invalid endpoint %p, iso %p or stream %p",
-		 ep, ep == NULL ? NULL : ep->iso, stream);
+	DEBUGASSERT(ep != NULL && ep->iso && stream != NULL);
 
 	if (ep->dir == BT_AUDIO_DIR_SINK) {
 		pair_stream = ep->iso->tx.stream;
@@ -290,8 +288,7 @@ static void ascs_disconnect_stream_work_handler(struct k_work *work)
 	if (pair_stream != NULL) {
 		struct bt_ascs_ase *pair_ase;
 
-		__ASSERT(pair_stream->ep != NULL, "Invalid pair_stream %p",
-			 pair_stream);
+		DEBUGASSERT(pair_stream->ep != NULL);
 
 		if (pair_stream->ep->state == BT_BAP_EP_STATE_STREAMING) {
 			/* Should not disconnect ISO if the stream is paired
@@ -337,7 +334,7 @@ static void ase_enter_state_idle(struct bt_ascs_ase *ase)
 	struct bt_bap_stream *stream = ase->ep.stream;
 	struct bt_bap_stream_ops *ops;
 
-	__ASSERT_NO_MSG(stream != NULL);
+	DEBUGASSERT(stream != NULL);
 
 	ase->ep.receiver_ready = false;
 	stream->iso = NULL;
@@ -357,7 +354,7 @@ static void ase_enter_state_codec_configured(struct bt_ascs_ase *ase)
 	struct bt_bap_stream *stream = ase->ep.stream;
 	struct bt_bap_stream_ops *ops;
 
-	__ASSERT_NO_MSG(stream != NULL);
+	DEBUGASSERT(stream != NULL);
 
 	ase->ep.receiver_ready = false;
 	stream->iso = NULL;
@@ -373,7 +370,7 @@ static void ase_enter_state_qos_configured(struct bt_ascs_ase *ase)
 	struct bt_bap_stream *stream = ase->ep.stream;
 	struct bt_bap_stream_ops *ops;
 
-	__ASSERT_NO_MSG(stream != NULL);
+	DEBUGASSERT(stream != NULL);
 
 	ase->ep.receiver_ready = false;
 
@@ -388,7 +385,7 @@ static void ase_enter_state_enabling(struct bt_ascs_ase *ase)
 	struct bt_bap_stream *stream = ase->ep.stream;
 	struct bt_bap_stream_ops *ops;
 
-	__ASSERT_NO_MSG(stream != NULL);
+	DEBUGASSERT(stream != NULL);
 
 	ops = stream->ops;
 	if (ops != NULL && ops->enabled != NULL) {
@@ -407,7 +404,7 @@ static void ase_enter_state_streaming(struct bt_ascs_ase *ase)
 	struct bt_bap_stream *stream = ase->ep.stream;
 	struct bt_bap_stream_ops *ops;
 
-	__ASSERT_NO_MSG(stream != NULL);
+	DEBUGASSERT(stream != NULL);
 
 	/* Setup the ISO data path when the stream is started. We could do it earlier when the CIS
 	 * is connected, but then we would just receive audio data that we would then just discard
@@ -425,7 +422,7 @@ static void ase_metadata_updated(struct bt_ascs_ase *ase)
 	struct bt_bap_stream *stream = ase->ep.stream;
 	struct bt_bap_stream_ops *ops;
 
-	__ASSERT_NO_MSG(stream != NULL);
+	DEBUGASSERT(stream != NULL);
 
 	ops = stream->ops;
 	if (ops != NULL && ops->metadata_updated != NULL) {
@@ -440,7 +437,7 @@ static void ase_exit_state_streaming(struct bt_ascs_ase *ase)
 	struct bt_bap_stream_ops *ops;
 	uint8_t reason = ase->ep.reason;
 
-	__ASSERT_NO_MSG(stream != NULL);
+	DEBUGASSERT(stream != NULL);
 
 	if (reason == BT_HCI_ERR_SUCCESS) {
 		/* Default to BT_HCI_ERR_UNSPECIFIED if no other reason is set */
@@ -505,7 +502,7 @@ static void ase_enter_state_disabling(struct bt_ascs_ase *ase)
 	struct bt_bap_stream *stream = ase->ep.stream;
 	struct bt_bap_stream_ops *ops;
 
-	__ASSERT_NO_MSG(stream != NULL);
+	DEBUGASSERT(stream != NULL);
 
 	ase->ep.receiver_ready = false;
 
@@ -519,7 +516,7 @@ static void ase_enter_state_releasing(struct bt_ascs_ase *ase)
 {
 	struct bt_bap_stream *stream = ase->ep.stream;
 
-	__ASSERT_NO_MSG(stream != NULL);
+	DEBUGASSERT(stream != NULL);
 
 	ase->ep.receiver_ready = false;
 
@@ -618,7 +615,7 @@ static int execute_state_transition(struct bt_ascs_ase *ase)
 	const enum bt_bap_ep_state old_state = ase->ep.state;
 	int err;
 
-	__ASSERT_NO_MSG(ase->has_pending_state);
+	DEBUGASSERT(ase->has_pending_state);
 
 	ase->ep.state = new_state;
 
@@ -651,14 +648,13 @@ static void reschedule_notify_work(struct ascs_client *client)
 	__maybe_unused int err;
 
 	err = bt_conn_get_info(client->conn, &info);
-	__ASSERT_NO_MSG(err == 0);
+	DEBUGASSERT(err == 0);
 
 	retry_delay_us = info.le.interval_us;
 
 	/* Reschedule the state transition */
 	err = k_work_reschedule(&client->notify_work, USEC2TICK(retry_delay_us));
-	__ASSERT(err >= 0, "Failed to reschedule notify_work for client %p (conn %p): %d", client,
-		 client->conn, err);
+	DEBUGASSERT(err >= 0);
 
 	LOG_DBG("Out of buffers for notification. Will retry in %dus", retry_delay_us);
 }
@@ -897,7 +893,7 @@ static int ascs_iso_accept(const struct bt_iso_accept_info *info, struct bt_iso_
 			break;
 		}
 
-		__ASSERT(ase->ep.iso != NULL, "ep %p not bound with ISO", &ase->ep);
+		DEBUGASSERT(ase->ep.iso != NULL);
 
 		chan = &ase->ep.iso->chan;
 		if (chan->iso != NULL) {
@@ -1381,8 +1377,7 @@ static void force_ase_release(struct bt_ascs_ase *ase, uint8_t reason)
 	} else {
 		client = client_from_conn(ase->conn);
 
-		__ASSERT(client != NULL, "Failed to client for ASE %p with conn %p", ase,
-			 ase->conn);
+		DEBUGASSERT(client != NULL);
 		(void)k_work_cancel_delayable_sync(&client->notify_work, &sync);
 	}
 
@@ -1428,10 +1423,9 @@ static void force_ase_release(struct bt_ascs_ase *ase, uint8_t reason)
 		/* At this point, `ase` object have been free'd */
 	}
 
-	__ASSERT(!k_work_delayable_is_pending(&ase->disconnect_work),
-		 "ase %p still has pending disconnect_work", ase);
-	__ASSERT(ase->ep.state == BT_BAP_EP_STATE_IDLE, "Unexpected ASE state: %d", ase->ep.state);
-	__ASSERT(!ase->has_pending_state, "Unexpected pending ASE state: %d", ase->state_pending);
+	DEBUGASSERT(!k_work_delayable_is_pending(&ase->disconnect_work));
+	DEBUGASSERT(ase->ep.state == BT_BAP_EP_STATE_IDLE);
+	DEBUGASSERT(!ase->has_pending_state);
 }
 
 static void disconnected(struct bt_conn *conn, uint8_t reason)
@@ -1445,8 +1439,7 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 	}
 
 	client = client_from_conn(conn);
-	__ASSERT(client != NULL, "Failed to remove client address %s for conn %p",
-		 bt_conn_dst_str(conn), conn);
+	DEBUGASSERT(client != NULL);
 
 	(void)k_work_cancel_delayable_sync(&client->notify_work, &sync);
 
@@ -1488,7 +1481,7 @@ static void ascs_security_changed_cb(struct bt_conn *conn, bt_security_t level,
 			}
 		}
 
-		__ASSERT(added, "Failed to add conn %p", conn);
+		DEBUGASSERT(added);
 	} /* else Already there - Can happen if security changes multiple times */
 }
 
@@ -1585,7 +1578,7 @@ static void ase_init(struct bt_ascs_ase *ase, struct bt_conn *conn, uint8_t id)
 	bt_gatt_foreach_attr_type(BT_ATT_FIRST_ATTRIBUTE_HANDLE, BT_ATT_LAST_ATTRIBUTE_HANDLE,
 				  ASE_UUID(id), NULL, 0U, ase_attr_cb, ase);
 
-	__ASSERT(ase->attr, "ASE characteristic not found\n");
+	DEBUGASSERT(ase->attr);
 
 	k_work_init_delayable(&ase->disconnect_work, ascs_disconnect_stream_work_handler);
 }
@@ -1594,7 +1587,7 @@ static struct bt_ascs_ase *ase_new(struct bt_conn *conn, uint8_t id)
 {
 	struct bt_ascs_ase *ase = NULL;
 
-	__ASSERT(id > 0U && id <= ASE_COUNT, "invalid ASE_ID 0x%02x", id);
+	DEBUGASSERT(id > 0U && id <= ASE_COUNT);
 
 	for (size_t i = 0U; i < ARRAY_SIZE(ascs.ase_pool); i++) {
 		if (ascs.ase_pool[i].conn == NULL) {
@@ -3355,7 +3348,7 @@ static void control_point_respond(struct ascs_client *client)
 	client->rsp_building = false;
 
 	err = k_work_reschedule(&client->notify_work, 0);
-	__ASSERT(err >= 0, "Failed to schedule notify_work: %d", err);
+	DEBUGASSERT(err >= 0);
 }
 
 static ssize_t ascs_cp_write(struct bt_conn *conn,
@@ -3568,8 +3561,7 @@ int bt_ascs_register(const struct bt_ascs_register_param *param)
 
 	err = bt_iso_server_register(&iso_server);
 	if (err != 0) {
-		__ASSERT(err == -EADDRINUSE || err == -ENOTSUP,
-			 "Unexpected bt_iso_server_register error: %d", err);
+		DEBUGASSERT(err == -EADDRINUSE || err == -ENOTSUP);
 
 		LOG_DBG("Failed to register ISO server %d", err);
 
@@ -3591,12 +3583,12 @@ int bt_ascs_register(const struct bt_ascs_register_param *param)
 	if (err != 0) {
 		__maybe_unused int unregister_err;
 
-		__ASSERT(err == -EINVAL, "Unexpected bt_gatt_service_register error: %d", err);
+		DEBUGASSERT(err == -EINVAL);
 
 		LOG_DBG("Failed to register ASCS in gatt DB");
 
 		unregister_err = bt_iso_server_unregister(&iso_server);
-		__ASSERT_NO_MSG(unregister_err == 0);
+		DEBUGASSERT(unregister_err == 0);
 
 		(void)memcpy(ascs_attrs, ascs_attrs_backup, sizeof(ascs_attrs_backup));
 
@@ -3627,7 +3619,7 @@ int bt_ascs_unregister(void)
 	/* Unregister the GATT service first to prevent any GATT operations while cleaning up */
 	err = bt_gatt_service_unregister(&ascs_svc);
 	if (err != 0) {
-		__ASSERT(err == -ENOENT, "Unexpected bt_gatt_service_unregister error: %d", err);
+		DEBUGASSERT(err == -ENOENT);
 
 		LOG_DBG("Failed to unregister ASCS: %d", err);
 
@@ -3639,8 +3631,7 @@ int bt_ascs_unregister(void)
 
 		(void)k_work_cancel_delayable_sync(&client->notify_work, &sync);
 
-		__ASSERT(!k_work_delayable_is_pending(&client->notify_work),
-			 "client %p still has pending notify_work", client);
+		DEBUGASSERT(!k_work_delayable_is_pending(&client->notify_work));
 	}
 
 	ARRAY_FOR_EACH_PTR(ascs.ase_pool, ase) {
@@ -3648,7 +3639,7 @@ int bt_ascs_unregister(void)
 	}
 
 	err = bt_iso_server_unregister(&iso_server);
-	__ASSERT_NO_MSG(err == 0);
+	DEBUGASSERT(err == 0);
 
 	(void)memcpy(ascs_attrs, ascs_attrs_backup, sizeof(ascs_attrs_backup));
 	ascs_svc.attr_count = ARRAY_SIZE(ascs_attrs);
@@ -3662,7 +3653,7 @@ struct bt_conn *bt_ascs_ep_get_conn(const struct bt_bap_ep *ep)
 {
 	struct bt_ascs_ase *ase = CONTAINER_OF(ep, struct bt_ascs_ase, ep);
 
-	__ASSERT_NO_MSG(bt_ascs_has_ep(ep));
+	DEBUGASSERT(bt_ascs_has_ep(ep));
 
 	if (ase->conn == NULL) {
 		return NULL;

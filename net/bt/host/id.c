@@ -28,7 +28,7 @@
 #include <zephyr/sys/time_units.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/toolchain.h>
 
 #include "adv.h"
@@ -998,11 +998,11 @@ static void find_rl_conflict(struct bt_keys *resident, void *user_data)
 	bool addr_conflict;
 	bool irk_conflict;
 
-	__ASSERT_NO_MSG(conflict != NULL);
-	__ASSERT_NO_MSG(conflict->candidate != NULL);
-	__ASSERT_NO_MSG(resident != NULL);
+	DEBUGASSERT(conflict != NULL);
+	DEBUGASSERT(conflict->candidate != NULL);
+	DEBUGASSERT(resident != NULL);
 	/* Only uncommitted bonds can be in conflict with committed bonds. */
-	__ASSERT_NO_MSG((conflict->candidate->state & BT_KEYS_ID_ADDED) == 0);
+	DEBUGASSERT((conflict->candidate->state & BT_KEYS_ID_ADDED) == 0);
 
 	if (conflict->found) {
 		return;
@@ -1054,7 +1054,7 @@ void bt_id_add(struct bt_keys *keys)
 
 	LOG_DBG("addr %s", bt_addr_le_str(&keys->addr));
 
-	__ASSERT_NO_MSG(keys != NULL);
+	DEBUGASSERT(keys != NULL);
 	/* We assume (and could assert) !bt_id_find_conflict(keys) here. */
 
 	/* Nothing to be done if host-side resolving is used */
@@ -1206,7 +1206,7 @@ static int hci_id_del(const bt_addr_le_t *addr)
 
 static void pending_id_del_set(const bt_addr_le_t *addr, struct bt_keys *keys)
 {
-	__ASSERT_NO_MSG(pending_id_del_count < ARRAY_SIZE(pending_id_del_addrs));
+	DEBUGASSERT(pending_id_del_count < ARRAY_SIZE(pending_id_del_addrs));
 
 	if (pending_id_del_count < ARRAY_SIZE(pending_id_del_addrs)) {
 		bt_addr_le_copy(&pending_id_del_addrs[pending_id_del_count], addr);
@@ -1231,7 +1231,7 @@ static bool id_del(const bt_addr_le_t *addr, struct bt_keys *keys)
 
 	if (!bt_dev.le.rl_size ||
 	    bt_dev.le.rl_entries > bt_dev.le.rl_size + 1) {
-		__ASSERT_NO_MSG(bt_dev.le.rl_entries > 0);
+		DEBUGASSERT(bt_dev.le.rl_entries > 0);
 		if (bt_dev.le.rl_entries > 0) {
 			bt_dev.le.rl_entries--;
 		}

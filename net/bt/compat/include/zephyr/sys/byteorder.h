@@ -14,7 +14,8 @@
 #include <zephyr/types.h>
 #include <stddef.h>
 #include <string.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
+#include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
 
@@ -708,9 +709,8 @@ static inline void sys_memcpy_swap(void *dst, const void *src, size_t length)
 	uint8_t *pdst = (uint8_t *)dst;
 	const uint8_t *psrc = (const uint8_t *)src;
 
-	__ASSERT(((psrc < pdst && (psrc + length) <= pdst) ||
-		  (psrc > pdst && (pdst + length) <= psrc)),
-		 "Source and destination buffers must not overlap");
+	DEBUGASSERT(((psrc < pdst && (psrc + length) <= pdst) ||
+		  (psrc > pdst && (pdst + length) <= psrc)));
 
 	psrc += length - 1;
 

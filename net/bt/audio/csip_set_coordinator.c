@@ -40,7 +40,7 @@
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
@@ -126,8 +126,8 @@ static struct bt_csip_set_coordinator_svc_inst *lookup_instance_by_handle(struct
 	uint8_t conn_index;
 	struct bt_csip_set_coordinator_inst *client;
 
-	__ASSERT(conn, "NULL conn");
-	__ASSERT(handle > 0U, "Handle cannot be 0");
+	DEBUGASSERT(conn);
+	DEBUGASSERT(handle > 0U);
 
 	conn_index = bt_conn_index(conn);
 	client = &client_insts[conn_index];
@@ -148,10 +148,8 @@ struct bt_csip_set_coordinator_svc_inst *bt_csip_set_coordinator_lookup_instance
 	uint8_t conn_index;
 	struct bt_csip_set_coordinator_inst *client;
 
-	__ASSERT(conn, "NULL conn");
-	__ASSERT(idx < CONFIG_BT_CSIP_SET_COORDINATOR_MAX_CSIS_INSTANCES,
-		 "Index shall be less than maximum number of instances %u (was %u)",
-		 CONFIG_BT_CSIP_SET_COORDINATOR_MAX_CSIS_INSTANCES, idx);
+	DEBUGASSERT(conn);
+	DEBUGASSERT(idx < CONFIG_BT_CSIP_SET_COORDINATOR_MAX_CSIS_INSTANCES);
 
 	conn_index = bt_conn_index(conn);
 	client = &client_insts[conn_index];
@@ -249,13 +247,9 @@ static void active_members_store_ordered(const struct bt_csip_set_coordinator_se
 			const uint8_t rank_2 = svc_inst_2->set_info->rank;
 
 			if (ascending) {
-				__ASSERT(rank_1 <= rank_2,
-					 "Members not sorted by ascending rank %u - %u", rank_1,
-					 rank_2);
+				DEBUGASSERT(rank_1 <= rank_2);
 			} else {
-				__ASSERT(rank_1 >= rank_2,
-					 "Members not sorted by descending rank %u - %u", rank_1,
-					 rank_2);
+				DEBUGASSERT(rank_1 >= rank_2);
 			}
 		}
 #endif /* CONFIG_ASSERT */
@@ -885,7 +879,7 @@ static uint8_t csip_set_coordinator_discover_insts_read_rank_cb(struct bt_conn *
 
 	ARG_UNUSED(params);
 
-	__ASSERT(client->cur_inst != NULL, "client->cur_inst must not be NULL");
+	DEBUGASSERT(client->cur_inst != NULL);
 
 	if (err != 0) {
 		LOG_DBG("err: 0x%02X", err);
@@ -919,7 +913,7 @@ static uint8_t csip_set_coordinator_discover_insts_read_set_size_cb(
 
 	ARG_UNUSED(params);
 
-	__ASSERT(client->cur_inst != NULL, "client->cur_inst must not be NULL");
+	DEBUGASSERT(client->cur_inst != NULL);
 
 	if (err != 0) {
 		LOG_DBG("err: 0x%02X", err);
@@ -1000,7 +994,7 @@ static uint8_t csip_set_coordinator_discover_insts_read_sirk_cb(struct bt_conn *
 
 	ARG_UNUSED(params);
 
-	__ASSERT(client->cur_inst != NULL, "client->cur_inst must not be NULL");
+	DEBUGASSERT(client->cur_inst != NULL);
 
 	if (err != 0) {
 		LOG_DBG("err: 0x%02X", err);

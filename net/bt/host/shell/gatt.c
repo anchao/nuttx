@@ -24,7 +24,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/shell/shell_string_conv.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/time_units.h>
 #include <zephyr/sys/clock.h>
@@ -103,7 +103,7 @@ static void exchange_func(struct bt_conn *conn, uint8_t err,
 	bt_shell_print("Exchange %s", err == 0U ? "successful" : "failed");
 
 	/* Release global `exchange_params`. */
-	__ASSERT_NO_MSG(params == &exchange_params);
+	DEBUGASSERT(params == &exchange_params);
 	(void)memset(params, 0, sizeof(*params));
 }
 

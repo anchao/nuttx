@@ -32,7 +32,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
@@ -372,8 +372,7 @@ int bt_cap_initiator_broadcast_audio_start(struct bt_cap_broadcast_source *broad
 		const int err = bt_bap_broadcast_source_register_cb(&broadcast_source_cb);
 
 		if (err != 0) {
-			__ASSERT(false, "Failed to register BAP broadcast source callbacks: %d",
-				 err);
+			DEBUGASSERT(false);
 		}
 
 		broadcast_source_cbs_registered = true;
@@ -571,7 +570,7 @@ static void set_cap_stream_in_progress(struct bt_cap_common_proc *active_proc,
 		}
 	}
 
-	__ASSERT(false, "CAP stream %p not in active_proc", cap_stream);
+	DEBUGASSERT(false);
 }
 
 /**
@@ -671,8 +670,7 @@ static void update_proc_done_cnt(struct bt_cap_common_proc *active_proc)
 					/* May only happen if the stream is modified by another
 					 * thread, in which case everything else may be broken...
 					 */
-					__ASSERT(err == 0, "Failed to get QoS from stream %p: %d",
-						 bap_stream, err);
+					DEBUGASSERT(err == 0);
 					if (bt_bap_qos_cfg_eq(bap_stream->qos, &qos)) {
 						proc_done_cnt++;
 					}
@@ -719,8 +717,7 @@ static void update_proc_done_cnt(struct bt_cap_common_proc *active_proc)
 				}
 				break;
 			default:
-				__ASSERT(false, "Invalid subproc %d for %d", subproc_type,
-					 proc_type);
+				DEBUGASSERT(false);
 			}
 		}
 	} else if (proc_type == BT_CAP_COMMON_PROC_TYPE_STOP) {
@@ -758,8 +755,7 @@ static void update_proc_done_cnt(struct bt_cap_common_proc *active_proc)
 				}
 				break;
 			default:
-				__ASSERT(false, "Invalid subproc %d for %d", subproc_type,
-					 proc_type);
+				DEBUGASSERT(false);
 			}
 		}
 	} else if (proc_type == BT_CAP_COMMON_PROC_TYPE_UPDATE) {
@@ -795,7 +791,7 @@ static void update_proc_done_cnt(struct bt_cap_common_proc *active_proc)
 			}
 			break;
 		default:
-			__ASSERT(false, "Invalid subproc %d for %d", subproc_type, proc_type);
+			DEBUGASSERT(false);
 		}
 	}
 
@@ -833,7 +829,7 @@ get_next_proc_param(struct bt_cap_common_proc *active_proc)
 
 		switch (subproc_type) {
 		case BT_CAP_COMMON_SUBPROC_TYPE_CODEC_CONFIG:
-			__ASSERT_NO_MSG(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_START);
+			DEBUGASSERT(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_START);
 
 			if (state == BT_BAP_EP_STATE_IDLE) {
 				return proc_param;
@@ -847,7 +843,7 @@ get_next_proc_param(struct bt_cap_common_proc *active_proc)
 			}
 			break;
 		case BT_CAP_COMMON_SUBPROC_TYPE_QOS_CONFIG:
-			__ASSERT_NO_MSG(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_START);
+			DEBUGASSERT(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_START);
 
 			if (state == BT_BAP_EP_STATE_CODEC_CONFIGURED) {
 				return proc_param;
@@ -861,15 +857,14 @@ get_next_proc_param(struct bt_cap_common_proc *active_proc)
 				/* May only happen if the stream is modified by another thread, in
 				 * which case everything else may be broken...
 				 */
-				__ASSERT(err == 0, "Failed to get QoS from stream %p: %d",
-					 bap_stream, err);
+				DEBUGASSERT(err == 0);
 				if (!bt_bap_qos_cfg_eq(bap_stream->qos, &qos)) {
 					return proc_param;
 				}
 			}
 			break;
 		case BT_CAP_COMMON_SUBPROC_TYPE_ENABLE:
-			__ASSERT_NO_MSG(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_START);
+			DEBUGASSERT(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_START);
 
 			if (state == BT_BAP_EP_STATE_QOS_CONFIGURED) {
 				return proc_param;
@@ -883,14 +878,14 @@ get_next_proc_param(struct bt_cap_common_proc *active_proc)
 			}
 			break;
 		case BT_CAP_COMMON_SUBPROC_TYPE_CONNECT:
-			__ASSERT_NO_MSG(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_START);
+			DEBUGASSERT(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_START);
 
 			if (state == BT_BAP_EP_STATE_ENABLING && !proc_param->start.connected) {
 				return proc_param;
 			}
 			break;
 		case BT_CAP_COMMON_SUBPROC_TYPE_START:
-			__ASSERT_NO_MSG(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_START);
+			DEBUGASSERT(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_START);
 
 			if (state == BT_BAP_EP_STATE_ENABLING) {
 				/* TODO: Add check for connected */
@@ -898,7 +893,7 @@ get_next_proc_param(struct bt_cap_common_proc *active_proc)
 			}
 			break;
 		case BT_CAP_COMMON_SUBPROC_TYPE_META_UPDATE:
-			__ASSERT_NO_MSG(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_UPDATE);
+			DEBUGASSERT(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_UPDATE);
 
 			if ((state == BT_BAP_EP_STATE_ENABLING ||
 			     state == BT_BAP_EP_STATE_STREAMING) &&
@@ -909,7 +904,7 @@ get_next_proc_param(struct bt_cap_common_proc *active_proc)
 			}
 			break;
 		case BT_CAP_COMMON_SUBPROC_TYPE_DISABLE:
-			__ASSERT_NO_MSG(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_STOP);
+			DEBUGASSERT(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_STOP);
 
 			if (state == BT_BAP_EP_STATE_ENABLING ||
 			    state == BT_BAP_EP_STATE_STREAMING) {
@@ -917,14 +912,14 @@ get_next_proc_param(struct bt_cap_common_proc *active_proc)
 			}
 			break;
 		case BT_CAP_COMMON_SUBPROC_TYPE_STOP:
-			__ASSERT_NO_MSG(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_STOP);
+			DEBUGASSERT(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_STOP);
 
 			if (state == BT_BAP_EP_STATE_DISABLING) {
 				return proc_param;
 			}
 			break;
 		case BT_CAP_COMMON_SUBPROC_TYPE_RELEASE:
-			__ASSERT_NO_MSG(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_STOP);
+			DEBUGASSERT(active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_STOP);
 
 			if (proc_param->stop.release && !proc_param->stop.completed) {
 				return proc_param;
@@ -1431,16 +1426,12 @@ cap_initiator_unicast_subproc_complete_and_continue(const struct bt_cap_common_p
 		}
 		break;
 	default:
-		__ASSERT(false, "Unexpected subproc %d for proc %d", active_proc->subproc_type,
-			 active_proc->proc_type);
+		DEBUGASSERT(false);
 		break;
 	}
 
 	if (bt_cap_common_proc_is_aborted()) {
-		__ASSERT(bt_cap_common_proc_all_handled(),
-			 "CAP procedure is aborted but not all subprocs were handled after "
-			 "subproc_complete: %u != %u",
-			 active_proc->proc_done_cnt, active_proc->proc_cnt);
+		DEBUGASSERT(bt_cap_common_proc_all_handled());
 
 		return false;
 	}
@@ -1498,7 +1489,7 @@ void cap_initiator_unicast_audio_proc_complete(struct bt_cap_common_proc *active
 		break;
 	case BT_CAP_COMMON_PROC_TYPE_NONE:
 	default:
-		__ASSERT(false, "Invalid proc_type: %u", proc_type);
+		DEBUGASSERT(false);
 	}
 }
 
@@ -1730,7 +1721,7 @@ void bt_cap_initiator_codec_configured(struct bt_cap_stream *cap_stream)
 		int err;
 
 		proc_param = get_next_proc_param(active_proc);
-		__ASSERT(proc_param != NULL, "proc is not done, but could not get next proc_param");
+		DEBUGASSERT(proc_param != NULL);
 		next_cap_stream = proc_param->stream;
 		conn = proc_param->start.conn;
 		ep = proc_param->start.ep;
@@ -1785,7 +1776,7 @@ void bt_cap_initiator_codec_configured(struct bt_cap_stream *cap_stream)
 		if (free_conn != NULL) {
 			*free_conn = stream_conn;
 		} else {
-			__ASSERT(false, "[%zu]: No free conns", i);
+			DEBUGASSERT(false);
 			bt_cap_common_unlock_proc();
 			return;
 		}
@@ -1950,7 +1941,7 @@ void bt_cap_initiator_qos_configured(struct bt_cap_stream *cap_stream)
 		int err;
 
 		proc_param = get_next_proc_param(active_proc);
-		__ASSERT(proc_param != NULL, "proc is not done, but could not get next proc_param");
+		DEBUGASSERT(proc_param != NULL);
 
 		next_cap_stream = proc_param->stream;
 		next_bap_stream = &next_cap_stream->bap_stream;
@@ -2016,7 +2007,7 @@ void bt_cap_initiator_enabled(struct bt_cap_stream *cap_stream)
 		struct bt_bap_stream *next_bap_stream;
 
 		proc_param = get_next_proc_param(active_proc);
-		__ASSERT(proc_param != NULL, "proc is not done, but could not get next proc_param");
+		DEBUGASSERT(proc_param != NULL);
 		next_cap_stream = proc_param->stream;
 		next_bap_stream = &next_cap_stream->bap_stream;
 
@@ -2123,7 +2114,7 @@ void bt_cap_initiator_connected(struct bt_cap_stream *cap_stream)
 		bt_cap_common_abort_proc(cap_stream->bap_stream.conn, -EBADMSG);
 	} else {
 		proc_param = get_proc_param_by_cap_stream(active_proc, cap_stream);
-		__ASSERT_NO_MSG(proc_param != NULL);
+		DEBUGASSERT(proc_param != NULL);
 
 		/* Sets connected before update_proc_done_cnt as that is the only way to can track
 		 * the CIS state change
@@ -2496,7 +2487,7 @@ int bt_cap_initiator_unicast_audio_update(const struct bt_cap_unicast_audio_upda
 	bt_cap_common_set_subproc(BT_CAP_COMMON_SUBPROC_TYPE_META_UPDATE);
 
 	proc_param = get_next_proc_param(active_proc);
-	__ASSERT(proc_param != NULL, "proc is not done, but could not get next proc_param");
+	DEBUGASSERT(proc_param != NULL);
 
 	bap_stream = &proc_param->stream->bap_stream;
 	meta_len = proc_param->meta_update.meta_len;
@@ -2805,8 +2796,7 @@ int cap_initiator_unicast_audio_stop(struct bt_cap_common_proc *active_proc,
 		bt_cap_common_set_subproc(BT_CAP_COMMON_SUBPROC_TYPE_DISABLE);
 
 		proc_param = get_next_proc_param(active_proc);
-		__ASSERT(proc_param != NULL,
-			 "proc is not started, but could not get next proc_param");
+		DEBUGASSERT(proc_param != NULL);
 		bap_stream = &proc_param->stream->bap_stream;
 		active_proc->proc_initiated_cnt++;
 		proc_param->in_progress = true;
@@ -2823,8 +2813,7 @@ int cap_initiator_unicast_audio_stop(struct bt_cap_common_proc *active_proc,
 		bt_cap_common_set_subproc(BT_CAP_COMMON_SUBPROC_TYPE_STOP);
 
 		proc_param = get_next_proc_param(active_proc);
-		__ASSERT(proc_param != NULL,
-			 "proc is not started, but could not get next proc_param");
+		DEBUGASSERT(proc_param != NULL);
 		bap_stream = &proc_param->stream->bap_stream;
 		active_proc->proc_initiated_cnt++;
 		proc_param->in_progress = true;
@@ -2841,8 +2830,7 @@ int cap_initiator_unicast_audio_stop(struct bt_cap_common_proc *active_proc,
 		bt_cap_common_set_subproc(BT_CAP_COMMON_SUBPROC_TYPE_RELEASE);
 
 		proc_param = get_next_proc_param(active_proc);
-		__ASSERT(proc_param != NULL,
-			 "proc is not started, but could not get next proc_param");
+		DEBUGASSERT(proc_param != NULL);
 		bap_stream = &proc_param->stream->bap_stream;
 		active_proc->proc_initiated_cnt++;
 		proc_param->in_progress = true;
@@ -2926,7 +2914,7 @@ void bt_cap_initiator_disabled(struct bt_cap_stream *cap_stream)
 		int err;
 
 		proc_param = get_next_proc_param(active_proc);
-		__ASSERT(proc_param != NULL, "proc is not done, but could not get next proc_param");
+		DEBUGASSERT(proc_param != NULL);
 		next_cap_stream = proc_param->stream;
 		next_bap_stream = &next_cap_stream->bap_stream;
 		active_proc->proc_initiated_cnt++;
@@ -3147,7 +3135,7 @@ void bt_cap_initiator_released(struct bt_cap_stream *cap_stream)
 		int err;
 
 		proc_param = get_next_proc_param(active_proc);
-		__ASSERT(proc_param != NULL, "proc is not done, but could not get next proc_param");
+		DEBUGASSERT(proc_param != NULL);
 		next_cap_stream = proc_param->stream;
 		next_bap_stream = &next_cap_stream->bap_stream;
 		active_proc->proc_initiated_cnt++;

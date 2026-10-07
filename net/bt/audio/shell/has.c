@@ -19,7 +19,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/shell/shell_string_conv.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/toolchain.h>
 
 #include "common/bt_shell_private.h"
@@ -190,7 +190,7 @@ static int cmd_preset_list(const struct shell *sh, size_t argc, char **argv)
 	ARG_UNUSED(argv);
 
 	err = bt_has_preset_foreach(0, print_list_entry, &data);
-	__ASSERT(err == 0, "bt_has_preset_foreach returned %d", err);
+	DEBUGASSERT(err == 0);
 
 	if (data.num == 0) {
 		shell_print(sh, "No presets registered");

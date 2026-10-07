@@ -27,7 +27,7 @@
 #include <zephyr/kernel/thread.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
@@ -355,7 +355,7 @@ NET_BUF_POOL_DEFINE(att_pool, CONFIG_BT_ATT_TX_COUNT,
 
 static struct bt_att_tx_meta_data *att_get_tx_meta_data(const struct net_buf *buf)
 {
-	__ASSERT_NO_MSG(net_buf_pool_get(buf->pool) == &att_pool);
+	DEBUGASSERT(net_buf_pool_get(buf->pool) == &att_pool);
 
 	/* Metadata lifetime is implicitly tied to the buffer lifetime.
 	 * Treat it as part of the buffer itself.
@@ -422,7 +422,7 @@ static int chan_send(struct bt_att_chan *chan, struct net_buf *buf)
 		return -ENOTSUP;
 	}
 
-	__ASSERT_NO_MSG(buf->len >= sizeof(struct bt_att_hdr));
+	DEBUGASSERT(buf->len >= sizeof(struct bt_att_hdr));
 	data->opcode = buf->data[0];
 	data->err = 0;
 
@@ -515,7 +515,7 @@ static int chan_send(struct bt_att_chan *chan, struct net_buf *buf)
 
 static bool att_chan_matches_chan_opt(struct bt_att_chan *chan, enum bt_att_chan_opt chan_opt)
 {
-	__ASSERT_NO_MSG(chan_opt <= BT_ATT_CHAN_OPT_ENHANCED_ONLY);
+	DEBUGASSERT(chan_opt <= BT_ATT_CHAN_OPT_ENHANCED_ONLY);
 
 	if (chan_opt == BT_ATT_CHAN_OPT_NONE) {
 		return true;
@@ -548,13 +548,13 @@ static struct net_buf *get_first_buf_matching_chan(struct k_fifo *fifo, struct b
 			}
 		}
 
-		__ASSERT_NO_MSG(k_fifo_is_empty(fifo));
+		DEBUGASSERT(k_fifo_is_empty(fifo));
 
 		while ((buf = k_fifo_get(&skipped, 0))) {
 			k_fifo_put(fifo, buf);
 		}
 
-		__ASSERT_NO_MSG(k_fifo_is_empty(&skipped));
+		DEBUGASSERT(k_fifo_is_empty(&skipped));
 
 		return ret;
 	} else {
@@ -787,7 +787,7 @@ static void att_on_sent_cb(struct bt_att_tx_meta_data *meta)
 		chan_req_notif_sent(meta);
 		return;
 	default:
-		__ASSERT(false, "Unknown op type 0x%02X", op_type);
+		DEBUGASSERT(false);
 		return;
 	}
 }
@@ -2144,7 +2144,7 @@ static uint8_t write_cb(const struct bt_gatt_attr *attr, uint16_t handle,
 	} else if (data->op == BT_ATT_OP_EXEC_WRITE_REQ) {
 		flags |= BT_GATT_WRITE_FLAG_EXECUTE;
 	} else {
-		__ASSERT(data->op == BT_ATT_OP_WRITE_REQ, "Invalid data->op: %u", data->op);
+		DEBUGASSERT(data->op == BT_ATT_OP_WRITE_REQ);
 	}
 
 	/* Write attribute value */
@@ -3247,7 +3247,7 @@ static struct bt_att_chan *att_get_fixed_chan(struct bt_conn *conn)
 	struct bt_l2cap_chan *chan;
 
 	chan = bt_l2cap_le_lookup_tx_cid(conn, BT_L2CAP_CID_ATT);
-	__ASSERT(chan, "No ATT channel found");
+	DEBUGASSERT(chan);
 
 	return ATT_CHAN(chan);
 }
@@ -3645,7 +3645,7 @@ static clock_t credit_based_connection_delay(struct bt_conn *conn)
 	}
 
 	/* Must be either central or peripheral */
-	__ASSERT_NO_MSG(false);
+	DEBUGASSERT(false);
 	CODE_UNREACHABLE;
 }
 
@@ -3664,7 +3664,7 @@ static int att_schedule_eatt_connect(struct bt_conn *conn, uint8_t chans_to_conn
 
 static void handle_potential_collision(struct bt_att *att)
 {
-	__ASSERT_NO_MSG(att);
+	DEBUGASSERT(att);
 
 	int err;
 	size_t to_connect = att->eatt.prev_conn_req_missing_chans;
@@ -4108,8 +4108,8 @@ int bt_att_send(struct bt_conn *conn, struct net_buf *buf)
 {
 	struct bt_att *att;
 
-	__ASSERT_NO_MSG(conn);
-	__ASSERT_NO_MSG(buf);
+	DEBUGASSERT(conn);
+	DEBUGASSERT(buf);
 
 	att = att_get(conn);
 	if (!att) {
@@ -4129,8 +4129,8 @@ int bt_att_req_send(struct bt_conn *conn, struct bt_att_req *req)
 
 	LOG_DBG("conn %p req %p", conn, req);
 
-	__ASSERT_NO_MSG(conn);
-	__ASSERT_NO_MSG(req);
+	DEBUGASSERT(conn);
+	DEBUGASSERT(req);
 
 	/* att_handle_rsp() processes the request queue on the RX workqueue
 	 * without the host lock, relying on cooperative scheduling: hold the

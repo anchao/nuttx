@@ -278,7 +278,7 @@ static int notify_new_alert_category(struct bt_conn *conn, uint8_t cat)
 				 sizeof(struct new_alert));
 
 	ret = nxrmutex_unlock(&new_alert_mutex);
-	__ASSERT(ret == 0, "Unable to unlock mutex (err: %d)", ret);
+	DEBUGASSERT(ret == 0);
 
 	/* If the client is not connected, that is fine */
 	if (rc != 0 && rc != -ENOTCONN) {
@@ -339,7 +339,7 @@ static int notify_unread_alert_category(struct bt_conn *conn, uint8_t cat)
 				 sizeof(struct unread_alert_status));
 
 	ret = nxrmutex_unlock(&unread_mutex);
-	__ASSERT(ret == 0, "Unable to unlock mutex (err: %d)", ret);
+	DEBUGASSERT(ret == 0);
 
 	/* If the client is not connected, that is fine */
 	if (rc != 0 && rc != -ENOTCONN) {
@@ -399,11 +399,11 @@ int bt_ans_notify_new_alert(struct bt_conn *conn, enum bt_ans_cat category, uint
 
 	/* Update the saved value */
 	ret = nxrmutex_lock(&new_alert_mutex);
-	__ASSERT(ret == 0, "Unable to lock mutex (err: %d)", ret);
+	DEBUGASSERT(ret == 0);
 	new_alerts[cat_in].num_new_alerts = num_new;
 	utf8_lcpy(new_alerts[cat_in].text_string, text, sizeof(new_alerts[cat_in].text_string));
 	ret = nxrmutex_unlock(&new_alert_mutex);
-	__ASSERT(ret == 0, "Unable to unlock mutex (err: %d)", ret);
+	DEBUGASSERT(ret == 0);
 
 	return transmit_new_alert(conn, category);
 }
@@ -422,10 +422,10 @@ int bt_ans_set_unread_count(struct bt_conn *conn, enum bt_ans_cat category, uint
 
 	/* Update the saved value */
 	ret = nxrmutex_lock(&unread_mutex);
-	__ASSERT(ret == 0, "Unable to lock mutex (err: %d)", ret);
+	DEBUGASSERT(ret == 0);
 	unread_alerts[cat_in].unread_count = unread;
 	ret = nxrmutex_unlock(&unread_mutex);
-	__ASSERT(ret == 0, "Unable to unlock mutex (err: %d)", ret);
+	DEBUGASSERT(ret == 0);
 
 	return transmit_unread_alert(conn, category);
 }

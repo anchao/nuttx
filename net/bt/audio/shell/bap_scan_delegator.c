@@ -28,7 +28,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/shell/shell_string_conv.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
 #include <zephyr/types.h>
@@ -53,7 +53,7 @@ size_t bap_scan_delegator_ad_data_add(struct bt_data data[], size_t data_size)
 		BT_UUID_16_ENCODE(BT_UUID_BASS_VAL),
 	};
 
-	__ASSERT(data_size > 0, "No space for ad_bap_scan_delegator");
+	DEBUGASSERT(data_size > 0);
 	data[0].type = BT_DATA_SVC_DATA16;
 	data[0].data_len = ARRAY_SIZE(ad_bap_scan_delegator);
 	data[0].data = &ad_bap_scan_delegator[0];

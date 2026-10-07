@@ -81,7 +81,7 @@ static inline uint8_t bt_buf_type_to_h4(enum bt_buf_type type)
 	case BT_BUF_EVT:
 		return BT_HCI_H4_EVT;
 	default:
-		__ASSERT_NO_MSG(false);
+		DEBUGASSERT(false);
 		return 0;
 	}
 }

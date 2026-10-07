@@ -18,7 +18,7 @@
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/toolchain.h>
 
@@ -139,7 +139,7 @@ static uint8_t bgr_feat_read_cb(struct bt_conn *conn, uint8_t att_err,
 	struct net_buf_simple buf;
 	int err = att_err;
 
-	__ASSERT(gmap_cli, "no instance for conn %p", (void *)conn);
+	DEBUGASSERT(gmap_cli);
 
 	LOG_DBG("conn %p att_err 0x%02x params %p data %p len %u", (void *)conn, att_err, params,
 		data, len);
@@ -185,7 +185,7 @@ static uint8_t bgr_feat_discover_func(struct bt_conn *conn, const struct bt_gatt
 	const struct bt_gatt_chrc *chrc;
 	int err;
 
-	__ASSERT(gmap_cli != NULL, "no instance for conn %p", (void *)conn);
+	DEBUGASSERT(gmap_cli != NULL);
 
 	LOG_DBG("conn %p attr %p params %p", (void *)conn, attr, params);
 
@@ -228,7 +228,7 @@ static uint8_t bgs_feat_read_cb(struct bt_conn *conn, uint8_t att_err,
 	struct net_buf_simple buf;
 	int err = att_err;
 
-	__ASSERT(gmap_cli, "no instance for conn %p", (void *)conn);
+	DEBUGASSERT(gmap_cli);
 
 	LOG_DBG("conn %p att_err 0x%02x params %p data %p len %u", (void *)conn, att_err, params,
 		data, len);
@@ -284,7 +284,7 @@ static uint8_t bgs_feat_discover_func(struct bt_conn *conn, const struct bt_gatt
 	const struct bt_gatt_chrc *chrc;
 	int err;
 
-	__ASSERT(gmap_cli != NULL, "no instance for conn %p", (void *)conn);
+	DEBUGASSERT(gmap_cli != NULL);
 
 	LOG_DBG("conn %p attr %p params %p", (void *)conn, attr, params);
 
@@ -327,7 +327,7 @@ static uint8_t ugt_feat_read_cb(struct bt_conn *conn, uint8_t att_err,
 	struct net_buf_simple buf;
 	int err = att_err;
 
-	__ASSERT(gmap_cli, "no instance for conn %p", (void *)conn);
+	DEBUGASSERT(gmap_cli);
 
 	LOG_DBG("conn %p att_err 0x%02x params %p data %p len %u", (void *)conn, att_err, params,
 		data, len);
@@ -385,7 +385,7 @@ static uint8_t ugt_feat_discover_func(struct bt_conn *conn, const struct bt_gatt
 	const struct bt_gatt_chrc *chrc;
 	int err;
 
-	__ASSERT(gmap_cli != NULL, "no instance for conn %p", (void *)conn);
+	DEBUGASSERT(gmap_cli != NULL);
 
 	LOG_DBG("conn %p attr %p params %p", (void *)conn, attr, params);
 
@@ -428,7 +428,7 @@ static uint8_t ugg_feat_read_cb(struct bt_conn *conn, uint8_t att_err,
 	struct net_buf_simple buf;
 	int err = att_err;
 
-	__ASSERT(gmap_cli, "no instance for conn %p", (void *)conn);
+	DEBUGASSERT(gmap_cli);
 
 	LOG_DBG("conn %p att_err 0x%02x params %p data %p len %u", (void *)conn, att_err, params,
 		data, len);
@@ -488,7 +488,7 @@ static uint8_t ugg_feat_discover_func(struct bt_conn *conn, const struct bt_gatt
 	const struct bt_gatt_chrc *chrc;
 	int err;
 
-	__ASSERT(gmap_cli != NULL, "no instance for conn %p", (void *)conn);
+	DEBUGASSERT(gmap_cli != NULL);
 
 	LOG_DBG("conn %p attr %p params %p", (void *)conn, attr, params);
 
@@ -531,7 +531,7 @@ static uint8_t role_read_cb(struct bt_conn *conn, uint8_t att_err,
 	struct net_buf_simple buf;
 	int err = att_err;
 
-	__ASSERT(gmap_cli, "no instance for conn %p", (void *)conn);
+	DEBUGASSERT(gmap_cli);
 
 	LOG_DBG("conn %p att_err 0x%02x params %p data %p len %u", (void *)conn, att_err, params,
 		data, len);
@@ -592,7 +592,7 @@ static uint8_t role_discover_func(struct bt_conn *conn, const struct bt_gatt_att
 	const struct bt_gatt_chrc *chrc;
 	int err;
 
-	__ASSERT(gmap_cli != NULL, "no instance for conn %p", (void *)conn);
+	DEBUGASSERT(gmap_cli != NULL);
 
 	LOG_DBG("conn %p attr %p params %p", (void *)conn, attr, params);
 
@@ -635,7 +635,7 @@ static uint8_t gmas_discover_func(struct bt_conn *conn, const struct bt_gatt_att
 	const struct bt_gatt_service_val *svc;
 	int err;
 
-	__ASSERT(gmap_cli != NULL, "no instance for conn %p", (void *)conn);
+	DEBUGASSERT(gmap_cli != NULL);
 
 	LOG_DBG("conn %p attr %p params %p", (void *)conn, attr, params);
 

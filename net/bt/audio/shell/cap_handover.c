@@ -24,7 +24,7 @@
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/shell/shell_string_conv.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
@@ -156,12 +156,12 @@ static bool unicast_group_foreach_stream_cb(struct bt_cap_stream *cap_stream, vo
 		}
 
 		err = bt_bap_ep_get_info(bap_stream->ep, &ep_info);
-		__ASSERT_NO_MSG(err == 0);
+		DEBUGASSERT(err == 0);
 
 		/* Only consider sink streams for handover to broadcast */
 		if (ep_info.state == BT_BAP_EP_STATE_STREAMING &&
 		    ep_info.dir == BT_AUDIO_DIR_SINK) {
-			__ASSERT_NO_MSG(data->active_sink_streams_cnt <
+			DEBUGASSERT(data->active_sink_streams_cnt <
 					ARRAY_SIZE(data->active_sink_streams));
 
 			data->active_sink_streams[data->active_sink_streams_cnt] = cap_stream;
@@ -436,7 +436,7 @@ static bool cap_initiator_broadcast_foreach_stream_cb(struct bt_cap_stream *cap_
 		__maybe_unused int err;
 
 		err = bt_bap_ep_get_info(bap_stream->ep, &ep_info);
-		__ASSERT_NO_MSG(err == 0);
+		DEBUGASSERT(err == 0);
 
 		/* Abort if broadcast source is not in the streaming state */
 		if (ep_info.state != BT_BAP_EP_STATE_STREAMING) {
@@ -444,7 +444,7 @@ static bool cap_initiator_broadcast_foreach_stream_cb(struct bt_cap_stream *cap_
 		}
 	}
 
-	__ASSERT_NO_MSG(data->cnt < ARRAY_SIZE(data->streams));
+	DEBUGASSERT(data->cnt < ARRAY_SIZE(data->streams));
 
 	data->streams[data->cnt] = cap_stream;
 	data->cnt++;

@@ -28,7 +28,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/time_units.h>
@@ -156,14 +156,14 @@ static uint8_t inst_index(const struct tbs_inst *inst)
 {
 	ptrdiff_t index = 0;
 
-	__ASSERT_NO_MSG(inst);
+	DEBUGASSERT(inst);
 
 	if (inst_is_gtbs(inst)) {
 		return BT_TBS_GTBS_INDEX;
 	}
 
 	index = inst - svc_insts;
-	__ASSERT(index >= 0 && index < ARRAY_SIZE(svc_insts), "Invalid tbs_inst pointer");
+	DEBUGASSERT(index >= 0 && index < ARRAY_SIZE(svc_insts));
 
 	return (uint8_t)index;
 }
@@ -414,7 +414,7 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 	if (err == 0) { /* if mutex was locked */
 		(void)try_change_dialing_call_to_alerting(&gtbs_inst);
 		err = nxrmutex_unlock(&tbs_mutex);
-		__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+		DEBUGASSERT(err == 0);
 	}
 }
 
@@ -428,7 +428,7 @@ static int notify(struct bt_conn *conn, const struct bt_uuid *uuid,
 	const int maxlen = bt_att_get_max_notify_size(conn, BT_ATT_CHAN_OPT_NONE);
 
 	if (maxlen < 0) {
-		__ASSERT(maxlen != -EINVAL, "Unexpected -EINVAL");
+		DEBUGASSERT(maxlen != -EINVAL);
 		LOG_DBG("Failed to get max notification size for %p: %d", conn, maxlen);
 		return maxlen; /* contains errno value */
 	}
@@ -458,7 +458,7 @@ static void set_value_changed_cb(struct bt_conn *conn, void *data)
 	int err;
 
 	err = bt_conn_get_info(conn, &info);
-	__ASSERT(err == 0, "Failed to get conn info: %d", err);
+	DEBUGASSERT(err == 0);
 
 	if (info.state != BT_CONN_STATE_CONNECTED) {
 		/* Not connected */
@@ -473,7 +473,7 @@ static void set_value_changed_cb(struct bt_conn *conn, void *data)
 		 * same work multiple times is a no-op
 		 */
 		err = k_work_schedule(&inst->notify_work, 0);
-		__ASSERT(err >= 0, "Failed to schedule work: %d", err);
+		DEBUGASSERT(err >= 0);
 	} else {
 		/* Not subscribed, set the specific flag based on the provided callback */
 		cb_info->value_cb(flags, false);
@@ -498,7 +498,7 @@ static void set_value_changed(struct tbs_inst *inst,
 		.attr = bt_gatt_find_by_uuid(inst->attrs, 0, uuid),
 	};
 
-	__ASSERT(cb_info.attr != NULL, "Failed to look attribute for %s", bt_uuid_str(uuid));
+	DEBUGASSERT(cb_info.attr != NULL);
 	bt_conn_foreach(BT_CONN_TYPE_LE, set_value_changed_cb, &cb_info);
 }
 
@@ -573,13 +573,13 @@ static struct bt_tbs_call *call_alloc(struct tbs_inst *inst, uint8_t state, cons
 		return NULL;
 	}
 
-	__ASSERT_NO_MSG(uri_len < sizeof(free_call->remote_uri));
+	DEBUGASSERT(uri_len < sizeof(free_call->remote_uri));
 
 	memset(free_call, 0, sizeof(*free_call));
 
 	/* Get the next free call_index */
 	free_call->index = next_free_call_index();
-	__ASSERT_NO_MSG(free_call->index != BT_TBS_FREE_CALL_INDEX);
+	DEBUGASSERT(free_call->index != BT_TBS_FREE_CALL_INDEX);
 
 	free_call->state = state;
 	(void)memcpy(free_call->remote_uri, uri, uri_len);
@@ -657,7 +657,7 @@ static void net_buf_put_current_calls_by_inst(const struct tbs_inst *inst,
 		item_len = sizeof(call->index) + sizeof(call->state) + sizeof(call->flags) +
 			   uri_length;
 
-		__ASSERT_NO_MSG(item_len <= UINT8_MAX);
+		DEBUGASSERT(item_len <= UINT8_MAX);
 
 		if (buf->len + sizeof(uint8_t) + item_len > buf->size) {
 			LOG_WRN("Not able to store all calls in buffer");
@@ -1018,7 +1018,7 @@ static void notify_handler_cb(struct bt_conn *conn, void *data)
 	bool locked = false;
 
 	err = bt_conn_get_info(conn, &info);
-	__ASSERT(err == 0, "Failed to get conn info: %d", err);
+	DEBUGASSERT(err == 0);
 
 	if (info.state != BT_CONN_STATE_CONNECTED) {
 		/* Not connected */
@@ -1214,12 +1214,12 @@ fail:
 reschedule:
 		err = k_work_reschedule(&inst->notify_work,
 					USEC2TICK(info.le.interval_us));
-		__ASSERT(err >= 0, "Failed to reschedule work: %d", err);
+		DEBUGASSERT(err >= 0);
 	}
 
 	if (locked) {
 		err = nxrmutex_unlock(&tbs_mutex);
-		__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+		DEBUGASSERT(err == 0);
 	}
 }
 
@@ -1258,7 +1258,7 @@ static ssize_t read_provider_name(struct bt_conn *conn, const struct bt_gatt_att
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -1275,7 +1275,7 @@ static void cfg_changed_clear_pending(struct tbs_inst *inst, uint16_t value,
 		} else {
 			set_value_changed(inst, value_cb, uuid);
 			err = nxrmutex_unlock(&tbs_mutex);
-			__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+			DEBUGASSERT(err == 0);
 		}
 	}
 }
@@ -1350,7 +1350,7 @@ static ssize_t read_uri_scheme_list(struct bt_conn *conn, const struct bt_gatt_a
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -1459,7 +1459,7 @@ static void current_calls_cfg_changed(const struct bt_gatt_attr *attr, uint16_t 
 				  BT_UUID_TBS_LIST_CURRENT_CALLS);
 
 		err = nxrmutex_unlock(&tbs_mutex);
-		__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+		DEBUGASSERT(err == 0);
 	}
 }
 
@@ -1495,7 +1495,7 @@ static ssize_t read_current_calls(struct bt_conn *conn, const struct bt_gatt_att
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -1574,7 +1574,7 @@ static ssize_t read_incoming_uri(struct bt_conn *conn, const struct bt_gatt_attr
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -1624,7 +1624,7 @@ static ssize_t read_call_state(struct bt_conn *conn, const struct bt_gatt_attr *
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -1653,7 +1653,7 @@ static void call_state_cfg_changed(const struct bt_gatt_attr *attr, uint16_t val
 		set_value_changed(inst, set_call_state_changed_cb, BT_UUID_TBS_CALL_STATE);
 
 		err = nxrmutex_unlock(&tbs_mutex);
-		__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+		DEBUGASSERT(err == 0);
 	}
 }
 
@@ -1867,7 +1867,7 @@ static uint8_t join_calls(struct tbs_inst *inst, const struct bt_tbs_call_cp_joi
 		} else if (call_state == BT_TBS_CALL_STATE_DIALING) {
 			/* Implementation specific - Treat as no-op */
 		} else {
-			__ASSERT(false, "Invalid call state: 0x%02X", call_state);
+			DEBUGASSERT(false);
 		}
 	}
 
@@ -2017,7 +2017,7 @@ static ssize_t write_call_cp(struct bt_conn *conn, const struct bt_gatt_attr *at
 
 	if (inst->cp_ntf.pending) {
 		err = nxrmutex_unlock(&tbs_mutex);
-		__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+		DEBUGASSERT(err == 0);
 
 		return BT_GATT_ERR(BT_TBS_RESULT_CODE_OPERATION_NOT_POSSIBLE);
 	}
@@ -2162,11 +2162,11 @@ static ssize_t write_call_cp(struct bt_conn *conn, const struct bt_gatt_attr *at
 		 * same work multiple times is a no-op
 		 */
 		err = k_work_schedule(&inst->notify_work, 0);
-		__ASSERT(err >= 0, "Failed to schedule work: %d", err);
+		DEBUGASSERT(err >= 0);
 	} /* else local operation; don't notify */
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	if (calls_changed) {
 		notify_app(conn, tbs, len, ccp, status, call_index);
@@ -2223,7 +2223,7 @@ static void call_cp_cfg_changed(const struct bt_gatt_attr *attr, uint16_t value)
 			}
 
 			err = nxrmutex_unlock(&tbs_mutex);
-			__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+			DEBUGASSERT(err == 0);
 		}
 	}
 
@@ -2292,7 +2292,7 @@ static ssize_t read_friendly_name(struct bt_conn *conn, const struct bt_gatt_att
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -2347,7 +2347,7 @@ static ssize_t read_incoming_call(struct bt_conn *conn, const struct bt_gatt_att
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -2735,7 +2735,7 @@ int bt_tbs_accept(uint8_t call_index)
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -2767,7 +2767,7 @@ int bt_tbs_hold(uint8_t call_index)
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -2799,7 +2799,7 @@ int bt_tbs_retrieve(uint8_t call_index)
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -2831,7 +2831,7 @@ int bt_tbs_terminate(uint8_t call_index)
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -2893,7 +2893,7 @@ int bt_tbs_originate(uint8_t bearer_index, char *remote_uri, uint8_t *call_index
 	(void)try_change_dialing_call_to_alerting(target_inst);
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -2938,7 +2938,7 @@ int bt_tbs_join(uint8_t call_index_cnt, uint8_t *call_indexes)
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -2975,7 +2975,7 @@ int bt_tbs_remote_answer(uint8_t call_index)
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -3017,7 +3017,7 @@ int bt_tbs_remote_hold(uint8_t call_index)
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -3058,7 +3058,7 @@ int bt_tbs_remote_retrieve(uint8_t call_index)
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -3090,7 +3090,7 @@ int bt_tbs_remote_terminate(uint8_t call_index)
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ret;
 }
@@ -3098,8 +3098,8 @@ int bt_tbs_remote_terminate(uint8_t call_index)
 static void tbs_inst_remote_incoming(struct tbs_inst *inst, const char *to, const char *from,
 				     const char *friendly_name, const struct bt_tbs_call *call)
 {
-	__ASSERT_NO_MSG(to != NULL);
-	__ASSERT_NO_MSG(from != NULL);
+	DEBUGASSERT(to != NULL);
+	DEBUGASSERT(from != NULL);
 
 	inst->in_call.call_index = call->index;
 	(void)utf8_lcpy(inst->in_call.uri, from, sizeof(inst->in_call.uri));
@@ -3164,7 +3164,7 @@ int bt_tbs_remote_incoming(uint8_t bearer_index, const char *to, const char *fro
 	notify_calls(inst);
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	LOG_DBG("New call with call index %u", call->index);
 
@@ -3198,7 +3198,7 @@ int bt_tbs_set_bearer_provider_name(uint8_t bearer_index, const char *name)
 	set_value_changed(inst, set_bearer_provider_name_changed_cb, BT_UUID_TBS_PROVIDER_NAME);
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return 0;
 }
@@ -3229,7 +3229,7 @@ int bt_tbs_set_bearer_technology(uint8_t bearer_index, enum bt_bearer_tech new_t
 	set_value_changed(inst, set_bearer_technology_changed_cb, BT_UUID_TBS_TECHNOLOGY);
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return 0;
 }
@@ -3267,7 +3267,7 @@ int bt_tbs_set_signal_strength(uint8_t bearer_index, uint8_t new_signal_strength
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return 0;
 }
@@ -3298,7 +3298,7 @@ int bt_tbs_set_status_flags(uint8_t bearer_index, uint16_t status_flags)
 	set_value_changed(inst, set_status_flags_changed_cb, BT_UUID_TBS_STATUS_FLAGS);
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return 0;
 }
@@ -3361,7 +3361,7 @@ int bt_tbs_set_uri_scheme_list(uint8_t bearer_index, const char *uri_scheme_list
 	}
 
 	err = nxrmutex_unlock(&tbs_mutex);
-	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return 0;
 }

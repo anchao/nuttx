@@ -3,11 +3,11 @@
 #ifndef ZEPHYR_INCLUDE_SYS_CHECK_H_
 #define ZEPHYR_INCLUDE_SYS_CHECK_H_
 
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 
 #if defined(CONFIG_ASSERT_ON_ERRORS)
 #  define CHECKIF(expr) \
-	__ASSERT_NO_MSG(!(expr)); \
+	DEBUGASSERT(!(expr)); \
 	if (0)
 #elif defined(CONFIG_NO_RUNTIME_CHECKS)
 #  define CHECKIF(...) if (0)

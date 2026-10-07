@@ -13,7 +13,7 @@
 #include <zephyr/autoconf.h>
 #include <zephyr/bluetooth/hci_types.h>
 #include <zephyr/kernel.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/bluetooth/hci.h>
@@ -289,7 +289,7 @@ int bt_pub_key_gen(struct bt_pub_key_cb *new_cb)
 
 	if (IS_ENABLED(CONFIG_BT_USE_DEBUG_KEYS)) {
 		atomic_set_bit(bt_dev.flags, BT_DEV_HAS_PUB_KEY);
-		__ASSERT_NO_MSG(new_cb->func != NULL);
+		DEBUGASSERT(new_cb->func != NULL);
 		new_cb->func(debug_public_key);
 		return 0;
 	}

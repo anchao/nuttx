@@ -30,7 +30,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
@@ -150,7 +150,7 @@ struct pac_records_build_data {
 
 static struct pacs_client *client_lookup_conn(const struct bt_conn *conn)
 {
-	__ASSERT_NO_MSG(conn != NULL);
+	DEBUGASSERT(conn != NULL);
 
 	for (size_t i = 0U; i < ARRAY_SIZE(pacs.clients); i++) {
 		if (atomic_test_bit(pacs.clients[i].flags, FLAG_ACTIVE) &&
@@ -209,7 +209,7 @@ static bool build_pac_records(const struct bt_pacs_cap *cap, void *user_data)
 	return true;
 
 fail:
-	__ASSERT(false, "No space for %p", cap);
+	DEBUGASSERT(false);
 
 	net_buf_simple_restore(buf, &state);
 
@@ -892,38 +892,38 @@ int bt_pacs_register(const struct bt_pacs_register_param *param)
 
 	pacs.available_ctx_attr = bt_gatt_find_by_uuid(pacs_svc.attrs, pacs_svc.attr_count,
 						       BT_UUID_PACS_AVAILABLE_CONTEXT);
-	__ASSERT_NO_MSG(pacs.available_ctx_attr != NULL);
+	DEBUGASSERT(pacs.available_ctx_attr != NULL);
 #if defined(CONFIG_BT_PACS_SUPPORTED_CONTEXT_NOTIFIABLE)
 	pacs.supported_ctx_attr = bt_gatt_find_by_uuid(pacs_svc.attrs, pacs_svc.attr_count,
 						       BT_UUID_PACS_SUPPORTED_CONTEXT);
-	__ASSERT_NO_MSG(pacs.supported_ctx_attr != NULL);
+	DEBUGASSERT(pacs.supported_ctx_attr != NULL);
 #endif /* CONFIG_BT_PACS_SUPPORTED_CONTEXT_NOTIFIABLE */
 #if defined(CONFIG_BT_PAC_SNK_NOTIFIABLE)
 	if (param->snk_pac) {
 		pacs.snk_pac_attr =
 			bt_gatt_find_by_uuid(pacs_svc.attrs, pacs_svc.attr_count, BT_UUID_PACS_SNK);
-		__ASSERT_NO_MSG(pacs.snk_pac_attr != NULL);
+		DEBUGASSERT(pacs.snk_pac_attr != NULL);
 	}
 #endif /* CONFIG_BT_PAC_SNK_NOTIFIABLE */
 #if defined(CONFIG_BT_PAC_SNK_LOC_NOTIFIABLE)
 	if (param->snk_loc) {
 		pacs.snk_pac_loc_attr = bt_gatt_find_by_uuid(pacs_svc.attrs, pacs_svc.attr_count,
 							     BT_UUID_PACS_SNK_LOC);
-		__ASSERT_NO_MSG(pacs.snk_pac_loc_attr != NULL);
+		DEBUGASSERT(pacs.snk_pac_loc_attr != NULL);
 	}
 #endif /* CONFIG_BT_PAC_SNK_LOC_NOTIFIABLE */
 #if defined(CONFIG_BT_PAC_SRC_NOTIFIABLE)
 	if (param->src_pac) {
 		pacs.src_pac_attr =
 			bt_gatt_find_by_uuid(pacs_svc.attrs, pacs_svc.attr_count, BT_UUID_PACS_SRC);
-		__ASSERT_NO_MSG(pacs.src_pac_attr != NULL);
+		DEBUGASSERT(pacs.src_pac_attr != NULL);
 	}
 #endif /* CONFIG_BT_PAC_SRC_NOTIFIABLE */
 #if defined(CONFIG_BT_PAC_SRC_LOC_NOTIFIABLE)
 	if (param->src_loc) {
 		pacs.src_pac_loc_attr = bt_gatt_find_by_uuid(pacs_svc.attrs, pacs_svc.attr_count,
 							     BT_UUID_PACS_SRC_LOC);
-		__ASSERT_NO_MSG(pacs.src_pac_loc_attr != NULL);
+		DEBUGASSERT(pacs.src_pac_loc_attr != NULL);
 	}
 #endif /* CONFIG_BT_PAC_SRC_LOC_NOTIFIABLE */
 
@@ -1050,7 +1050,7 @@ static int pac_notify(struct bt_conn *conn, enum bt_audio_dir dir)
 	}
 
 	pac = pacs_get_pac(dir);
-	__ASSERT(pac, "Failed to get pacs.\n");
+	DEBUGASSERT(pac);
 	get_pac_records(pac, &read_buf);
 
 	err = pacs_gatt_notify(conn, uuid, pacs_svc.attrs,
@@ -1328,7 +1328,7 @@ static void pacs_security_changed(struct bt_conn *conn, bt_security_t level,
 
 	err = bt_conn_get_info(conn, &info);
 	if (err < 0) {
-		__ASSERT_NO_MSG(false);
+		DEBUGASSERT(false);
 		return;
 	}
 
@@ -1462,7 +1462,7 @@ int bt_pacs_cap_register(enum bt_audio_dir dir, struct bt_pacs_cap *cap)
 		__maybe_unused int err;
 
 		err = bt_conn_auth_info_cb_register(&auth_callbacks);
-		__ASSERT(err == 0, "Failed to register auth_info callbacks: %d", err);
+		DEBUGASSERT(err == 0);
 
 		/* Restore bonding list */
 		bt_foreach_bond(BT_ID_DEFAULT, add_bonded_addr_to_client_list, NULL);

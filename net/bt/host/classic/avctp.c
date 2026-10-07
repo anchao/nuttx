@@ -310,11 +310,11 @@ static void avctp_tx_processor(struct k_work *item)
 
 	buf = CONTAINER_OF(node, struct net_buf, node);
 
-	__ASSERT_NO_MSG(buf->user_data_size >= sizeof(*user_data));
+	DEBUGASSERT(buf->user_data_size >= sizeof(*user_data));
 	user_data = net_buf_user_data(buf);
 
 	session = user_data->session;
-	__ASSERT_NO_MSG(session != NULL);
+	DEBUGASSERT(session != NULL);
 	max_payload_size = MIN(session->br_chan.tx.mtu, session->max_tx_payload_size);
 
 	/* The SINGLE packet buf can be sent directly */
@@ -371,7 +371,7 @@ static int bt_avctp_send_common(struct bt_avctp *session, struct net_buf *buf,
 {
 	struct avctp_buf_user_data *user_data;
 
-	__ASSERT_NO_MSG(buf->user_data_size >= sizeof(*user_data));
+	DEBUGASSERT(buf->user_data_size >= sizeof(*user_data));
 
 	user_data = net_buf_user_data(buf);
 	user_data->session = session;
@@ -409,7 +409,7 @@ static int dispatch_avctp_packet(struct bt_avctp *session, struct net_buf *buf,
 	if (cr == BT_AVCTP_CMD) {
 		rsp = bt_avctp_create_pdu(NULL);
 		if (rsp == NULL) {
-			__ASSERT(0, "Failed to create AVCTP response PDU");
+			DEBUGASSERT(0);
 			return -ENOMEM;
 		}
 
@@ -461,7 +461,7 @@ static int avctp_recv_fragmented(struct bt_avctp *avctp, struct net_buf *buf)
 			goto failed;
 		}
 
-		__ASSERT_NO_MSG(avctp->reassembly_buf->user_data_size >= sizeof(*hdr_reassembly));
+		DEBUGASSERT(avctp->reassembly_buf->user_data_size >= sizeof(*hdr_reassembly));
 		hdr_reassembly = net_buf_user_data(avctp->reassembly_buf);
 		memcpy(hdr_reassembly, net_buf_pull_mem(buf, sizeof(*hdr_reassembly)),
 		       sizeof(*hdr_reassembly));
@@ -487,7 +487,7 @@ static int avctp_recv_fragmented(struct bt_avctp *avctp, struct net_buf *buf)
 		goto failed;
 	}
 
-	__ASSERT_NO_MSG(avctp->reassembly_buf->user_data_size >= sizeof(*hdr_reassembly));
+	DEBUGASSERT(avctp->reassembly_buf->user_data_size >= sizeof(*hdr_reassembly));
 	hdr_reassembly = net_buf_user_data(avctp->reassembly_buf);
 
 	if ((BT_AVCTP_HDR_GET_TRANSACTION_LABLE(&hdr_reassembly->common) == tid) &&

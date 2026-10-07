@@ -24,7 +24,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
@@ -107,7 +107,7 @@ static struct bt_tbs_instance *tbs_inst_by_index(const struct bt_conn *conn, uin
 {
 	struct bt_tbs_server_inst *server;
 
-	__ASSERT(conn, "NULL conn");
+	DEBUGASSERT(conn);
 
 	server = &srv_insts[bt_conn_index(conn)];
 
@@ -130,8 +130,8 @@ static uint8_t tbs_index(struct bt_conn *conn, const struct bt_tbs_instance *ins
 	struct bt_tbs_server_inst *server;
 	ptrdiff_t index = 0;
 
-	__ASSERT_NO_MSG(conn);
-	__ASSERT_NO_MSG(inst);
+	DEBUGASSERT(conn);
+	DEBUGASSERT(inst);
 
 	server = &srv_insts[bt_conn_index(conn)];
 
@@ -142,8 +142,7 @@ static uint8_t tbs_index(struct bt_conn *conn, const struct bt_tbs_instance *ins
 #endif /* CONFIG_BT_TBS_CLIENT_GTBS */
 #if defined(CONFIG_BT_TBS_CLIENT_TBS)
 	index = inst - server->tbs_insts;
-	__ASSERT(index >= 0 && index < ARRAY_SIZE(server->tbs_insts),
-		 "Invalid bt_tbs_instance pointer");
+	DEBUGASSERT(index >= 0 && index < ARRAY_SIZE(server->tbs_insts));
 
 #else
 	LOG_ERR("Invalid bt_tbs_instance pointer");
@@ -179,7 +178,7 @@ static struct bt_tbs_instance *lookup_inst_by_handle(struct bt_conn *conn,
 	struct bt_tbs_server_inst *srv_inst;
 	struct bt_tbs_instance *inst;
 
-	__ASSERT(conn, "NULL conn");
+	DEBUGASSERT(conn);
 
 	conn_index = bt_conn_index(conn);
 	srv_inst = &srv_insts[conn_index];
@@ -219,8 +218,8 @@ static uint8_t net_buf_pull_call(struct net_buf_simple *buf,
 	uint8_t err;
 	uint8_t *uri;
 
-	__ASSERT(buf, "NULL buf");
-	__ASSERT(call, "NULL call");
+	DEBUGASSERT(buf);
+	DEBUGASSERT(call);
 
 	if (buf->len < sizeof(item_len) + min_item_len) {
 		LOG_DBG("Invalid buffer length %u", buf->len);

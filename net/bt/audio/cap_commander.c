@@ -25,7 +25,7 @@
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 
@@ -157,7 +157,7 @@ broadcast_reception_get_next_stop_proc_param(struct bt_cap_common_proc *active_p
 				proc_param = &active_proc->proc_param.commander[i];
 			}
 		} else { /* BT_CAP_COMMON_SUBPROC_TYPE_REM_SRC */
-			__ASSERT_NO_MSG(subproc_type == BT_CAP_COMMON_SUBPROC_TYPE_REM_SRC);
+			DEBUGASSERT(subproc_type == BT_CAP_COMMON_SUBPROC_TYPE_REM_SRC);
 			if (proc_param == NULL && !stop_param->removed_recvd &&
 			    !stop_param->waiting_for_notification) {
 				proc_param = &active_proc->proc_param.commander[i];
@@ -188,7 +188,7 @@ broadcast_reception_get_next_proc_param(struct bt_cap_common_proc *active_proc)
 	} else if (proc_type == BT_CAP_COMMON_PROC_TYPE_BROADCAST_RECEPTION_STOP) {
 		proc_param = broadcast_reception_get_next_stop_proc_param(active_proc);
 	} else {
-		__ASSERT(false, "Invalid proc type %d", proc_type);
+		DEBUGASSERT(false);
 	}
 
 	return proc_param;
@@ -255,7 +255,7 @@ static size_t broadcast_reception_get_stop_proc_done_cnt(struct bt_cap_common_pr
 				proc_done_cnt++;
 			}
 		} else { /* BT_CAP_COMMON_SUBPROC_TYPE_REM_SRC */
-			__ASSERT_NO_MSG(subproc_type == BT_CAP_COMMON_SUBPROC_TYPE_REM_SRC);
+			DEBUGASSERT(subproc_type == BT_CAP_COMMON_SUBPROC_TYPE_REM_SRC);
 			if (stop_param->removed_recvd) {
 				proc_done_cnt++;
 			}
@@ -280,13 +280,11 @@ static void broadcast_reception_update_proc_done_cnt(struct bt_cap_common_proc *
 	} else if (proc_type == BT_CAP_COMMON_PROC_TYPE_BROADCAST_RECEPTION_STOP) {
 		proc_done_cnt = broadcast_reception_get_stop_proc_done_cnt(active_proc);
 	} else {
-		__ASSERT(false, "Invalid proc type %d", proc_type);
+		DEBUGASSERT(false);
 	}
 
-	__ASSERT(proc_done_cnt >= active_proc->proc_done_cnt &&
-			 proc_done_cnt <= active_proc->proc_cnt,
-		 "Unexpected proc_done_cnt %zu (%zu %zu)", proc_done_cnt,
-		 active_proc->proc_done_cnt, active_proc->proc_cnt);
+	DEBUGASSERT(proc_done_cnt >= active_proc->proc_done_cnt &&
+			 proc_done_cnt <= active_proc->proc_cnt);
 
 	LOG_DBG("proc %d subproc %d: %zu/%zu (was %zu/%zu)", proc_type, subproc_type, proc_done_cnt,
 		active_proc->proc_cnt, active_proc->proc_done_cnt, active_proc->proc_cnt);
@@ -314,8 +312,8 @@ static int broadcast_reception_start_add_src(struct bt_cap_common_proc *active_p
 	struct bt_conn *conn;
 	int err;
 
-	__ASSERT_NO_MSG(!start_param->write_pending);
-	__ASSERT_NO_MSG(!start_param->started_recvd);
+	DEBUGASSERT(!start_param->write_pending);
+	DEBUGASSERT(!start_param->started_recvd);
 
 	conn = proc_param->conn;
 
@@ -352,8 +350,8 @@ static int broadcast_reception_stop_mod_src(struct bt_cap_common_proc *active_pr
 	struct bt_conn *conn;
 	int err;
 
-	__ASSERT_NO_MSG(!stop_param->write_pending);
-	__ASSERT_NO_MSG(!stop_param->stopped_recvd);
+	DEBUGASSERT(!stop_param->write_pending);
+	DEBUGASSERT(!stop_param->stopped_recvd);
 
 	conn = proc_param->conn;
 
@@ -388,8 +386,8 @@ static int broadcast_reception_stop_rem_src(struct bt_cap_common_proc *active_pr
 	struct bt_conn *conn;
 	int err;
 
-	__ASSERT_NO_MSG(!stop_param->write_pending);
-	__ASSERT_NO_MSG(!stop_param->removed_recvd);
+	DEBUGASSERT(!stop_param->write_pending);
+	DEBUGASSERT(!stop_param->removed_recvd);
 
 	conn = proc_param->conn;
 
@@ -430,7 +428,7 @@ static void cap_commander_ba_add_src_cb(struct bt_conn *conn, int err)
 	}
 
 	proc_param = get_proc_param_by_conn(active_proc, conn);
-	__ASSERT(proc_param != NULL, "Invalid proc_param from conn %p", conn);
+	DEBUGASSERT(proc_param != NULL);
 	start_param = &proc_param->broadcast_reception_start;
 	start_param->write_pending = false;
 
@@ -705,7 +703,7 @@ cap_commander_recv_state_in_active_proc(struct bt_cap_common_proc *active_proc,
 
 	if (active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_BROADCAST_RECEPTION_START) {
 		proc_param = get_proc_param_by_conn(active_proc, conn);
-		__ASSERT(proc_param != NULL, "Invalid proc_param from conn %p", conn);
+		DEBUGASSERT(proc_param != NULL);
 
 		const struct cap_broadcast_reception_start *start_param =
 			&proc_param->broadcast_reception_start;
@@ -720,7 +718,7 @@ cap_commander_recv_state_in_active_proc(struct bt_cap_common_proc *active_proc,
 		       state->broadcast_id == start_param->broadcast_id;
 	} else if (active_proc->proc_type == BT_CAP_COMMON_PROC_TYPE_BROADCAST_RECEPTION_STOP) {
 		proc_param = get_proc_param_by_conn(active_proc, conn);
-		__ASSERT(proc_param != NULL, "Invalid proc_param from conn %p", conn);
+		DEBUGASSERT(proc_param != NULL);
 
 		const struct cap_broadcast_reception_stop *stop_param =
 			&proc_param->broadcast_reception_stop;
@@ -799,7 +797,7 @@ static void cap_commander_handle_recv_state(struct bt_conn *conn, uint8_t src_id
 		struct cap_broadcast_reception_start *start_param;
 
 		proc_param = get_proc_param_by_conn(active_proc, conn);
-		__ASSERT(proc_param != NULL, "Invalid proc_param from conn %p", conn);
+		DEBUGASSERT(proc_param != NULL);
 
 		start_param = &proc_param->broadcast_reception_start;
 
@@ -821,7 +819,7 @@ static void cap_commander_handle_recv_state(struct bt_conn *conn, uint8_t src_id
 		struct cap_broadcast_reception_stop *stop_param;
 
 		proc_param = get_proc_param_by_conn(active_proc, conn);
-		__ASSERT(proc_param != NULL, "Invalid proc_param from conn %p", conn);
+		DEBUGASSERT(proc_param != NULL);
 
 		stop_param = &proc_param->broadcast_reception_stop;
 
@@ -893,7 +891,7 @@ static void cap_commander_handle_recv_state(struct bt_conn *conn, uint8_t src_id
 					err = broadcast_reception_stop_mod_src(active_proc,
 									       proc_param);
 				} else { /* BT_CAP_COMMON_SUBPROC_TYPE_REM_SRC */
-					__ASSERT_NO_MSG(subproc_type ==
+					DEBUGASSERT(subproc_type ==
 							BT_CAP_COMMON_SUBPROC_TYPE_REM_SRC);
 					err = broadcast_reception_stop_rem_src(active_proc,
 									       proc_param);
@@ -925,7 +923,7 @@ static void cap_commander_handle_recv_state(struct bt_conn *conn, uint8_t src_id
 		bt_cap_common_set_subproc(BT_CAP_COMMON_SUBPROC_TYPE_REM_SRC);
 
 		proc_param = broadcast_reception_get_next_proc_param(active_proc);
-		__ASSERT(proc_param != NULL, "proc is not done, but could not get next proc_param");
+		DEBUGASSERT(proc_param != NULL);
 
 		err = broadcast_reception_stop_rem_src(active_proc, proc_param);
 		if (err != 0) {
@@ -986,9 +984,9 @@ static void cap_commander_ba_rem_src_cb(struct bt_conn *conn, int err)
 	}
 
 	proc_param = get_proc_param_by_conn(active_proc, conn);
-	__ASSERT(proc_param != NULL, "Invalid proc_param from conn %p", conn);
+	DEBUGASSERT(proc_param != NULL);
 	stop_param = &proc_param->broadcast_reception_stop;
-	__ASSERT_NO_MSG(stop_param->write_pending);
+	DEBUGASSERT(stop_param->write_pending);
 	stop_param->write_pending = false;
 
 	if (err != 0) {
@@ -1056,10 +1054,10 @@ static void cap_commander_ba_mod_src_cb(struct bt_conn *conn, int err)
 	}
 
 	proc_param = get_proc_param_by_conn(active_proc, conn);
-	__ASSERT(proc_param != NULL, "Invalid proc_param from conn %p", conn);
+	DEBUGASSERT(proc_param != NULL);
 	stop_param = &proc_param->broadcast_reception_stop;
 
-	__ASSERT_NO_MSG(stop_param->write_pending);
+	DEBUGASSERT(stop_param->write_pending);
 	stop_param->write_pending = false;
 
 	if (err != 0) {
@@ -1113,8 +1111,7 @@ static void cap_commander_ba_mod_src_cb(struct bt_conn *conn, int err)
 		 */
 		if (!bt_cap_common_proc_is_done()) {
 			proc_param = broadcast_reception_get_next_proc_param(active_proc);
-			__ASSERT(proc_param != NULL,
-				 "proc is not done, but could not get next proc_param");
+			DEBUGASSERT(proc_param != NULL);
 
 			/* If proc_param is NULL we have to wait for a write
 			 * response before starting a new write request for the next scan
@@ -1492,7 +1489,7 @@ void cap_commander_register_broadcast_assistant_callbacks(void)
 		int err;
 
 		err = bt_bap_broadcast_assistant_register_cb(&broadcast_assistant_cb);
-		__ASSERT(err == 0, "Failed to register broadcast assistant callbacks: %d", err);
+		DEBUGASSERT(err == 0);
 
 		broadcast_assistant_cb_registered = true;
 	}
@@ -1578,7 +1575,7 @@ void cap_commander_proc_complete(struct bt_cap_common_proc *active_proc)
 #endif /* CONFIG_BT_BAP_BROADCAST_ASSISTANT */
 	case BT_CAP_COMMON_PROC_TYPE_NONE:
 	default:
-		__ASSERT(false, "Invalid proc_type: %u", proc_type);
+		DEBUGASSERT(false);
 	}
 }
 
@@ -1776,7 +1773,7 @@ int bt_cap_commander_change_volume(const struct bt_cap_commander_change_volume_p
 	vol_ctlr_cb.vol_set = cap_commander_vcp_vol_set_cb;
 	if (!vcp_cb_registered) {
 		err = cap_commander_register_vcp_cb();
-		__ASSERT(err == 0, "Failed to register VCP callbacks: %d", err);
+		DEBUGASSERT(err == 0);
 	}
 
 	bt_cap_common_set_proc(BT_CAP_COMMON_PROC_TYPE_VOLUME_CHANGE, param->count);
@@ -1974,7 +1971,7 @@ int bt_cap_commander_change_volume_mute_state(
 	vol_ctlr_cb.unmute = cap_commander_vcp_vol_mute_cb;
 	if (!vcp_cb_registered) {
 		err = cap_commander_register_vcp_cb();
-		__ASSERT(err == 0, "Failed to register VCP callbacks: %d", err);
+		DEBUGASSERT(err == 0);
 	}
 
 	bt_cap_common_set_proc(BT_CAP_COMMON_PROC_TYPE_VOLUME_MUTE_CHANGE, param->count);
@@ -2194,7 +2191,7 @@ int bt_cap_commander_change_volume_offset(
 	vol_ctlr_cb.vocs_cb.set_offset = cap_commander_vcp_set_offset_cb;
 	if (!vcp_cb_registered) {
 		err = cap_commander_register_vcp_cb();
-		__ASSERT(err == 0, "Failed to register VCP callbacks: %d", err);
+		DEBUGASSERT(err == 0);
 	}
 
 	bt_cap_common_set_proc(BT_CAP_COMMON_PROC_TYPE_VOLUME_OFFSET_CHANGE, param->count);
@@ -2440,7 +2437,7 @@ int bt_cap_commander_change_microphone_mute_state(
 	mic_ctlr_cb.unmute_written = cap_commander_micp_mic_mute_cb;
 	if (!micp_callbacks_registered) {
 		err = cap_commander_register_micp_callbacks();
-		__ASSERT(err == 0, "Failed to register MICP callbacks: %d", err);
+		DEBUGASSERT(err == 0);
 	}
 
 	for (size_t i = 0U; i < param->count; i++) {
@@ -2649,7 +2646,7 @@ int bt_cap_commander_change_microphone_gain_setting(
 	mic_ctlr_cb.aics_cb.set_gain = cap_commander_micp_gain_set_cb;
 	if (!micp_callbacks_registered) {
 		err = cap_commander_register_micp_callbacks();
-		__ASSERT(err == 0, "Failed to register MICP callbacks: %d", err);
+		DEBUGASSERT(err == 0);
 	}
 
 	for (size_t i = 0U; i < param->count; i++) {

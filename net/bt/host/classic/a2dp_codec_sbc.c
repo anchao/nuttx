@@ -18,7 +18,7 @@
 
 uint8_t bt_a2dp_sbc_get_channel_num(struct bt_a2dp_codec_sbc_params *sbc_codec)
 {
-	__ASSERT_NO_MSG(sbc_codec != NULL);
+	DEBUGASSERT(sbc_codec != NULL);
 
 	if (sbc_codec->config[0] & A2DP_SBC_CH_MODE_MONO) {
 		return 1U;
@@ -35,7 +35,7 @@ uint8_t bt_a2dp_sbc_get_channel_num(struct bt_a2dp_codec_sbc_params *sbc_codec)
 
 enum sbc_ch_mode bt_a2dp_sbc_get_channel_mode(struct bt_a2dp_codec_sbc_params *sbc_codec)
 {
-	__ASSERT_NO_MSG(sbc_codec != NULL);
+	DEBUGASSERT(sbc_codec != NULL);
 
 	if (sbc_codec->config[0] & A2DP_SBC_CH_MODE_MONO) {
 		return SBC_CH_MODE_MONO;
@@ -52,7 +52,7 @@ enum sbc_ch_mode bt_a2dp_sbc_get_channel_mode(struct bt_a2dp_codec_sbc_params *s
 
 uint32_t bt_a2dp_sbc_get_sampling_frequency(struct bt_a2dp_codec_sbc_params *sbc_codec)
 {
-	__ASSERT_NO_MSG(sbc_codec != NULL);
+	DEBUGASSERT(sbc_codec != NULL);
 
 	if (sbc_codec->config[0] & A2DP_SBC_SAMP_FREQ_16000) {
 		return 16000U;
@@ -69,7 +69,7 @@ uint32_t bt_a2dp_sbc_get_sampling_frequency(struct bt_a2dp_codec_sbc_params *sbc
 
 uint8_t bt_a2dp_sbc_get_subband_num(struct bt_a2dp_codec_sbc_params *sbc_codec)
 {
-	__ASSERT_NO_MSG(sbc_codec != NULL);
+	DEBUGASSERT(sbc_codec != NULL);
 
 	if (sbc_codec->config[1] & A2DP_SBC_SUBBAND_4) {
 		return 4U;
@@ -82,7 +82,7 @@ uint8_t bt_a2dp_sbc_get_subband_num(struct bt_a2dp_codec_sbc_params *sbc_codec)
 
 uint8_t bt_a2dp_sbc_get_block_length(struct bt_a2dp_codec_sbc_params *sbc_codec)
 {
-	__ASSERT_NO_MSG(sbc_codec != NULL);
+	DEBUGASSERT(sbc_codec != NULL);
 
 	if (sbc_codec->config[1] & A2DP_SBC_BLK_LEN_4) {
 		return 4U;
@@ -99,7 +99,7 @@ uint8_t bt_a2dp_sbc_get_block_length(struct bt_a2dp_codec_sbc_params *sbc_codec)
 
 enum sbc_alloc_mthd bt_a2dp_sbc_get_allocation_method(struct bt_a2dp_codec_sbc_params *sbc_codec)
 {
-	__ASSERT_NO_MSG(sbc_codec != NULL);
+	DEBUGASSERT(sbc_codec != NULL);
 
 	if (sbc_codec->config[1] & A2DP_SBC_ALLOC_MTHD_SNR) {
 		return SBC_ALLOC_MTHD_SNR;

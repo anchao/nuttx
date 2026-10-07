@@ -197,7 +197,7 @@ static int bt_avrcp_tg_cover_art_accept(struct bt_conn *conn, struct bt_bip_l2ca
 {
 	uint8_t index = bt_conn_index(conn);
 
-	__ASSERT(index < ARRAY_SIZE(avrcp_cover_art_tg), "Conn index out of bounds");
+	DEBUGASSERT(index < ARRAY_SIZE(avrcp_cover_art_tg));
 
 	avrcp_cover_art_tg[index].tg = bt_avrcp_get_tg(conn, server->server.l2cap.psm);
 	if (avrcp_cover_art_tg[index].tg == NULL) {

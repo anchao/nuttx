@@ -37,7 +37,7 @@
 #include <zephyr/sys/util_macro.h>
 #include <nuttx/list.h>
 #include <zephyr/debug/stack.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/clock.h>
 #include <zephyr/toolchain.h>
 
@@ -75,7 +75,7 @@ static void tx_free(struct bt_conn_tx *tx);
 
 static void conn_tx_destroy(struct bt_conn *conn, struct bt_conn_tx *tx)
 {
-	__ASSERT_NO_MSG(tx);
+	DEBUGASSERT(tx);
 
 	bt_conn_tx_cb_t cb = tx->cb;
 	void *user_data = tx->user_data;
@@ -170,7 +170,7 @@ static struct net_buf *get_data_frag(struct net_buf *outside, size_t winsize)
 {
 	struct net_buf *window;
 
-	__ASSERT_NO_MSG(!bt_buf_has_view(outside));
+	DEBUGASSERT(!bt_buf_has_view(outside));
 
 	/* Keeping a ref is the caller's responsibility */
 	window = net_buf_alloc_len(&fragments, 0, 0);  /* NuttX: 0 -> 0 ticks */
@@ -292,7 +292,7 @@ static struct k_work_q *tx_notify_workqueue_get(void)
 static void tx_notify_process(struct bt_conn *conn)
 {
 	/* TX notify processing is done only from a single thread. */
-	__ASSERT_NO_MSG(k_current_get() == k_work_queue_thread_get(tx_notify_workqueue_get()));
+	DEBUGASSERT(k_current_get() == k_work_queue_thread_get(tx_notify_workqueue_get()));
 
 	LOG_DBG("conn %p", (void *)conn);
 
@@ -348,7 +348,7 @@ void bt_conn_tx_notify(struct bt_conn *conn, bool wait_for_completion)
 		__maybe_unused int err;
 
 		err = k_work_submit_to_queue(tx_notify_workqueue_get(), &conn->tx_complete_work);
-		__ASSERT(err >= 0, "couldn't submit (err %d)", err);
+		DEBUGASSERT(err >= 0);
 
 		if (wait_for_completion) {
 			(void)k_work_flush(&conn->tx_complete_work, &sync);
@@ -510,7 +510,7 @@ void bt_conn_recv(struct bt_conn *conn, struct net_buf *buf, uint8_t flags)
 	} else if (IS_ENABLED(CONFIG_BT_CONN)) {
 		bt_acl_recv(conn, buf, flags);
 	} else {
-		__ASSERT(false, "Invalid connection type %u", conn->type);
+		DEBUGASSERT(false);
 	}
 }
 
@@ -657,14 +657,14 @@ static int send_buf(struct bt_conn *conn, struct net_buf *buf,
 	int err;
 
 	if (buf->len == 0) {
-		__ASSERT_NO_MSG(0);
+		DEBUGASSERT(0);
 
 		err = -EMSGSIZE;
 		goto error_return;
 	}
 
 	if (bt_buf_has_view(buf)) {
-		__ASSERT_NO_MSG(0);
+		DEBUGASSERT(0);
 
 		err = -EIO;
 		goto error_return;
@@ -688,7 +688,7 @@ static int send_buf(struct bt_conn *conn, struct net_buf *buf,
 		 * only ever increase the count. So the sem value cannot
 		 * have decreased since the get_conn_ready() check.
 		 */
-		__ASSERT(0, "No controller bufs");
+		DEBUGASSERT(0);
 
 		err = -ENOMEM;
 		goto error_return;
@@ -699,7 +699,7 @@ static int send_buf(struct bt_conn *conn, struct net_buf *buf,
 
 	/* See big comment above */
 	if (!tx) {
-		__ASSERT(0, "No TX context");
+		DEBUGASSERT(0);
 		nxsem_post(bt_conn_get_pkts(conn));
 		err = -ENOMEM;
 		goto error_return;
@@ -715,7 +715,7 @@ static int send_buf(struct bt_conn *conn, struct net_buf *buf,
 	 * from the conn tx_queue). It would be 2 if the
 	 * tx_data_pull kept it on the tx_queue for segmentation.
 	 */
-	__ASSERT_NO_MSG((buf->ref == 1) || (buf->ref == 2));
+	DEBUGASSERT((buf->ref == 1) || (buf->ref == 2));
 
 	/* The reference is always transferred to the frag, so when
 	 * the frag is destroyed, the parent reference is decremented.
@@ -723,7 +723,7 @@ static int send_buf(struct bt_conn *conn, struct net_buf *buf,
 	frag = get_data_frag(buf, frag_len);
 
 	/* Caller is supposed to check we have all resources to send */
-	__ASSERT_NO_MSG(frag != NULL);
+	DEBUGASSERT(frag != NULL);
 
 	/* If the current buffer doesn't fit a controller buffer */
 	if (len > conn_mtu(conn)) {
@@ -759,7 +759,7 @@ static int send_buf(struct bt_conn *conn, struct net_buf *buf,
 		err = send_acl(conn, frag, flags);
 	} else {
 		err = -EINVAL; /* asserts may be disabled */
-		__ASSERT(false, "Invalid connection type %u", conn->type);
+		DEBUGASSERT(false);
 	}
 
 	if (!err) {
@@ -952,7 +952,7 @@ static struct bt_conn *get_conn_ready(void)
 	}
 
 	list_for_every_container_safe(&bt_dev.le.conn_ready, conn, tmp, _conn_ready) {
-		__ASSERT_NO_MSG(tmp != conn);
+		DEBUGASSERT(tmp != conn);
 
 		/* Iterate over the list of connections that have data to send
 		 * and return the first one that can be sent.
@@ -981,7 +981,7 @@ static struct bt_conn *get_conn_ready(void)
 
 		if (should_stop_tx(conn)) {
 			/* Move reference off the list */
-			__ASSERT_NO_MSG(prev != &conn->_conn_ready);
+			DEBUGASSERT(prev != &conn->_conn_ready);
 			list_remove(&bt_dev.le.conn_ready, prev, &conn->_conn_ready);
 
 			/* Append connection to list if it is connected and still has data */
@@ -1005,7 +1005,7 @@ static struct bt_conn *get_conn_ready(void)
 static void acl_get_and_clear_cb(struct bt_conn *conn, struct net_buf *buf,
 				 bt_conn_tx_cb_t *cb, void **ud)
 {
-	__ASSERT_NO_MSG(is_acl_conn(conn));
+	DEBUGASSERT(is_acl_conn(conn));
 
 	*cb = closure_cb(buf->user_data);
 	*ud = closure_data(buf->user_data);
@@ -1459,7 +1459,7 @@ struct bt_conn *bt_conn_ref(struct bt_conn *conn)
 {
 	int32_t old;
 
-	__ASSERT_NO_MSG(conn);
+	DEBUGASSERT(conn);
 
 	/* Reference counter must be checked to avoid incrementing ref from
 	 * zero, then we should return NULL instead.
@@ -1501,7 +1501,7 @@ void bt_conn_unref(struct bt_conn *conn)
 	/* Used only if CONFIG_ASSERT and CONFIG_BT_CONN_TX. */
 	__maybe_unused bool conn_tx_is_pending;
 
-	__ASSERT(conn, "Invalid connection reference");
+	DEBUGASSERT(conn);
 
 	/* If we're removing the last reference, the connection object will be
 	 * considered freed and possibly re-allocated by the Bluetooth Host stack
@@ -1518,7 +1518,7 @@ void bt_conn_unref(struct bt_conn *conn)
 
 	LOG_DBG("handle %u ref %ld -> %ld", conn_handle, old, (old - 1));
 
-	__ASSERT(old > 0, "Conn reference counter is 0");
+	DEBUGASSERT(old > 0);
 
 	/* Whether we removed the last reference. */
 	deallocated = (old == 1);
@@ -1527,8 +1527,7 @@ void bt_conn_unref(struct bt_conn *conn)
 	}
 
 	IF_ENABLED(CONFIG_BT_CONN_TX,
-		   (__ASSERT(!conn_tx_is_pending,
-			     "tx_complete_work is pending when conn is deallocated")));
+		   (DEBUGASSERT(!conn_tx_is_pending)));
 
 #if defined(CONFIG_BT_CONN)
 	/* Notify listeners that a slot has been freed and can be taken.
@@ -1558,25 +1557,22 @@ uint8_t bt_conn_index(const struct bt_conn *conn)
 	switch (conn->type) {
 #if defined(CONFIG_BT_ISO)
 	case BT_CONN_TYPE_ISO:
-		__ASSERT(IS_ARRAY_ELEMENT(iso_conns, conn), "Invalid bt_conn pointer %p not in %p",
-			 conn, iso_conns);
+		DEBUGASSERT(IS_ARRAY_ELEMENT(iso_conns, conn));
 		index = ARRAY_INDEX(iso_conns, conn);
 		break;
 #endif
 #if defined(CONFIG_BT_CLASSIC)
 	case BT_CONN_TYPE_SCO:
-		__ASSERT(IS_ARRAY_ELEMENT(sco_conns, conn), "Invalid bt_conn pointer %p not in %p",
-			 conn, sco_conns);
+		DEBUGASSERT(IS_ARRAY_ELEMENT(sco_conns, conn));
 		index = ARRAY_INDEX(sco_conns, conn);
 		break;
 #endif
 	default:
 #if defined(CONFIG_BT_CONN)
-		__ASSERT(IS_ARRAY_ELEMENT(acl_conns, conn), "Invalid bt_conn pointer %p not in %p",
-			 conn, acl_conns);
+		DEBUGASSERT(IS_ARRAY_ELEMENT(acl_conns, conn));
 		index = ARRAY_INDEX(acl_conns, conn);
 #else
-		__ASSERT(false, "Invalid connection type %u", conn->type);
+		DEBUGASSERT(false);
 #endif /* CONFIG_BT_CONN */
 		break;
 	}
@@ -1601,7 +1597,7 @@ struct net_buf *bt_conn_create_pdu_timeout(struct net_buf_pool *pool,
 	 * PDU must not be allocated from ISR as we block with '((clock_t)-1)'
 	 * during the allocation
 	 */
-	__ASSERT_NO_MSG(!k_is_in_isr());
+	DEBUGASSERT(!k_is_in_isr());
 
 	if (!((timeout) == (0)) &&
 	    k_current_get() == k_work_queue_thread_get(&k_sys_work_q)) {
@@ -1977,7 +1973,7 @@ int bt_conn_disconnect(struct bt_conn *conn, uint8_t reason)
 		}
 #endif /* CONFIG_BT_CLASSIC */
 		else {
-			__ASSERT(false, "Invalid conn type %u", conn->type);
+			DEBUGASSERT(false);
 		}
 
 		return 0;
@@ -2953,7 +2949,7 @@ static enum bt_conn_state conn_internal_to_public_state(bt_conn_state_t state)
 	case BT_CONN_DISCONNECTING:
 		return BT_CONN_STATE_DISCONNECTING;
 	default:
-		__ASSERT(false, "Invalid conn state %u", state);
+		DEBUGASSERT(false);
 		return 0;
 	}
 }

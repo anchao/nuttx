@@ -18,7 +18,7 @@
 #include <zephyr/bluetooth/hci_types.h>
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
@@ -59,7 +59,7 @@ struct bt_bap_iso *bt_bap_iso_ref(struct bt_bap_iso *iso)
 {
 	int32_t old;
 
-	__ASSERT_NO_MSG(iso != NULL);
+	DEBUGASSERT(iso != NULL);
 
 	/* Reference counter must be checked to avoid incrementing ref from
 	 * zero, then we should return NULL instead.
@@ -81,11 +81,11 @@ void bt_bap_iso_unref(struct bt_bap_iso *iso)
 {
 	int32_t old;
 
-	__ASSERT_NO_MSG(iso != NULL);
+	DEBUGASSERT(iso != NULL);
 
 	old = atomic_sub(&iso->ref, 1);
 
-	__ASSERT(old > 0, "iso reference counter is 0");
+	DEBUGASSERT(old > 0);
 }
 
 void bt_bap_iso_foreach(bt_bap_iso_func_t func, void *user_data)
@@ -244,16 +244,15 @@ void bt_bap_iso_bind_ep(struct bt_bap_iso *iso, struct bt_bap_ep *ep)
 	const struct bt_bap_ep *paired_ep;
 	struct bt_bap_iso_dir *iso_dir;
 
-	__ASSERT_NO_MSG(ep != NULL);
-	__ASSERT_NO_MSG(iso != NULL);
-	__ASSERT(ep->iso == NULL, "ep %p bound with iso %p already", ep, ep->iso);
-	__ASSERT(ep->dir == BT_AUDIO_DIR_SINK || ep->dir == BT_AUDIO_DIR_SOURCE,
-		 "invalid dir: %u", ep->dir);
+	DEBUGASSERT(ep != NULL);
+	DEBUGASSERT(iso != NULL);
+	DEBUGASSERT(ep->iso == NULL);
+	DEBUGASSERT(ep->dir == BT_AUDIO_DIR_SINK || ep->dir == BT_AUDIO_DIR_SOURCE);
 
 	LOG_DBG("iso %p ep %p dir %s", iso, ep, bt_audio_dir_to_str(ep->dir));
 
 	iso_dir = bap_iso_get_iso_dir(is_unicast_client_ep(ep), iso, ep->dir);
-	__ASSERT(iso_dir->ep == NULL, "iso %p bound with ep %p", iso, iso_dir);
+	DEBUGASSERT(iso_dir->ep == NULL);
 	iso_dir->ep = ep;
 
 	ep->iso = bt_bap_iso_ref(iso);
@@ -261,10 +260,7 @@ void bt_bap_iso_bind_ep(struct bt_bap_iso *iso, struct bt_bap_ep *ep)
 	paired_ep = bt_bap_iso_get_paired_ep(ep);
 	if (paired_ep != NULL && paired_ep->stream != NULL && paired_ep->stream->conn != NULL &&
 	    ep->stream != NULL && ep->stream->conn != NULL) {
-		__ASSERT(paired_ep->stream->conn == ep->stream->conn,
-			 "Cannot bind ep %p with conn %p to iso %p with paired_ep %p with "
-			 "different conn %p",
-			 ep, ep->stream->conn, iso, paired_ep, paired_ep->stream->conn);
+		DEBUGASSERT(paired_ep->stream->conn == ep->stream->conn);
 	}
 }
 
@@ -272,17 +268,15 @@ void bt_bap_iso_unbind_ep(struct bt_bap_iso *iso, struct bt_bap_ep *ep)
 {
 	struct bt_bap_iso_dir *iso_dir;
 
-	__ASSERT_NO_MSG(ep != NULL);
-	__ASSERT_NO_MSG(iso != NULL);
-	__ASSERT(ep->iso == iso, "ep %p not bound with iso %p, was bound to %p",
-		 ep, iso, ep->iso);
-	__ASSERT(ep->dir == BT_AUDIO_DIR_SINK || ep->dir == BT_AUDIO_DIR_SOURCE,
-		 "Invalid dir: %u", ep->dir);
+	DEBUGASSERT(ep != NULL);
+	DEBUGASSERT(iso != NULL);
+	DEBUGASSERT(ep->iso == iso);
+	DEBUGASSERT(ep->dir == BT_AUDIO_DIR_SINK || ep->dir == BT_AUDIO_DIR_SOURCE);
 
 	LOG_DBG("iso %p ep %p dir %s", iso, ep, bt_audio_dir_to_str(ep->dir));
 
 	iso_dir = bap_iso_get_iso_dir(is_unicast_client_ep(ep), iso, ep->dir);
-	__ASSERT(iso_dir->ep == ep, "iso %p not bound with ep %p", iso, ep);
+	DEBUGASSERT(iso_dir->ep == ep);
 	iso_dir->ep = NULL;
 
 	bt_bap_iso_unref(ep->iso);
@@ -294,8 +288,7 @@ struct bt_bap_ep *bt_bap_iso_get_ep(bool unicast_client, struct bt_bap_iso *iso,
 {
 	struct bt_bap_iso_dir *iso_dir;
 
-	__ASSERT(dir == BT_AUDIO_DIR_SINK || dir == BT_AUDIO_DIR_SOURCE,
-		 "invalid dir: %u", dir);
+	DEBUGASSERT(dir == BT_AUDIO_DIR_SINK || dir == BT_AUDIO_DIR_SOURCE);
 
 	LOG_DBG("iso %p dir %s", iso, bt_audio_dir_to_str(dir));
 
@@ -319,10 +312,9 @@ void bt_bap_iso_bind_stream(struct bt_bap_iso *bap_iso, struct bt_bap_stream *st
 {
 	struct bt_bap_iso_dir *bap_iso_ep;
 
-	__ASSERT_NO_MSG(stream != NULL);
-	__ASSERT_NO_MSG(bap_iso != NULL);
-	__ASSERT(stream->iso == NULL, "stream %p bound with bap_iso %p already", stream,
-		 CONTAINER_OF(stream->iso, struct bt_bap_iso, chan));
+	DEBUGASSERT(stream != NULL);
+	DEBUGASSERT(bap_iso != NULL);
+	DEBUGASSERT(stream->iso == NULL);
 
 	LOG_DBG("bap_iso %p stream %p dir %s", bap_iso, stream, bt_audio_dir_to_str(dir));
 
@@ -333,8 +325,7 @@ void bt_bap_iso_bind_stream(struct bt_bap_iso *bap_iso, struct bt_bap_stream *st
 		bap_iso_ep = &bap_iso->tx;
 	}
 
-	__ASSERT(bap_iso_ep->stream == NULL, "bap_iso %p bound with stream %p", bap_iso,
-		 bap_iso_ep->stream);
+	DEBUGASSERT(bap_iso_ep->stream == NULL);
 	bap_iso_ep->stream = stream;
 
 	stream->iso = &bt_bap_iso_ref(bap_iso)->chan;
@@ -345,8 +336,8 @@ void bt_bap_iso_unbind_stream(struct bt_bap_stream *stream, enum bt_audio_dir di
 	struct bt_bap_iso_dir *bap_iso_ep;
 	struct bt_bap_iso *bap_iso;
 
-	__ASSERT_NO_MSG(stream != NULL);
-	__ASSERT(stream->iso != NULL, "stream %p not bound with an bap_iso", stream);
+	DEBUGASSERT(stream != NULL);
+	DEBUGASSERT(stream->iso != NULL);
 
 	bap_iso = CONTAINER_OF(stream->iso, struct bt_bap_iso, chan);
 
@@ -359,9 +350,7 @@ void bt_bap_iso_unbind_stream(struct bt_bap_stream *stream, enum bt_audio_dir di
 		bap_iso_ep = &bap_iso->tx;
 	}
 
-	__ASSERT(bap_iso_ep->stream == stream, "bap_iso %p (%p) not bound with stream %p (%p)",
-		 bap_iso, bap_iso_ep->stream, stream,
-		 CONTAINER_OF(stream->iso, struct bt_bap_iso, chan));
+	DEBUGASSERT(bap_iso_ep->stream == stream);
 	bap_iso_ep->stream = NULL;
 
 	bt_bap_iso_unref(bap_iso);
@@ -370,8 +359,7 @@ void bt_bap_iso_unbind_stream(struct bt_bap_stream *stream, enum bt_audio_dir di
 
 struct bt_bap_stream *bt_bap_iso_get_stream(struct bt_bap_iso *iso, enum bt_audio_dir dir)
 {
-	__ASSERT(dir == BT_AUDIO_DIR_SINK || dir == BT_AUDIO_DIR_SOURCE,
-		 "invalid dir: %u", dir);
+	DEBUGASSERT(dir == BT_AUDIO_DIR_SINK || dir == BT_AUDIO_DIR_SOURCE);
 
 	LOG_DBG("iso %p dir %s", iso, bt_audio_dir_to_str(dir));
 

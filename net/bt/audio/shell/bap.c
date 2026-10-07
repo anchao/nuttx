@@ -43,7 +43,7 @@
 #include <zephyr/net_buf.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/shell/shell_string_conv.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/clock.h>
@@ -840,11 +840,11 @@ static uint8_t stream_dir(const struct bt_bap_stream *stream)
 	struct bt_bap_ep_info ep_info;
 	__maybe_unused int err;
 
-	__ASSERT(stream != NULL, "Invalid stream");
-	__ASSERT(stream->ep != NULL, "Invalid stream ep");
+	DEBUGASSERT(stream != NULL);
+	DEBUGASSERT(stream->ep != NULL);
 
 	err = bt_bap_ep_get_info(stream->ep, &ep_info);
-	__ASSERT(err == 0, "Failed to get EP info: %d", err);
+	DEBUGASSERT(err == 0);
 
 	return ep_info.dir;
 }
@@ -3896,38 +3896,38 @@ static int cmd_init(const struct shell *sh, size_t argc, char *argv[])
 		};
 
 		err = bt_pacs_register(&pacs_param);
-		__ASSERT(err == 0, "Failed to register PACS: %d", err);
+		DEBUGASSERT(err == 0);
 
 		if (IS_ENABLED(CONFIG_BT_PAC_SNK)) {
 			err = bt_pacs_cap_register(BT_AUDIO_DIR_SINK, &cap_sink);
-			__ASSERT(err == 0, "Failed to register sink capabilities: %d", err);
+			DEBUGASSERT(err == 0);
 
 			err = bt_pacs_set_supported_contexts(BT_AUDIO_DIR_SINK, DEFAULT_CONTEXT);
-			__ASSERT(err == 0, "Failed to set sink supported contexts: %d", err);
+			DEBUGASSERT(err == 0);
 
 			err = bt_pacs_set_available_contexts(BT_AUDIO_DIR_SINK, DEFAULT_CONTEXT);
-			__ASSERT(err == 0, "Failed to set sink available contexts: %d", err);
+			DEBUGASSERT(err == 0);
 		}
 
 		if (IS_ENABLED(CONFIG_BT_PAC_SNK_LOC)) {
 			err = bt_pacs_set_location(BT_AUDIO_DIR_SINK, DEFAULT_LOCATION);
-			__ASSERT(err == 0, "Failed to set sink location: %d", err);
+			DEBUGASSERT(err == 0);
 		}
 
 		if (IS_ENABLED(CONFIG_BT_PAC_SRC)) {
 			err = bt_pacs_cap_register(BT_AUDIO_DIR_SOURCE, &cap_source);
-			__ASSERT(err == 0, "Failed to register source capabilities: %d", err);
+			DEBUGASSERT(err == 0);
 
 			err = bt_pacs_set_supported_contexts(BT_AUDIO_DIR_SOURCE, DEFAULT_CONTEXT);
-			__ASSERT(err == 0, "Failed to set source supported contexts: %d", err);
+			DEBUGASSERT(err == 0);
 
 			err = bt_pacs_set_available_contexts(BT_AUDIO_DIR_SOURCE, DEFAULT_CONTEXT);
-			__ASSERT(err == 0, "Failed to set source available contexts: %d", err);
+			DEBUGASSERT(err == 0);
 		}
 
 		if (IS_ENABLED(CONFIG_BT_PAC_SRC_LOC)) {
 			err = bt_pacs_set_location(BT_AUDIO_DIR_SOURCE, DEFAULT_LOCATION);
-			__ASSERT(err == 0, "Failed to set source location: %d", err);
+			DEBUGASSERT(err == 0);
 		}
 	}
 
@@ -3963,10 +3963,10 @@ static int cmd_init(const struct shell *sh, size_t argc, char *argv[])
 	}
 
 	err = bt_bap_unicast_server_register(&unicast_server_param);
-	__ASSERT(err == 0, "Failed to register Unicast Server: %d", err);
+	DEBUGASSERT(err == 0);
 
 	err = bt_bap_unicast_server_register_cb(&unicast_server_cb);
-	__ASSERT(err == 0, "Failed to register Unicast Server Callbacks: %d", err);
+	DEBUGASSERT(err == 0);
 #endif /* CONFIG_BT_BAP_UNICAST_SERVER */
 
 #if defined(CONFIG_BT_BAP_UNICAST)
@@ -4033,7 +4033,7 @@ static int cmd_init(const struct shell *sh, size_t argc, char *argv[])
 	if (IS_ENABLED(CONFIG_USBD_AUDIO2_CLASS) &&
 	    (IS_ENABLED(CONFIG_BT_AUDIO_RX) || IS_ENABLED(CONFIG_BT_AUDIO_TX))) {
 		err = bap_usb_init();
-		__ASSERT(err == 0, "Failed to enable USB: %d", err);
+		DEBUGASSERT(err == 0);
 	}
 #endif /* CONFIG_LIBLC3 */
 
@@ -4239,7 +4239,7 @@ static int cmd_print_ase_info(const struct shell *sh, size_t argc, char *argv[])
 	}
 
 	err = bt_bap_unicast_server_foreach_ep(default_conn, print_ase_info, NULL);
-	__ASSERT(err == 0, "bt_bap_unicast_server_foreach_ep returned %d", err);
+	DEBUGASSERT(err == 0);
 
 	return 0;
 }
@@ -4376,7 +4376,7 @@ static size_t connectable_ad_data_add(struct bt_data *data_array, size_t data_ar
 		/* Metadata length */
 		ad_bap_announcement[7] = 0x00;
 
-		__ASSERT(data_array_size > ad_len, "No space for AD_BAP_ANNOUNCEMENT");
+		DEBUGASSERT(data_array_size > ad_len);
 		data_array[ad_len].type = BT_DATA_SVC_DATA16;
 		data_array[ad_len].data_len = ARRAY_SIZE(ad_bap_announcement);
 		data_array[ad_len].data = &ad_bap_announcement[0];

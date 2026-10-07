@@ -19,7 +19,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/settings/settings.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/byteorder.h>
@@ -71,8 +71,8 @@ static void find_key_in_use(struct bt_conn *conn, void *data)
 	struct key_data *kdata = data;
 	struct bt_keys *key;
 
-	__ASSERT_NO_MSG(conn != NULL);
-	__ASSERT_NO_MSG(data != NULL);
+	DEBUGASSERT(conn != NULL);
+	DEBUGASSERT(data != NULL);
 
 	if (conn->state == BT_CONN_CONNECTED) {
 		key = bt_keys_find_addr(conn->id, bt_conn_get_dst(conn));
@@ -121,7 +121,7 @@ struct bt_keys *bt_keys_get_addr(uint8_t id, const bt_addr_le_t *addr)
 	int i;
 	size_t first_free_slot = ARRAY_SIZE(key_pool);
 
-	__ASSERT_NO_MSG(addr != NULL);
+	DEBUGASSERT(addr != NULL);
 
 	LOG_DBG("%s", bt_addr_le_str(addr));
 
@@ -194,7 +194,7 @@ void bt_foreach_bond(uint8_t id, void (*func)(const struct bt_bond_info *info,
 {
 	int i;
 
-	__ASSERT_NO_MSG(func != NULL);
+	DEBUGASSERT(func != NULL);
 
 	for (i = 0; i < ARRAY_SIZE(key_pool); i++) {
 		struct bt_keys *keys = &key_pool[i];
@@ -212,7 +212,7 @@ enum bt_le_addr_res_support bt_le_bond_addr_res_support(uint8_t id, const bt_add
 {
 	struct bt_keys *keys;
 
-	__ASSERT_NO_MSG(peer != NULL);
+	DEBUGASSERT(peer != NULL);
 
 	if (!IS_ENABLED(CONFIG_BT_GATT_AUTO_READ_CENTRAL_ADDR_RES)) {
 		/* Also ignores an answer stored by a previous firmware that
@@ -238,7 +238,7 @@ void bt_keys_foreach_type(enum bt_keys_type type, void (*func)(struct bt_keys *k
 {
 	int i;
 
-	__ASSERT_NO_MSG(func != NULL);
+	DEBUGASSERT(func != NULL);
 
 	for (i = 0; i < ARRAY_SIZE(key_pool); i++) {
 		if ((key_pool[i].keys & type)) {
@@ -251,7 +251,7 @@ struct bt_keys *bt_keys_find(enum bt_keys_type type, uint8_t id, const bt_addr_l
 {
 	int i;
 
-	__ASSERT_NO_MSG(addr != NULL);
+	DEBUGASSERT(addr != NULL);
 
 	LOG_DBG("type %d %s", type, bt_addr_le_str(addr));
 
@@ -269,7 +269,7 @@ struct bt_keys *bt_keys_get_type(enum bt_keys_type type, uint8_t id, const bt_ad
 {
 	struct bt_keys *keys;
 
-	__ASSERT_NO_MSG(addr != NULL);
+	DEBUGASSERT(addr != NULL);
 
 	LOG_DBG("type %d %s", type, bt_addr_le_str(addr));
 
@@ -292,7 +292,7 @@ struct bt_keys *bt_keys_find_irk(uint8_t id, const bt_addr_le_t *addr)
 {
 	int i;
 
-	__ASSERT_NO_MSG(addr != NULL);
+	DEBUGASSERT(addr != NULL);
 
 	LOG_DBG("%s", bt_addr_le_str(addr));
 
@@ -341,7 +341,7 @@ struct bt_keys *bt_keys_find_addr(uint8_t id, const bt_addr_le_t *addr)
 {
 	int i;
 
-	__ASSERT_NO_MSG(addr != NULL);
+	DEBUGASSERT(addr != NULL);
 
 	LOG_DBG("%s", bt_addr_le_str(addr));
 
@@ -357,14 +357,14 @@ struct bt_keys *bt_keys_find_addr(uint8_t id, const bt_addr_le_t *addr)
 
 void bt_keys_add_type(struct bt_keys *keys, enum bt_keys_type type)
 {
-	__ASSERT_NO_MSG(keys != NULL);
+	DEBUGASSERT(keys != NULL);
 
 	keys->keys |= type;
 }
 
 void bt_keys_clear(struct bt_keys *keys)
 {
-	__ASSERT_NO_MSG(keys != NULL);
+	DEBUGASSERT(keys != NULL);
 
 	LOG_DBG("%s (keys 0x%04x)", bt_addr_le_str(&keys->addr), keys->keys);
 
@@ -385,7 +385,7 @@ int bt_keys_store(struct bt_keys *keys)
 {
 	int err;
 
-	__ASSERT_NO_MSG(keys != NULL);
+	DEBUGASSERT(keys != NULL);
 
 	err = bt_settings_store_keys(keys->id, &keys->addr, keys->storage_start,
 				     BT_KEYS_STORAGE_LEN);
@@ -553,7 +553,7 @@ static int keys_set(const char *name, size_t len_rd, settings_read_cb read_cb,
 
 static void id_add(struct bt_keys *keys, void *user_data)
 {
-	__ASSERT_NO_MSG(keys != NULL);
+	DEBUGASSERT(keys != NULL);
 
 	if ((keys->state & BT_KEYS_ID_ADDED) != 0U) {
 		return;
@@ -588,7 +588,7 @@ BT_SETTINGS_DEFINE(keys, "keys", keys_set, keys_commit);
 #if defined(CONFIG_BT_KEYS_OVERWRITE_OLDEST)
 void bt_keys_update_usage(uint8_t id, const bt_addr_le_t *addr)
 {
-	__ASSERT_NO_MSG(addr != NULL);
+	DEBUGASSERT(addr != NULL);
 
 	struct bt_keys *keys = bt_keys_find_addr(id, addr);
 
@@ -617,7 +617,7 @@ void bt_keys_show_sniffer_info(struct bt_keys *keys, void *data)
 {
 	uint8_t ltk[16];
 
-	__ASSERT_NO_MSG(keys != NULL);
+	DEBUGASSERT(keys != NULL);
 
 	if (keys->keys & BT_KEYS_LTK_P256) {
 		sys_memcpy_swap(ltk, keys->ltk.val, keys->enc_size);

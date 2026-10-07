@@ -25,7 +25,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
@@ -118,7 +118,7 @@ static void bt_iso_sent_cb(struct bt_conn *iso, void *user_data, int err)
 	struct bt_iso_chan *chan = iso->iso.chan;
 	struct bt_iso_chan_ops *ops;
 
-	__ASSERT(chan != NULL, "NULL chan for iso %p", iso);
+	DEBUGASSERT(chan != NULL);
 
 	ops = chan->ops;
 
@@ -481,14 +481,14 @@ static void bt_iso_chan_disconnected(struct bt_iso_chan *chan, uint8_t reason)
 
 	LOG_DBG("%p, reason 0x%02x", chan, reason);
 
-	__ASSERT(chan->iso != NULL, "NULL conn for iso chan %p", chan);
+	DEBUGASSERT(chan->iso != NULL);
 
 #if defined(CONFIG_BT_ISO_TX)
 	struct net_buf *buf;
 
 	/* release buffers from tx_queue */
 	while ((buf = k_fifo_get(&chan->iso->iso.txq, 0))) {
-		__ASSERT_NO_MSG(!bt_buf_has_view(buf));
+		DEBUGASSERT(!bt_buf_has_view(buf));
 		net_buf_unref(buf);
 	}
 #endif /* CONFIG_BT_ISO_TX */
@@ -523,7 +523,7 @@ static void bt_iso_chan_disconnected(struct bt_iso_chan *chan, uint8_t reason)
 
 			/* Update CIG state */
 			cig = get_cig(chan);
-			__ASSERT(cig != NULL, "CIG was NULL");
+			DEBUGASSERT(cig != NULL);
 
 			is_chan_connected = false;
 			list_for_every_container(&cig->cis_channels, cis_chan, node) {
@@ -873,7 +873,7 @@ static struct net_buf *iso_data_pull(struct bt_conn *conn, size_t amount, size_t
 		return NULL;
 	}
 
-	__ASSERT_NO_MSG(conn->state == BT_CONN_CONNECTED);
+	DEBUGASSERT(conn->state == BT_CONN_CONNECTED);
 
 	if (conn->iso.chan->state != BT_ISO_STATE_CONNECTED) {
 		LOG_DBG("channel has been disconnected");
@@ -899,7 +899,7 @@ static struct net_buf *iso_data_pull(struct bt_conn *conn, size_t amount, size_t
 		q_frag = k_fifo_get(&conn->iso.txq, 0);
 
 		BT_ISO_DATA_DBG("last frag, pop buf");
-		__ASSERT_NO_MSG(q_frag == frag);
+		DEBUGASSERT(q_frag == frag);
 
 		net_buf_unref(q_frag);
 	}
@@ -1232,7 +1232,7 @@ void bt_iso_cleanup_acl(struct bt_conn *iso)
 			__maybe_unused const int err =
 				bt_work_schedule(&acl->deferred_work, 0);
 
-			__ASSERT(err >= 0, "Failed to retrigger conn->deferred_work for %p", acl);
+			DEBUGASSERT(err >= 0);
 		}
 
 		bt_conn_unref(acl);
@@ -1247,7 +1247,7 @@ static void log_cis_info(const struct bt_conn_iso *iso_conn)
 	const struct bt_iso_unicast_tx_info *central = &unicast_info->central;
 	const struct bt_iso_chan *chan = iso_conn->chan;
 
-	__ASSERT_NO_MSG(chan != NULL);
+	DEBUGASSERT(chan != NULL);
 
 	const struct bt_iso_chan_io_qos *tx = chan->qos == NULL ? NULL : chan->qos->tx;
 	const struct bt_iso_chan_io_qos *rx = chan->qos == NULL ? NULL : chan->qos->rx;
@@ -1992,8 +1992,7 @@ static struct bt_iso_cig *get_cig(const struct bt_iso_chan *iso_chan)
 		return NULL;
 	}
 
-	__ASSERT(iso_chan->iso->iso.info.unicast.cig_id < ARRAY_SIZE(cigs), "Invalid cig_id %u",
-		 iso_chan->iso->iso.info.unicast.cig_id);
+	DEBUGASSERT(iso_chan->iso->iso.info.unicast.cig_id < ARRAY_SIZE(cigs));
 
 	return &cigs[iso_chan->iso->iso.info.unicast.cig_id];
 }
@@ -2542,7 +2541,7 @@ int bt_iso_chan_connect(const struct bt_iso_connect_param *param, size_t count)
 		bt_iso_chan_set_state(iso_chan, BT_ISO_STATE_CONNECTING);
 
 		cig = get_cig(iso_chan);
-		__ASSERT(cig != NULL, "CIG was NULL");
+		DEBUGASSERT(cig != NULL);
 		cig->state = BT_ISO_CIG_STATE_ACTIVE;
 	}
 
@@ -2704,7 +2703,7 @@ static int hci_le_create_big(struct bt_le_ext_adv *padv, struct bt_iso_big *big,
 	}
 
 	bis = list_peek_head_container(&big->bis_channels, bis, node);
-	__ASSERT(bis != NULL, "bis was NULL");
+	DEBUGASSERT(bis != NULL);
 
 	/* All BIS will share the same QOS */
 	qos = bis->qos->tx;
@@ -2764,7 +2763,7 @@ static int hci_le_create_big_test(const struct bt_le_ext_adv *padv, struct bt_is
 	}
 
 	bis = list_peek_head_container(&big->bis_channels, bis, node);
-	__ASSERT(bis != NULL, "bis was NULL");
+	DEBUGASSERT(bis != NULL);
 
 	/* All BIS will share the same QOS */
 	qos = bis->qos;
@@ -2826,7 +2825,7 @@ static bool is_advanced_big_param(const struct bt_iso_big_create_param *param)
 			return true;
 		}
 
-		__ASSERT(qos->tx != NULL, "TX cannot be NULL for broadcaster");
+		DEBUGASSERT(qos->tx != NULL);
 
 		if (qos->tx->max_pdu > 0U || qos->tx->burst_number > 0U) {
 			return true;
@@ -3196,7 +3195,7 @@ int bt_iso_big_terminate(struct bt_iso_big *big)
 	}
 
 	bis = list_peek_head_container(&big->bis_channels, bis, node);
-	__ASSERT(bis != NULL, "bis was NULL");
+	DEBUGASSERT(bis != NULL);
 
 	if (IS_ENABLED(CONFIG_BT_ISO_BROADCASTER) &&
 	    bis->iso->iso.info.type == BT_ISO_CHAN_TYPE_BROADCASTER) {

@@ -25,7 +25,7 @@
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
@@ -186,7 +186,7 @@ static void micp_mic_ctlr_write_mics_mute_cb(struct bt_conn *conn, uint8_t err,
 #if defined(CONFIG_BT_MICP_MIC_CTLR_AICS)
 static struct bt_micp_mic_ctlr *lookup_micp_by_aics(const struct bt_aics *aics)
 {
-	__ASSERT(aics != NULL, "AICS pointer cannot be NULL");
+	DEBUGASSERT(aics != NULL);
 
 	for (int i = 0; i < ARRAY_SIZE(mic_ctlrs); i++) {
 		for (int j = 0; j < ARRAY_SIZE(mic_ctlrs[i].aics); j++) {

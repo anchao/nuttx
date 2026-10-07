@@ -26,7 +26,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/shell/shell_string_conv.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
@@ -420,7 +420,7 @@ size_t csis_ad_data_add(struct bt_data *data_array, const size_t data_array_size
 			return 0;
 		}
 
-		__ASSERT(data_array_size > ad_len, "No space for AD_RSI");
+		DEBUGASSERT(data_array_size > ad_len);
 		data_array[ad_len].type = BT_DATA_CSIS_RSI;
 		data_array[ad_len].data_len = ARRAY_SIZE(ad_rsi);
 		data_array[ad_len].data = &ad_rsi[0];

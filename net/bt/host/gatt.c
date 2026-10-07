@@ -28,7 +28,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/settings/settings.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/iterable_sections.h>
@@ -270,7 +270,7 @@ static bool update_range(uint16_t *start, uint16_t *end, uint16_t new_start,
 	LOG_DBG("start 0x%04x end 0x%04x new_start 0x%04x new_end 0x%04x", *start, *end, new_start,
 		new_end);
 
-	__ASSERT(new_start <= new_end, "New start is greater than new end");
+	DEBUGASSERT(new_start <= new_end);
 
 	/* Check if inside existing range */
 	if (new_start >= *start && new_end <= *end) {
@@ -982,7 +982,7 @@ static int gatt_store_ccc(uint8_t id, const bt_addr_le_t *addr);
 static int gatt_store_ccc(uint8_t id, const bt_addr_le_t *addr)
 {
 	/* This function shall never be used without CONFIG_BT_SETTINGS. */
-	__ASSERT_NO_MSG(false);
+	DEBUGASSERT(false);
 
 	return -ENOTSUP;
 }
@@ -1266,8 +1266,7 @@ static void sc_process(struct k_work *work)
 	struct gatt_sc *sc = CONTAINER_OF(dwork, struct gatt_sc, work);
 	uint16_t sc_range[2];
 
-	__ASSERT(!atomic_test_bit(sc->flags, SC_INDICATE_PENDING),
-		 "Indicate already pending");
+	DEBUGASSERT(!atomic_test_bit(sc->flags, SC_INDICATE_PENDING));
 
 	LOG_DBG("start 0x%04x end 0x%04x", sc->start, sc->end);
 
@@ -1378,7 +1377,7 @@ static void gatt_delayed_store_enqueue(uint8_t id, const bt_addr_le_t *peer_addr
 	if (bonded) {
 		if (el == NULL) {
 			el = gatt_delayed_store_alloc(id, peer_addr);
-			__ASSERT(el != NULL, "Can't save CF / CCC to flash");
+			DEBUGASSERT(el != NULL);
 		}
 
 		atomic_set_bit(el->flags, flag);
@@ -1661,9 +1660,9 @@ int bt_gatt_service_register(struct bt_gatt_service *svc)
 {
 	int err;
 
-	__ASSERT(svc, "invalid parameters\n");
-	__ASSERT(svc->attrs, "invalid parameters\n");
-	__ASSERT(svc->attr_count, "invalid parameters\n");
+	DEBUGASSERT(svc);
+	DEBUGASSERT(svc->attrs);
+	DEBUGASSERT(svc->attr_count);
 
 	if (IS_ENABLED(CONFIG_BT_SETTINGS) &&
 	    atomic_test_bit(gatt_flags, GATT_INITIALIZED) &&
@@ -1721,7 +1720,7 @@ int bt_gatt_service_unregister(struct bt_gatt_service *svc)
 	uint16_t sc_end_handle;
 	int err;
 
-	__ASSERT(svc, "invalid parameters\n");
+	DEBUGASSERT(svc);
 
 	/* gatt_unregister() clears handles when those were auto-assigned
 	 * by host
@@ -2969,8 +2968,8 @@ int bt_gatt_notify_cb(struct bt_conn *conn,
 {
 	struct notify_data data;
 
-	__ASSERT(params, "invalid parameters\n");
-	__ASSERT(params->attr || params->uuid, "invalid parameters\n");
+	DEBUGASSERT(params);
+	DEBUGASSERT(params->attr || params->uuid);
 
 	if (!atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
 		return -EAGAIN;
@@ -3034,8 +3033,8 @@ static int gatt_notify_multiple_verify_args(struct bt_conn *conn,
 					    struct bt_gatt_notify_params params[],
 					    uint16_t num_params)
 {
-	__ASSERT(params, "invalid parameters\n");
-	__ASSERT(params->attr, "invalid parameters\n");
+	DEBUGASSERT(params);
+	DEBUGASSERT(params->attr);
 
 	if (num_params < 2) {
 		/* Use the standard notification API when sending only one
@@ -3210,8 +3209,8 @@ int bt_gatt_indicate(struct bt_conn *conn,
 {
 	struct notify_data data;
 
-	__ASSERT(params, "invalid parameters\n");
-	__ASSERT(params->attr || params->uuid, "invalid parameters\n");
+	DEBUGASSERT(params);
+	DEBUGASSERT(params->attr || params->uuid);
 
 	if (!atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
 		return -EAGAIN;
@@ -3565,8 +3564,8 @@ bool bt_gatt_is_subscribed(struct bt_conn *conn,
 	uint8_t ccc_bits_encoded[sizeof(ccc_bits)];
 	ssize_t len;
 
-	__ASSERT(conn, "invalid parameter\n");
-	__ASSERT(attr, "invalid parameter\n");
+	DEBUGASSERT(conn);
+	DEBUGASSERT(attr);
 
 	if (conn->state != BT_CONN_CONNECTED) {
 		return false;
@@ -3596,13 +3595,13 @@ bool bt_gatt_is_subscribed(struct bt_conn *conn,
 		}
 
 		attr = bt_gatt_attr_next(attr);
-		__ASSERT(attr, "No more attributes\n");
+		DEBUGASSERT(attr);
 	}
 
 	/* Check if attribute is a characteristic value */
 	if (bt_uuid_cmp(attr->uuid, BT_UUID_GATT_CCC) != 0) {
 		attr = bt_gatt_attr_next(attr);
-		__ASSERT(attr, "No more attributes\n");
+		DEBUGASSERT(attr);
 	}
 
 	/* Find the CCC Descriptor */
@@ -3654,7 +3653,7 @@ static bool gatt_sub_is_empty(struct gatt_sub *sub)
  */
 static void gatt_sub_free(struct gatt_sub *sub)
 {
-	__ASSERT_NO_MSG(gatt_sub_is_empty(sub));
+	DEBUGASSERT(gatt_sub_is_empty(sub));
 	bt_addr_le_copy(&sub->peer, BT_ADDR_LE_ANY);
 }
 
@@ -3898,8 +3897,8 @@ int bt_gatt_exchange_mtu(struct bt_conn *conn,
 {
 	int err;
 
-	__ASSERT(conn, "invalid parameter\n");
-	__ASSERT(params && params->func, "invalid parameters\n");
+	DEBUGASSERT(conn);
+	DEBUGASSERT(params && params->func);
 
 	if (conn->state != BT_CONN_CONNECTED) {
 		return -ENOTCONN;
@@ -4804,12 +4803,10 @@ static int gatt_find_info(struct bt_conn *conn,
 int bt_gatt_discover(struct bt_conn *conn,
 		     struct bt_gatt_discover_params *params)
 {
-	__ASSERT(conn, "invalid parameters\n");
-	__ASSERT(params && params->func, "invalid parameters\n");
-	__ASSERT((params->start_handle && params->end_handle),
-		 "invalid parameters\n");
-	__ASSERT((params->start_handle <= params->end_handle),
-		 "invalid parameters\n");
+	DEBUGASSERT(conn);
+	DEBUGASSERT(params && params->func);
+	DEBUGASSERT((params->start_handle && params->end_handle));
+	DEBUGASSERT((params->start_handle <= params->end_handle));
 
 	if (conn->state != BT_CONN_CONNECTED) {
 		return -ENOTCONN;
@@ -5162,8 +5159,8 @@ static int gatt_read_encode(struct net_buf *buf, size_t len, void *user_data)
 
 int bt_gatt_read(struct bt_conn *conn, struct bt_gatt_read_params *params)
 {
-	__ASSERT(conn, "invalid parameters\n");
-	__ASSERT(params && params->func, "invalid parameters\n");
+	DEBUGASSERT(conn);
+	DEBUGASSERT(params && params->func);
 
 	if (conn->state != BT_CONN_CONNECTED) {
 		return -ENOTCONN;
@@ -5211,8 +5208,8 @@ int bt_gatt_write_without_response_cb(struct bt_conn *conn, uint16_t handle,
 	struct bt_att_write_cmd *cmd;
 	__maybe_unused size_t write;
 
-	__ASSERT(conn, "invalid parameters\n");
-	__ASSERT(handle, "invalid parameters\n");
+	DEBUGASSERT(conn);
+	DEBUGASSERT(handle);
 
 	if (conn->state != BT_CONN_CONNECTED) {
 		return -ENOTCONN;
@@ -5240,7 +5237,7 @@ int bt_gatt_write_without_response_cb(struct bt_conn *conn, uint16_t handle,
 	cmd->handle = sys_cpu_to_le16(handle);
 
 	write = net_buf_append_bytes(buf, length, data, 0, NULL, NULL);
-	__ASSERT(write == length, "Unable to allocate length %u: only %zu written", length, write);
+	DEBUGASSERT(write == length);
 
 	LOG_DBG("handle 0x%04x length %u", handle, length);
 
@@ -5428,9 +5425,9 @@ int bt_gatt_write(struct bt_conn *conn, struct bt_gatt_write_params *params)
 {
 	size_t len;
 
-	__ASSERT(conn, "invalid parameters\n");
-	__ASSERT(params && params->func, "invalid parameters\n");
-	__ASSERT(params->handle, "invalid parameters\n");
+	DEBUGASSERT(conn);
+	DEBUGASSERT(params && params->func);
+	DEBUGASSERT(params->handle);
 
 	if (conn->state != BT_CONN_CONNECTED) {
 		return -ENOTCONN;
@@ -5596,15 +5593,14 @@ int bt_gatt_subscribe(struct bt_conn *conn,
 	struct bt_gatt_subscribe_params *tmp;
 	bool has_subscription = false;
 
-	__ASSERT(conn, "invalid parameters\n");
-	__ASSERT(params && params->notify,  "invalid parameters\n");
-	__ASSERT(params->value, "invalid parameters\n");
+	DEBUGASSERT(conn);
+	DEBUGASSERT(params && params->notify);
+	DEBUGASSERT(params->value);
 #if defined(CONFIG_BT_GATT_AUTO_DISCOVER_CCC)
-	__ASSERT(params->ccc_handle ||
-		 (params->end_handle && params->disc_params),
-		 "invalid parameters\n");
+	DEBUGASSERT(params->ccc_handle ||
+		 (params->end_handle && params->disc_params));
 #else
-	__ASSERT(params->ccc_handle, "invalid parameters\n");
+	DEBUGASSERT(params->ccc_handle);
 #endif
 
 	if (conn->state != BT_CONN_CONNECTED) {
@@ -5669,9 +5665,9 @@ int bt_gatt_resubscribe(uint8_t id, const bt_addr_le_t *peer,
 	struct gatt_sub *sub;
 	struct bt_gatt_subscribe_params *tmp;
 
-	__ASSERT(params && params->notify,  "invalid parameters\n");
-	__ASSERT(params->value, "invalid parameters\n");
-	__ASSERT(params->ccc_handle, "invalid parameters\n");
+	DEBUGASSERT(params && params->notify);
+	DEBUGASSERT(params->value);
+	DEBUGASSERT(params->ccc_handle);
 
 	sub = gatt_sub_add_by_addr(id, peer);
 	if (!sub) {
@@ -5726,8 +5722,8 @@ int bt_gatt_unsubscribe(struct bt_conn *conn,
 	struct bt_gatt_subscribe_params *tmp;
 	bool has_subscription = false, found = false;
 
-	__ASSERT(conn, "invalid parameters\n");
-	__ASSERT(params, "invalid parameters\n");
+	DEBUGASSERT(conn);
+	DEBUGASSERT(params);
 
 	if (conn->state != BT_CONN_CONNECTED) {
 		return -ENOTCONN;
@@ -6808,7 +6804,7 @@ void bt_gatt_req_set_mtu(struct bt_att_req *req, uint16_t mtu)
 		if (req->func == gatt_read_rsp) {
 			struct bt_gatt_read_params *params = req->user_data;
 
-			__ASSERT_NO_MSG(params);
+			DEBUGASSERT(params);
 			params->_att_mtu = mtu;
 			return;
 		}

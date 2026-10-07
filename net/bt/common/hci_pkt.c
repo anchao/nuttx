@@ -13,12 +13,12 @@
 #include <zephyr/bluetooth/hci_pkt.h>
 #include <zephyr/bluetooth/hci_types.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/byteorder.h>
 
 void bt_hci_pkt_reset_cmd(struct net_buf_simple *buf)
 {
-	__ASSERT_NO_MSG(buf->size >= BT_HCI_PKT_CMD_HDR_SIZE);
+	DEBUGASSERT(buf->size >= BT_HCI_PKT_CMD_HDR_SIZE);
 
 	net_buf_simple_reset(buf);
 	net_buf_simple_reserve(buf, BT_HCI_PKT_CMD_HDR_SIZE);

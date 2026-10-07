@@ -962,7 +962,7 @@ static void lpn_timeout(struct k_work *work)
 		update_timeout(lpn);
 		break;
 	default:
-		__ASSERT(0, "Unhandled LPN state");
+		DEBUGASSERT(0);
 		break;
 	}
 }

@@ -185,8 +185,7 @@ static void goep_rfcomm_init(struct bt_conn *conn, struct bt_goep *goep)
 	/* Set the default MTU to the largest value that the configuration can support */
 	goep->obex.rx.mtu = mtu;
 
-	__ASSERT(goep->obex.rx.mtu >= GOEP_MIN_MTU, "GOEP RFCOMM MTU less than minimum size "
-		 "(%d < %d)", goep->obex.rx.mtu, GOEP_MIN_MTU);
+	DEBUGASSERT(goep->obex.rx.mtu >= GOEP_MIN_MTU);
 
 	bt_obex_reg_transport(&goep->obex, &goep_rfcomm_transport_ops);
 
@@ -217,8 +216,8 @@ static int goep_rfcomm_accept(struct bt_conn *conn, struct bt_rfcomm_server *ser
 		return err;
 	}
 
-	__ASSERT(goep != NULL && goep->v1 != NULL && goep->v2 == NULL &&
-		 goep->transport_ops != NULL, "Invalid parameter of GOEP RFCOMM transport");
+	DEBUGASSERT(goep != NULL && goep->v1 != NULL && goep->v2 == NULL &&
+		 goep->transport_ops != NULL);
 
 	goep_rfcomm_init(conn, goep);
 
@@ -469,8 +468,7 @@ static void goep_l2cap_init(struct bt_conn *conn, struct bt_goep *goep)
 	/* Set the default MTU to the largest value that the configuration can support */
 	goep->obex.rx.mtu = mtu;
 
-	__ASSERT(goep->obex.rx.mtu >= GOEP_MIN_MTU, "GOEP L2CAP MTU less than minimum size "
-		 "(%d < %d)", goep->obex.rx.mtu, GOEP_MIN_MTU);
+	DEBUGASSERT(goep->obex.rx.mtu >= GOEP_MIN_MTU);
 
 	bt_obex_reg_transport(&goep->obex, &goep_l2cap_transport_ops);
 
@@ -513,8 +511,8 @@ static int goep_l2cap_accept(struct bt_conn *conn, struct bt_l2cap_server *serve
 		return err;
 	}
 
-	__ASSERT(goep != NULL && goep->v2 != NULL && goep->v1 == NULL &&
-		 goep->transport_ops != NULL, "Invalid parameter of GOEP L2CAP transport");
+	DEBUGASSERT(goep != NULL && goep->v2 != NULL && goep->v1 == NULL &&
+		 goep->transport_ops != NULL);
 
 	goep_l2cap_init(conn, goep);
 

@@ -1707,7 +1707,7 @@ int bt_obex_transport_disconnected(struct bt_obex *obex)
 
 void bt_obex_reg_transport(struct bt_obex *obex, const struct bt_obex_transport_ops *ops)
 {
-	__ASSERT(obex != NULL && ops != NULL, "Invalid obex instance or transport ops");
+	DEBUGASSERT(obex != NULL && ops != NULL);
 
 	obex->_transport_ops = ops;
 }

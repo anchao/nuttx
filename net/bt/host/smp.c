@@ -28,7 +28,7 @@
 #include <zephyr/debug/stack.h>
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
@@ -716,7 +716,7 @@ static void smp_check_complete(struct bt_conn *conn, uint8_t dist_complete)
 		struct bt_smp *smp;
 
 		chan = bt_l2cap_le_lookup_tx_cid(conn, BT_L2CAP_CID_SMP);
-		__ASSERT(chan, "No SMP channel found");
+		DEBUGASSERT(chan);
 
 		smp = CONTAINER_OF(chan, struct bt_smp, chan.chan);
 		smp->local_dist &= ~dist_complete;
@@ -734,7 +734,7 @@ static void smp_check_complete(struct bt_conn *conn, uint8_t dist_complete)
 		struct bt_smp_br *smp;
 
 		chan = bt_l2cap_br_lookup_tx_cid(conn, BT_L2CAP_CID_BR_SMP);
-		__ASSERT(chan, "No SMP channel found");
+		DEBUGASSERT(chan);
 
 		smp = CONTAINER_OF(chan, struct bt_smp_br, chan.chan);
 		smp->local_dist &= ~dist_complete;
@@ -928,10 +928,10 @@ static void smp_br_id_add_replace(struct bt_keys *keys)
 		LOG_DBG("Un-pairing old conflicting bond and finalizing new.");
 
 		err = bt_unpair(conflict->id, &conflict->addr);
-		__ASSERT_NO_MSG(!err);
+		DEBUGASSERT(!err);
 	}
 
-	__ASSERT_NO_MSG(!bt_id_find_conflict(keys));
+	DEBUGASSERT(!bt_id_find_conflict(keys));
 	bt_id_add(keys);
 }
 
@@ -1769,7 +1769,7 @@ static int bt_smp_br_accept(struct bt_conn *conn, struct bt_l2cap_chan **chan)
 	}
 
 	index = bt_conn_index(conn);
-	__ASSERT(index < ARRAY_SIZE(bt_smp_br_pool), "Invalid ACL conn index");
+	DEBUGASSERT(index < ARRAY_SIZE(bt_smp_br_pool));
 
 	LOG_DBG("conn %p handle %u", conn, conn->handle);
 
@@ -2049,7 +2049,7 @@ static void smp_timeout(struct k_work *work)
 static void smp_send(struct bt_smp *smp, struct net_buf *buf,
 		     bt_conn_tx_cb_t cb, void *user_data)
 {
-	__ASSERT_NO_MSG(user_data == NULL);
+	DEBUGASSERT(user_data == NULL);
 
 	int err = bt_l2cap_send_pdu(&smp->chan, buf, cb, NULL);
 
@@ -4152,7 +4152,7 @@ static uint8_t smp_id_add_replace(struct bt_smp *smp, struct bt_keys *new_bond)
 	/* Sanity check: It does not make sense to finalize a bond before we
 	 * have the remote identity.
 	 */
-	__ASSERT_NO_MSG(!(smp->remote_dist & BT_SMP_DIST_ID_KEY));
+	DEBUGASSERT(!(smp->remote_dist & BT_SMP_DIST_ID_KEY));
 
 	conflict = bt_id_find_conflict(new_bond);
 	if (conflict) {
@@ -4177,10 +4177,10 @@ static uint8_t smp_id_add_replace(struct bt_smp *smp, struct bt_keys *new_bond)
 		LOG_DBG("Un-pairing old conflicting bond and finalizing new.");
 
 		unpair_err = bt_unpair(conflict->id, &conflict->addr);
-		__ASSERT_NO_MSG(!unpair_err);
+		DEBUGASSERT(!unpair_err);
 	}
 
-	__ASSERT_NO_MSG(!bt_id_find_conflict(new_bond));
+	DEBUGASSERT(!bt_id_find_conflict(new_bond));
 	bt_id_add(new_bond);
 	return 0;
 }
@@ -4927,12 +4927,12 @@ static void pub_key_ready_notify(void)
 	ARG_UNUSED(err);
 
 	err = nxrmutex_lock(&pub_key_gen.lock);
-	__ASSERT_NO_MSG(err == 0);
+	DEBUGASSERT(err == 0);
 
 	(void)k_condvar_broadcast(&pub_key_gen.condvar);
 
 	err = nxrmutex_unlock(&pub_key_gen.lock);
-	__ASSERT_NO_MSG(err == 0);
+	DEBUGASSERT(err == 0);
 }
 
 static void bt_smp_pkey_ready(const uint8_t *pkey)
@@ -6052,7 +6052,7 @@ int bt_smp_le_oob_generate_sc_data(struct bt_le_oob_sc_data *le_sc_oob)
 		 * Retrying.
 		 */
 		err = nxrmutex_lock(&pub_key_gen.lock);
-		__ASSERT_NO_MSG(err == 0);
+		DEBUGASSERT(err == 0);
 
 		err = bt_pub_key_gen(&pub_key_gen.cb);
 		if (err && err != -EALREADY) {
@@ -6061,7 +6061,7 @@ int bt_smp_le_oob_generate_sc_data(struct bt_le_oob_sc_data *le_sc_oob)
 			__maybe_unused int mutex_err;
 
 			mutex_err = nxrmutex_unlock(&pub_key_gen.lock);
-			__ASSERT_NO_MSG(mutex_err == 0);
+			DEBUGASSERT(mutex_err == 0);
 
 			return err;
 		}
@@ -6078,13 +6078,13 @@ int bt_smp_le_oob_generate_sc_data(struct bt_le_oob_sc_data *le_sc_oob)
 			__maybe_unused int mutex_err;
 
 			mutex_err = nxrmutex_unlock(&pub_key_gen.lock);
-			__ASSERT_NO_MSG(mutex_err == 0);
+			DEBUGASSERT(mutex_err == 0);
 
 			return err;
 		}
 
 		err = nxrmutex_unlock(&pub_key_gen.lock);
-		__ASSERT_NO_MSG(err == 0);
+		DEBUGASSERT(err == 0);
 
 		/* Public key has been re-requested but generation failed. */
 		if (!sc_public_key) {

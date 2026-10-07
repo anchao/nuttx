@@ -493,20 +493,19 @@ static inline void bt_dev_lock(void)
 {
 	__maybe_unused int err = nxrmutex_lock(&bt_dev.lock);
 
-	__ASSERT(err == 0, "failed to lock the host lock (err %d)", err);
+	DEBUGASSERT(err == 0);
 }
 
 static inline void bt_dev_unlock(void)
 {
 	__maybe_unused int err = nxrmutex_unlock(&bt_dev.lock);
 
-	__ASSERT(err == 0, "failed to unlock the host lock (err %d)", err);
+	DEBUGASSERT(err == 0);
 }
 
 /* Assert that the current thread holds the host lock. */
 #define BT_DEV_LOCK_ASSERT()						\
-	__ASSERT(nxrmutex_is_hold(&bt_dev.lock),				\
-		 "host lock not held by %p", k_current_get())
+	DEBUGASSERT(nxrmutex_is_hold(&bt_dev.lock))
 extern const struct bt_conn_auth_cb *bt_auth;
 extern struct list_node bt_auth_info_cbs;
 enum bt_security_err bt_security_err_get(uint8_t hci_err);

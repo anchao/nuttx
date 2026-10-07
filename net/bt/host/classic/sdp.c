@@ -15,7 +15,7 @@
 #include <nuttx/spinlock.h>
 
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 
 #include <zephyr/bluetooth/buf.h>
 #include <zephyr/bluetooth/classic/sdp.h>
@@ -712,7 +712,7 @@ static uint16_t sdp_svc_search_req(struct bt_sdp *sdp, struct net_buf *buf, uint
 	LOG_DBG("max_rec_count %u, cont_recs %u", max_rec_count, cont_recs);
 
 	resp_buf = net_buf_take(&sdp->rsp_buf);
-	__ASSERT(resp_buf != NULL, "response buffer is NULL");
+	DEBUGASSERT(resp_buf != NULL);
 	rsp = net_buf_add(resp_buf, sizeof(*rsp));
 
 	list_for_every_container_safe(&sdp_db, record, next, node) {
@@ -876,8 +876,7 @@ static uint32_t copy_attribute(const struct bt_sdp_data_elem *elem, struct net_b
 	total_size = elem->total_size;
 	sub_elem = (const struct bt_sdp_data_elem *)elem->data;
 
-	__ASSERT(!((nest_level == 1) && (*index >= total_size)), "Invalid attr index %u >= %u",
-		 *index, total_size);
+	DEBUGASSERT(!((nest_level == 1) && (*index >= total_size)));
 
 	/* Copy the header */
 	net_buf_simple_reset(&attr_buf);
@@ -915,8 +914,7 @@ static uint32_t copy_attribute(const struct bt_sdp_data_elem *elem, struct net_b
 				goto exit;
 			}
 
-			__ASSERT(seq_size >= sub_elem->total_size, "Invalid sequence size %u < %u",
-				 seq_size, sub_elem->total_size);
+			DEBUGASSERT(seq_size >= sub_elem->total_size);
 			seq_size -= sub_elem->total_size;
 			sub_elem++;
 		} while (seq_size);
@@ -932,7 +930,7 @@ static uint32_t copy_attribute(const struct bt_sdp_data_elem *elem, struct net_b
 		} else if (seq_size == 8U) {
 			net_buf_simple_add_be64(&attr_buf, *((const uint64_t *)elem->data));
 		} else {
-			__ASSERT(seq_size == 0x10, "Invalid sequence size");
+			DEBUGASSERT(seq_size == 0x10);
 
 			uint8_t val[seq_size];
 
@@ -1379,7 +1377,7 @@ static uint16_t sdp_svc_att_req(struct bt_sdp *sdp, struct net_buf *buf, uint16_
 	}
 
 	rsp_buf = net_buf_take(&sdp->rsp_buf);
-	__ASSERT(rsp_buf != NULL, "response buffer is NULL");
+	DEBUGASSERT(rsp_buf != NULL);
 	rsp = net_buf_add(rsp_buf, sizeof(*rsp));
 
 	/* cont_state_size should include 1 byte header */
@@ -1510,7 +1508,7 @@ static uint16_t sdp_svc_search_att_req(struct bt_sdp *sdp, struct net_buf *buf, 
 		state.last_att, state.last_att_index);
 
 	rsp_buf = net_buf_take(&sdp->rsp_buf);
-	__ASSERT(rsp_buf != NULL, "response buffer is NULL");
+	DEBUGASSERT(rsp_buf != NULL);
 	net_buf_simple_save(&rsp_buf->b, &rsp_state);
 
 	rsp = net_buf_add(rsp_buf, sizeof(*rsp));
@@ -2285,7 +2283,7 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 	struct bt_sdp_client *session;
 
 	index = bt_conn_index(conn);
-	__ASSERT(index < ARRAY_SIZE(bt_sdp_client_pool), "Invalid connection index %zu", index);
+	DEBUGASSERT(index < ARRAY_SIZE(bt_sdp_client_pool));
 
 	session = &bt_sdp_client_pool[index];
 
@@ -3076,7 +3074,7 @@ int bt_sdp_discover(struct bt_conn *conn, struct bt_sdp_discover_params *params)
 	}
 
 	index = (size_t)bt_conn_index(acl);
-	__ASSERT(index < ARRAY_SIZE(bt_sdp_client_pool), "ACL CONN index is out of bounds");
+	DEBUGASSERT(index < ARRAY_SIZE(bt_sdp_client_pool));
 
 	session = &bt_sdp_client_pool[index];
 
@@ -3100,7 +3098,7 @@ int bt_sdp_discover_cancel(struct bt_conn *conn,
 	}
 
 	index = (size_t)bt_conn_index(conn);
-	__ASSERT(index < ARRAY_SIZE(bt_sdp_client_pool), "ACL CONN index is out of bounds");
+	DEBUGASSERT(index < ARRAY_SIZE(bt_sdp_client_pool));
 
 	session = &bt_sdp_client_pool[index];
 

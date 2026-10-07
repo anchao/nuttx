@@ -28,7 +28,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
@@ -1494,8 +1494,7 @@ static uint8_t discover_include_func(struct bt_conn *conn,
 
 		LOG_DBG("[ATTRIBUTE] handle 0x%04X", attr->handle);
 
-		__ASSERT(params->type == BT_GATT_DISCOVER_INCLUDE,
-			 "Wrong type");
+		DEBUGASSERT(params->type == BT_GATT_DISCOVER_INCLUDE);
 
 		/* We have found an included service */
 		include = (struct bt_gatt_include *)attr->user_data;

@@ -1261,8 +1261,8 @@ static inline uint8_t rfcomm_dlc_get_available_credits(struct bt_rfcomm_dlc *dlc
 	uint8_t max_credits = RFCOMM_DLC_CREDITS_MAX(dlc);
 	int32_t inprogress_credits = atomic_read(&dlc->rx_credit_inprogress);
 
-	__ASSERT(inprogress_credits >= 0, "Negative inprogress credits");
-	__ASSERT(inprogress_credits <= max_credits, "Inprogress credits exceeds max");
+	DEBUGASSERT(inprogress_credits >= 0);
+	DEBUGASSERT(inprogress_credits <= max_credits);
 
 	/* The case only occurs when there is no inprogress receiving buffer, but the app calls
 	 * bt_rfcomm_dlc_recv_complete().

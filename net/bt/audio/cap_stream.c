@@ -19,7 +19,7 @@
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 
@@ -314,7 +314,7 @@ void bt_cap_stream_ops_register_bap(struct bt_cap_stream *cap_stream)
 		int err;
 
 		err = bt_bap_unicast_client_register_cb(&unicast_client_cb);
-		__ASSERT_NO_MSG(err == 0 || err == -EEXIST);
+		DEBUGASSERT(err == 0 || err == -EEXIST);
 	}
 }
 

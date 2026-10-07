@@ -25,7 +25,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/settings/settings.h>
-#include <zephyr/sys/__assert.h>
+#include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/clock.h>
 #include <nuttx/list.h>
@@ -223,7 +223,7 @@ static struct has_client {
 
 static struct client_context *context_find(const bt_addr_le_t *addr)
 {
-	__ASSERT_NO_MSG(addr != NULL);
+	DEBUGASSERT(addr != NULL);
 
 	for (size_t i = 0U; i < ARRAY_SIZE(contexts); i++) {
 		if (bt_addr_le_eq(&contexts[i].addr, addr)) {
@@ -238,7 +238,7 @@ static struct client_context *context_alloc(const bt_addr_le_t *addr)
 {
 	struct client_context *context;
 
-	__ASSERT_NO_MSG(addr != NULL);
+	DEBUGASSERT(addr != NULL);
 
 	/* Free contexts has BT_ADDR_LE_ANY as the address */
 	context = context_find(BT_ADDR_LE_ANY);
@@ -268,7 +268,7 @@ static void client_free(struct has_client *client)
 #endif /* CONFIG_BT_HAS_PRESET_SUPPORT || CONFIG_BT_HAS_FEATURES_NOTIFIABLE */
 
 	err = bt_conn_get_info(client->conn, &info);
-	__ASSERT_NO_MSG(err == 0);
+	DEBUGASSERT(err == 0);
 
 	if (client->context != NULL && !bt_le_bond_exists(info.id, info.le.dst)) {
 		/* Free stored context of non-bonded client */
@@ -296,7 +296,7 @@ static struct has_client *client_alloc(struct bt_conn *conn)
 		}
 	}
 
-	__ASSERT(client, "failed to get client for conn %p", (void *)conn);
+	DEBUGASSERT(client);
 
 	memset(client, 0, sizeof(*client));
 
@@ -346,7 +346,7 @@ static void notify_work_reschedule(struct has_client *client, clock_t delay)
 {
 	int err;
 
-	__ASSERT(client->conn, "Not connected");
+	DEBUGASSERT(client->conn);
 
 	if (k_work_delayable_remaining_get(&client->notify_work) > 0) {
 		return;
@@ -786,7 +786,7 @@ static int control_point_send(struct has_client *client, struct net_buf_simple *
 	const int max_ntf_size = bt_att_get_max_notify_size(client->conn, BT_ATT_CHAN_OPT_NONE);
 
 	if (max_ntf_size < 0) {
-		__ASSERT(max_ntf_size != -EINVAL, "Unexpected -EINVAL");
+		DEBUGASSERT(max_ntf_size != -EINVAL);
 		LOG_DBG("Failed to get max notification size: %d", max_ntf_size);
 		return max_ntf_size; /* contains errno value */
 	}
@@ -1023,11 +1023,11 @@ static int read_preset_response(struct has_client *client)
 	bool is_last = true;
 	int err;
 
-	__ASSERT_NO_MSG(client != NULL);
+	DEBUGASSERT(client != NULL);
 
 	err = preset_foreach(client->read_presets_req.start_index, BT_HAS_PRESET_INDEX_LAST,
 			     preset_found, &preset);
-	__ASSERT(err != -EINVAL, "preset_foreach returned %d", err);
+	DEBUGASSERT(err != -EINVAL);
 
 	if (unlikely(preset == NULL)) {
 		return bt_has_cp_read_preset_rsp(client, NULL, BT_HAS_IS_LAST);
@@ -1038,7 +1038,7 @@ static int read_preset_response(struct has_client *client)
 
 		err = preset_foreach(preset->index + 1, BT_HAS_PRESET_INDEX_LAST, preset_found,
 				     &next);
-		__ASSERT(err != -EINVAL, "preset_foreach returned %d", err);
+		DEBUGASSERT(err != -EINVAL);
 
 		is_last = next == NULL;
 	}
@@ -1149,14 +1149,14 @@ static int preset_list_changed(struct has_client *client)
 
 	err = preset_foreach(client->preset_changed_index_next, BT_HAS_PRESET_INDEX_LAST,
 			     preset_found, &preset);
-	__ASSERT(err != -EINVAL, "preset_foreach returned %d", err);
+	DEBUGASSERT(err != -EINVAL);
 
 	if (preset == NULL) {
 		return 0;
 	}
 
 	err = preset_foreach(preset->index + 1, BT_HAS_PRESET_INDEX_LAST, preset_found, &next);
-	__ASSERT(err != -EINVAL, "preset_foreach returned %d", err);
+	DEBUGASSERT(err != -EINVAL);
 
 	/* It is last Preset Changed notification if there are no presets left to notify and the
 	 * currently notified preset have the highest index known to the client.
@@ -1231,7 +1231,7 @@ static uint8_t handle_read_preset_req(struct bt_conn *conn, struct net_buf_simpl
 
 	/* Abort if there is no preset in requested index range */
 	err = preset_foreach(req->start_index, BT_HAS_PRESET_INDEX_LAST, preset_found, &preset);
-	__ASSERT(err != -EINVAL, "preset_foreach returned %d", err);
+	DEBUGASSERT(err != -EINVAL);
 
 	if (preset == NULL) {
 		return BT_ATT_ERR_OUT_OF_RANGE;
@@ -1264,7 +1264,7 @@ static int set_preset_name(uint8_t index, const char *name, size_t len)
 
 	/* Abort if there is no preset in requested index range */
 	err = preset_foreach(index, BT_HAS_PRESET_INDEX_LAST, preset_found, &preset);
-	__ASSERT(err != -EINVAL, "preset_foreach returned %d", err);
+	DEBUGASSERT(err != -EINVAL);
 
 	if (preset == NULL) {
 		return -ENOENT;
@@ -1275,7 +1275,7 @@ static int set_preset_name(uint8_t index, const char *name, size_t len)
 	}
 
 	IF_ENABLED(CONFIG_BT_HAS_PRESET_NAME_DYNAMIC, (
-		__ASSERT(len < ARRAY_SIZE(preset->name), "No space for name");
+		DEBUGASSERT(len < ARRAY_SIZE(preset->name));
 
 		(void)memcpy(preset->name, name, len);
 
@@ -1842,17 +1842,17 @@ int bt_has_register(const struct bt_has_features_param *features)
 	if (IS_ENABLED(CONFIG_BT_HAS_FEATURES_NOTIFIABLE)) {
 		hearing_aid_features_attr = bt_gatt_find_by_uuid(has_svc.attrs, has_svc.attr_count,
 								 BT_UUID_HAS_HEARING_AID_FEATURES);
-		__ASSERT_NO_MSG(hearing_aid_features_attr != NULL);
+		DEBUGASSERT(hearing_aid_features_attr != NULL);
 	}
 
 	if (IS_ENABLED(CONFIG_BT_HAS_PRESET_SUPPORT)) {
 		preset_control_point_attr = bt_gatt_find_by_uuid(has_svc.attrs, has_svc.attr_count,
 								 BT_UUID_HAS_PRESET_CONTROL_POINT);
-		__ASSERT_NO_MSG(preset_control_point_attr != NULL);
+		DEBUGASSERT(preset_control_point_attr != NULL);
 
 		active_preset_index_attr = bt_gatt_find_by_uuid(has_svc.attrs, has_svc.attr_count,
 								BT_UUID_HAS_ACTIVE_PRESET_INDEX);
-		__ASSERT_NO_MSG(active_preset_index_attr != NULL);
+		DEBUGASSERT(active_preset_index_attr != NULL);
 	}
 
 #if defined(CONFIG_BT_HAS_PRESET_SUPPORT)
@@ -1865,7 +1865,7 @@ int bt_has_register(const struct bt_has_features_param *features)
 
 #if defined(CONFIG_BT_HAS_PRESET_SUPPORT) || defined(CONFIG_BT_HAS_FEATURES_NOTIFIABLE)
 	err = bt_conn_auth_info_cb_register(&auth_info_cb);
-	__ASSERT(err == 0, "Failed to register auth info callbacks: %d", err);
+	DEBUGASSERT(err == 0);
 #endif /* CONFIG_BT_HAS_PRESET_SUPPORT || CONFIG_BT_HAS_FEATURES_NOTIFIABLE */
 
 	has.registered = true;
