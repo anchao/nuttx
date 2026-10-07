@@ -598,13 +598,13 @@ struct bt_obex {
 	const struct bt_obex_transport_ops *_transport_ops;
 
 	/** @internal OBEX executing client */
-	atomic_ptr_t _active_client;
+	void * _active_client;
 
 	/** @internal OBEX last executed client */
-	atomic_ptr_t _last_client;
+	void * _last_client;
 
 	/** @internal OBEX executing client */
-	atomic_ptr_t _active_server;
+	void * _active_server;
 
 	/** @internal OBEX clients */
 	struct list_node _clients;

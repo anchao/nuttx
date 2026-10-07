@@ -8,7 +8,7 @@
 #define BT_BAS_INTERNAL_H_
 
 #include <sys/types.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/types.h>
 
 /**

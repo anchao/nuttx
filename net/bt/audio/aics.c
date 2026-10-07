@@ -22,7 +22,7 @@
 #include <zephyr/device.h>
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
@@ -601,7 +601,7 @@ int bt_aics_register(struct bt_aics *aics, struct bt_aics_register_param *param)
 	aics->srv.status = param->status ? BT_AICS_STATUS_ACTIVE : BT_AICS_STATUS_INACTIVE;
 	aics->srv.cb = param->cb;
 
-	atomic_clear(aics->srv.notify);
+	atomic_set(aics->srv.notify, 0);
 	k_work_init_delayable(&aics->srv.notify_work, notify_work_handler);
 
 	if (param->description) {

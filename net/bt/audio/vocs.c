@@ -25,7 +25,7 @@
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/clock.h>
 #include <zephyr/sys/util.h>
@@ -479,7 +479,7 @@ int bt_vocs_register(struct bt_vocs *vocs,
 		return err;
 	}
 
-	atomic_clear(inst->notify);
+	atomic_set(inst->notify, 0);
 	k_work_init_delayable(&inst->notify_work, notify_work_handler);
 
 	inst->initialized = true;

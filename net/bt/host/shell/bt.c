@@ -40,7 +40,7 @@
 #include <zephyr/shell/shell_string_conv.h>
 #include <zephyr/shell/shell_types.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
@@ -105,11 +105,11 @@ enum {
 	SHELL_ADV_OPT_NUM,
 };
 
-static ATOMIC_DEFINE(adv_opt, SHELL_ADV_OPT_NUM);
+static atomic_define(adv_opt, SHELL_ADV_OPT_NUM);
 #if defined(CONFIG_BT_EXT_ADV)
 uint8_t selected_adv;
 struct bt_le_ext_adv *adv_sets[CONFIG_BT_EXT_ADV_MAX_ADV_SET];
-static ATOMIC_DEFINE(adv_set_opt[CONFIG_BT_EXT_ADV_MAX_ADV_SET], SHELL_ADV_OPT_NUM);
+static atomic_define(adv_set_opt[CONFIG_BT_EXT_ADV_MAX_ADV_SET], SHELL_ADV_OPT_NUM);
 BUILD_ASSERT(ARRAY_SIZE(adv_set_opt) == CONFIG_BT_EXT_ADV_MAX_ADV_SET,
 	     "adv_set_opt must have one bitmap per advertising set");
 #endif /* CONFIG_BT_EXT_ADV */
@@ -2195,7 +2195,7 @@ static int cmd_advertise(const struct shell *sh, size_t argc, char *argv[])
 		sd_len++;
 	}
 
-	atomic_clear(adv_opt);
+	atomic_set(adv_opt, 0);
 	atomic_set_bit_to(adv_opt, SHELL_ADV_OPT_CONNECTABLE,
 			  (param.options & BT_LE_ADV_OPT_CONN) > 0);
 	atomic_set_bit_to(adv_opt, SHELL_ADV_OPT_DISCOVERABLE, discoverable);
@@ -2385,7 +2385,7 @@ static int cmd_adv_create(const struct shell *sh, size_t argc, char *argv[])
 	adv_index = bt_le_ext_adv_get_index(adv);
 	adv_sets[adv_index] = adv;
 
-	atomic_clear(adv_set_opt[adv_index]);
+	atomic_set(adv_set_opt[adv_index], 0);
 	atomic_set_bit_to(adv_set_opt[adv_index], SHELL_ADV_OPT_CONNECTABLE,
 			  (param.options & BT_LE_ADV_OPT_CONN) > 0);
 	atomic_set_bit_to(adv_set_opt[adv_index], SHELL_ADV_OPT_EXT_ADV,

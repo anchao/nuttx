@@ -14,7 +14,7 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/uuid.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/util_macro.h>
 
 /* Control Point opcodes */
@@ -164,7 +164,7 @@ struct bt_has_client {
 	struct bt_conn *conn;
 
 	/** Internal flags */
-	ATOMIC_DEFINE(flags, HAS_CLIENT_NUM_FLAGS);
+	atomic_define(flags, HAS_CLIENT_NUM_FLAGS);
 
 	/* GATT procedure parameters */
 	union {

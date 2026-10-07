@@ -9,7 +9,7 @@
 #include <zephyr/kernel.h>
 #include <string.h>
 #include <errno.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/byteorder.h>
 
@@ -493,7 +493,7 @@ static void hid_cleanup(struct bt_hid_host *hid)
 	 * by the cancels below, one after it sees the released instance and cancels
 	 * its own work. hid_req_claim() and hid_vcu_tx_cb() rely on this.
 	 */
-	atomic_clear(&hid->flags);
+	atomic_set(&hid->flags, 0);
 	hid_set_state(hid, BT_HID_STATE_DISCONNECTED);
 
 	k_work_cancel_delayable(&hid->close_work);
@@ -933,7 +933,7 @@ static void hid_session_init(struct bt_hid_host *hid, enum bt_hid_role role)
 	 * protocol mode is Report Protocol Mode (BT_HID_HOST_FLAG_BOOT_MODE unset).
 	 * The role is stored right after, so it survives the reset.
 	 */
-	atomic_clear(&hid->flags);
+	atomic_set(&hid->flags, 0);
 	atomic_set_bit_to(&hid->flags, BT_HID_HOST_FLAG_INITIATOR,
 			  role == BT_HID_ROLE_INITIATOR);
 }

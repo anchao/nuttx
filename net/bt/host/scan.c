@@ -25,7 +25,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
@@ -47,7 +47,7 @@
 LOG_MODULE_REGISTER(bt_scan);
 
 struct scanner_state {
-	ATOMIC_DEFINE(scan_flags, BT_LE_SCAN_USER_NUM_FLAGS);
+	atomic_define(scan_flags, BT_LE_SCAN_USER_NUM_FLAGS);
 	struct bt_le_scan_param explicit_scan_param;
 	struct bt_le_scan_param used_scan_param;
 	struct k_mutex scan_update_mutex;
@@ -462,7 +462,7 @@ static enum scan_action get_scan_action(struct bt_le_scan_param *scan_param)
 	bool is_scanning = atomic_test_bit(bt_dev.flags, BT_DEV_SCANNING);
 
 	/* Check if there is reason to have the scanner running */
-	if (atomic_get(scan_state.scan_flags) != 0) {
+	if (atomic_read(scan_state.scan_flags) != 0) {
 		if (is_scanning) {
 			if (is_already_using_same_params(scan_param)) {
 				/* Already scanning with the desired parameters */
@@ -1072,7 +1072,7 @@ cont:
 #if defined(CONFIG_BT_PER_ADV_SYNC)
 static void per_adv_sync_delete(struct bt_le_per_adv_sync *per_adv_sync)
 {
-	atomic_clear(per_adv_sync->flags);
+	atomic_set(per_adv_sync->flags, 0);
 }
 
 static struct bt_le_per_adv_sync *per_adv_sync_new(void)

@@ -26,7 +26,7 @@
 #include <zephyr/net_buf.h>
 #include <zephyr/settings/settings.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/clock.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
@@ -196,7 +196,7 @@ static struct client_context {
 	bt_addr_le_t addr;
 
 	/* Pending notification flags */
-	ATOMIC_DEFINE(flags, FLAG_NUM);
+	atomic_define(flags, FLAG_NUM);
 
 	/* Last notified preset index */
 	uint8_t last_preset_index_known;
@@ -394,7 +394,7 @@ static void security_changed(struct bt_conn *conn, bt_security_t level, enum bt_
 		return;
 	}
 
-	if (atomic_get(client->context->flags) != 0) {
+	if (atomic_read(client->context->flags) != 0) {
 		notify_work_reschedule(client, K_NO_WAIT);
 	}
 }
@@ -762,7 +762,7 @@ static void control_point_ntf_complete(struct bt_conn *conn, void *user_data)
 	LOG_DBG("conn %p", (void *)conn);
 
 	/* Resubmit if needed */
-	if (client != NULL && atomic_get(client->context->flags) != 0) {
+	if (client != NULL && atomic_read(client->context->flags) != 0) {
 		notify_work_reschedule(client, K_NO_WAIT);
 	}
 }

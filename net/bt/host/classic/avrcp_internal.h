@@ -189,7 +189,7 @@ struct bt_avrcp_tg_vd_rsp_tx {
 	uint8_t pdu_id;
 	uint8_t rsp;
 
-	ATOMIC_DEFINE(flags, BT_AVRCP_TG_NUM_FLAGS);
+	atomic_define(flags, BT_AVRCP_TG_NUM_FLAGS);
 };
 
 struct bt_avrcp_ct_notify_registration {

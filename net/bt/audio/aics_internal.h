@@ -18,7 +18,7 @@
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/kernel.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/types.h>
 
 #if defined(CONFIG_BT_AICS)
@@ -83,7 +83,7 @@ struct bt_aics_client {
 	struct bt_aics_cb *cb;
 	struct bt_conn *conn;
 
-	ATOMIC_DEFINE(flags, BT_AICS_CLIENT_FLAG_NUM_FLAGS);
+	atomic_define(flags, BT_AICS_CLIENT_FLAG_NUM_FLAGS);
 };
 
 struct bt_aics_state {
@@ -118,7 +118,7 @@ struct bt_aics_server {
 
 	struct bt_gatt_service *service_p;
 
-	ATOMIC_DEFINE(notify, AICS_NOTIFY_NUM);
+	atomic_define(notify, AICS_NOTIFY_NUM);
 	struct k_work_delayable notify_work;
 };
 

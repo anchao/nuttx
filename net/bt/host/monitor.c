@@ -28,8 +28,8 @@
 #include <zephyr/logging/log_msg.h>
 #include <zephyr/logging/log_output.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/atomic.h>
-#include <zephyr/sys/atomic_types.h>
+#include <nuttx/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/clock.h>
 #include <zephyr/sys/printk-hooks.h>
@@ -83,27 +83,27 @@ static void drop_add(uint16_t opcode)
 {
 	switch (opcode) {
 	case BT_MONITOR_COMMAND_PKT:
-		atomic_inc(&drops.cmd);
+		atomic_add(&drops.cmd, 1);
 		break;
 	case BT_MONITOR_EVENT_PKT:
-		atomic_inc(&drops.evt);
+		atomic_add(&drops.evt, 1);
 		break;
 	case BT_MONITOR_ACL_TX_PKT:
-		atomic_inc(&drops.acl_tx);
+		atomic_add(&drops.acl_tx, 1);
 		break;
 	case BT_MONITOR_ACL_RX_PKT:
-		atomic_inc(&drops.acl_rx);
+		atomic_add(&drops.acl_rx, 1);
 		break;
 #if defined(CONFIG_BT_CLASSIC)
 	case BT_MONITOR_SCO_TX_PKT:
-		atomic_inc(&drops.sco_tx);
+		atomic_add(&drops.sco_tx, 1);
 		break;
 	case BT_MONITOR_SCO_RX_PKT:
-		atomic_inc(&drops.sco_rx);
+		atomic_add(&drops.sco_rx, 1);
 		break;
 #endif
 	default:
-		atomic_inc(&drops.other);
+		atomic_add(&drops.other, 1);
 		break;
 	}
 }
@@ -215,7 +215,7 @@ static void monitor_uart_tx(void)
 	atomic_set(&monitor_tx_busy, 0);
 
 	/* Close the race with a producer that committed while TX was disabled. */
-	if (!ring_buf_is_empty(&monitor_tx_buf) && atomic_cas(&monitor_tx_busy, 0, 1)) {
+	if (!ring_buf_is_empty(&monitor_tx_buf) && atomic_cmpxchg_value(&monitor_tx_busy, 0, 1)) {
 		uart_irq_tx_enable(monitor_dev);
 	}
 }
@@ -245,7 +245,7 @@ static bool monitor_send(const struct bt_monitor_data *frags, size_t count)
 		return false;
 	}
 
-	if (atomic_cas(&monitor_tx_busy, 0, 1)) {
+	if (atomic_cmpxchg_value(&monitor_tx_busy, 0, 1)) {
 		uart_irq_tx_enable(monitor_dev);
 	}
 
@@ -264,9 +264,9 @@ static bool monitor_send(const struct bt_monitor_data *frags, size_t count)
 static void encode_drops(struct bt_monitor_hdr *hdr, uint8_t type,
 			 atomic_t *val)
 {
-	atomic_val_t count;
+	int32_t count;
 
-	count = atomic_set(val, 0);
+	count = atomic_xchg(val, 0);
 	if (count) {
 		hdr->ext[hdr->hdr_len++] = type;
 		hdr->ext[hdr->hdr_len++] = MIN(count, 255);

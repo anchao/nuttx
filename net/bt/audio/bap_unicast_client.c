@@ -35,7 +35,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
@@ -140,7 +140,7 @@ static struct unicast_client {
 	uint8_t att_buf[BT_ATT_MAX_ATTRIBUTE_LEN];
 	struct net_buf_simple net_buf;
 
-	ATOMIC_DEFINE(flags, UNICAST_CLIENT_FLAG_NUM_FLAGS);
+	atomic_define(flags, UNICAST_CLIENT_FLAG_NUM_FLAGS);
 } uni_cli_insts[CONFIG_BT_MAX_CONN];
 
 static struct list_node unicast_client_cbs = LIST_INITIAL_VALUE(unicast_client_cbs);
@@ -2272,7 +2272,7 @@ static void unicast_client_ep_reset(struct bt_conn *conn, uint8_t reason)
 	client = &uni_cli_insts[index];
 	client->dir = 0U;
 	reset_att_buf(client);
-	atomic_clear(client->flags);
+	atomic_set(client->flags, 0);
 }
 
 static void bt_bap_qos_cfg_to_cig_param(struct bt_iso_cig_param *cig_param,

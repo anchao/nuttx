@@ -28,7 +28,7 @@
 #include <zephyr/bluetooth/hci.h>
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <sys/types.h>
@@ -225,7 +225,7 @@ struct bt_l2cap_chan {
 	struct list_node			node;
 	bt_l2cap_chan_destroy_t		destroy;
 
-	ATOMIC_DEFINE(status, BT_L2CAP_NUM_STATUS);
+	atomic_define(status, BT_L2CAP_NUM_STATUS);
 };
 
 /** @brief LE L2CAP Endpoint structure. */

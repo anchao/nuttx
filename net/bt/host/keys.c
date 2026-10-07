@@ -20,7 +20,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/settings/settings.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util_macro.h>

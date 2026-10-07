@@ -19,7 +19,7 @@
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 
@@ -40,7 +40,7 @@ struct bt_bap_iso *bt_bap_iso_new(void)
 	struct bt_bap_iso *iso = NULL;
 
 	for (size_t i = 0U; i < ARRAY_SIZE(iso_pool); i++) {
-		if (atomic_cas(&iso_pool[i].ref, 0, 1)) {
+		if (atomic_cmpxchg_value(&iso_pool[i].ref, 0, 1)) {
 			iso = &iso_pool[i];
 			break;
 		}
@@ -57,7 +57,7 @@ struct bt_bap_iso *bt_bap_iso_new(void)
 
 struct bt_bap_iso *bt_bap_iso_ref(struct bt_bap_iso *iso)
 {
-	atomic_val_t old;
+	int32_t old;
 
 	__ASSERT_NO_MSG(iso != NULL);
 
@@ -67,23 +67,23 @@ struct bt_bap_iso *bt_bap_iso_ref(struct bt_bap_iso *iso)
 	 * count since the read, and start over again when that happens.
 	 */
 	do {
-		old = atomic_get(&iso->ref);
+		old = atomic_read(&iso->ref);
 
 		if (!old) {
 			return NULL;
 		}
-	} while (!atomic_cas(&iso->ref, old, old + 1));
+	} while (!atomic_cmpxchg_value(&iso->ref, old, old + 1));
 
 	return iso;
 }
 
 void bt_bap_iso_unref(struct bt_bap_iso *iso)
 {
-	atomic_val_t old;
+	int32_t old;
 
 	__ASSERT_NO_MSG(iso != NULL);
 
-	old = atomic_dec(&iso->ref);
+	old = atomic_sub(&iso->ref, 1);
 
 	__ASSERT(old > 0, "iso reference counter is 0");
 }

@@ -33,7 +33,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
@@ -103,7 +103,7 @@ struct bap_broadcast_assistant_instance {
 	struct bap_broadcast_assistant_recv_state_info
 		recv_states[CONFIG_BT_BAP_BROADCAST_ASSISTANT_RECV_STATE_COUNT];
 
-	ATOMIC_DEFINE(flags, BAP_BA_FLAG_NUM_FLAGS);
+	atomic_define(flags, BAP_BA_FLAG_NUM_FLAGS);
 };
 
 static struct list_node broadcast_assistant_cbs = LIST_INITIAL_VALUE(broadcast_assistant_cbs);

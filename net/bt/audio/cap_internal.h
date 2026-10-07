@@ -22,7 +22,7 @@
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/kernel.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/types.h>
@@ -269,7 +269,7 @@ struct bt_cap_common_proc_param {
 };
 
 struct bt_cap_common_proc {
-	ATOMIC_DEFINE(proc_state_flags, BT_CAP_COMMON_PROC_STATE_FLAG_NUM);
+	atomic_define(proc_state_flags, BT_CAP_COMMON_PROC_STATE_FLAG_NUM);
 	/* Total number of items (streams or connections) in the procedure*/
 	size_t proc_cnt;
 	/* Number of items where a subprocedure have been started */

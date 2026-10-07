@@ -37,7 +37,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/settings/settings.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/sys/util.h>
 #include <nuttx/list.h>
@@ -749,8 +749,8 @@ static void hci_num_completed_packets(struct net_buf *buf)
 			irq_unlock(key);
 
 			/* align the `pending` value */
-			__ASSERT_NO_MSG(atomic_get(&conn->in_ll));
-			atomic_dec(&conn->in_ll);
+			__ASSERT_NO_MSG(atomic_read(&conn->in_ll));
+			atomic_sub(&conn->in_ll, 1);
 
 			/* TX context free + callback happens in there */
 			bt_conn_tx_notify(conn, false);
@@ -2677,7 +2677,7 @@ static void hci_reset_complete(void)
 	bt_br_discovery_reset();
 #endif /* CONFIG_BT_CLASSIC */
 
-	flags = (atomic_get(bt_dev.flags) & BT_DEV_PERSISTENT_FLAGS);
+	flags = (atomic_read(bt_dev.flags) & BT_DEV_PERSISTENT_FLAGS);
 	atomic_set(bt_dev.flags, flags);
 }
 
@@ -2707,7 +2707,7 @@ static void hci_cmd_done(uint16_t opcode, uint8_t status, struct net_buf *evt_bu
 	if (cmd(buf)->opcode != opcode) {
 		LOG_ERR("OpCode 0x%04x completed instead of expected 0x%04x", opcode,
 			cmd(buf)->opcode);
-		buf = atomic_ptr_set((atomic_ptr_t *)&bt_dev.sent_cmd, buf);
+		buf = atomic_ptr_xchg((void * *)&bt_dev.sent_cmd, buf);
 		__ASSERT_NO_MSG(!buf);
 		goto exit;
 	}

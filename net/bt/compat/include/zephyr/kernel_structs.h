@@ -21,7 +21,7 @@
 #define ZEPHYR_KERNEL_INCLUDE_KERNEL_STRUCTS_H_
 
 #if !defined(_ASMLANGUAGE)
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/types.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
@@ -235,7 +235,7 @@ struct z_kernel {
 
 #if defined(CONFIG_SMP) && defined(CONFIG_SCHED_IPI_SUPPORTED)
 	/* Identify CPUs to send IPIs to at the next scheduling point */
-	z_atomic_t pending_ipi;
+	int32_t pending_ipi;
 #endif
 };
 
@@ -243,7 +243,7 @@ typedef struct z_kernel _kernel_t;
 
 extern struct z_kernel _kernel;
 
-extern z_atomic_t _cpus_active;
+extern int32_t _cpus_active;
 
 #ifdef CONFIG_SMP
 

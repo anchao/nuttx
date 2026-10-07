@@ -289,7 +289,7 @@ int bt_goep_transport_rfcomm_disconnect(struct bt_goep *goep)
 		return -EINVAL;
 	}
 
-	state = atomic_get(&goep->_state);
+	state = atomic_read(&goep->_state);
 	if (state != BT_GOEP_TRANSPORT_CONNECTED) {
 		LOG_DBG("Invalid stats %d", state);
 		return -ENOTCONN;
@@ -562,7 +562,7 @@ int bt_goep_transport_l2cap_connect(struct bt_conn *conn, struct bt_goep *goep, 
 		return -EINVAL;
 	}
 
-	state = atomic_get(&goep->_state);
+	state = atomic_read(&goep->_state);
 	if (state != BT_GOEP_TRANSPORT_DISCONNECTED) {
 		LOG_DBG("Invalid stats %d", state);
 		return -EBUSY;
@@ -591,7 +591,7 @@ int bt_goep_transport_l2cap_disconnect(struct bt_goep *goep)
 		return -EINVAL;
 	}
 
-	state = atomic_get(&goep->_state);
+	state = atomic_read(&goep->_state);
 	if (state != BT_GOEP_TRANSPORT_CONNECTED) {
 		LOG_DBG("Invalid stats %d", state);
 		return -ENOTCONN;

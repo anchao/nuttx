@@ -7,7 +7,7 @@
 
 #include <zephyr/kernel.h>
 #include <errno.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/byteorder.h>
 
@@ -43,7 +43,7 @@ int bt_mesh_prov_reset_state(void)
 	int err;
 	const size_t offset = offsetof(struct bt_mesh_prov_link, addr);
 
-	atomic_clear(bt_mesh_prov_link.flags);
+	atomic_set(bt_mesh_prov_link.flags, 0);
 	(void)memset((uint8_t *)&bt_mesh_prov_link + offset, 0,
 		     sizeof(bt_mesh_prov_link) - offset);
 

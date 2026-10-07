@@ -18,7 +18,7 @@
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/kernel.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <nuttx/list.h>
 #include <zephyr/types.h>
 
@@ -177,7 +177,7 @@ struct bt_bap_broadcast_sink {
 	struct list_node streams;
 
 	/** Flags */
-	ATOMIC_DEFINE(flags, BT_BAP_BROADCAST_SINK_FLAG_NUM_FLAGS);
+	atomic_define(flags, BT_BAP_BROADCAST_SINK_FLAG_NUM_FLAGS);
 };
 #endif /* CONFIG_BT_BAP_BROADCAST_SINK */
 

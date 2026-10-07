@@ -16,7 +16,7 @@
 #include <zephyr/bluetooth/hci.h>
 #include <zephyr/settings/settings.h>
 #include <zephyr/kernel.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>

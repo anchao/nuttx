@@ -19,7 +19,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/toolchain.h>
 
 #include "audio_internal.h"
@@ -58,7 +58,7 @@ static struct bt_gmap_client {
 		struct bt_gatt_discover_params discover;
 	} params;
 
-	ATOMIC_DEFINE(flags, GMAP_CLIENT_FLAG_NUM_FLAGS);
+	atomic_define(flags, GMAP_CLIENT_FLAG_NUM_FLAGS);
 } gmap_insts[CONFIG_BT_MAX_CONN];
 
 static void gmap_reset(struct bt_gmap_client *gmap_cli)

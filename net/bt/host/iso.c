@@ -26,7 +26,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
@@ -51,13 +51,13 @@ LOG_MODULE_REGISTER(bt_iso, CONFIG_BT_ISO_LOG_LEVEL);
 #define iso_chan(_iso) ((_iso)->iso.chan);
 
 #if defined(CONFIG_BT_ISO_RX)
-static atomic_ptr_t buf_rx_freed_cb;
+static void * buf_rx_freed_cb;
 
 static void iso_rx_buf_destroy(struct net_buf *buf)
 {
 	bt_iso_buf_rx_freed_cb_t cb;
 
-	cb = (bt_iso_buf_rx_freed_cb_t)atomic_ptr_get(&buf_rx_freed_cb);
+	cb = (bt_iso_buf_rx_freed_cb_t)atomic_ptr_read(&buf_rx_freed_cb);
 
 	net_buf_destroy(buf);
 
@@ -667,7 +667,7 @@ struct net_buf *bt_iso_get_rx(k_timeout_t timeout)
 
 void bt_iso_buf_rx_freed_cb_set(bt_iso_buf_rx_freed_cb_t cb)
 {
-	atomic_ptr_set(&buf_rx_freed_cb, (void *)cb);
+	atomic_ptr_xchg(&buf_rx_freed_cb, (void *)cb);
 }
 
 void bt_iso_recv(struct bt_conn *iso, struct net_buf *buf, uint8_t flags)

@@ -17,7 +17,7 @@
 #include <zephyr/devicetree.h>
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util_macro.h>
 
@@ -224,7 +224,7 @@ struct bt_le_ext_adv {
 	/* Current target address */
 	bt_addr_le_t            target_addr;
 
-	ATOMIC_DEFINE(flags, BT_ADV_NUM_FLAGS);
+	atomic_define(flags, BT_ADV_NUM_FLAGS);
 
 	struct k_work_delayable	lim_adv_timeout_work;
 
@@ -302,7 +302,7 @@ struct bt_le_per_adv_sync {
 	bool report_truncated;
 
 	/** Flags */
-	ATOMIC_DEFINE(flags, BT_PER_ADV_SYNC_NUM_FLAGS);
+	atomic_define(flags, BT_PER_ADV_SYNC_NUM_FLAGS);
 
 #if defined(CONFIG_BT_PER_ADV_SYNC_RSP)
 	/** Number of subevents */
@@ -426,7 +426,7 @@ struct bt_dev {
 
 	struct k_work           init;
 
-	ATOMIC_DEFINE(flags, BT_DEV_NUM_FLAGS);
+	atomic_define(flags, BT_DEV_NUM_FLAGS);
 
 	/* LE controller specific features */
 	struct bt_dev_le	le;

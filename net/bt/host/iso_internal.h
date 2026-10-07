@@ -16,7 +16,7 @@
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/clock.h>
 
@@ -70,7 +70,7 @@ struct bt_iso_big {
 	/** The BIG handle */
 	uint8_t handle;
 
-	ATOMIC_DEFINE(flags, BT_BIG_NUM_FLAGS);
+	atomic_define(flags, BT_BIG_NUM_FLAGS);
 };
 
 #define iso(buf) ((struct bt_conn_rx *)net_buf_user_data(buf))

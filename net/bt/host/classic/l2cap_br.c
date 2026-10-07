@@ -10,7 +10,7 @@
 #include <zephyr/kernel.h>
 #include <string.h>
 #include <errno.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/iterable_sections.h>
 #include <zephyr/sys/util.h>
@@ -369,7 +369,7 @@ static void l2cap_br_chan_destroy(struct bt_l2cap_chan *chan)
 	k_work_cancel_delayable(&br_chan->monitor_work);
 #endif /* CONFIG_BT_L2CAP_RET_FC */
 
-	atomic_clear(BR_CHAN(chan)->flags);
+	atomic_set(BR_CHAN(chan)->flags, 0);
 }
 
 static void l2cap_br_rtx_timeout(struct k_work *work)
@@ -435,7 +435,7 @@ static void raise_data_ready(struct bt_l2cap_br_chan *br_chan)
 	 */
 	bt_dev_lock();
 
-	if (!atomic_set(&br_chan->_pdu_ready_lock, 1)) {
+	if (!atomic_xchg(&br_chan->_pdu_ready_lock, 1)) {
 		list_add_tail(&br_chan->chan.conn->l2cap_data_ready,
 				 &br_chan->_pdu_ready);
 		LOG_DBG("data ready raised");
@@ -462,7 +462,7 @@ static void lower_data_ready(struct bt_l2cap_br_chan *br_chan)
 
 	__ASSERT_NO_MSG(s == &br_chan->_pdu_ready);
 
-	__maybe_unused atomic_t old = atomic_set(&br_chan->_pdu_ready_lock, 0);
+	__maybe_unused int32_t old = atomic_xchg(&br_chan->_pdu_ready_lock, 0);
 
 	__ASSERT_NO_MSG(old);
 }

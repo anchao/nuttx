@@ -22,7 +22,7 @@
 #include <zephyr/bluetooth/l2cap.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/iterable_sections.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/math_extras.h>
@@ -386,7 +386,7 @@ static bool l2cap_chan_add(struct bt_conn *conn, struct bt_l2cap_chan *chan,
 		return false;
 	}
 
-	atomic_clear(chan->status);
+	atomic_set(chan->status, 0);
 	init_le_chan_private(le_chan);
 
 	bt_l2cap_chan_add(conn, chan, destroy);
@@ -826,13 +826,13 @@ static bool test_and_dec(atomic_t *target)
 	atomic_t old_value, new_value;
 
 	do {
-		old_value = atomic_get(target);
+		old_value = atomic_read(target);
 		if (!old_value) {
 			return false;
 		}
 
 		new_value = old_value - 1;
-	} while (atomic_cas(target, old_value, new_value) == 0);
+	} while (atomic_cmpxchg_value(target, old_value, new_value) == 0);
 
 	return true;
 }
@@ -852,7 +852,7 @@ static void chan_take_credit(struct bt_l2cap_le_chan *lechan)
 	}
 
 	/* Notify channel user that it can't send anymore on this channel. */
-	if (!atomic_get(&lechan->tx.credits)) {
+	if (!atomic_read(&lechan->tx.credits)) {
 		LOG_DBG("chan %p paused", lechan);
 		atomic_clear_bit(lechan->chan.status, BT_L2CAP_STATUS_OUT);
 
@@ -932,9 +932,9 @@ static bool chan_has_credits(struct bt_l2cap_le_chan *lechan)
 		return true;
 	}
 
-	LOG_DBG("chan %p credits %ld", lechan, atomic_get(&lechan->tx.credits));
+	LOG_DBG("chan %p credits %ld", lechan, atomic_read(&lechan->tx.credits));
 
-	return atomic_get(&lechan->tx.credits) >= 1;
+	return atomic_read(&lechan->tx.credits) >= 1;
 #else
 	return true;
 #endif
@@ -2305,7 +2305,7 @@ static void le_credits(struct bt_l2cap *l2cap, uint8_t ident,
 
 	le_chan = BT_L2CAP_LE_CHAN(chan);
 
-	if (atomic_get(&le_chan->tx.credits) + credits > UINT16_MAX) {
+	if (atomic_read(&le_chan->tx.credits) + credits > UINT16_MAX) {
 		LOG_ERR("Credits overflow");
 		bt_l2cap_chan_disconnect(chan);
 		return;
@@ -2313,7 +2313,7 @@ static void le_credits(struct bt_l2cap *l2cap, uint8_t ident,
 
 	l2cap_chan_tx_give_credits(le_chan, credits);
 
-	LOG_DBG("chan %p total credits %lu", le_chan, atomic_get(&le_chan->tx.credits));
+	LOG_DBG("chan %p total credits %lu", le_chan, atomic_read(&le_chan->tx.credits));
 }
 
 static void reject_cmd(struct bt_l2cap *l2cap, uint8_t ident,
@@ -2464,7 +2464,7 @@ static void l2cap_chan_send_credits(struct bt_l2cap_le_chan *chan,
 		return;
 	}
 
-	__ASSERT_NO_MSG(atomic_get(&chan->rx.credits) == 0);
+	__ASSERT_NO_MSG(atomic_read(&chan->rx.credits) == 0);
 	atomic_set(&chan->rx.credits, credits);
 
 	ev = net_buf_add(buf, sizeof(*ev));
@@ -2473,7 +2473,7 @@ static void l2cap_chan_send_credits(struct bt_l2cap_le_chan *chan,
 
 	l2cap_send_sig(chan->chan.conn, buf);
 
-	LOG_DBG("chan %p credits %lu", chan, atomic_get(&chan->rx.credits));
+	LOG_DBG("chan %p credits %lu", chan, atomic_read(&chan->rx.credits));
 }
 
 #if defined(CONFIG_BT_L2CAP_SEG_RECV)
@@ -2506,11 +2506,11 @@ static bool atomic_add_safe_u16(atomic_t *target, uint16_t addition)
 	uint16_t target_old, target_new;
 
 	do {
-		target_old = atomic_get(target);
+		target_old = atomic_read(target);
 		if (u16_add_overflow(target_old, addition, &target_new)) {
 			return true;
 		}
-	} while (!atomic_cas(target, target_old, target_new));
+	} while (!atomic_cmpxchg_value(target, target_old, target_new));
 
 	return false;
 }
@@ -2612,7 +2612,7 @@ static void l2cap_chan_le_recv_sdu(struct bt_l2cap_le_chan *chan,
 	LOG_DBG("chan %p len %u", chan, buf->len);
 
 	__ASSERT_NO_MSG(bt_l2cap_chan_get_state(&chan->chan) == BT_L2CAP_CONNECTED);
-	__ASSERT_NO_MSG(atomic_get(&chan->rx.credits) == 0);
+	__ASSERT_NO_MSG(atomic_read(&chan->rx.credits) == 0);
 
 	/* Receiving complete SDU, notify channel and reset SDU buf */
 	err = chan->chan.ops->recv(&chan->chan, buf);
@@ -2672,7 +2672,7 @@ static void l2cap_chan_le_recv_seg(struct bt_l2cap_le_chan *chan,
 		 * the SDU, then the remote will end up with more credits than
 		 * the app has buffers.
 		 */
-		if (atomic_get(&chan->rx.credits) == 0) {
+		if (atomic_read(&chan->rx.credits) == 0) {
 			LOG_DBG("remote is not fully utilizing MPS");
 			l2cap_chan_send_credits(chan, 1);
 		}

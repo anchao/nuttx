@@ -41,7 +41,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
@@ -87,7 +87,7 @@ struct bt_csip_set_coordinator_inst {
 	struct bt_gatt_read_params read_params;
 	struct bt_gatt_write_params write_params;
 
-	ATOMIC_DEFINE(flags, SET_COORDINATOR_FLAG_NUM_FLAGS);
+	atomic_define(flags, SET_COORDINATOR_FLAG_NUM_FLAGS);
 };
 
 static struct bt_uuid_16 uuid = BT_UUID_INIT_16(0);

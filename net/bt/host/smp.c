@@ -29,7 +29,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
@@ -157,10 +157,10 @@ enum {
 /* SMP channel specific context */
 struct bt_smp {
 	/* Commands that remote is allowed to send */
-	ATOMIC_DEFINE(allowed_cmds, BT_SMP_NUM_CMDS);
+	atomic_define(allowed_cmds, BT_SMP_NUM_CMDS);
 
 	/* Flags for SMP state machine */
-	ATOMIC_DEFINE(flags, SMP_NUM_FLAGS);
+	atomic_define(flags, SMP_NUM_FLAGS);
 
 	/* Type of method used for pairing */
 	uint8_t				method;
@@ -223,7 +223,7 @@ struct bt_smp {
 	struct k_work_delayable		work;
 
 	/* Used Bluetooth authentication callbacks. */
-	atomic_ptr_t			auth_cb;
+	void *			auth_cb;
 
 	/* Bondable flag */
 	atomic_t			bondable;
@@ -260,10 +260,10 @@ static const uint8_t gen_method_sc[5 /* remote */][5 /* local */] = {
 /* SMP over BR/EDR channel specific context */
 struct bt_smp_br {
 	/* Commands that remote is allowed to send */
-	ATOMIC_DEFINE(allowed_cmds, BT_SMP_NUM_CMDS);
+	atomic_define(allowed_cmds, BT_SMP_NUM_CMDS);
 
 	/* Flags for SMP state machine */
-	ATOMIC_DEFINE(flags, SMP_NUM_FLAGS);
+	atomic_define(flags, SMP_NUM_FLAGS);
 
 	/* Local key distribution */
 	uint8_t			local_dist;
@@ -313,12 +313,12 @@ static struct {
 /* Pointer to internal data is used to mark that callbacks of given SMP channel are not initialized.
  * Value of NULL represents no authentication capabilities and cannot be used for that purpose.
  */
-#define BT_SMP_AUTH_CB_UNINITIALIZED	((atomic_ptr_val_t)bt_smp_pool)
+#define BT_SMP_AUTH_CB_UNINITIALIZED	((void *)bt_smp_pool)
 
 /* Value used to mark that per-connection bondable flag is not initialized.
  * Value false/true represent if flag is cleared or set and cannot be used for that purpose.
  */
-#define BT_SMP_BONDABLE_UNINITIALIZED	((atomic_val_t)-1)
+#define BT_SMP_BONDABLE_UNINITIALIZED	((int32_t)-1)
 
 static bool le_sc_supported(void)
 {
@@ -332,17 +332,17 @@ static bool le_sc_supported(void)
 
 static const struct bt_conn_auth_cb *latch_auth_cb(struct bt_smp *smp)
 {
-	(void)atomic_ptr_cas(&smp->auth_cb, BT_SMP_AUTH_CB_UNINITIALIZED,
-			     (atomic_ptr_val_t)bt_auth);
+	(void)atomic_ptr_cmpxchg(&smp->auth_cb, BT_SMP_AUTH_CB_UNINITIALIZED,
+				     (void *)bt_auth);
 
-	return atomic_ptr_get(&smp->auth_cb);
+	return atomic_ptr_read(&smp->auth_cb);
 }
 
 static bool latch_bondable(struct bt_smp *smp)
 {
-	(void)atomic_cas(&smp->bondable, BT_SMP_BONDABLE_UNINITIALIZED, (atomic_val_t)bondable);
+	(void)atomic_cmpxchg_value(&smp->bondable, BT_SMP_BONDABLE_UNINITIALIZED, (int32_t)bondable);
 
-	return atomic_get(&smp->bondable);
+	return atomic_read(&smp->bondable);
 }
 
 static uint8_t get_io_capa(struct bt_smp *smp)
@@ -2031,12 +2031,12 @@ static void smp_timeout(struct k_work *work)
 	/* if number of flags or supported commands exceed capacity of one
 	 * atomic variable following error log shall be extended
 	 */
-	BUILD_ASSERT(ATOMIC_BITMAP_SIZE(SMP_NUM_FLAGS) == 1);
-	BUILD_ASSERT(ATOMIC_BITMAP_SIZE(BT_SMP_NUM_CMDS) == 1);
+	BUILD_ASSERT(atomic_bitmap_size(SMP_NUM_FLAGS) == 1);
+	BUILD_ASSERT(atomic_bitmap_size(BT_SMP_NUM_CMDS) == 1);
 
 	LOG_ERR("SMP Timeout (flags:0x%08x allowed_cmds:0x%08x)",
-		(unsigned int)atomic_get(&smp->flags[0]),
-		(unsigned int)atomic_get(&smp->allowed_cmds[0]));
+		(unsigned int)atomic_read(&smp->flags[0]),
+		(unsigned int)atomic_read(&smp->allowed_cmds[0]));
 
 	smp_pairing_complete(smp, BT_SMP_ERR_UNSPECIFIED);
 
@@ -4989,7 +4989,7 @@ static void bt_smp_connected(struct bt_l2cap_chan *chan)
 	k_work_init_delayable(&smp->work, smp_timeout);
 	smp_reset(smp);
 
-	atomic_ptr_set(&smp->auth_cb, BT_SMP_AUTH_CB_UNINITIALIZED);
+	atomic_ptr_xchg(&smp->auth_cb, BT_SMP_AUTH_CB_UNINITIALIZED);
 	atomic_set(&smp->bondable, BT_SMP_BONDABLE_UNINITIALIZED);
 }
 
@@ -5842,7 +5842,7 @@ int bt_conn_set_bondable(struct bt_conn *conn, bool enable)
 		return -EINVAL;
 	}
 
-	if (atomic_cas(&smp->bondable, BT_SMP_BONDABLE_UNINITIALIZED, (atomic_val_t)enable)) {
+	if (atomic_cmpxchg_value(&smp->bondable, BT_SMP_BONDABLE_UNINITIALIZED, (int32_t)enable)) {
 		return 0;
 	} else {
 		return -EALREADY;
@@ -5859,7 +5859,7 @@ int bt_smp_auth_cb_overlay(struct bt_conn *conn, const struct bt_conn_auth_cb *c
 		return -EINVAL;
 	}
 
-	if (atomic_ptr_cas(&smp->auth_cb, BT_SMP_AUTH_CB_UNINITIALIZED, (atomic_ptr_val_t)cb)) {
+	if (atomic_ptr_cmpxchg(&smp->auth_cb, BT_SMP_AUTH_CB_UNINITIALIZED, (void *)cb)) {
 		return 0;
 	} else {
 		return -EALREADY;

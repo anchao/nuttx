@@ -331,9 +331,9 @@ static int bt_spp_accept(struct bt_conn *conn, struct bt_rfcomm_server *server,
 {
 	struct bt_spp_server *spp = CONTAINER_OF(server, struct bt_spp_server, rfcomm_server);
 
-	if (atomic_get(&spp->ep.state) != SPP_STATE_DISCONNECTED) {
+	if (atomic_read(&spp->ep.state) != SPP_STATE_DISCONNECTED) {
 		bt_shell_error("SPP: reject incoming RFCOMM (state=%ld)",
-			       (long)atomic_get(&spp->ep.state));
+			       (long)atomic_read(&spp->ep.state));
 		return -EALREADY;
 	}
 
@@ -548,9 +548,9 @@ static int bt_spp_connect(struct bt_conn *conn, struct bt_spp_client *spp)
 {
 	int err;
 
-	if (atomic_get(&spp->ep.state) != SPP_STATE_DISCONNECTED) {
+	if (atomic_read(&spp->ep.state) != SPP_STATE_DISCONNECTED) {
 		bt_shell_error("SPP: connect rejected (state=%ld)",
-			       (long)atomic_get(&spp->ep.state));
+			       (long)atomic_read(&spp->ep.state));
 		return -EALREADY;
 	}
 
@@ -598,9 +598,9 @@ static int cmd_spp_connect_by_uuid(const struct shell *sh, size_t argc, char *ar
 		return -ENOEXEC;
 	}
 
-	if (atomic_get(&default_spp_client.ep.state) != SPP_STATE_DISCONNECTED) {
+	if (atomic_read(&default_spp_client.ep.state) != SPP_STATE_DISCONNECTED) {
 		shell_error(sh, "SPP: connect rejected (state=%ld)",
-			    (long)atomic_get(&default_spp_client.ep.state));
+			    (long)atomic_read(&default_spp_client.ep.state));
 		return -EALREADY;
 	}
 
@@ -651,9 +651,9 @@ static int cmd_spp_connect_by_channel(const struct shell *sh, size_t argc, char 
 		return -EINVAL;
 	}
 
-	if (atomic_get(&default_spp_client.ep.state) != SPP_STATE_DISCONNECTED) {
+	if (atomic_read(&default_spp_client.ep.state) != SPP_STATE_DISCONNECTED) {
 		shell_error(sh, "SPP: connect rejected (state=%ld)",
-			    (long)atomic_get(&default_spp_client.ep.state));
+			    (long)atomic_read(&default_spp_client.ep.state));
 		return -EALREADY;
 	}
 
@@ -689,11 +689,11 @@ static int cmd_spp_connect_by_channel(const struct shell *sh, size_t argc, char 
 
 static struct bt_spp_endpoint *bt_spp_get_active_ep(void)
 {
-	if (atomic_get(&default_spp_client.ep.state) != SPP_STATE_DISCONNECTED) {
+	if (atomic_read(&default_spp_client.ep.state) != SPP_STATE_DISCONNECTED) {
 		return &default_spp_client.ep;
 	}
 
-	if (atomic_get(&default_spp_server.ep.state) != SPP_STATE_DISCONNECTED) {
+	if (atomic_read(&default_spp_server.ep.state) != SPP_STATE_DISCONNECTED) {
 		return &default_spp_server.ep;
 	}
 

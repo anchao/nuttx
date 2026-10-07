@@ -13,7 +13,7 @@
 
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/conn.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 
 /**
  * Reasons why a scanner can be running.

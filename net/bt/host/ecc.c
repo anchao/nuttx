@@ -14,7 +14,7 @@
 #include <zephyr/bluetooth/hci_types.h>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/bluetooth/hci.h>
 #include <zephyr/logging/log.h>
@@ -51,7 +51,7 @@ enum {
 	NUM_FLAGS,
 };
 
-static ATOMIC_DEFINE(flags, NUM_FLAGS);
+static atomic_define(flags, NUM_FLAGS);
 
 static struct {
 	uint8_t private_key_be[BT_PRIV_KEY_LEN];

@@ -6,7 +6,7 @@
 
 #include <zephyr/kernel.h>
 #include <errno.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/printk.h>
@@ -785,7 +785,7 @@ static void hfp_ag_close_sco(struct bt_hfp_ag *ag)
 		return;
 	}
 
-	sco = atomic_ptr_set(&ag->sco_conn, NULL);
+	sco = atomic_ptr_xchg(&ag->sco_conn, NULL);
 	if (sco != NULL) {
 		bt_conn_unref(sco);
 		sco = ag->sco_chan.sco;
@@ -1455,7 +1455,7 @@ static void hfp_ag_sco_connected(struct bt_sco_chan *chan)
 {
 	struct bt_hfp_ag *ag = CONTAINER_OF(chan, struct bt_hfp_ag, sco_chan);
 
-	if (atomic_ptr_cas(&ag->sco_conn, NULL, chan->sco)) {
+	if (atomic_ptr_cmpxchg(&ag->sco_conn, NULL, chan->sco)) {
 		bt_conn_ref(chan->sco);
 	}
 
@@ -1473,7 +1473,7 @@ static void hfp_ag_sco_disconnected(struct bt_sco_chan *chan, uint8_t reason)
 		bt_ag->sco_disconnected(chan->sco, reason);
 	}
 
-	sco = atomic_ptr_set(&ag->sco_conn, NULL);
+	sco = atomic_ptr_xchg(&ag->sco_conn, NULL);
 	if (sco != NULL) {
 		bt_conn_unref(sco);
 	}
@@ -1518,7 +1518,7 @@ static struct bt_conn *bt_hfp_ag_create_sco(struct bt_hfp_ag *ag)
 
 	LOG_DBG("");
 
-	sco = atomic_ptr_get(&ag->sco_conn);
+	sco = atomic_ptr_read(&ag->sco_conn);
 	if (sco != NULL) {
 		return sco;
 	}
@@ -1533,10 +1533,10 @@ static struct bt_conn *bt_hfp_ag_create_sco(struct bt_hfp_ag *ag)
 
 	/* create SCO connection*/
 	sco = bt_conn_create_sco(&ag->acl_conn->br.dst, &ag->sco_chan);
-	updated = atomic_ptr_cas(&ag->sco_conn, NULL, sco);
+	updated = atomic_ptr_cmpxchg(&ag->sco_conn, NULL, sco);
 	if (!updated) {
-		LOG_WRN("SCO is not NULL (%p), target (%p)", atomic_ptr_get(&ag->sco_conn), sco);
-		__ASSERT(atomic_ptr_get(&ag->sco_conn) == sco,
+		LOG_WRN("SCO is not NULL (%p), target (%p)", atomic_ptr_read(&ag->sco_conn), sco);
+		__ASSERT(atomic_ptr_read(&ag->sco_conn) == sco,
 				"Concurrent SCO connection creation detected");
 		/* The `ag->sco_conn` has been updated in callback `hfp_ag_sco_connected()`.
 		 * The reference count has been increased in callback `hfp_ag_sco_connected()`.
@@ -1569,7 +1569,7 @@ static int hfp_ag_open_sco(struct bt_hfp_ag *ag, struct bt_hfp_ag_call *call)
 	}
 
 	hfp_ag_lock(ag);
-	create_sco = atomic_ptr_get(&ag->sco_conn) == NULL ? true : false;
+	create_sco = atomic_ptr_read(&ag->sco_conn) == NULL ? true : false;
 	if (create_sco) {
 		atomic_set_bit(ag->flags, BT_HFP_AG_CREATING_SCO);
 	}
@@ -2745,7 +2745,7 @@ static int bt_hfp_ag_bcc_handler(struct bt_hfp_ag *ag, struct net_buf *buf)
 		return -ENOTSUP;
 	}
 
-	if (atomic_ptr_get(&ag->sco_conn) != NULL) {
+	if (atomic_ptr_read(&ag->sco_conn) != NULL) {
 		hfp_ag_unlock(ag);
 		return -ECONNREFUSED;
 	}
@@ -4377,7 +4377,7 @@ static void ag_sco_disconnected(struct bt_conn *conn, uint8_t reason)
 	__ASSERT(conn != NULL, "Invalid SCO conn");
 
 	ARRAY_FOR_EACH(bt_hfp_ag_pool, i) {
-		if (atomic_ptr_cas(&bt_hfp_ag_pool[i].sco_conn, conn, NULL)) {
+		if (atomic_ptr_cmpxchg(&bt_hfp_ag_pool[i].sco_conn, conn, NULL)) {
 			bt_conn_unref(conn);
 		}
 	}
@@ -5203,7 +5203,7 @@ int bt_hfp_ag_audio_connect(struct bt_hfp_ag *ag, uint8_t id)
 		}
 	}
 
-	if (atomic_ptr_get(&ag->sco_conn) != NULL) {
+	if (atomic_ptr_read(&ag->sco_conn) != NULL) {
 		LOG_ERR("Audio connection has been connected");
 		hfp_ag_unlock(ag);
 		return -ECONNREFUSED;

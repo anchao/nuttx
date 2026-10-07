@@ -12,7 +12,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdbool.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/iterable_sections.h>
 #include <zephyr/sys/math_extras.h>

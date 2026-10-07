@@ -18,7 +18,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/sys/clock.h>
 
@@ -37,7 +37,7 @@ LOG_MODULE_REGISTER(bt_buf, CONFIG_BT_LOG_LEVEL);
  */
 #define SYNC_EVT_SIZE (BT_BUF_RESERVE + BT_HCI_EVT_HDR_SIZE + 255)
 
-static atomic_ptr_t buf_rx_freed_cb;
+static void * buf_rx_freed_cb;
 
 static void buf_rx_freed_notify(enum bt_buf_type mask)
 {
@@ -48,7 +48,7 @@ static void buf_rx_freed_notify(enum bt_buf_type mask)
 		k_sched_lock();
 	}
 
-	cb = (bt_buf_rx_freed_cb_t)atomic_ptr_get(&buf_rx_freed_cb);
+	cb = (bt_buf_rx_freed_cb_t)atomic_ptr_read(&buf_rx_freed_cb);
 
 	if (cb != NULL) {
 		cb(mask);
@@ -144,7 +144,7 @@ struct net_buf *bt_buf_get_rx(enum bt_buf_type type, k_timeout_t timeout)
 
 void bt_buf_rx_freed_cb_set(bt_buf_rx_freed_cb_t cb)
 {
-	atomic_ptr_set(&buf_rx_freed_cb, (void *)cb);
+	atomic_ptr_xchg(&buf_rx_freed_cb, (void *)cb);
 
 #if defined(CONFIG_BT_ISO_RX)
 	bt_iso_buf_rx_freed_cb_set(cb != NULL ? iso_rx_freed_cb : NULL);

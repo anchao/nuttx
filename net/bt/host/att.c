@@ -28,7 +28,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
@@ -114,7 +114,7 @@ struct bt_att_chan {
 	/* Connection this channel is associated with */
 	struct bt_att		*att;
 	struct bt_l2cap_le_chan	chan;
-	ATOMIC_DEFINE(flags, ATT_NUM_FLAGS);
+	atomic_define(flags, ATT_NUM_FLAGS);
 	struct bt_att_req	*req;
 	struct k_fifo		tx_queue;
 	struct k_work_delayable	timeout_work;
@@ -852,7 +852,7 @@ static struct net_buf *bt_att_chan_create_pdu(struct bt_att_chan *chan, uint8_t 
 
 static int bt_att_chan_send(struct bt_att_chan *chan, struct net_buf *buf)
 {
-	LOG_DBG("chan %p flags %lu code 0x%02x", chan, atomic_get(chan->flags),
+	LOG_DBG("chan %p flags %lu code 0x%02x", chan, atomic_read(chan->flags),
 		((struct bt_att_hdr *)buf->data)->code);
 
 	if (IS_ENABLED(CONFIG_BT_EATT) &&
@@ -3254,7 +3254,7 @@ static struct bt_att_chan *att_get_fixed_chan(struct bt_conn *conn)
 
 static void att_chan_attach(struct bt_att *att, struct bt_att_chan *chan)
 {
-	LOG_DBG("att %p chan %p flags %lu", att, chan, atomic_get(chan->flags));
+	LOG_DBG("att %p chan %p flags %lu", att, chan, atomic_read(chan->flags));
 
 	if (list_is_empty(&att->chans)) {
 		/* Init general queues when attaching the first channel */
@@ -3463,7 +3463,7 @@ static void bt_att_reconfigured(struct bt_l2cap_chan *l2cap_chan)
 }
 #endif /* CONFIG_BT_EATT */
 
-static struct bt_att_chan *att_chan_new(struct bt_att *att, atomic_val_t flags)
+static struct bt_att_chan *att_chan_new(struct bt_att *att, int32_t flags)
 {
 	int quota = 0;
 	static struct bt_l2cap_chan_ops ops = {

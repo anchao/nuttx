@@ -33,7 +33,7 @@ static struct srpl_entry {
 	uint16_t ssrc;
 } sol_pdu_rpl[CONFIG_BT_MESH_PROXY_SRPL_SIZE];
 
-static ATOMIC_DEFINE(store, CONFIG_BT_MESH_PROXY_SRPL_SIZE);
+static atomic_define(store, CONFIG_BT_MESH_PROXY_SRPL_SIZE);
 static atomic_t clear;
 #endif
 #if CONFIG_BT_MESH_PROXY_SOLICITATION
@@ -446,7 +446,7 @@ void bt_mesh_srpl_pending_store(void)
 #if CONFIG_BT_MESH_OD_PRIV_PROXY_SRV
 	bool clr;
 
-	clr = atomic_cas(&clear, 1, 0);
+	clr = atomic_cmpxchg_value(&clear, 1, 0);
 
 	for (int i = 0; i < ARRAY_SIZE(sol_pdu_rpl); i++) {
 		LOG_DBG("src 0x%04x seq 0x%06x", sol_pdu_rpl[i].ssrc, sol_pdu_rpl[i].sseq);
@@ -491,7 +491,7 @@ void bt_mesh_sol_reset(void)
 
 #if CONFIG_BT_MESH_OD_PRIV_PROXY_SRV
 	if (IS_ENABLED(CONFIG_BT_SETTINGS)) {
-		(void)atomic_cas(&clear, 0, 1);
+		(void)atomic_cmpxchg_value(&clear, 0, 1);
 
 		bt_mesh_settings_store_schedule(BT_MESH_SETTINGS_SRPL_PENDING);
 	}

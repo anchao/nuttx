@@ -30,7 +30,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/iterable_sections.h>
 #include <zephyr/sys/util.h>
@@ -366,7 +366,7 @@ struct bt_conn *bt_conn_new(struct bt_conn *conns, size_t size)
 	int i;
 
 	for (i = 0; i < size; i++) {
-		if (atomic_cas(&conns[i].ref, 0, 1)) {
+		if (atomic_cmpxchg_value(&conns[i].ref, 0, 1)) {
 			conn = &conns[i];
 			break;
 		}
@@ -750,7 +750,7 @@ static int send_buf(struct bt_conn *conn, struct net_buf *buf,
 	 * event and our handler will be confused that there is no corresponding
 	 * callback node in the `tx_pending` list.
 	 */
-	atomic_inc(&conn->in_ll);
+	atomic_add(&conn->in_ll, 1);
 	list_add_tail(&conn->tx_pending, &tx->node);
 
 	if (is_iso_tx_conn(conn)) {
@@ -767,7 +767,7 @@ static int send_buf(struct bt_conn *conn, struct net_buf *buf,
 	}
 
 	/* Remove buf from pending list */
-	atomic_dec(&conn->in_ll);
+	atomic_sub(&conn->in_ll, 1);
 	(void)list_find_and_remove(&conn->tx_pending, &tx->node);
 
 	LOG_ERR("Unable to send to driver (err %d)", err);
@@ -850,7 +850,7 @@ static bool should_stop_tx(struct bt_conn *conn)
 	}
 
 	/* Queue only 3 buffers per-conn for now */
-	if (atomic_get(&conn->in_ll) < 3) {
+	if (atomic_read(&conn->in_ll) < 3) {
 		/* The goal of this heuristic is to allow the link-layer to
 		 * extend an ACL connection event as long as the application
 		 * layer can provide data.
@@ -1455,7 +1455,7 @@ void bt_conn_foreach(enum bt_conn_type type,
 
 struct bt_conn *bt_conn_ref(struct bt_conn *conn)
 {
-	atomic_val_t old;
+	int32_t old;
 
 	__ASSERT_NO_MSG(conn);
 
@@ -1465,12 +1465,12 @@ struct bt_conn *bt_conn_ref(struct bt_conn *conn)
 	 * count since the read, and start over again when that happens.
 	 */
 	do {
-		old = atomic_get(&conn->ref);
+		old = atomic_read(&conn->ref);
 
 		if (!old) {
 			return NULL;
 		}
-	} while (!atomic_cas(&conn->ref, old, old + 1));
+	} while (!atomic_cmpxchg_value(&conn->ref, old, old + 1));
 
 	LOG_DBG("handle %u ref %ld -> %ld", conn->handle, old, old + 1);
 
@@ -1493,7 +1493,7 @@ static K_WORK_DEFINE(recycled_work, recycled_work_handler);
 
 void bt_conn_unref(struct bt_conn *conn)
 {
-	atomic_val_t old;
+	int32_t old;
 	bool deallocated;
 	uint16_t conn_handle;
 	/* Used only if CONFIG_ASSERT and CONFIG_BT_CONN_TX. */
@@ -1512,7 +1512,7 @@ void bt_conn_unref(struct bt_conn *conn)
 #if CONFIG_BT_CONN_TX && CONFIG_ASSERT
 	conn_tx_is_pending = k_work_is_pending(&conn->tx_complete_work);
 #endif
-	old = atomic_dec(&conn->ref);
+	old = atomic_sub(&conn->ref, 1);
 
 	LOG_DBG("handle %u ref %ld -> %ld", conn_handle, old, (old - 1));
 

@@ -19,7 +19,7 @@
 #include <zephyr/bluetooth/hci_types.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
@@ -47,7 +47,7 @@ struct bt_ccp_call_control_client {
 		bearers[CONFIG_BT_CCP_CALL_CONTROL_CLIENT_BEARER_COUNT];
 	struct bt_conn *conn;
 
-	ATOMIC_DEFINE(flags, CCP_CALL_CONTROL_CLIENT_FLAG_NUM_FLAGS);
+	atomic_define(flags, CCP_CALL_CONTROL_CLIENT_FLAG_NUM_FLAGS);
 };
 
 static struct bt_ccp_call_control_client clients[CONFIG_BT_MAX_CONN];

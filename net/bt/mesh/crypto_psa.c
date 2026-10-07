@@ -46,7 +46,7 @@ static struct {
 	uint8_t public_key_be[PUB_KEY_SIZE + 1];
 } dh_pair;
 
-static ATOMIC_DEFINE(pst_keys, BT_MESH_PSA_KEY_ID_RANGE_SIZE);
+static atomic_define(pst_keys, BT_MESH_PSA_KEY_ID_RANGE_SIZE);
 
 int bt_mesh_crypto_init(void)
 {

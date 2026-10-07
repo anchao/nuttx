@@ -66,7 +66,7 @@ static K_THREAD_STACK_DEFINE(settings_work_stack, SETTINGS_WORKQ_STACK_SIZE);
 
 static struct k_work_delayable pending_store;
 static struct k_work_delayable rpl_pending_store;
-static ATOMIC_DEFINE(pending_flags, BT_MESH_SETTINGS_FLAG_COUNT);
+static atomic_define(pending_flags, BT_MESH_SETTINGS_FLAG_COUNT);
 
 int bt_mesh_settings_set(settings_read_cb read_cb, void *cb_arg,
 			 void *out, size_t read_len)
@@ -170,7 +170,7 @@ void bt_mesh_settings_store_schedule(enum bt_mesh_settings_flag flag)
 		return;
 	}
 
-	if ((atomic_get(pending_flags) & NO_WAIT_PENDING_BITS) != 0) {
+	if ((atomic_read(pending_flags) & NO_WAIT_PENDING_BITS) != 0) {
 		schedule_store(&pending_store, 0);
 	} else {
 		schedule_store(&pending_store, CONFIG_BT_MESH_STORE_TIMEOUT * MSEC_PER_SEC);

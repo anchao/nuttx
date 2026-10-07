@@ -7,7 +7,7 @@
  */
 #include <zephyr/kernel.h>
 #include <errno.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/printk.h>
@@ -496,7 +496,7 @@ static void clear_call_without_clcc(struct bt_hfp_hf *hf)
 			continue;
 		}
 
-		switch (atomic_get(call->state)) {
+		switch (atomic_read(call->state)) {
 		case BT_HFP_HF_CALL_STATE_TERMINATE:
 			break;
 		case BT_HFP_HF_CALL_STATE_OUTGOING:
@@ -594,7 +594,7 @@ static void hf_call_state_update(struct bt_hfp_hf_call *call, int state)
 {
 	int old_state;
 
-	old_state = atomic_get(call->state);
+	old_state = atomic_read(call->state);
 	atomic_set(call->state, state);
 
 	LOG_DBG("Call %p state update %d->%d", call, old_state, state);
@@ -662,12 +662,12 @@ static void call_state_update(struct bt_hfp_hf_call *call, uint32_t status)
 {
 	switch (status) {
 	case BT_HFP_CLCC_STATUS_ACTIVE:
-		if ((atomic_get(call->state) != BT_HFP_HF_CALL_STATE_ACTIVE) ||
-		    ((atomic_get(call->state) == BT_HFP_HF_CALL_STATE_ACTIVE) &&
+		if ((atomic_read(call->state) != BT_HFP_HF_CALL_STATE_ACTIVE) ||
+		    ((atomic_read(call->state) == BT_HFP_HF_CALL_STATE_ACTIVE) &&
 		    atomic_test_and_clear_bit(call->flags, BT_HFP_HF_CALL_INCOMING_HELD))) {
-			atomic_val_t state;
+			int32_t state;
 
-			state = atomic_get(call->state);
+			state = atomic_read(call->state);
 			hf_call_state_update(call, BT_HFP_HF_CALL_STATE_ACTIVE);
 			if (state == BT_HFP_HF_CALL_STATE_HELD) {
 				if (bt_hf->retrieve) {
@@ -681,7 +681,7 @@ static void call_state_update(struct bt_hfp_hf_call *call, uint32_t status)
 		}
 		break;
 	case BT_HFP_CLCC_STATUS_HELD:
-		if ((atomic_get(call->state) == BT_HFP_HF_CALL_STATE_ACTIVE) &&
+		if ((atomic_read(call->state) == BT_HFP_HF_CALL_STATE_ACTIVE) &&
 		    !atomic_test_and_clear_bit(call->flags, BT_HFP_HF_CALL_INCOMING_HELD)) {
 			hf_call_state_update(call, BT_HFP_HF_CALL_STATE_HELD);
 			if (bt_hf->held) {
@@ -698,8 +698,8 @@ static void call_state_update(struct bt_hfp_hf_call *call, uint32_t status)
 	case BT_HFP_CLCC_STATUS_WAITING:
 		break;
 	case BT_HFP_CLCC_STATUS_CALL_HELD_HOLD:
-		if ((atomic_get(call->state) == BT_HFP_HF_CALL_STATE_INCOMING) ||
-		    (atomic_get(call->state) == BT_HFP_HF_CALL_STATE_WAITING)) {
+		if ((atomic_read(call->state) == BT_HFP_HF_CALL_STATE_INCOMING) ||
+		    (atomic_read(call->state) == BT_HFP_HF_CALL_STATE_WAITING)) {
 			atomic_set_bit(call->flags, BT_HFP_HF_CALL_INCOMING_HELD);
 			hf_call_state_update(call, BT_HFP_HF_CALL_STATE_ACTIVE);
 			if (bt_hf->incoming_held) {
@@ -1001,7 +1001,7 @@ static struct bt_hfp_hf_call *get_dialing_call(struct bt_hfp_hf *hf)
 			continue;
 		}
 
-		switch (atomic_get(call->state)) {
+		switch (atomic_read(call->state)) {
 		case BT_HFP_HF_CALL_STATE_OUTGOING:
 		case BT_HFP_HF_CALL_STATE_INCOMING:
 		case BT_HFP_HF_CALL_STATE_ALERTING:
@@ -1024,7 +1024,7 @@ static struct bt_hfp_hf_call *get_call_with_state(struct bt_hfp_hf *hf, int stat
 			continue;
 		}
 
-		if (atomic_get(call->state) == state) {
+		if (atomic_read(call->state) == state) {
 			return call;
 		}
 	}
@@ -1063,7 +1063,7 @@ static struct bt_hfp_hf_call *get_call_with_state_and_flag(struct bt_hfp_hf *hf,
 			continue;
 		}
 
-		if ((atomic_get(call->state) == state) &&
+		if ((atomic_read(call->state) == state) &&
 			atomic_test_bit(call->flags, flag)) {
 			return call;
 		}
@@ -1112,14 +1112,14 @@ static void set_all_calls_held_state(struct bt_hfp_hf *hf, bool held)
 			continue;
 		}
 
-		if (held && (atomic_get(call->state) == BT_HFP_HF_CALL_STATE_ACTIVE)) {
+		if (held && (atomic_read(call->state) == BT_HFP_HF_CALL_STATE_ACTIVE)) {
 			hf_call_state_update(call, BT_HFP_HF_CALL_STATE_HELD);
 			if (bt_hf->held) {
 				bt_hf->held(call);
 			}
 		}
 
-		if (!held && (atomic_get(call->state) == BT_HFP_HF_CALL_STATE_HELD)) {
+		if (!held && (atomic_read(call->state) == BT_HFP_HF_CALL_STATE_HELD)) {
 			hf_call_state_update(call, BT_HFP_HF_CALL_STATE_ACTIVE);
 			if (bt_hf->retrieve) {
 				bt_hf->retrieve(call);
@@ -1162,7 +1162,7 @@ static void ag_indicator_handle_call(struct bt_hfp_hf *hf, uint32_t value)
 				return;
 			}
 
-			switch (atomic_get(call->state)) {
+			switch (atomic_read(call->state)) {
 			case BT_HFP_HF_CALL_STATE_OUTGOING:
 			case BT_HFP_HF_CALL_STATE_INCOMING:
 			case BT_HFP_HF_CALL_STATE_ALERTING:
@@ -1209,8 +1209,8 @@ static void ag_indicator_handle_call_setup(struct bt_hfp_hf *hf, uint32_t value)
 				break;
 			}
 
-			if ((atomic_get(call->state) == BT_HFP_HF_CALL_STATE_ACTIVE) ||
-				(atomic_get(call->state) == BT_HFP_HF_CALL_STATE_HELD)) {
+			if ((atomic_read(call->state) == BT_HFP_HF_CALL_STATE_ACTIVE) ||
+				(atomic_read(call->state) == BT_HFP_HF_CALL_STATE_HELD)) {
 				break;
 			}
 
@@ -1221,7 +1221,7 @@ static void ag_indicator_handle_call_setup(struct bt_hfp_hf *hf, uint32_t value)
 				break;
 			}
 
-			if (atomic_get(call->state) == BT_HFP_HF_CALL_STATE_OUTGOING) {
+			if (atomic_read(call->state) == BT_HFP_HF_CALL_STATE_OUTGOING) {
 				LOG_INF("The outgoing is not alerted");
 				hf_reject_call(call);
 			} else {
@@ -2723,7 +2723,7 @@ int bt_hfp_hf_transmit_dtmf_code(struct bt_hfp_hf_call *call, char code)
 
 	if (!atomic_test_bit(call->flags, BT_HFP_HF_CALL_IN_USING) ||
 		(!(!atomic_test_bit(call->flags, BT_HFP_HF_CALL_INCOMING_HELD) &&
-		(atomic_get(call->state) == BT_HFP_HF_CALL_STATE_ACTIVE)))) {
+		(atomic_read(call->state) == BT_HFP_HF_CALL_STATE_ACTIVE)))) {
 		LOG_ERR("Invalid call status");
 		return -EINVAL;
 	}
@@ -2996,7 +2996,7 @@ int bt_hfp_hf_accept(struct bt_hfp_hf_call *call)
 		return -EINVAL;
 	}
 
-	if (atomic_get(call->state) == BT_HFP_HF_CALL_STATE_WAITING) {
+	if (atomic_read(call->state) == BT_HFP_HF_CALL_STATE_WAITING) {
 		err = hfp_hf_send_cmd(hf, NULL, ata_finish, "ATA");
 		if (err < 0) {
 			LOG_ERR("Fail to accept the incoming call on %p", hf);
@@ -3005,7 +3005,7 @@ int bt_hfp_hf_accept(struct bt_hfp_hf_call *call)
 	}
 
 	if (atomic_test_bit(call->flags, BT_HFP_HF_CALL_INCOMING_HELD) &&
-		(atomic_get(call->state) == BT_HFP_HF_CALL_STATE_ACTIVE)) {
+		(atomic_read(call->state) == BT_HFP_HF_CALL_STATE_ACTIVE)) {
 		err = hfp_hf_send_cmd(hf, NULL, btrh_finish, "AT+BTRH=%d",
 			BT_HFP_BTRH_ACCEPTED);
 		if (err < 0) {
@@ -3062,7 +3062,7 @@ int bt_hfp_hf_reject(struct bt_hfp_hf_call *call)
 		return -ENOTSUP;
 	}
 
-	if (atomic_get(call->state) == BT_HFP_HF_CALL_STATE_WAITING) {
+	if (atomic_read(call->state) == BT_HFP_HF_CALL_STATE_WAITING) {
 		err = hfp_hf_send_cmd(hf, NULL, chup_finish, "AT+CHUP");
 		if (err < 0) {
 			LOG_ERR("Fail to reject the incoming call on %p", hf);
@@ -3071,7 +3071,7 @@ int bt_hfp_hf_reject(struct bt_hfp_hf_call *call)
 	}
 
 	if (atomic_test_bit(call->flags, BT_HFP_HF_CALL_INCOMING_HELD) &&
-		(atomic_get(call->state) == BT_HFP_HF_CALL_STATE_ACTIVE)) {
+		(atomic_read(call->state) == BT_HFP_HF_CALL_STATE_ACTIVE)) {
 		err = hfp_hf_send_cmd(hf, NULL, btrh_finish, "AT+BTRH=%d",
 			BT_HFP_BTRH_REJECTED);
 		if (err < 0) {
@@ -3113,7 +3113,7 @@ int bt_hfp_hf_terminate(struct bt_hfp_hf_call *call)
 		return -EINVAL;
 	}
 
-	if (atomic_get(call->state) == BT_HFP_HF_CALL_STATE_HELD) {
+	if (atomic_read(call->state) == BT_HFP_HF_CALL_STATE_HELD) {
 		LOG_ERR("Held call cannot be terminated");
 		return -EINVAL;
 	}
@@ -3156,7 +3156,7 @@ int bt_hfp_hf_hold_incoming(struct bt_hfp_hf_call *call)
 		return -EINVAL;
 	}
 
-	if (!(atomic_get(call->state) == BT_HFP_HF_CALL_STATE_WAITING)) {
+	if (!(atomic_read(call->state) == BT_HFP_HF_CALL_STATE_WAITING)) {
 		LOG_ERR("No incoming call setup in progress");
 		return -EINVAL;
 	}
@@ -3463,7 +3463,7 @@ static void hfp_hf_sco_connected(struct bt_sco_chan *chan)
 {
 	struct bt_hfp_hf *hf = CONTAINER_OF(chan, struct bt_hfp_hf, chan);
 
-	if (atomic_ptr_cas(&hf->sco_conn, NULL, chan->sco)) {
+	if (atomic_ptr_cmpxchg(&hf->sco_conn, NULL, chan->sco)) {
 		bt_conn_ref(chan->sco);
 	}
 
@@ -3481,7 +3481,7 @@ static void hfp_hf_sco_disconnected(struct bt_sco_chan *chan, uint8_t reason)
 		bt_hf->sco_disconnected(chan->sco, reason);
 	}
 
-	sco = atomic_ptr_set(&hf->sco_conn, NULL);
+	sco = atomic_ptr_xchg(&hf->sco_conn, NULL);
 	if (sco != NULL) {
 		bt_conn_unref(sco);
 	}
@@ -3545,10 +3545,10 @@ static int hfp_hf_create_sco(struct bt_hfp_hf *hf)
 	}
 
 	sco = bt_conn_create_sco(&hf->acl->br.dst, &hf->chan);
-	updated = atomic_ptr_cas(&hf->sco_conn, NULL, sco);
+	updated = atomic_ptr_cmpxchg(&hf->sco_conn, NULL, sco);
 	if (!updated) {
-		LOG_WRN("SCO is not NULL (%p), target (%p)", atomic_ptr_get(&hf->sco_conn), sco);
-		__ASSERT(atomic_ptr_get(&hf->sco_conn) == sco,
+		LOG_WRN("SCO is not NULL (%p), target (%p)", atomic_ptr_read(&hf->sco_conn), sco);
+		__ASSERT(atomic_ptr_read(&hf->sco_conn) == sco,
 				"Concurrent SCO connection creation detected");
 		/* The `hf->sco_conn` has been updated in callback `hfp_hf_sco_connected()`.
 		 * The reference count has been updated in callback `hfp_hf_sco_connected()`.
@@ -3578,7 +3578,7 @@ int bt_hfp_hf_audio_connect(struct bt_hfp_hf *hf)
 		return -ENOTCONN;
 	}
 
-	if (atomic_ptr_get(&hf->sco_conn) != NULL) {
+	if (atomic_ptr_read(&hf->sco_conn) != NULL) {
 		LOG_ERR("Audio connection has been connected");
 		return -ECONNREFUSED;
 	}
@@ -4578,7 +4578,7 @@ static void hf_sco_disconnected(struct bt_conn *conn, uint8_t reason)
 	__ASSERT(conn != NULL, "Invalid SCO conn");
 
 	ARRAY_FOR_EACH(bt_hfp_hf_pool, i) {
-		if (atomic_ptr_cas(&bt_hfp_hf_pool[i].sco_conn, conn, NULL)) {
+		if (atomic_ptr_cmpxchg(&bt_hfp_hf_pool[i].sco_conn, conn, NULL)) {
 			bt_conn_unref(conn);
 		}
 	}

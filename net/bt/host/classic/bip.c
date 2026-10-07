@@ -6,7 +6,7 @@
 
 #include <zephyr/kernel.h>
 #include <errno.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 
@@ -148,7 +148,7 @@ int bt_bip_rfcomm_connect(struct bt_conn *conn, struct bt_bip *bip, uint8_t chan
 		return -EINVAL;
 	}
 
-	if (atomic_get(&bip->_transport_state) != BT_BIP_TRANSPORT_STATE_DISCONNECTED) {
+	if (atomic_read(&bip->_transport_state) != BT_BIP_TRANSPORT_STATE_DISCONNECTED) {
 		return -EINPROGRESS;
 	}
 
@@ -173,7 +173,7 @@ int bt_bip_rfcomm_disconnect(struct bt_bip *bip)
 		return -EINVAL;
 	}
 
-	if (atomic_get(&bip->_transport_state) != BT_BIP_TRANSPORT_STATE_CONNECTED) {
+	if (atomic_read(&bip->_transport_state) != BT_BIP_TRANSPORT_STATE_CONNECTED) {
 		return -EINPROGRESS;
 	}
 
@@ -287,7 +287,7 @@ int bt_bip_l2cap_connect(struct bt_conn *conn, struct bt_bip *bip, uint16_t psm)
 		return -EINVAL;
 	}
 
-	if (atomic_get(&bip->_transport_state) != BT_BIP_TRANSPORT_STATE_DISCONNECTED) {
+	if (atomic_read(&bip->_transport_state) != BT_BIP_TRANSPORT_STATE_DISCONNECTED) {
 		return -EINPROGRESS;
 	}
 
@@ -312,7 +312,7 @@ int bt_bip_l2cap_disconnect(struct bt_bip *bip)
 		return -EINVAL;
 	}
 
-	if (atomic_get(&bip->_transport_state) != BT_BIP_TRANSPORT_STATE_CONNECTED) {
+	if (atomic_read(&bip->_transport_state) != BT_BIP_TRANSPORT_STATE_CONNECTED) {
 		return -EINPROGRESS;
 	}
 
@@ -525,7 +525,7 @@ static void bip_server_connect(struct bt_obex_server *server, uint8_t version, u
 	struct bt_bip_server *s = CONTAINER_OF(server, struct bt_bip_server, _server);
 
 	if (!is_bip_primary_connect(s->_type) && s->_primary_client != NULL &&
-	    atomic_get(&s->_primary_client->_state) != BT_BIP_STATE_CONNECTED) {
+	    atomic_read(&s->_primary_client->_state) != BT_BIP_STATE_CONNECTED) {
 		LOG_ERR("Primary conn needs to be connected firstly");
 		bt_bip_connect_rsp(s, BT_OBEX_RSP_CODE_NOT_ALLOW, NULL);
 		return;
@@ -1125,8 +1125,8 @@ static int bt_bip_server_register(struct bt_bip *bip, struct bt_bip_server *serv
 	struct bt_bip_server *s, *next;
 	int err;
 
-	if (atomic_get(&server->_state) != BT_BIP_STATE_DISCONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&server->_state));
+	if (atomic_read(&server->_state) != BT_BIP_STATE_DISCONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&server->_state));
 		return -EINVAL;
 	}
 
@@ -1218,8 +1218,8 @@ int bt_bip_server_unregister(struct bt_bip_server *server)
 		return -EINVAL;
 	}
 
-	if (atomic_get(&server->_state) != BT_BIP_STATE_DISCONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&server->_state));
+	if (atomic_read(&server->_state) != BT_BIP_STATE_DISCONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&server->_state));
 		return -EINVAL;
 	}
 
@@ -1349,8 +1349,8 @@ static int bt_bip_client_connect(struct bt_bip *bip, struct bt_bip_client *clien
 	int err;
 	bool allocated = false;
 
-	if (atomic_get(&client->_state) != BT_BIP_STATE_DISCONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&client->_state));
+	if (atomic_read(&client->_state) != BT_BIP_STATE_DISCONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&client->_state));
 		return -EINVAL;
 	}
 
@@ -1391,9 +1391,9 @@ static int bt_bip_client_connect(struct bt_bip *bip, struct bt_bip_client *clien
 			return -EINVAL;
 		}
 
-		if (atomic_get(&primary_server->_state) != BT_BIP_STATE_CONNECTED) {
+		if (atomic_read(&primary_server->_state) != BT_BIP_STATE_CONNECTED) {
 			LOG_ERR("Invalid primary server state %u",
-				(uint8_t)atomic_get(&primary_server->_state));
+				(uint8_t)atomic_read(&primary_server->_state));
 			return -EINVAL;
 		}
 
@@ -1509,14 +1509,14 @@ int bt_bip_connect_rsp(struct bt_bip_server *server, uint8_t rsp_code, struct ne
 		return -EINVAL;
 	}
 
-	if (atomic_get(&server->_state) != BT_BIP_STATE_CONNECTING) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&server->_state));
+	if (atomic_read(&server->_state) != BT_BIP_STATE_CONNECTING) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&server->_state));
 		return -EINVAL;
 	}
 
 	if (rsp_code == BT_OBEX_RSP_CODE_SUCCESS && !is_bip_primary_connect(server->_type) &&
 	    server->_primary_client != NULL &&
-	    atomic_get(&server->_primary_client->_state) != BT_BIP_STATE_CONNECTED) {
+	    atomic_read(&server->_primary_client->_state) != BT_BIP_STATE_CONNECTED) {
 		LOG_ERR("Primary conn needs to be connected firstly");
 		return -EINVAL;
 	}
@@ -1588,13 +1588,13 @@ int bt_bip_disconnect(struct bt_bip_client *client, struct net_buf *buf)
 		return -EINVAL;
 	}
 
-	if (atomic_get(&client->_state) != BT_BIP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&client->_state));
+	if (atomic_read(&client->_state) != BT_BIP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&client->_state));
 		return -EINVAL;
 	}
 
 	if (is_bip_primary_connect(client->_type) && client->_secondary_server != NULL &&
-	    atomic_get(&client->_secondary_server->_state) == BT_BIP_STATE_CONNECTED) {
+	    atomic_read(&client->_secondary_server->_state) == BT_BIP_STATE_CONNECTED) {
 		LOG_ERR("Secondary conn needs to be disconnected firstly");
 		return -EINVAL;
 	}
@@ -1644,14 +1644,14 @@ int bt_bip_disconnect_rsp(struct bt_bip_server *server, uint8_t rsp_code, struct
 		return -EINVAL;
 	}
 
-	if (atomic_get(&server->_state) != BT_BIP_STATE_DISCONNECTING) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&server->_state));
+	if (atomic_read(&server->_state) != BT_BIP_STATE_DISCONNECTING) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&server->_state));
 		return -EINVAL;
 	}
 
 	if (rsp_code == BT_OBEX_RSP_CODE_SUCCESS && is_bip_primary_connect(server->_type) &&
 	    server->_secondary_client != NULL &&
-	    atomic_get(&server->_secondary_client->_state) == BT_BIP_STATE_CONNECTED) {
+	    atomic_read(&server->_secondary_client->_state) == BT_BIP_STATE_CONNECTED) {
 		LOG_ERR("Secondary conn needs to be disconnected firstly");
 		return -EINVAL;
 	}
@@ -1679,8 +1679,8 @@ int bt_bip_abort(struct bt_bip_client *client, struct net_buf *buf)
 		return -EINVAL;
 	}
 
-	if (atomic_get(&client->_state) != BT_BIP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&client->_state));
+	if (atomic_read(&client->_state) != BT_BIP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&client->_state));
 		return -EINVAL;
 	}
 
@@ -1734,8 +1734,8 @@ int bt_bip_abort_rsp(struct bt_bip_server *server, uint8_t rsp_code, struct net_
 		return -EINVAL;
 	}
 
-	if (atomic_get(&server->_state) != BT_BIP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&server->_state));
+	if (atomic_read(&server->_state) != BT_BIP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&server->_state));
 		return -EINVAL;
 	}
 
@@ -1844,8 +1844,8 @@ static int bip_get_or_put(struct bt_bip_client *client, bool is_get, const char 
 		return -EINVAL;
 	}
 
-	if (atomic_get(&client->_state) != BT_BIP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&client->_state));
+	if (atomic_read(&client->_state) != BT_BIP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&client->_state));
 		return -EINVAL;
 	}
 
@@ -1921,8 +1921,8 @@ static int bip_get_or_put_rsp(struct bt_bip_server *server, bool is_get, const c
 		return -EINVAL;
 	}
 
-	if (atomic_get(&server->_state) != BT_BIP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&server->_state));
+	if (atomic_read(&server->_state) != BT_BIP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&server->_state));
 		return -EINVAL;
 	}
 

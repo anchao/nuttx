@@ -14,7 +14,7 @@
 #include <zephyr/bluetooth/audio/audio.h>
 #include <zephyr/bluetooth/audio/bap.h>
 #include <zephyr/bluetooth/iso.h>
-#include <zephyr/sys/atomic_types.h>
+#include <nuttx/atomic.h>
 
 struct bt_bap_iso_dir {
 	struct bt_bap_stream *stream;

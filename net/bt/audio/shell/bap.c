@@ -44,7 +44,7 @@
 #include <zephyr/shell/shell.h>
 #include <zephyr/shell/shell_string_conv.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/clock.h>
 #include <zephyr/sys/printk.h>
@@ -489,7 +489,7 @@ static void lc3_audio_send_data(struct shell_stream *sh_stream)
 		return;
 	}
 
-	if (atomic_get(&sh_stream->tx.lc3_enqueue_cnt) == 0U) {
+	if (atomic_read(&sh_stream->tx.lc3_enqueue_cnt) == 0U) {
 		/* no op */
 		return;
 	}
@@ -515,7 +515,7 @@ static void lc3_audio_send_data(struct shell_stream *sh_stream)
 
 	sh_stream->tx.lc3_sdu_cnt++;
 	sh_stream->tx.seq_num++;
-	atomic_dec(&sh_stream->tx.lc3_enqueue_cnt);
+	atomic_sub(&sh_stream->tx.lc3_enqueue_cnt, 1);
 }
 
 static void lc3_sent_cb(struct bt_bap_stream *bap_stream)
@@ -526,7 +526,7 @@ static void lc3_sent_cb(struct bt_bap_stream *bap_stream)
 		return;
 	}
 
-	atomic_inc(&sh_stream->tx.lc3_enqueue_cnt);
+	atomic_add(&sh_stream->tx.lc3_enqueue_cnt, 1);
 }
 
 static void encode_and_send_cb(struct shell_stream *sh_stream, void *user_data)

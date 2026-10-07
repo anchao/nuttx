@@ -12,7 +12,7 @@
 #include <zephyr/bluetooth/mesh/sar_cfg.h>
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <nuttx/list.h>
 
 #define BT_MESH_IV_UPDATE(flags)   ((flags >> 1) & 0x01)
@@ -193,9 +193,9 @@ struct bt_mesh_lpn {
 	struct bt_mesh_net_cred cred[2];
 
 	/* Bit fields for tracking which groups the Friend knows about */
-	ATOMIC_DEFINE(added, LPN_GROUPS);
-	ATOMIC_DEFINE(pending, LPN_GROUPS);
-	ATOMIC_DEFINE(to_remove, LPN_GROUPS);
+	atomic_define(added, LPN_GROUPS);
+	atomic_define(pending, LPN_GROUPS);
+	atomic_define(to_remove, LPN_GROUPS);
 };
 
 /* bt_mesh_net.flags */
@@ -228,7 +228,7 @@ struct bt_mesh_net {
 	uint32_t iv_index; /* Current IV Index */
 	uint32_t seq;      /* Next outgoing sequence number (24 bits) */
 
-	ATOMIC_DEFINE(flags, BT_MESH_FLAG_COUNT);
+	atomic_define(flags, BT_MESH_FLAG_COUNT);
 
 	/* Local network interface */
 	struct k_work local_work;

@@ -19,7 +19,7 @@
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/sys/clock.h>
@@ -222,7 +222,7 @@ struct bt_conn {
 	enum bt_conn_type	type;
 	uint8_t			role;
 
-	ATOMIC_DEFINE(flags, BT_CONN_NUM_FLAGS);
+	atomic_define(flags, BT_CONN_NUM_FLAGS);
 
 	/* Which local identity address this connection uses */
 	uint8_t                    id;

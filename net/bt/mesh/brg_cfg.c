@@ -31,7 +31,7 @@ enum {
 	TABLE_UPDATED,
 	BRG_CFG_FLAGS_COUNT,
 };
-static ATOMIC_DEFINE(brg_cfg_flags, BRG_CFG_FLAGS_COUNT);
+static atomic_define(brg_cfg_flags, BRG_CFG_FLAGS_COUNT);
 
 /* Compact the bridge table for all removed entries, input is first removed entry */
 static void brg_tbl_compact(int j)
@@ -210,7 +210,7 @@ int bt_mesh_brg_cfg_tbl_reset(void)
 	brg_enabled = false;
 	bt_mesh_brg_cfg_row_cnt = 0;
 	memset(brg_tbl, 0, sizeof(brg_tbl));
-	atomic_clear(brg_cfg_flags);
+	atomic_set(brg_cfg_flags, 0);
 
 	if (!IS_ENABLED(CONFIG_BT_SETTINGS)) {
 		return 0;

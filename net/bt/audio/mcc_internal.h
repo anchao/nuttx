@@ -19,7 +19,7 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/services/ots.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/types.h>
 
 struct mcs_instance_t *lookup_inst_by_conn(struct bt_conn *conn);
@@ -159,7 +159,7 @@ struct mcs_instance_t {
 	struct bt_ots_client otc;
 #endif /* CONFIG_BT_MCC_OTS */
 
-	ATOMIC_DEFINE(flags, MCC_FLAG_NUM_FLAGS);
+	atomic_define(flags, MCC_FLAG_NUM_FLAGS);
 };
 
 #endif /* ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_MCP_INTERNAL_ */

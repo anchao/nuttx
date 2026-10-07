@@ -13,7 +13,7 @@
 #include <pthread.h>
 
 #include "sys_clock.h"
-#include "sys/atomic.h"
+#include <nuttx/atomic.h>
 #include "toolchain.h"
 #include "arch/posix/arch.h"
 #include "irq.h"

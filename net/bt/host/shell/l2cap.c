@@ -27,7 +27,7 @@
 #include <zephyr/settings/settings.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/shell/shell_string_conv.h>
-#include <zephyr/sys/atomic_types.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/clock.h>
 #include <zephyr/kernel.h>

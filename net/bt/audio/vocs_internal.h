@@ -16,7 +16,7 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/kernel.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 
 #if defined(CONFIG_BT_VOCS)
 #define BT_VOCS_MAX_DESC_SIZE CONFIG_BT_VOCS_MAX_OUTPUT_DESCRIPTION_SIZE
@@ -79,7 +79,7 @@ struct bt_vocs_client {
 	struct bt_gatt_discover_params discover_params;
 	struct bt_conn *conn;
 
-	ATOMIC_DEFINE(flags, BT_VOCS_CLIENT_FLAG_NUM_FLAGS);
+	atomic_define(flags, BT_VOCS_CLIENT_FLAG_NUM_FLAGS);
 };
 
 enum bt_vocs_notify {
@@ -99,7 +99,7 @@ struct bt_vocs_server {
 
 	struct bt_gatt_service *service_p;
 
-	ATOMIC_DEFINE(notify, NOTIFY_NUM);
+	atomic_define(notify, NOTIFY_NUM);
 	struct k_work_delayable notify_work;
 };
 

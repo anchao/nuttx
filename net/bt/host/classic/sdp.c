@@ -1861,7 +1861,7 @@ static void sdp_client_req_cleanup(struct bt_sdp_client *session)
 	/* Clear received length */
 	session->recv_len = 0U;
 	/* Clear flags */
-	atomic_clear(session->flags);
+	atomic_set(session->flags, 0);
 }
 
 static void sdp_client_cleanup(struct bt_sdp_client *session)

@@ -18,7 +18,7 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/uuid.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 
 /* VCS opcodes */
 #define BT_VCP_OPCODE_REL_VOL_DOWN                      0x00U
@@ -82,7 +82,7 @@ struct bt_vcp_vol_ctlr {
 	struct bt_aics *aics[CONFIG_BT_VCP_VOL_CTLR_MAX_AICS_INST];
 #endif /* CONFIG_BT_VCP_VOL_CTLR_AICS */
 
-	ATOMIC_DEFINE(flags, BT_VCP_VOL_CTLR_FLAG_NUM_FLAGS);
+	atomic_define(flags, BT_VCP_VOL_CTLR_FLAG_NUM_FLAGS);
 };
 
 #endif /* ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_VCP_INTERNAL_*/

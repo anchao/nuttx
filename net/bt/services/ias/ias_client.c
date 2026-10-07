@@ -25,7 +25,7 @@ struct bt_ias_client {
 	uint16_t alert_level_handle;
 
 	/** Internal flags **/
-	ATOMIC_DEFINE(flags, IAS_NUM_FLAGS);
+	atomic_define(flags, IAS_NUM_FLAGS);
 
 	/* Gatt discover procedure parameters */
 	struct bt_gatt_discover_params discover;

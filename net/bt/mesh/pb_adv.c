@@ -76,7 +76,7 @@ enum {
 struct pb_adv {
 	uint32_t id; /* Link ID */
 
-	ATOMIC_DEFINE(flags, ADV_NUM_FLAGS);
+	atomic_define(flags, ADV_NUM_FLAGS);
 
 	const struct prov_bearer_cb *cb;
 	void *cb_data;
@@ -358,7 +358,7 @@ static void reset_adv_link(void)
 		}
 
 		pb_adv_link.id = 0;
-		atomic_clear(pb_adv_link.flags);
+		atomic_set(pb_adv_link.flags, 0);
 		pb_adv_link.rx.id = XACT_ID_MAX;
 		pb_adv_link.tx.id = XACT_ID_NVAL;
 	}

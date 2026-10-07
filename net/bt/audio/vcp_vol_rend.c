@@ -28,7 +28,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/clock.h>
 #include <zephyr/sys/time_units.h>
@@ -67,7 +67,7 @@ struct bt_vcp_vol_rend {
 	struct bt_vocs *vocs_insts[CONFIG_BT_VCP_VOL_REND_VOCS_INSTANCE_COUNT];
 	struct bt_aics *aics_insts[CONFIG_BT_VCP_VOL_REND_AICS_INSTANCE_COUNT];
 
-	ATOMIC_DEFINE(notify, NOTIFY_NUM);
+	atomic_define(notify, NOTIFY_NUM);
 	struct k_work_delayable notify_work;
 };
 
@@ -494,7 +494,7 @@ int bt_vcp_vol_rend_register(struct bt_vcp_vol_rend_register_param *param)
 
 	vol_rend.cb = param->cb;
 
-	atomic_clear(vol_rend.notify);
+	atomic_set(vol_rend.notify, 0);
 	k_work_init_delayable(&vol_rend.notify_work, notify_work_handler);
 
 	registered = true;

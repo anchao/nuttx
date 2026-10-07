@@ -154,7 +154,7 @@ struct bt_mesh_blob_srv {
 		uint8_t ttl;
 
 		/* Bitfield of pending blocks. */
-		ATOMIC_DEFINE(blocks, BT_MESH_BLOB_BLOCKS_MAX);
+		atomic_define(blocks, BT_MESH_BLOB_BLOCKS_MAX);
 	} state;
 
 	/* Pull mode (Pull BLOB Transfer Mode) behavior. */

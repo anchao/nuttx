@@ -30,7 +30,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/settings/settings.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/clock.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
@@ -75,7 +75,7 @@ struct csip_client {
 	bt_addr_le_t addr;
 
 	/* Pending notification flags */
-	ATOMIC_DEFINE(flags, FLAG_NUM);
+	atomic_define(flags, FLAG_NUM);
 };
 
 struct bt_csip_set_member_svc_inst {
@@ -728,7 +728,7 @@ static void csip_bond_deleted(uint8_t id, const bt_addr_le_t *peer)
 			/* Check if match, and if active, if so, reset */
 			if (atomic_test_bit(svc_inst->clients[i].flags, FLAG_ACTIVE) &&
 			    bt_addr_le_eq(peer, &svc_inst->clients[i].addr)) {
-				atomic_clear(svc_inst->clients[i].flags);
+				atomic_set(svc_inst->clients[i].flags, 0);
 				(void)memset(&svc_inst->clients[i].addr, 0, sizeof(bt_addr_le_t));
 				break;
 			}

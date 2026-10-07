@@ -47,7 +47,7 @@ enum {
 static struct {
 	const struct bt_mesh_model *mod;
 
-	ATOMIC_DEFINE(flags, RPR_SRV_NUM_FLAGS);
+	atomic_define(flags, RPR_SRV_NUM_FLAGS);
 
 	struct {
 		struct bt_mesh_rpr_unprov
@@ -1263,8 +1263,8 @@ static void adv_handle_ext_scan(const struct bt_le_scan_recv_info *info,
 	 * Remote Provisioning Extended Scan Start message, and the Remote Provisioning Server
 	 * received the scan response from the same device.
 	 */
-	if (atomic_get(srv.flags) & URI_REQUESTED &&
-	    (atomic_get(srv.flags) & URI_MATCHED ||
+	if (atomic_read(srv.flags) & URI_REQUESTED &&
+	    (atomic_read(srv.flags) & URI_MATCHED ||
 	    (dev->flags & ~BT_MESH_RPR_UNPROV_HASH)) &&
 	    info->adv_type == BT_GAP_ADV_TYPE_SCAN_RSP) {
 		goto complete;
@@ -1345,7 +1345,7 @@ static void rpr_srv_reset(const struct bt_mesh_model *mod)
 	k_work_cancel_delayable(&srv.scan.timeout);
 	k_work_cancel_delayable(&srv.scan.report);
 	net_buf_simple_init(srv.scan.adv_data, 0);
-	atomic_clear(srv.flags);
+	atomic_set(srv.flags, 0);
 	srv.link.dev = NULL;
 	srv.scan.dev = NULL;
 }

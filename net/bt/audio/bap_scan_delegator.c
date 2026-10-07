@@ -34,7 +34,7 @@
 #include <zephyr/net_buf.h>
 #include <zephyr/settings/settings.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
@@ -106,7 +106,7 @@ enum scan_delegator_flag {
 	SCAN_DELEGATOR_FLAG_NUM,
 };
 
-static ATOMIC_DEFINE(scan_delegator_flags, SCAN_DELEGATOR_FLAG_NUM);
+static atomic_define(scan_delegator_flags, SCAN_DELEGATOR_FLAG_NUM);
 
 static struct bt_bap_scan_delegator_inst scan_delegator;
 static struct bt_bap_scan_delegator_cb *scan_delegator_cbs;

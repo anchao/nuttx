@@ -274,7 +274,7 @@ static int bt_pbap_transport_connect(struct bt_conn *conn, struct bt_pbap_pce *p
 		return -EINVAL;
 	}
 
-	if (atomic_get(&pbap_pce->_transport_state) != BT_PBAP_TRANSPORT_STATE_DISCONNECTED) {
+	if (atomic_read(&pbap_pce->_transport_state) != BT_PBAP_TRANSPORT_STATE_DISCONNECTED) {
 		return -EINPROGRESS;
 	}
 
@@ -305,7 +305,7 @@ static int bt_pbap_transport_disconnect(struct bt_pbap_pce *pbap_pce, bool is_rf
 		return -EINVAL;
 	}
 
-	if (atomic_get(&pbap_pce->_transport_state) != BT_PBAP_TRANSPORT_STATE_CONNECTED) {
+	if (atomic_read(&pbap_pce->_transport_state) != BT_PBAP_TRANSPORT_STATE_CONNECTED) {
 		return -EINPROGRESS;
 	}
 
@@ -463,14 +463,14 @@ int bt_pbap_pce_connect(struct bt_pbap_pce *pbap_pce, uint16_t mopl, struct net_
 	bool allocated = false;
 	uint8_t uuid128[BT_UUID_SIZE_128];
 
-	if (atomic_get(&pbap_pce->_transport_state) != BT_PBAP_TRANSPORT_STATE_CONNECTED) {
+	if (atomic_read(&pbap_pce->_transport_state) != BT_PBAP_TRANSPORT_STATE_CONNECTED) {
 		LOG_ERR("Transport connection is not established");
 		return -EINVAL;
 	}
 
-	if (atomic_get(&pbap_pce->_state) != BT_PBAP_STATE_DISCONNECTED &&
-	    atomic_get(&pbap_pce->_state) != BT_PBAP_STATE_CONNECTING) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&pbap_pce->_state));
+	if (atomic_read(&pbap_pce->_state) != BT_PBAP_STATE_DISCONNECTED &&
+	    atomic_read(&pbap_pce->_state) != BT_PBAP_STATE_CONNECTING) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&pbap_pce->_state));
 		return -EINVAL;
 	}
 
@@ -525,8 +525,8 @@ int bt_pbap_pce_disconnect(struct bt_pbap_pce *pbap_pce, struct net_buf *buf)
 		return -EINVAL;
 	}
 
-	if (atomic_get(&pbap_pce->_state) != BT_PBAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&pbap_pce->_state));
+	if (atomic_read(&pbap_pce->_state) != BT_PBAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&pbap_pce->_state));
 		return -EINVAL;
 	}
 
@@ -710,8 +710,8 @@ int bt_pbap_pce_set_phone_book(struct bt_pbap_pce *pbap_pce, uint8_t flags, stru
 {
 	int err;
 
-	if (atomic_get(&pbap_pce->_state) != BT_PBAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&pbap_pce->_state));
+	if (atomic_read(&pbap_pce->_state) != BT_PBAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&pbap_pce->_state));
 		return -EINVAL;
 	}
 
@@ -749,8 +749,8 @@ int bt_pbap_pce_abort(struct bt_pbap_pce *pbap_pce, struct net_buf *buf)
 		return -EINVAL;
 	}
 
-	if (atomic_get(&pbap_pce->_state) != BT_PBAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&pbap_pce->_state));
+	if (atomic_read(&pbap_pce->_state) != BT_PBAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&pbap_pce->_state));
 		return -EINVAL;
 	}
 
@@ -919,7 +919,7 @@ static void pbap_pse_clear_pending_request(struct bt_pbap_pse *pbap_pse)
 {
 	pbap_pse->_req_cb = NULL;
 	pbap_pse->_optype = NULL;
-	atomic_clear(&pbap_pse->_flags);
+	atomic_set(&pbap_pse->_flags, 0);
 }
 
 static void pse_connect(struct bt_obex_server *server, uint8_t version, uint16_t mopl,
@@ -1285,8 +1285,8 @@ int bt_pbap_pse_connect_rsp(struct bt_pbap_pse *pbap_pse, uint16_t mopl, uint8_t
 		return -EINVAL;
 	}
 
-	if (atomic_get(&pbap_pse->_state) != BT_PBAP_STATE_CONNECTING) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&pbap_pse->_state));
+	if (atomic_read(&pbap_pse->_state) != BT_PBAP_STATE_CONNECTING) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&pbap_pse->_state));
 		return -EINVAL;
 	}
 
@@ -1350,8 +1350,8 @@ static int pbap_pse_get_rsp(struct bt_pbap_pse *pbap_pse, uint8_t rsp_code, stru
 	int err;
 	bool clear_bit = false;
 
-	if (atomic_get(&pbap_pse->_state) != BT_PBAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&pbap_pse->_state));
+	if (atomic_read(&pbap_pse->_state) != BT_PBAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&pbap_pse->_state));
 		return -EINVAL;
 	}
 
@@ -1412,8 +1412,8 @@ int bt_pbap_pse_set_phone_book_rsp(struct bt_pbap_pse *pbap_pse, uint8_t rsp_cod
 	int err;
 	bool allocated = false;
 
-	if (atomic_get(&pbap_pse->_state) != BT_PBAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&pbap_pse->_state));
+	if (atomic_read(&pbap_pse->_state) != BT_PBAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&pbap_pse->_state));
 		return -EINVAL;
 	}
 
@@ -1445,8 +1445,8 @@ int bt_pbap_pse_disconnect_rsp(struct bt_pbap_pse *pbap_pse, uint8_t rsp_code, s
 		return -EINVAL;
 	}
 
-	if (atomic_get(&pbap_pse->_state) != BT_PBAP_STATE_DISCONNECTING) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&pbap_pse->_state));
+	if (atomic_read(&pbap_pse->_state) != BT_PBAP_STATE_DISCONNECTING) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&pbap_pse->_state));
 		return -EINVAL;
 	}
 
@@ -1474,8 +1474,8 @@ int bt_pbap_pse_abort_rsp(struct bt_pbap_pse *pbap_pse, uint8_t rsp_code, struct
 		return -EINVAL;
 	}
 
-	if (atomic_get(&pbap_pse->_state) != BT_PBAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&pbap_pse->_state));
+	if (atomic_read(&pbap_pse->_state) != BT_PBAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&pbap_pse->_state));
 		return -EINVAL;
 	}
 

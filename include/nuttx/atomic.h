@@ -28,6 +28,7 @@
  ****************************************************************************/
 
 #include <stdbool.h>
+#include <stdint.h>
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -154,6 +155,68 @@
   atomic_compare_exchange_8(obj, (FAR int64_t *)expected, desired, true, __ATOMIC_RELEASE, __ATOMIC_RELAXED)
 #define atomic64_try_cmpxchg_relaxed(obj, expected, desired) \
   atomic_compare_exchange_8(obj, (FAR int64_t *)expected, desired, true, __ATOMIC_RELAXED, __ATOMIC_RELAXED)
+
+#define atomic_bits (sizeof(atomic_t) * 8)
+#define atomic_bitmap_size(num_bits) \
+  (((num_bits) + atomic_bits - 1) / atomic_bits)
+
+#define atomic_define(name, num_bits) \
+  atomic_t name[atomic_bitmap_size(num_bits)]
+
+#define atomic_cmpxchg_value(obj, expected, desired) \
+  ({ \
+    int32_t __expected = (expected); \
+    atomic_cmpxchg(obj, &__expected, desired); \
+  })
+
+#define atomic_set_bit(target, bit) \
+  ((void)atomic_or(&(target)[(bit) / atomic_bits], \
+                   (int32_t)(1ULL << ((bit) % atomic_bits))))
+
+#define atomic_clear_bit(target, bit) \
+  ((void)atomic_and(&(target)[(bit) / atomic_bits], \
+                    ~(int32_t)(1ULL << ((bit) % atomic_bits))))
+
+#define atomic_test_bit(target, bit) \
+  ((atomic_read(&(target)[(bit) / atomic_bits]) & \
+    (int32_t)(1ULL << ((bit) % atomic_bits))) != 0)
+
+#define atomic_test_and_set_bit(target, bit) \
+  ((atomic_or(&(target)[(bit) / atomic_bits], \
+              (int32_t)(1ULL << ((bit) % atomic_bits))) & \
+    (int32_t)(1ULL << ((bit) % atomic_bits))) != 0)
+
+#define atomic_test_and_clear_bit(target, bit) \
+  ((atomic_and(&(target)[(bit) / atomic_bits], \
+               ~(int32_t)(1ULL << ((bit) % atomic_bits))) & \
+    (int32_t)(1ULL << ((bit) % atomic_bits))) != 0)
+
+#define atomic_set_bit_to(target, bit, val) \
+  do \
+    { \
+      if (val) \
+        { \
+          atomic_set_bit(target, bit); \
+        } \
+      else \
+        { \
+          atomic_clear_bit(target, bit); \
+        } \
+    } \
+  while (0)
+
+#define atomic_ptr_read(target) \
+  __atomic_load_n(target, __ATOMIC_RELAXED)
+
+#define atomic_ptr_xchg(target, value) \
+  __atomic_exchange_n(target, value, __ATOMIC_SEQ_CST)
+
+#define atomic_ptr_cmpxchg(target, expected, desired) \
+  ({ \
+    __auto_type __expected = (expected); \
+    __atomic_compare_exchange_n(target, &__expected, desired, false, \
+                                __ATOMIC_SEQ_CST, __ATOMIC_RELAXED); \
+  })
 
 /****************************************************************************
  * Public Types

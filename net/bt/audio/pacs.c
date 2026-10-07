@@ -31,7 +31,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
@@ -104,11 +104,11 @@ struct pacs_client {
 #endif /* CONFIG_BT_PAC_SRC */
 
 	/* Pending notification flags */
-	ATOMIC_DEFINE(flags, FLAG_NUM);
+	atomic_define(flags, FLAG_NUM);
 };
 
 static struct pacs {
-	ATOMIC_DEFINE(flags, PACS_FLAG_NUM);
+	atomic_define(flags, PACS_FLAG_NUM);
 
 	struct pacs_client clients[CONFIG_BT_MAX_PAIRED];
 

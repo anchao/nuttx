@@ -29,7 +29,7 @@
 #include <zephyr/net_buf.h>
 #include <zephyr/settings/settings.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/iterable_sections.h>
 #include <nuttx/list.h>
@@ -101,7 +101,7 @@ enum gatt_global_flags {
 	GATT_NUM_FLAGS,
 };
 
-static ATOMIC_DEFINE(gatt_flags, GATT_NUM_FLAGS);
+static atomic_define(gatt_flags, GATT_NUM_FLAGS);
 
 #if defined (CONFIG_BT_GAP_PERIPHERAL_PREF_PARAMS)
 /* This checks if the range entered is valid */
@@ -160,7 +160,7 @@ static struct gatt_sc {
 	uint16_t end;
 	struct k_work_delayable work;
 
-	ATOMIC_DEFINE(flags, SC_NUM_FLAGS);
+	atomic_define(flags, SC_NUM_FLAGS);
 } gatt_sc;
 #endif /* defined(CONFIG_BT_GATT_SERVICE_CHANGED) */
 
@@ -373,7 +373,7 @@ struct gatt_cf_cfg {
 	uint8_t			id;
 	bt_addr_le_t		peer;
 	uint8_t			data[CF_NUM_BYTES];
-	ATOMIC_DEFINE(flags, CF_NUM_FLAGS);
+	atomic_define(flags, CF_NUM_FLAGS);
 };
 
 #if defined(CONFIG_BT_GATT_CACHING)
@@ -1308,7 +1308,7 @@ struct ds_peer {
 	uint8_t id;
 	bt_addr_le_t peer;
 
-	ATOMIC_DEFINE(flags, DELAYED_STORE_NUM_FLAGS);
+	atomic_define(flags, DELAYED_STORE_NUM_FLAGS);
 };
 
 #if defined(CONFIG_BT_SETTINGS_DELAYED_STORE)
@@ -1358,7 +1358,7 @@ static struct ds_peer *gatt_delayed_store_alloc(uint8_t id,
 		 * address, so we use that to signal that a given slot is
 		 * free.
 		 */
-		if (atomic_get(el->flags) == 0) {
+		if (atomic_read(el->flags) == 0) {
 			bt_addr_le_copy(&el->peer, peer_addr);
 			el->id = id;
 
@@ -1420,7 +1420,7 @@ static void gatt_store_ccc_cf(uint8_t id, const bt_addr_le_t *peer_addr)
 			bt_gatt_store_cf(id, peer_addr);
 		}
 
-		if (el && atomic_get(el->flags) == 0) {
+		if (el && atomic_read(el->flags) == 0) {
 			gatt_delayed_store_free(el);
 		}
 	}

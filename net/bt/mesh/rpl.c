@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/byteorder.h>
 
@@ -35,14 +35,14 @@ struct rpl_val {
 };
 
 static struct bt_mesh_rpl replay_list[CONFIG_BT_MESH_CRPL];
-static ATOMIC_DEFINE(store, CONFIG_BT_MESH_CRPL);
+static atomic_define(store, CONFIG_BT_MESH_CRPL);
 
 enum {
 	PENDING_CLEAR,
 	PENDING_RESET,
 	RPL_FLAGS_COUNT,
 };
-static ATOMIC_DEFINE(rpl_flags, RPL_FLAGS_COUNT);
+static atomic_define(rpl_flags, RPL_FLAGS_COUNT);
 
 static inline int rpl_idx(const struct bt_mesh_rpl *rpl)
 {

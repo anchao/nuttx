@@ -26,7 +26,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/init.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
 #include <zephyr/types.h>

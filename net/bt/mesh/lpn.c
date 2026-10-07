@@ -164,10 +164,10 @@ static inline void group_set(atomic_t *target, atomic_t *source)
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(bt_mesh.lpn.added); i++) {
-		(void)atomic_or(&target[i], atomic_get(&source[i]));
+		(void)atomic_or(&target[i], atomic_read(&source[i]));
 	}
 #else
-	(void)atomic_or(target, atomic_get(source));
+	(void)atomic_or(target, atomic_read(source));
 #endif
 }
 
@@ -177,10 +177,10 @@ static inline void group_clear(atomic_t *target, atomic_t *source)
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(bt_mesh.lpn.added); i++) {
-		(void)atomic_and(&target[i], ~atomic_get(&source[i]));
+		(void)atomic_and(&target[i], ~atomic_read(&source[i]));
 	}
 #else
-	(void)atomic_and(target, ~atomic_get(source));
+	(void)atomic_and(target, ~atomic_read(source));
 #endif
 }
 
@@ -784,10 +784,10 @@ static inline int group_popcount(atomic_t *target)
 	int i, count = 0;
 
 	for (i = 0; i < ARRAY_SIZE(bt_mesh.lpn.added); i++) {
-		count += POPCOUNT(atomic_get(&target[i]));
+		count += POPCOUNT(atomic_read(&target[i]));
 	}
 #else
-	return POPCOUNT(atomic_get(target));
+	return POPCOUNT(atomic_read(target));
 #endif
 }
 

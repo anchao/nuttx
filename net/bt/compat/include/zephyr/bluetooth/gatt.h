@@ -33,7 +33,7 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/bluetooth/att.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/iterable_sections.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
@@ -2322,7 +2322,7 @@ struct bt_gatt_subscribe_params {
 	bt_security_t min_security;
 #endif /* CONFIG_BT_SMP */
 	/** Subscription flags, see @ref bt_gatt_sub_flag */
-	ATOMIC_DEFINE(flags, BT_GATT_SUBSCRIBE_NUM_FLAGS);
+	atomic_define(flags, BT_GATT_SUBSCRIBE_NUM_FLAGS);
 
 	/** @cond INTERNAL_HIDDEN
 	 *  Field used for list handling.

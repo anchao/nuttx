@@ -6,7 +6,7 @@
 
 #include <zephyr/kernel.h>
 #include <errno.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 
@@ -423,7 +423,7 @@ static int mce_mas_transport_connect(struct bt_conn *conn, struct bt_map_mce_mas
 
 	mce_mas->_cb = cb;
 
-	if (atomic_get(&mce_mas->_transport_state) != BT_MAP_TRANSPORT_STATE_DISCONNECTED) {
+	if (atomic_read(&mce_mas->_transport_state) != BT_MAP_TRANSPORT_STATE_DISCONNECTED) {
 		LOG_DBG("MCE MAS transport connect in progress");
 		return -EINPROGRESS;
 	}
@@ -478,7 +478,7 @@ static int mce_mas_transport_disconnect(struct bt_map_mce_mas *mce_mas, uint8_t 
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mce_mas->_transport_state) != BT_MAP_TRANSPORT_STATE_CONNECTED) {
+	if (atomic_read(&mce_mas->_transport_state) != BT_MAP_TRANSPORT_STATE_CONNECTED) {
 		LOG_DBG("MCE MAS transport disconnect in progress");
 		return -ENOTCONN;
 	}
@@ -656,8 +656,8 @@ int bt_map_mce_mas_connect(struct bt_map_mce_mas *mce_mas, struct net_buf *buf)
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mce_mas->_state) != BT_MAP_STATE_DISCONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mce_mas->_state));
+	if (atomic_read(&mce_mas->_state) != BT_MAP_STATE_DISCONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mce_mas->_state));
 		return -EINVAL;
 	}
 
@@ -714,8 +714,8 @@ int bt_map_mce_mas_disconnect(struct bt_map_mce_mas *mce_mas, struct net_buf *bu
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mce_mas->_state) != BT_MAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mce_mas->_state));
+	if (atomic_read(&mce_mas->_state) != BT_MAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mce_mas->_state));
 		return -EINVAL;
 	}
 
@@ -768,8 +768,8 @@ int bt_map_mce_mas_abort(struct bt_map_mce_mas *mce_mas, struct net_buf *buf)
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mce_mas->_state) != BT_MAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mce_mas->_state));
+	if (atomic_read(&mce_mas->_state) != BT_MAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mce_mas->_state));
 		return -EINVAL;
 	}
 
@@ -826,8 +826,8 @@ int bt_map_mce_mas_set_folder(struct bt_map_mce_mas *mce_mas, uint8_t flags, str
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mce_mas->_state) != BT_MAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mce_mas->_state));
+	if (atomic_read(&mce_mas->_state) != BT_MAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mce_mas->_state));
 		return -EINVAL;
 	}
 
@@ -956,8 +956,8 @@ static int mce_mas_get_or_put(struct bt_map_mce_mas *mce_mas, bool is_get, const
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mce_mas->_state) != BT_MAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mce_mas->_state));
+	if (atomic_read(&mce_mas->_state) != BT_MAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mce_mas->_state));
 		return -EINVAL;
 	}
 
@@ -1108,7 +1108,7 @@ static int mce_mns_transport_disconnect(struct bt_map_mce_mns *mce_mns, uint8_t 
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mce_mns->_transport_state) != BT_MAP_TRANSPORT_STATE_CONNECTED) {
+	if (atomic_read(&mce_mns->_transport_state) != BT_MAP_TRANSPORT_STATE_CONNECTED) {
 		LOG_DBG("MCE MNS transport disconnect in progress");
 		return -ENOTCONN;
 	}
@@ -1416,8 +1416,8 @@ int bt_map_mce_mns_connect(struct bt_map_mce_mns *mce_mns, uint8_t rsp_code, str
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mce_mns->_state) != BT_MAP_STATE_CONNECTING) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mce_mns->_state));
+	if (atomic_read(&mce_mns->_state) != BT_MAP_STATE_CONNECTING) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mce_mns->_state));
 		return -EINVAL;
 	}
 
@@ -1493,8 +1493,8 @@ int bt_map_mce_mns_disconnect(struct bt_map_mce_mns *mce_mns, uint8_t rsp_code, 
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mce_mns->_state) != BT_MAP_STATE_DISCONNECTING) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mce_mns->_state));
+	if (atomic_read(&mce_mns->_state) != BT_MAP_STATE_DISCONNECTING) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mce_mns->_state));
 		return -EINVAL;
 	}
 
@@ -1522,8 +1522,8 @@ int bt_map_mce_mns_abort(struct bt_map_mce_mns *mce_mns, uint8_t rsp_code, struc
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mce_mns->_state) != BT_MAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mce_mns->_state));
+	if (atomic_read(&mce_mns->_state) != BT_MAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mce_mns->_state));
 		return -EINVAL;
 	}
 
@@ -1551,8 +1551,8 @@ static int mce_mns_get_or_put_rsp(struct bt_map_mce_mns *mce_mns, bool is_get, c
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mce_mns->_state) != BT_MAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mce_mns->_state));
+	if (atomic_read(&mce_mns->_state) != BT_MAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mce_mns->_state));
 		return -EINVAL;
 	}
 
@@ -1657,7 +1657,7 @@ static int mse_mas_transport_disconnect(struct bt_map_mse_mas *mse_mas, uint8_t 
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mse_mas->_transport_state) != BT_MAP_TRANSPORT_STATE_CONNECTED) {
+	if (atomic_read(&mse_mas->_transport_state) != BT_MAP_TRANSPORT_STATE_CONNECTED) {
 		LOG_DBG("MSE MAS transport disconnect in progress");
 		return -ENOTCONN;
 	}
@@ -2018,8 +2018,8 @@ int bt_map_mse_mas_connect(struct bt_map_mse_mas *mse_mas, uint8_t rsp_code, str
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mse_mas->_state) != BT_MAP_STATE_CONNECTING) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mse_mas->_state));
+	if (atomic_read(&mse_mas->_state) != BT_MAP_STATE_CONNECTING) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mse_mas->_state));
 		return -EINVAL;
 	}
 
@@ -2095,8 +2095,8 @@ int bt_map_mse_mas_disconnect(struct bt_map_mse_mas *mse_mas, uint8_t rsp_code, 
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mse_mas->_state) != BT_MAP_STATE_DISCONNECTING) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mse_mas->_state));
+	if (atomic_read(&mse_mas->_state) != BT_MAP_STATE_DISCONNECTING) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mse_mas->_state));
 		return -EINVAL;
 	}
 
@@ -2124,8 +2124,8 @@ int bt_map_mse_mas_abort(struct bt_map_mse_mas *mse_mas, uint8_t rsp_code, struc
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mse_mas->_state) != BT_MAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mse_mas->_state));
+	if (atomic_read(&mse_mas->_state) != BT_MAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mse_mas->_state));
 		return -EINVAL;
 	}
 
@@ -2152,8 +2152,8 @@ int bt_map_mse_mas_set_folder(struct bt_map_mse_mas *mse_mas, uint8_t rsp_code, 
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mse_mas->_state) != BT_MAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mse_mas->_state));
+	if (atomic_read(&mse_mas->_state) != BT_MAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mse_mas->_state));
 		return -EINVAL;
 	}
 
@@ -2177,8 +2177,8 @@ static int mse_mas_get_or_put_rsp(struct bt_map_mse_mas *mse_mas, bool is_get, c
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mse_mas->_state) != BT_MAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mse_mas->_state));
+	if (atomic_read(&mse_mas->_state) != BT_MAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mse_mas->_state));
 		return -EINVAL;
 	}
 
@@ -2306,7 +2306,7 @@ static int mse_mns_transport_connect(struct bt_conn *conn, struct bt_map_mse_mns
 
 	mse_mns->_cb = cb;
 
-	if (atomic_get(&mse_mns->_transport_state) != BT_MAP_TRANSPORT_STATE_DISCONNECTED) {
+	if (atomic_read(&mse_mns->_transport_state) != BT_MAP_TRANSPORT_STATE_DISCONNECTED) {
 		LOG_DBG("MSE MNS transport connect in progress");
 		return -EINPROGRESS;
 	}
@@ -2361,7 +2361,7 @@ static int mse_mns_transport_disconnect(struct bt_map_mse_mns *mse_mns, uint8_t 
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mse_mns->_transport_state) != BT_MAP_TRANSPORT_STATE_CONNECTED) {
+	if (atomic_read(&mse_mns->_transport_state) != BT_MAP_TRANSPORT_STATE_CONNECTED) {
 		LOG_DBG("MSE MNS transport disconnect in progress");
 		return -ENOTCONN;
 	}
@@ -2510,8 +2510,8 @@ int bt_map_mse_mns_connect(struct bt_map_mse_mns *mse_mns, struct net_buf *buf)
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mse_mns->_state) != BT_MAP_STATE_DISCONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mse_mns->_state));
+	if (atomic_read(&mse_mns->_state) != BT_MAP_STATE_DISCONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mse_mns->_state));
 		return -EINVAL;
 	}
 
@@ -2568,8 +2568,8 @@ int bt_map_mse_mns_disconnect(struct bt_map_mse_mns *mse_mns, struct net_buf *bu
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mse_mns->_state) != BT_MAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mse_mns->_state));
+	if (atomic_read(&mse_mns->_state) != BT_MAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mse_mns->_state));
 		return -EINVAL;
 	}
 
@@ -2621,8 +2621,8 @@ int bt_map_mse_mns_abort(struct bt_map_mse_mns *mse_mns, struct net_buf *buf)
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mse_mns->_state) != BT_MAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mse_mns->_state));
+	if (atomic_read(&mse_mns->_state) != BT_MAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mse_mns->_state));
 		return -EINVAL;
 	}
 
@@ -2746,8 +2746,8 @@ static int mse_mns_get_or_put(struct bt_map_mse_mns *mse_mns, bool is_get, const
 		return -EINVAL;
 	}
 
-	if (atomic_get(&mse_mns->_state) != BT_MAP_STATE_CONNECTED) {
-		LOG_ERR("Invalid state %u", (uint8_t)atomic_get(&mse_mns->_state));
+	if (atomic_read(&mse_mns->_state) != BT_MAP_STATE_CONNECTED) {
+		LOG_ERR("Invalid state %u", (uint8_t)atomic_read(&mse_mns->_state));
 		return -EINVAL;
 	}
 

@@ -62,7 +62,7 @@ enum {
 
 struct bt_mesh_ext_adv {
 	const enum bt_mesh_adv_tag_bit tags;
-	ATOMIC_DEFINE(flags, ADV_FLAGS_NUM);
+	atomic_define(flags, ADV_FLAGS_NUM);
 	struct bt_le_ext_adv *instance;
 	struct bt_mesh_adv *adv;
 	uint32_t timestamp;

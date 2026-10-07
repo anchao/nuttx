@@ -26,7 +26,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/__assert.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/time_units.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
@@ -311,7 +311,7 @@ struct obj_t {
 	};
 	struct net_buf_simple *content;
 
-	ATOMIC_DEFINE(flags, MPL_OBJ_FLAG_NUM_FLAGS);
+	atomic_define(flags, MPL_OBJ_FLAG_NUM_FLAGS);
 };
 
 static struct obj_t obj = {

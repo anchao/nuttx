@@ -10,7 +10,7 @@
 #include <zephyr/kernel.h>
 #include <string.h>
 #include <errno.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/crc.h>
@@ -593,8 +593,8 @@ static void rfcomm_dlc_init(struct bt_rfcomm_dlc *dlc,
 		dlc->rx_credit_limit = MIN(dlc->rx_credit_limit, RFCOMM_MAX_CREDITS);
 	}
 	dlc->rx_credit = dlc->rx_credit_limit;
-	atomic_clear(&dlc->rx_credit_inprogress);
-	atomic_clear(&dlc->flags);
+	atomic_set(&dlc->rx_credit_inprogress, 0);
+	atomic_set(&dlc->flags, 0);
 	dlc->state = BT_RFCOMM_STATE_INIT;
 	dlc->role = role;
 	k_work_init_delayable(&dlc->rtx_work, rfcomm_dlc_rtx_timeout);
@@ -1256,7 +1256,7 @@ static int rfcomm_dlc_start(struct bt_rfcomm_dlc *dlc)
 static inline uint8_t rfcomm_dlc_get_available_credits(struct bt_rfcomm_dlc *dlc)
 {
 	uint8_t max_credits = RFCOMM_DLC_CREDITS_MAX(dlc);
-	atomic_val_t inprogress_credits = atomic_get(&dlc->rx_credit_inprogress);
+	int32_t inprogress_credits = atomic_read(&dlc->rx_credit_inprogress);
 
 	__ASSERT(inprogress_credits >= 0, "Negative inprogress credits");
 	__ASSERT(inprogress_credits <= max_credits, "Inprogress credits exceeds max");
@@ -2224,10 +2224,10 @@ static void rfcomm_handle_msg(struct bt_rfcomm_session *session, struct net_buf 
 static int rfcomm_handle_recv_inprogress(struct bt_rfcomm_dlc *dlc)
 {
 	int err = 0;
-	atomic_val_t old_rx_credit_inprogress;
+	int32_t old_rx_credit_inprogress;
 	uint8_t v24_signals = BT_RFCOMM_DEFAULT_V24_SIG;
 
-	old_rx_credit_inprogress = atomic_inc(&dlc->rx_credit_inprogress);
+	old_rx_credit_inprogress = atomic_add(&dlc->rx_credit_inprogress, 1);
 
 	if (dlc->session->cfc == BT_RFCOMM_CFC_SUPPORTED) {
 		return 0;
@@ -2573,7 +2573,7 @@ static struct bt_rfcomm_session *rfcomm_session_new(bt_rfcomm_role_t role)
 		k_work_init_delayable(&session->retry_work, rfcomm_session_retry_handler);
 		k_work_init_delayable(&session->retry_timeout_work, rfcomm_session_retry_timeout);
 		k_sem_init(&session->fc, 0, 1);
-		atomic_clear(&session->flags);
+		atomic_set(&session->flags, 0);
 		return session;
 	}
 
@@ -2731,7 +2731,7 @@ void bt_rfcomm_init(void)
 int bt_rfcomm_dlc_recv_complete(struct bt_rfcomm_dlc *dlc, struct net_buf *buf)
 {
 	struct bt_rfcomm_session *session;
-	atomic_val_t old_rx_credit_inprogress;
+	int32_t old_rx_credit_inprogress;
 
 	if (dlc == NULL || buf == NULL) {
 		return -EINVAL;
@@ -2756,9 +2756,9 @@ int bt_rfcomm_dlc_recv_complete(struct bt_rfcomm_dlc *dlc, struct net_buf *buf)
 		return -EINVAL;
 	}
 
-	old_rx_credit_inprogress = atomic_dec(&dlc->rx_credit_inprogress);
+	old_rx_credit_inprogress = atomic_sub(&dlc->rx_credit_inprogress, 1);
 	if (old_rx_credit_inprogress <= 0) {
-		atomic_inc(&dlc->rx_credit_inprogress);
+		atomic_add(&dlc->rx_credit_inprogress, 1);
 		LOG_ERR("rx_credit_inprogress underflow for dlc %p", dlc);
 		return -EINVAL;
 	}

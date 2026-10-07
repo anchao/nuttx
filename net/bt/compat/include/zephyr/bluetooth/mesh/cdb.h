@@ -16,7 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/bluetooth/mesh.h>
 
 #ifdef __cplusplus
@@ -52,7 +52,7 @@ struct bt_mesh_cdb_node {
 	/** Device key */
 	struct bt_mesh_key dev_key;
 	/** Node flags */
-	ATOMIC_DEFINE(flags, BT_MESH_CDB_NODE_FLAG_COUNT);
+	atomic_define(flags, BT_MESH_CDB_NODE_FLAG_COUNT);
 };
 /* doc string cdb node end */
 
@@ -99,7 +99,7 @@ struct bt_mesh_cdb {
 	/** Lowest available unicast address for provisioning */
 	uint16_t lowest_avail_addr;
 	/** Flags for CDB state (private) */
-	ATOMIC_DEFINE(flags, BT_MESH_CDB_FLAG_COUNT);
+	atomic_define(flags, BT_MESH_CDB_FLAG_COUNT);
 	/** Nodes in the mesh network */
 	struct bt_mesh_cdb_node nodes[NODE_COUNT];
 	/** Subnets in the mesh network */

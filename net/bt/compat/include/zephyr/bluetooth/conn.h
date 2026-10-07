@@ -29,7 +29,7 @@
 #include <zephyr/bluetooth/gap.h>
 #include <zephyr/bluetooth/hci_types.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/atomic.h>
+#include <nuttx/atomic.h>
 #include <zephyr/sys/iterable_sections.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util_macro.h>
@@ -1035,7 +1035,7 @@ void bt_conn_unref(struct bt_conn *conn);
  */
 static inline struct bt_conn *__must_check bt_conn_take(struct bt_conn **orig)
 {
-	return (struct bt_conn *)atomic_ptr_clear((atomic_ptr_t *)orig);
+	return (struct bt_conn *)atomic_ptr_xchg((void **)orig, NULL);
 }
 
 /** @brief Drop a connection reference and clear the pointer.
