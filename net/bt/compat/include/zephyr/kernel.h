@@ -10,6 +10,7 @@
 #include <nuttx/spinlock.h>
 #include <nuttx/clock.h>
 #include <nuttx/list.h>
+#include <nuttx/mutex.h>
 #include <pthread.h>
 
 #include "sys_clock.h"
@@ -41,20 +42,6 @@ void k_sem_reset(struct k_sem *sem);
 
 #define K_SEM_DEFINE(name, initial_count, count_limit) \
     struct k_sem name = Z_SEM_INITIALIZER(name, initial_count, count_limit)
-
-/* ===== Mutex ===== */
-struct k_mutex {
-    pthread_mutex_t mutex;
-    unsigned int lock_count;
-};
-
-#define Z_MUTEX_INITIALIZER(obj) { .mutex = PTHREAD_MUTEX_INITIALIZER, .lock_count = 0 }
-
-int k_mutex_init(struct k_mutex *mutex);
-int k_mutex_lock(struct k_mutex *mutex, k_timeout_t timeout);
-int k_mutex_unlock(struct k_mutex *mutex);
-
-#define K_MUTEX_DEFINE(name) struct k_mutex name = Z_MUTEX_INITIALIZER(name)
 
 /* ===== FIFO / Queue ===== */
 struct k_fifo {
@@ -351,12 +338,11 @@ struct net_buf *net_buf_get(struct k_fifo *fifo, k_timeout_t timeout);
 /* ===== Miscellaneous ===== */
 struct k_condvar {
     pthread_cond_t cond;
-    pthread_mutex_t *mutex;
 };
 
 #define Z_CONDVAR_INITIALIZER(obj) { .cond = PTHREAD_COND_INITIALIZER }
 int k_condvar_init(struct k_condvar *condvar);
-int k_condvar_wait(struct k_condvar *condvar, struct k_mutex *mutex, k_timeout_t timeout);
+int k_condvar_wait(struct k_condvar *condvar, rmutex_t *mutex, k_timeout_t timeout);
 int k_condvar_broadcast(struct k_condvar *condvar);
 
 /* k_panic / k_oops - stubs */

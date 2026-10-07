@@ -299,11 +299,11 @@ static const uint8_t *sc_public_key;
 
 static void bt_smp_pkey_ready(const uint8_t *pkey);
 static struct {
-	struct k_mutex lock;
+	rmutex_t lock;
 	struct k_condvar condvar;
 	struct bt_pub_key_cb cb;
 } pub_key_gen = {
-	.lock = Z_MUTEX_INITIALIZER(pub_key_gen.lock),
+	.lock = NXRMUTEX_INITIALIZER,
 	.condvar = Z_CONDVAR_INITIALIZER(pub_key_gen.condvar),
 	.cb = {
 		.func = bt_smp_pkey_ready,
@@ -4926,12 +4926,12 @@ static void pub_key_ready_notify(void)
 
 	ARG_UNUSED(err);
 
-	err = k_mutex_lock(&pub_key_gen.lock, K_FOREVER);
+	err = nxrmutex_lock(&pub_key_gen.lock);
 	__ASSERT_NO_MSG(err == 0);
 
 	(void)k_condvar_broadcast(&pub_key_gen.condvar);
 
-	err = k_mutex_unlock(&pub_key_gen.lock);
+	err = nxrmutex_unlock(&pub_key_gen.lock);
 	__ASSERT_NO_MSG(err == 0);
 }
 
@@ -6051,7 +6051,7 @@ int bt_smp_le_oob_generate_sc_data(struct bt_le_oob_sc_data *le_sc_oob)
 		/* Public key request has not been finished yet, or finished, but generation failed.
 		 * Retrying.
 		 */
-		err = k_mutex_lock(&pub_key_gen.lock, K_FOREVER);
+		err = nxrmutex_lock(&pub_key_gen.lock);
 		__ASSERT_NO_MSG(err == 0);
 
 		err = bt_pub_key_gen(&pub_key_gen.cb);
@@ -6060,7 +6060,7 @@ int bt_smp_le_oob_generate_sc_data(struct bt_le_oob_sc_data *le_sc_oob)
 
 			__maybe_unused int mutex_err;
 
-			mutex_err = k_mutex_unlock(&pub_key_gen.lock);
+			mutex_err = nxrmutex_unlock(&pub_key_gen.lock);
 			__ASSERT_NO_MSG(mutex_err == 0);
 
 			return err;
@@ -6077,13 +6077,13 @@ int bt_smp_le_oob_generate_sc_data(struct bt_le_oob_sc_data *le_sc_oob)
 
 			__maybe_unused int mutex_err;
 
-			mutex_err = k_mutex_unlock(&pub_key_gen.lock);
+			mutex_err = nxrmutex_unlock(&pub_key_gen.lock);
 			__ASSERT_NO_MSG(mutex_err == 0);
 
 			return err;
 		}
 
-		err = k_mutex_unlock(&pub_key_gen.lock);
+		err = nxrmutex_unlock(&pub_key_gen.lock);
 		__ASSERT_NO_MSG(err == 0);
 
 		/* Public key has been re-requested but generation failed. */

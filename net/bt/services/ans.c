@@ -95,8 +95,8 @@ struct unread_alert_status {
 } __packed;
 
 /* Mutex for modifying database */
-K_MUTEX_DEFINE(new_alert_mutex);
-K_MUTEX_DEFINE(unread_mutex);
+rmutex_t new_alert_mutex = NXRMUTEX_INITIALIZER;
+rmutex_t unread_mutex = NXRMUTEX_INITIALIZER;
 
 /* Saved messages database */
 static struct new_alert new_alerts[BT_ANS_CAT_NUM];
@@ -268,7 +268,7 @@ static int notify_new_alert_category(struct bt_conn *conn, uint8_t cat)
 	int rc;
 	int ret;
 
-	ret = k_mutex_lock(&new_alert_mutex, K_NO_WAIT);
+	ret = nxrmutex_trylock(&new_alert_mutex);
 	if (ret != 0) {
 		LOG_ERR("Unable to lock mutex (err: %d)", ret);
 		return -EAGAIN;
@@ -277,7 +277,7 @@ static int notify_new_alert_category(struct bt_conn *conn, uint8_t cat)
 	rc = bt_gatt_notify_uuid(conn, BT_UUID_GATT_NALRT, ans_svc.attrs, &new_alerts[cat],
 				 sizeof(struct new_alert));
 
-	ret = k_mutex_unlock(&new_alert_mutex);
+	ret = nxrmutex_unlock(&new_alert_mutex);
 	__ASSERT(ret == 0, "Unable to unlock mutex (err: %d)", ret);
 
 	/* If the client is not connected, that is fine */
@@ -329,7 +329,7 @@ static int notify_unread_alert_category(struct bt_conn *conn, uint8_t cat)
 	int rc;
 	int ret;
 
-	ret = k_mutex_lock(&unread_mutex, K_NO_WAIT);
+	ret = nxrmutex_trylock(&unread_mutex);
 	if (ret != 0) {
 		LOG_ERR("Unable to lock mutex (err: %d)", ret);
 		return -EAGAIN;
@@ -338,7 +338,7 @@ static int notify_unread_alert_category(struct bt_conn *conn, uint8_t cat)
 	rc = bt_gatt_notify_uuid(conn, BT_UUID_GATT_UALRTS, ans_svc.attrs, &unread_alerts[cat],
 				 sizeof(struct unread_alert_status));
 
-	ret = k_mutex_unlock(&unread_mutex);
+	ret = nxrmutex_unlock(&unread_mutex);
 	__ASSERT(ret == 0, "Unable to unlock mutex (err: %d)", ret);
 
 	/* If the client is not connected, that is fine */
@@ -398,11 +398,11 @@ int bt_ans_notify_new_alert(struct bt_conn *conn, enum bt_ans_cat category, uint
 	}
 
 	/* Update the saved value */
-	ret = k_mutex_lock(&new_alert_mutex, K_FOREVER);
+	ret = nxrmutex_lock(&new_alert_mutex);
 	__ASSERT(ret == 0, "Unable to lock mutex (err: %d)", ret);
 	new_alerts[cat_in].num_new_alerts = num_new;
 	utf8_lcpy(new_alerts[cat_in].text_string, text, sizeof(new_alerts[cat_in].text_string));
-	ret = k_mutex_unlock(&new_alert_mutex);
+	ret = nxrmutex_unlock(&new_alert_mutex);
 	__ASSERT(ret == 0, "Unable to unlock mutex (err: %d)", ret);
 
 	return transmit_new_alert(conn, category);
@@ -421,10 +421,10 @@ int bt_ans_set_unread_count(struct bt_conn *conn, enum bt_ans_cat category, uint
 	}
 
 	/* Update the saved value */
-	ret = k_mutex_lock(&unread_mutex, K_FOREVER);
+	ret = nxrmutex_lock(&unread_mutex);
 	__ASSERT(ret == 0, "Unable to lock mutex (err: %d)", ret);
 	unread_alerts[cat_in].unread_count = unread;
-	ret = k_mutex_unlock(&unread_mutex);
+	ret = nxrmutex_unlock(&unread_mutex);
 	__ASSERT(ret == 0, "Unable to unlock mutex (err: %d)", ret);
 
 	return transmit_unread_alert(conn, category);

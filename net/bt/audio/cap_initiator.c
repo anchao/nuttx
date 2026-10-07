@@ -1077,7 +1077,7 @@ int bt_cap_unicast_group_create(const struct bt_cap_unicast_group_param *param,
 	struct cap_to_bap_unicast_params bap_param = {0};
 	int err;
 
-	static K_MUTEX_DEFINE(list_mutex);
+	static rmutex_t list_mutex = NXRMUTEX_INITIALIZER;
 
 	if (out_unicast_group == NULL) {
 		LOG_DBG("out_unicast_group is NULL");
@@ -1090,7 +1090,7 @@ int bt_cap_unicast_group_create(const struct bt_cap_unicast_group_param *param,
 
 	*out_unicast_group = NULL;
 
-	(void)k_mutex_lock(&list_mutex, K_FOREVER);
+	(void)nxrmutex_lock(&list_mutex);
 	for (size_t i = 0U; i < ARRAY_SIZE(unicast_groups); i++) {
 		if (unicast_groups[i].bap_unicast_group == NULL) {
 			unicast_group = &unicast_groups[i];
@@ -1100,7 +1100,7 @@ int bt_cap_unicast_group_create(const struct bt_cap_unicast_group_param *param,
 
 	if (unicast_group == NULL) {
 		LOG_DBG("Could not allocate more unicast groups");
-		(void)k_mutex_unlock(&list_mutex);
+		(void)nxrmutex_unlock(&list_mutex);
 		return -ENOMEM;
 	}
 
@@ -1114,7 +1114,7 @@ int bt_cap_unicast_group_create(const struct bt_cap_unicast_group_param *param,
 	} else {
 		*out_unicast_group = unicast_group;
 	}
-	(void)k_mutex_unlock(&list_mutex);
+	(void)nxrmutex_unlock(&list_mutex);
 
 	return err;
 }
@@ -2539,7 +2539,7 @@ int bt_cap_initiator_unicast_audio_cancel(void)
 
 	bt_cap_common_abort_proc(NULL, -ECANCELED);
 
-	if (bt_cap_common_get_active_proc_mutex_lock_count(active_proc) == 1U) {
+	if (bt_cap_common_get_active_proc_mutex_count(active_proc) == 1U) {
 		/* Since this may be called in a CAP callback, check if we hold the only mutex lock,
 		 * and if we do, then we complete it, else
 		 * cap_initiator_unicast_subproc_complete_and_continue is responsible for handling

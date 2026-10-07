@@ -36,7 +36,7 @@ struct bt_ccp_call_control_server_bearer {
 	char uri_schemes[CONFIG_BT_CCP_CALL_CONTROL_SERVER_URI_SCHEMES_MAX_LENGTH + 1];
 	uint8_t tbs_index;
 	bool registered;
-	struct k_mutex mutex;
+	rmutex_t mutex;
 };
 
 static struct bt_ccp_call_control_server_bearer
@@ -54,7 +54,7 @@ static struct bt_ccp_call_control_server_bearer *get_free_bearer(void)
 	for (size_t i = 0U; i < ARRAY_SIZE(bearers); i++) {
 		int err;
 
-		err = k_mutex_lock(&bearers[i].mutex, K_NO_WAIT);
+		err = nxrmutex_trylock(&bearers[i].mutex);
 		if (err != 0) {
 			continue;
 		}
@@ -63,7 +63,7 @@ static struct bt_ccp_call_control_server_bearer *get_free_bearer(void)
 			return &bearers[i];
 		}
 
-		err = k_mutex_unlock(&bearers[i].mutex);
+		err = nxrmutex_unlock(&bearers[i].mutex);
 		__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
 	}
 
@@ -207,7 +207,7 @@ int bt_ccp_call_control_server_register_bearer(const struct bt_tbs_register_para
 		ret = 0;
 	}
 
-	err = k_mutex_unlock(&free_bearer->mutex);
+	err = nxrmutex_unlock(&free_bearer->mutex);
 	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
 
 	return ret;
@@ -224,7 +224,7 @@ int bt_ccp_call_control_server_unregister_bearer(struct bt_ccp_call_control_serv
 		return -EINVAL;
 	}
 
-	err = k_mutex_lock(&bearer->mutex, MUTEX_TIMEOUT);
+	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT.ticks);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	if (!bearer->registered) {
@@ -243,7 +243,7 @@ int bt_ccp_call_control_server_unregister_bearer(struct bt_ccp_call_control_serv
 		}
 	}
 
-	err = k_mutex_unlock(&bearer->mutex);
+	err = nxrmutex_unlock(&bearer->mutex);
 	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
 
 	return ret;
@@ -275,7 +275,7 @@ int bt_ccp_call_control_server_set_bearer_provider_name(
 		return -EINVAL;
 	}
 
-	err = k_mutex_lock(&bearer->mutex, MUTEX_TIMEOUT);
+	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT.ticks);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	if (!bearer->registered) {
@@ -299,7 +299,7 @@ int bt_ccp_call_control_server_set_bearer_provider_name(
 		}
 	}
 
-	err = k_mutex_unlock(&bearer->mutex);
+	err = nxrmutex_unlock(&bearer->mutex);
 	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
 
 	return ret;
@@ -324,7 +324,7 @@ int bt_ccp_call_control_server_get_bearer_provider_name(
 		return -EINVAL;
 	}
 
-	err = k_mutex_lock(&bearer->mutex, MUTEX_TIMEOUT);
+	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT.ticks);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	if (!bearer->registered) {
@@ -345,7 +345,7 @@ int bt_ccp_call_control_server_get_bearer_provider_name(
 		}
 	}
 
-	err = k_mutex_unlock(&bearer->mutex);
+	err = nxrmutex_unlock(&bearer->mutex);
 	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
 
 	return ret;
@@ -370,7 +370,7 @@ int bt_ccp_call_control_server_get_bearer_uci(struct bt_ccp_call_control_server_
 		return -EINVAL;
 	}
 
-	err = k_mutex_lock(&bearer->mutex, MUTEX_TIMEOUT);
+	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT.ticks);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	if (!bearer->registered) {
@@ -386,7 +386,7 @@ int bt_ccp_call_control_server_get_bearer_uci(struct bt_ccp_call_control_server_
 		ret = 0;
 	}
 
-	err = k_mutex_unlock(&bearer->mutex);
+	err = nxrmutex_unlock(&bearer->mutex);
 	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
 
 	return ret;
@@ -477,7 +477,7 @@ int bt_ccp_call_control_server_set_bearer_uri_schemes(
 		return -ENOMEM;
 	}
 
-	err = k_mutex_lock(&bearer->mutex, MUTEX_TIMEOUT);
+	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT.ticks);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	if (!bearer->registered) {
@@ -495,7 +495,7 @@ int bt_ccp_call_control_server_set_bearer_uri_schemes(
 		}
 	}
 
-	err = k_mutex_unlock(&bearer->mutex);
+	err = nxrmutex_unlock(&bearer->mutex);
 	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
 
 	return ret;
@@ -521,7 +521,7 @@ int bt_ccp_call_control_server_get_bearer_uri_schemes(
 		return -EINVAL;
 	}
 
-	err = k_mutex_lock(&bearer->mutex, MUTEX_TIMEOUT);
+	err = nxrmutex_ticklock(&bearer->mutex, MUTEX_TIMEOUT.ticks);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
 	if (!bearer->registered) {
@@ -541,7 +541,7 @@ int bt_ccp_call_control_server_get_bearer_uri_schemes(
 		}
 	}
 
-	err = k_mutex_unlock(&bearer->mutex);
+	err = nxrmutex_unlock(&bearer->mutex);
 	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
 
 	return ret;
@@ -552,7 +552,7 @@ static int ccp_server_init(void)
 	ARRAY_FOR_EACH_PTR(bearers, bearer) {
 		__maybe_unused int err;
 
-		err = k_mutex_init(&bearer->mutex);
+		err = nxrmutex_init(&bearer->mutex);
 		__ASSERT(err == 0, "Failed to init mutex: %d", err);
 	}
 

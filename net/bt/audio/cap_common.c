@@ -38,17 +38,17 @@ static struct bt_cap_common_client bt_cap_common_clients[CONFIG_BT_MAX_CONN];
 static const struct bt_uuid *cas_uuid = BT_UUID_CAS;
 static struct bt_cap_common_proc active_proc;
 
-static K_MUTEX_DEFINE(active_proc_mutex);
+static rmutex_t active_proc_mutex = NXRMUTEX_INITIALIZER;
 #define CAP_ACTIVE_PROC_MUTEX_TIMEOUT K_MSEC(10000U)
 
 struct bt_cap_common_proc *bt_cap_common_get_active_proc(void)
 {
 	__maybe_unused int err;
 
-	err = k_mutex_lock(&active_proc_mutex, CAP_ACTIVE_PROC_MUTEX_TIMEOUT);
+	err = nxrmutex_ticklock(&active_proc_mutex, CAP_ACTIVE_PROC_MUTEX_TIMEOUT.ticks);
 	__ASSERT(err == 0, "Failed to lock mutex: %d", err);
 
-	LOG_DBG("Took active_proc_mutex (count: %u)", active_proc_mutex.lock_count);
+	LOG_DBG("Took active_proc_mutex (count: %u)", active_proc_mutex.count);
 
 	return &active_proc;
 }
@@ -57,19 +57,19 @@ void bt_cap_common_unlock_proc(void)
 {
 	__maybe_unused int err;
 
-	err = k_mutex_unlock(&active_proc_mutex);
+	err = nxrmutex_unlock(&active_proc_mutex);
 	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
 
 	LOG_DBG("Released active_proc_mutex");
 }
 
-uint32_t bt_cap_common_get_active_proc_mutex_lock_count(const struct bt_cap_common_proc *proc)
+uint32_t bt_cap_common_get_active_proc_mutex_count(const struct bt_cap_common_proc *proc)
 {
 	__ASSERT(proc == &active_proc, "Caller did not provide the active_proc");
-	__ASSERT(active_proc_mutex.lock_count > 0U, "Unexpected active_proc_mutex.lock_count: %u",
-		 active_proc_mutex.lock_count);
+	__ASSERT(active_proc_mutex.count > 0U, "Unexpected active_proc_mutex count: %u",
+		 active_proc_mutex.count);
 
-	return active_proc_mutex.lock_count;
+	return active_proc_mutex.count;
 }
 
 void bt_cap_common_clear_proc(struct bt_cap_common_proc *proc)

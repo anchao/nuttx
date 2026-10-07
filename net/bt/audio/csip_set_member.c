@@ -99,7 +99,7 @@ struct bt_csip_set_member_svc_inst {
 	struct bt_gatt_attr attrs[CSIS_MAX_ATTR];
 
 	/* Must be last: exclude from memset during unregister */
-	struct k_mutex mutex;
+	rmutex_t mutex;
 };
 
 static struct bt_csip_set_member_svc_inst svc_insts[CONFIG_BT_CSIP_SET_MEMBER_MAX_INSTANCE_COUNT];
@@ -833,7 +833,7 @@ static void notify_cb(struct bt_conn *conn, void *data)
 		struct csip_client *client;
 		bool client_found = false;
 
-		err = k_mutex_lock(&svc_inst->mutex, K_NO_WAIT);
+		err = nxrmutex_trylock(&svc_inst->mutex);
 		if (err != 0) {
 			LOG_DBG("Mutex lock failed (%d) for svc_inst[%zu], rescheduling", err, i);
 			notify_work_reschedule(K_USEC(BT_AUDIO_NOTIFY_RETRY_DELAY_US));
@@ -880,7 +880,7 @@ static void notify_cb(struct bt_conn *conn, void *data)
 #endif /* CONFIG_BT_CSIP_SET_MEMBER_SIZE_SUPPORT */
 
 unlock_and_return:
-		err = k_mutex_unlock(&svc_inst->mutex);
+		err = nxrmutex_unlock(&svc_inst->mutex);
 		__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
 	}
 }
@@ -1140,7 +1140,7 @@ int bt_csip_set_member_register(const struct bt_csip_set_member_register_param *
 
 	if (!first_register) {
 		for (size_t i = 0U; i < ARRAY_SIZE(svc_insts); i++) {
-			k_mutex_init(&svc_insts[i].mutex);
+			nxrmutex_init(&svc_insts[i].mutex);
 		}
 		err = bt_conn_auth_info_cb_register(&auth_callbacks);
 		__ASSERT(err == 0, "Failed to register auth_info callbacks: %d", err);
@@ -1150,7 +1150,7 @@ int bt_csip_set_member_register(const struct bt_csip_set_member_register_param *
 
 	inst = NULL;
 	ARRAY_FOR_EACH_PTR(svc_insts, si) {
-		err = k_mutex_lock(&si->mutex, K_NO_WAIT);
+		err = nxrmutex_trylock(&si->mutex);
 		if (err != 0) {
 			/* Try the next */
 			continue;
@@ -1160,7 +1160,7 @@ int bt_csip_set_member_register(const struct bt_csip_set_member_register_param *
 			inst = si;
 			break;
 		} else {
-			err = k_mutex_unlock(&si->mutex);
+			err = nxrmutex_unlock(&si->mutex);
 			__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
 		}
 	}
@@ -1177,7 +1177,7 @@ int bt_csip_set_member_register(const struct bt_csip_set_member_register_param *
 		int mutex_err;
 
 		LOG_DBG("CSIS service register failed: %d", err);
-		mutex_err = k_mutex_unlock(&inst->mutex);
+		mutex_err = nxrmutex_unlock(&inst->mutex);
 		__ASSERT(mutex_err == 0, "Failed to unlock mutex: %d", mutex_err);
 		return err;
 	}
@@ -1210,7 +1210,7 @@ int bt_csip_set_member_register(const struct bt_csip_set_member_register_param *
 
 	*svc_inst = inst;
 
-	err = k_mutex_unlock(&inst->mutex);
+	err = nxrmutex_unlock(&inst->mutex);
 	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
 
 	return 0;
@@ -1225,7 +1225,7 @@ int bt_csip_set_member_unregister(struct bt_csip_set_member_svc_inst *svc_inst)
 		return -EINVAL;
 	}
 
-	err = k_mutex_lock(&svc_inst->mutex, K_NO_WAIT);
+	err = nxrmutex_trylock(&svc_inst->mutex);
 	if (err != 0) {
 		LOG_DBG("Failed to lock mutex");
 		return -EBUSY;
@@ -1236,7 +1236,7 @@ int bt_csip_set_member_unregister(struct bt_csip_set_member_svc_inst *svc_inst)
 		int mutex_err;
 
 		LOG_DBG("CSIS service unregister failed: %d", err);
-		mutex_err = k_mutex_unlock(&svc_inst->mutex);
+		mutex_err = nxrmutex_unlock(&svc_inst->mutex);
 		__ASSERT(mutex_err == 0, "Failed to unlock mutex: %d", mutex_err);
 
 		return err;
@@ -1247,7 +1247,7 @@ int bt_csip_set_member_unregister(struct bt_csip_set_member_svc_inst *svc_inst)
 #endif /* CONFIG_BT_CSIP_SET_MEMBER_LOCK_SUPPORT */
 	memset(svc_inst, 0, offsetof(struct bt_csip_set_member_svc_inst, mutex));
 
-	err = k_mutex_unlock(&svc_inst->mutex);
+	err = nxrmutex_unlock(&svc_inst->mutex);
 	__ASSERT(err == 0, "Failed to unlock mutex: %d", err);
 
 	return 0;

@@ -215,7 +215,7 @@ int k_condvar_init(struct k_condvar *condvar)
     return pthread_cond_init(&condvar->cond, NULL);
 }
 
-int k_condvar_wait(struct k_condvar *condvar, struct k_mutex *mutex,
+int k_condvar_wait(struct k_condvar *condvar, rmutex_t *mutex,
                    k_timeout_t timeout)
 {
     (void)mutex;
