@@ -21,7 +21,7 @@
 #include <zephyr/bluetooth/hci_types.h>
 #include <zephyr/bluetooth/hci_vs.h>
 #include <zephyr/kernel.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <zephyr/settings/settings.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>

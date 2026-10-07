@@ -13,7 +13,7 @@
 
 #include <stddef.h>
 
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 
 
 struct bt_buf_view_meta {

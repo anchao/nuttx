@@ -4,13 +4,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdio.h>
 #include <zephyr/kernel.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/byteorder.h>
 
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/mesh.h>
 
@@ -2102,9 +2103,9 @@ static void encode_mod_path(const struct bt_mesh_model *mod, bool vnd,
 	uint16_t mod_key = (((uint16_t)mod->rt->elem_idx << 8) | mod->rt->mod_idx);
 
 	if (vnd) {
-		snprintk(path, path_len, "bt/mesh/v/%x/%s", mod_key, key);
+		snprintf(path, path_len, "bt/mesh/v/%x/%s", mod_key, key);
 	} else {
-		snprintk(path, path_len, "bt/mesh/s/%x/%s", mod_key, key);
+		snprintf(path, path_len, "bt/mesh/s/%x/%s", mod_key, key);
 	}
 }
 

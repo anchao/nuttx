@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <zephyr/sys/byteorder.h>
 #include <string.h>
 

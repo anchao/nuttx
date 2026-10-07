@@ -29,7 +29,7 @@
 #include <zephyr/irq.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/iterable_sections.h>
@@ -1615,25 +1615,23 @@ struct net_buf *bt_conn_create_pdu_timeout(struct net_buf_pool *pool,
 
 	if (IS_ENABLED(CONFIG_BT_CONN_LOG_LEVEL_DBG)) {
 #if defined(CONFIG_NET_BUF_LOG)
-		buf = net_buf_alloc_fixed_debug(pool, 0, func, line);
+		buf = net_buf_alloc(pool, 0);
 #else
 		buf = net_buf_alloc(pool, 0);
 #endif
 		if (!buf) {
 			LOG_WRN("Unable to allocate buffer with 0");
 #if defined(CONFIG_NET_BUF_LOG)
-			buf = net_buf_alloc_fixed_debug(pool, timeout, func,
-							line);
+			buf = net_buf_alloc(pool, timeout);
 #else
-			buf = net_buf_alloc(pool, bt_net_buf_timeout(timeout));
+			buf = net_buf_alloc(pool, timeout);
 #endif
 		}
 	} else {
 #if defined(CONFIG_NET_BUF_LOG)
-		buf = net_buf_alloc_fixed_debug(pool, timeout, func,
-							line);
+		buf = net_buf_alloc(pool, timeout);
 #else
-		buf = net_buf_alloc(pool, bt_net_buf_timeout(timeout));
+		buf = net_buf_alloc(pool, timeout);
 #endif
 	}
 

@@ -12,7 +12,7 @@
 
 #include <zephyr/bluetooth/hci_pkt.h>
 #include <zephyr/bluetooth/hci_types.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <assert.h>
 #include <zephyr/sys/byteorder.h>
 

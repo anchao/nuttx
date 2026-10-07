@@ -14,7 +14,7 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/l2cap.h>
 #include <zephyr/kernel.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <zephyr/sys/iterable_sections.h>
 #include <zephyr/sys/clock.h>
 

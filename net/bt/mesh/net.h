@@ -11,7 +11,7 @@
 #include <zephyr/bluetooth/mesh/keys.h>
 #include <zephyr/bluetooth/mesh/sar_cfg.h>
 #include <zephyr/kernel.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>
 #include <nuttx/list.h>
 

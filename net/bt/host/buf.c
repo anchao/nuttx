@@ -16,7 +16,7 @@
 #include <zephyr/bluetooth/l2cap.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/util_macro.h>
@@ -128,12 +128,12 @@ struct net_buf *bt_buf_get_rx(enum bt_buf_type type, clock_t timeout)
 
 #if defined(CONFIG_BT_HCI_ACL_FLOW_CONTROL)
 	if (type == BT_BUF_EVT) {
-		buf = net_buf_alloc(&evt_pool, bt_net_buf_timeout(timeout));
+		buf = net_buf_alloc(&evt_pool, timeout);
 	} else {
-		buf = net_buf_alloc(&acl_in_pool, bt_net_buf_timeout(timeout));
+		buf = net_buf_alloc(&acl_in_pool, timeout);
 	}
 #else
-	buf = net_buf_alloc(&hci_rx_pool, bt_net_buf_timeout(timeout));
+	buf = net_buf_alloc(&hci_rx_pool, timeout);
 #endif
 	if (buf) {
 		net_buf_add_u8(buf, bt_buf_type_to_h4(type));
@@ -162,12 +162,12 @@ struct net_buf *bt_buf_get_evt(uint8_t evt, bool discardable,
 #endif /* CONFIG_BT_CONN || CONFIG_BT_ISO */
 	case BT_HCI_EVT_CMD_STATUS:
 	case BT_HCI_EVT_CMD_COMPLETE:
-		buf = net_buf_alloc(&sync_evt_pool, bt_net_buf_timeout(timeout));
+		buf = net_buf_alloc(&sync_evt_pool, timeout);
 		break;
 	default:
 		if (discardable) {
 			/* Discardable, decided in Host-side HCI Transport driver. */
-			buf = net_buf_alloc(&discardable_pool, bt_net_buf_timeout(timeout));
+			buf = net_buf_alloc(&discardable_pool, timeout);
 		} else {
 			return bt_buf_get_rx(BT_BUF_EVT, timeout);
 		}

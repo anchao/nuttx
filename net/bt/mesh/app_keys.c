@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <zephyr/bluetooth/mesh.h>
@@ -71,7 +72,7 @@ static void clear_app_key(uint16_t app_idx)
 	char path[20];
 	int err;
 
-	snprintk(path, sizeof(path), "bt/mesh/AppKey/%x", app_idx);
+	snprintf(path, sizeof(path), "bt/mesh/AppKey/%x", app_idx);
 	err = settings_delete(path);
 	if (err) {
 		LOG_ERR("Failed to clear AppKeyIndex 0x%03x", app_idx);
@@ -87,7 +88,7 @@ static void store_app_key(uint16_t app_idx)
 	char path[20];
 	int err;
 
-	snprintk(path, sizeof(path), "bt/mesh/AppKey/%x", app_idx);
+	snprintf(path, sizeof(path), "bt/mesh/AppKey/%x", app_idx);
 
 	app = app_get(app_idx);
 	if (!app) {

@@ -31,7 +31,7 @@
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>

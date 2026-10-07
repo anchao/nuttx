@@ -26,7 +26,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/kernel/thread.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
@@ -355,7 +355,7 @@ NET_BUF_POOL_DEFINE(att_pool, CONFIG_BT_ATT_TX_COUNT,
 
 static struct bt_att_tx_meta_data *att_get_tx_meta_data(const struct net_buf *buf)
 {
-	DEBUGASSERT(net_buf_pool_get(buf->pool) == &att_pool);
+	DEBUGASSERT(buf->pool == &att_pool);
 
 	/* Metadata lifetime is implicitly tied to the buffer lifetime.
 	 * Treat it as part of the buffer itself.
@@ -1278,7 +1278,7 @@ static uint8_t find_type_cb(const struct bt_gatt_attr *attr, uint16_t handle,
 	len = MIN(bt_att_mtu(chan) - net_buf_frags_len(data->buf),
 		  net_buf_tailroom(frag));
 	if (!len) {
-		frag = net_buf_alloc(net_buf_pool_get(data->buf->pool),
+		frag = net_buf_alloc(data->buf->pool,
 				     0);
 		/* If not buffer can be allocated immediately stop */
 		if (!frag) {
@@ -1472,7 +1472,7 @@ static ssize_t att_chan_read(struct bt_att_chan *chan,
 		len = MIN(bt_att_mtu(chan) - net_buf_frags_len(buf),
 			  net_buf_tailroom(frag));
 		if (!len) {
-			frag = net_buf_alloc(net_buf_pool_get(buf->pool),
+			frag = net_buf_alloc(buf->pool,
 					     0);
 			/* If not buffer can be allocated immediately return */
 			if (!frag) {

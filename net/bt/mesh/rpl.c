@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdio.h>
 #include <zephyr/kernel.h>
 #include <string.h>
 #include <errno.h>
@@ -14,7 +15,7 @@
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/byteorder.h>
 
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/mesh.h>
@@ -60,7 +61,7 @@ static void clear_rpl(struct bt_mesh_rpl *rpl)
 
 	atomic_clear_bit(store, rpl_idx(rpl));
 
-	snprintk(path, sizeof(path), "bt/mesh/RPL/%x", rpl->src);
+	snprintf(path, sizeof(path), "bt/mesh/RPL/%x", rpl->src);
 	err = settings_delete(path);
 	if (err) {
 		LOG_ERR("Failed to clear RPL");
@@ -336,7 +337,7 @@ static void store_rpl(struct bt_mesh_rpl *entry)
 	rpl.seq = entry->seq;
 	rpl.old_iv = entry->old_iv;
 
-	snprintk(path, sizeof(path), "bt/mesh/RPL/%x", entry->src);
+	snprintf(path, sizeof(path), "bt/mesh/RPL/%x", entry->src);
 
 	err = settings_save_one(path, &rpl, sizeof(rpl));
 	if (err) {

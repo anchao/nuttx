@@ -7,6 +7,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdio.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -15,7 +16,6 @@
 #include <zephyr/bluetooth/uuid.h>
 #include <assert.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/printk.h>
 #include <zephyr/sys/uuid.h>
 
 #define BT_UUID_STR_LEN_16  4U
@@ -141,11 +141,11 @@ void bt_uuid_to_str(const struct bt_uuid *uuid, char *str, size_t len)
 
 	switch (uuid->type) {
 	case BT_UUID_TYPE_16:
-		err = snprintk(str, len, "%04x", BT_UUID_16(uuid)->val);
+		err = snprintf(str, len, "%04x", BT_UUID_16(uuid)->val);
 		DEBUGASSERT(err == BT_UUID_STR_LEN_16);
 		break;
 	case BT_UUID_TYPE_32:
-		err = snprintk(str, len, "%08x", BT_UUID_32(uuid)->val);
+		err = snprintf(str, len, "%08x", BT_UUID_32(uuid)->val);
 		DEBUGASSERT(err == BT_UUID_STR_LEN_32);
 		break;
 	case BT_UUID_TYPE_128: {
@@ -158,7 +158,7 @@ void bt_uuid_to_str(const struct bt_uuid *uuid, char *str, size_t len)
 			return;
 		}
 
-		err = snprintk(str, len, "%s", full);
+		err = snprintf(str, len, "%s", full);
 		DEBUGASSERT(err == BT_UUID_STR_LEN_128);
 		break;
 	}

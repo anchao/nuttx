@@ -8,12 +8,11 @@
 #include <stddef.h>
 #include <string.h>
 #include <errno.h>
-#include <zephyr/sys/printk.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/kernel.h>
 #include <zephyr/init.h>
 
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 
 #include "ots_l2cap_internal.h"
 

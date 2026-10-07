@@ -11,7 +11,7 @@
 #include <zephyr/bluetooth/hci_types.h>
 #include <zephyr/drivers/bluetooth.h>
 #include <zephyr/kernel.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <zephyr/sys/byteorder.h>
 
 #include "common/assert.h"

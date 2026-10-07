@@ -28,7 +28,7 @@
 #include <zephyr/bluetooth/direction.h>
 #include <zephyr/bluetooth/gap.h>
 #include <zephyr/bluetooth/hci_types.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/iterable_sections.h>
 #include <nuttx/list.h>

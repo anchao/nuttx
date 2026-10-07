@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <zephyr/kernel.h>
-#include <zephyr/sys/printk.h>
 #include <zephyr/sys/util.h>
 
 #include <zephyr/shell/shell.h>

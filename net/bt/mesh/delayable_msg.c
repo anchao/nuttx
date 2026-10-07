@@ -12,7 +12,7 @@
 
 #include <nuttx/list.h>
 
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <zephyr/bluetooth/mesh.h>
 
 #include "msg.h"

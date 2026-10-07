@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdio.h>
 #include <zephyr/kernel.h>
 #include <string.h>
 #include <stdlib.h>
@@ -470,7 +471,7 @@ static void store_cdb_node(const struct bt_mesh_cdb_node *node)
 	memcpy(val.uuid, node->uuid, 16);
 	memcpy(&val.dev_key, &node->dev_key, sizeof(struct bt_mesh_key));
 
-	snprintk(path, sizeof(path), "bt/mesh/cdb/Node/%x", node->addr);
+	snprintf(path, sizeof(path), "bt/mesh/cdb/Node/%x", node->addr);
 
 	err = settings_save_one(path, &val, sizeof(val));
 	if (err) {
@@ -487,7 +488,7 @@ static void clear_cdb_node(uint16_t addr)
 
 	LOG_DBG("Node 0x%04x", addr);
 
-	snprintk(path, sizeof(path), "bt/mesh/cdb/Node/%x", addr);
+	snprintf(path, sizeof(path), "bt/mesh/cdb/Node/%x", addr);
 	err = settings_delete(path);
 	if (err) {
 		LOG_ERR("Failed to clear Node 0x%04x", addr);
@@ -510,7 +511,7 @@ static void store_cdb_subnet(const struct bt_mesh_cdb_subnet *sub)
 	key.unused = 0U;
 	key.kr_phase = sub->kr_phase;
 
-	snprintk(path, sizeof(path), "bt/mesh/cdb/Subnet/%x", sub->net_idx);
+	snprintf(path, sizeof(path), "bt/mesh/cdb/Subnet/%x", sub->net_idx);
 
 	err = settings_save_one(path, &key, sizeof(key));
 	if (err) {
@@ -527,7 +528,7 @@ static void clear_cdb_subnet(uint16_t net_idx)
 
 	LOG_DBG("NetKeyIndex 0x%03x", net_idx);
 
-	snprintk(path, sizeof(path), "bt/mesh/cdb/Subnet/%x", net_idx);
+	snprintf(path, sizeof(path), "bt/mesh/cdb/Subnet/%x", net_idx);
 	err = settings_delete(path);
 	if (err) {
 		LOG_ERR("Failed to clear NetKeyIndex 0x%03x", net_idx);
@@ -547,7 +548,7 @@ static void store_cdb_app_key(const struct bt_mesh_cdb_app_key *app)
 	memcpy(&key.val[0], &app->keys[0].app_key, sizeof(struct bt_mesh_key));
 	memcpy(&key.val[1], &app->keys[1].app_key, sizeof(struct bt_mesh_key));
 
-	snprintk(path, sizeof(path), "bt/mesh/cdb/AppKey/%x", app->app_idx);
+	snprintf(path, sizeof(path), "bt/mesh/cdb/AppKey/%x", app->app_idx);
 
 	err = settings_save_one(path, &key, sizeof(key));
 	if (err) {
@@ -562,7 +563,7 @@ static void clear_cdb_app_key(uint16_t app_idx)
 	char path[30];
 	int err;
 
-	snprintk(path, sizeof(path), "bt/mesh/cdb/AppKey/%x", app_idx);
+	snprintf(path, sizeof(path), "bt/mesh/cdb/AppKey/%x", app_idx);
 	err = settings_delete(path);
 	if (err) {
 		LOG_ERR("Failed to clear AppKeyIndex 0x%03x", app_idx);

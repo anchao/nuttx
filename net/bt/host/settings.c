@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdio.h>
 #include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -17,7 +18,6 @@
 #include <zephyr/settings/settings.h>
 #include <zephyr/kernel.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/printk.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
@@ -40,11 +40,11 @@ int bt_settings_encode_key(char *path, size_t path_size, const char *subsys,
 	int err;
 
 	if (key) {
-		err = snprintk(path, path_size, "bt/%s/%02x%02x%02x%02x%02x%02x%u/%s", subsys,
+		err = snprintf(path, path_size, "bt/%s/%02x%02x%02x%02x%02x%02x%u/%s", subsys,
 			       addr->a.val[5], addr->a.val[4], addr->a.val[3], addr->a.val[2],
 			       addr->a.val[1], addr->a.val[0], addr->type, key);
 	} else {
-		err = snprintk(path, path_size, "bt/%s/%02x%02x%02x%02x%02x%02x%u", subsys,
+		err = snprintf(path, path_size, "bt/%s/%02x%02x%02x%02x%02x%02x%u", subsys,
 			       addr->a.val[5], addr->a.val[4], addr->a.val[3], addr->a.val[2],
 			       addr->a.val[1], addr->a.val[0], addr->type);
 	}
@@ -63,7 +63,7 @@ static int bt_settings_encode_key_no_addr(char *path, size_t path_size, const ch
 {
 	int err;
 
-	err = snprintk(path, path_size, "bt/%s", key);
+	err = snprintf(path, path_size, "bt/%s", key);
 	if ((err < 0) || (err >= path_size)) {
 		/* Error or output was truncated */
 		return -EINVAL;

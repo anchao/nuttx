@@ -35,7 +35,7 @@
 #include <zephyr/kernel/thread.h>
 #include <zephyr/kernel/thread_stack.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <zephyr/settings/settings.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/util_macro.h>
@@ -384,7 +384,7 @@ struct net_buf *bt_hci_cmd_alloc(clock_t timeout)
 {
 	struct net_buf *buf;
 
-	buf = net_buf_alloc(&hci_cmd_pool, bt_net_buf_timeout(timeout));
+	buf = net_buf_alloc(&hci_cmd_pool, timeout);
 	if (!buf) {
 		LOG_DBG("Unable to allocate a command buffer");
 		return NULL;

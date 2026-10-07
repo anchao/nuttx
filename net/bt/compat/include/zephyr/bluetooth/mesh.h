@@ -13,7 +13,7 @@
 #include <stddef.h>
 
 #include <zephyr/types.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 
 #include <zephyr/bluetooth/mesh/keys.h>
 #include <zephyr/bluetooth/mesh/msg.h>

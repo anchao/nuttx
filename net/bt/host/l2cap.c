@@ -28,7 +28,7 @@
 #include <zephyr/sys/math_extras.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/sys/clock.h>
 #include <zephyr/toolchain.h>

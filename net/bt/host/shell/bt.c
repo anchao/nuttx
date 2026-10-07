@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdio.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -34,14 +35,13 @@
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/kernel.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <zephyr/settings/settings.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/shell/shell_string_conv.h>
 #include <zephyr/shell/shell_types.h>
 #include <assert.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/printk.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
@@ -4522,7 +4522,7 @@ static void auth_passkey_display(struct bt_conn *conn, unsigned int passkey)
 {
 	char passkey_str[7];
 
-	snprintk(passkey_str, 7, "%06u", passkey);
+	snprintf(passkey_str, 7, "%06u", passkey);
 
 	bt_shell_print("Passkey for %s: %s", bt_conn_dst_str(conn), passkey_str);
 }
@@ -4540,7 +4540,7 @@ static void auth_passkey_confirm(struct bt_conn *conn, unsigned int passkey)
 {
 	char passkey_str[7];
 
-	snprintk(passkey_str, 7, "%06u", passkey);
+	snprintf(passkey_str, 7, "%06u", passkey);
 
 	bt_shell_print("Confirm passkey for %s: %s", bt_conn_dst_str(conn), passkey_str);
 }

@@ -5,12 +5,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+#include <stdio.h>
 #include <zephyr/kernel.h>
 #include <errno.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/printk.h>
 
 #include <zephyr/bluetooth/conn.h>
 
@@ -269,7 +269,7 @@ int hfp_hf_send_cmd(struct bt_hfp_hf *hf, at_resp_cb_t resp,
 	make_at_callback_set(buf->user_data, resp, finish);
 
 	va_start(vargs, format);
-	ret = vsnprintk(buf->data, (net_buf_tailroom(buf) - 1), format, vargs);
+	ret = vsnprintf((char *)buf->data, (net_buf_tailroom(buf) - 1), format, vargs);
 	if (ret < 0) {
 		LOG_ERR("Unable to format variable arguments");
 		return ret;

@@ -23,7 +23,7 @@
 #include <stddef.h>
 
 #include <zephyr/kernel.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 
 #ifdef __cplusplus
 extern "C" {

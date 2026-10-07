@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdio.h>
 #include <zephyr/kernel.h>
 #include <string.h>
 #include <errno.h>
@@ -14,7 +15,7 @@
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/iterable_sections.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/mesh.h>
@@ -78,7 +79,7 @@ static void clear_net_key(uint16_t net_idx)
 
 	LOG_DBG("NetKeyIndex 0x%03x", net_idx);
 
-	snprintk(path, sizeof(path), "bt/mesh/NetKey/%x", net_idx);
+	snprintf(path, sizeof(path), "bt/mesh/NetKey/%x", net_idx);
 	err = settings_delete(path);
 	if (err) {
 		LOG_ERR("Failed to clear NetKeyIndex 0x%03x", net_idx);
@@ -102,7 +103,7 @@ static void store_subnet(uint16_t net_idx)
 
 	LOG_DBG("NetKeyIndex 0x%03x", net_idx);
 
-	snprintk(path, sizeof(path), "bt/mesh/NetKey/%x", net_idx);
+	snprintf(path, sizeof(path), "bt/mesh/NetKey/%x", net_idx);
 
 	memcpy(&key.val[0], &sub->keys[0].net, sizeof(struct bt_mesh_key));
 	memcpy(&key.val[1], &sub->keys[1].net, sizeof(struct bt_mesh_key));

@@ -6,7 +6,7 @@
 
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/direction.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 
 /* Performs initialization of Direction Finding in Host */
 int le_df_init(void);

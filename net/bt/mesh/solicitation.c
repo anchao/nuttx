@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdio.h>
 #include <zephyr/bluetooth/mesh.h>
 #include <zephyr/sys/byteorder.h>
 #include <stdlib.h>
@@ -417,7 +418,7 @@ static void srpl_entry_clear(int i)
 	if (IS_ENABLED(CONFIG_BT_SETTINGS)) {
 		char path[18];
 
-		snprintk(path, sizeof(path), "bt/mesh/SRPL/%x", addr);
+		snprintf(path, sizeof(path), "bt/mesh/SRPL/%x", addr);
 
 		settings_delete(path);
 	}
@@ -430,7 +431,7 @@ static void srpl_store(struct srpl_entry *entry)
 
 	LOG_DBG("src 0x%04x seq 0x%06x", entry->ssrc, entry->sseq);
 
-	snprintk(path, sizeof(path), "bt/mesh/SRPL/%x", entry->ssrc);
+	snprintf(path, sizeof(path), "bt/mesh/SRPL/%x", entry->ssrc);
 
 	err = settings_save_one(path, &entry->sseq, sizeof(entry->sseq));
 	if (err) {

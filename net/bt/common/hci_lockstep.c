@@ -18,7 +18,7 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/bluetooth/hci_lockstep.h>
 #include <zephyr/kernel.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <zephyr/sys/util.h>
 
 /* The log level symbol exists only in builds with the Bluetooth Kconfig

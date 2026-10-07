@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdio.h>
 #include <zephyr/kernel.h>
 #include <errno.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/printk.h>
 
 #include <zephyr/bluetooth/conn.h>
 
@@ -422,7 +422,7 @@ static int hfp_ag_send_data(struct bt_hfp_ag *ag, bt_hfp_ag_tx_cb_t cb, void *us
 	tx->user_data = user_data;
 
 	va_start(vargs, format);
-	err = vsnprintk((char *)buf->data, (net_buf_tailroom(buf) - 1), format, vargs);
+	err = vsnprintf((char *)buf->data, (net_buf_tailroom(buf) - 1), format, vargs);
 	va_end(vargs);
 
 	if (err < 0) {
@@ -2296,7 +2296,7 @@ static int bt_hfp_ag_bind_handler(struct bt_hfp_ag *ag, struct net_buf *buf)
 		len = MIN(NUM_BITS(sizeof(hf_indicators)), HFP_HF_IND_MAX);
 		for (int i = 1; (i < len) && (hf_indicators != 0); i++) {
 			if (BIT(i) & hf_indicators) {
-				int length = snprintk(
+				int length = snprintf(
 					data, (char *)&ag->buffer[HF_MAX_BUF_LEN - 1] - data - 2,
 					"%d", i);
 				data += length;

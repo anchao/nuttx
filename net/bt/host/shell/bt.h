@@ -17,7 +17,7 @@
 
 #include <zephyr/autoconf.h>
 #include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <sys/types.h>
 
 extern struct bt_conn *default_conn;

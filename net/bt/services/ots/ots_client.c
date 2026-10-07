@@ -8,7 +8,7 @@
 
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/kernel.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <zephyr/types.h>
 
 #include <zephyr/device.h>

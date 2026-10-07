@@ -14,7 +14,7 @@
 #include <zephyr/bluetooth/services/ots.h>
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <assert.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/byteorder.h>

@@ -22,7 +22,7 @@
 #include <zephyr/drivers/bluetooth.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util_macro.h>
@@ -91,7 +91,7 @@ struct net_buf *bt_buf_get_rx(enum bt_buf_type type, clock_t timeout)
 		return NULL;
 	}
 
-	buf = net_buf_alloc(&hci_rx_pool, bt_net_buf_timeout(timeout));
+	buf = net_buf_alloc(&hci_rx_pool, timeout);
 	if (!buf) {
 		return buf;
 	}
@@ -129,7 +129,7 @@ struct net_buf *bt_buf_get_tx(enum bt_buf_type type, clock_t timeout,
 		return NULL;
 	}
 
-	buf = net_buf_alloc(pool, bt_net_buf_timeout(timeout));
+	buf = net_buf_alloc(pool, timeout);
 	if (!buf) {
 		return buf;
 	}

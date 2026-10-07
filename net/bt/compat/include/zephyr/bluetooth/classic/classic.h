@@ -23,7 +23,7 @@
 
 #include <zephyr/sys/util.h>
 #include <nuttx/list.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <zephyr/bluetooth/addr.h>
 #include <zephyr/bluetooth/data.h>
 #include <zephyr/bluetooth/hci_types.h>

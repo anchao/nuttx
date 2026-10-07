@@ -26,7 +26,7 @@
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <zephyr/settings/settings.h>
 #include <assert.h>
 #include <nuttx/atomic.h>

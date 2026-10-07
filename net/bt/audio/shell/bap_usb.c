@@ -22,7 +22,7 @@
 #include <zephyr/drivers/usb/usb_buf.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 #include <zephyr/shell/shell.h>
 #include <assert.h>
 #include <zephyr/sys/clock.h>

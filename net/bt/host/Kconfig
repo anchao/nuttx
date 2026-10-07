@@ -240,11 +240,11 @@ config BT_SETTINGS_CF_STORE_ON_WRITE
 	  If the option is disabled, the CF is only stored on disconnection.
 
 config BT_SETTINGS_USE_PRINTK
-	bool "Use snprintk to encode Bluetooth settings key strings"
+	bool "Use snprintf to encode Bluetooth settings key strings"
 	depends on SETTINGS && PRINTK
 	default y
 	help
-	  When selected, Bluetooth settings will use snprintk to encode
+	  When selected, Bluetooth settings will use snprintf to encode
 	  key strings.
 	  When not selected, Bluetooth settings will use a faster builtin
 	  function to encode the key string. The drawback is that if

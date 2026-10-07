@@ -20,7 +20,7 @@
 #include <zephyr/bluetooth/hci_pkt.h>
 #include <zephyr/device.h>
 #include <zephyr/kernel.h>
-#include <zephyr/net_buf.h>
+#include <nuttx/mm/net_buf.h>
 
 #ifdef __cplusplus
 extern "C" {
