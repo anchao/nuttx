@@ -30,7 +30,7 @@
 #include <zephyr/sys/util.h>
 #include <nuttx/mm/net_buf.h>
 #include <zephyr/sys/util_macro.h>
-#include <zephyr/sys/clock.h>
+#include <nuttx/clock.h>
 #include <zephyr/toolchain.h>
 
 #include "buf_view.h"

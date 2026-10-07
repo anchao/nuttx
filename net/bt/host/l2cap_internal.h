@@ -16,7 +16,7 @@
 #include <zephyr/kernel.h>
 #include <nuttx/mm/net_buf.h>
 #include <zephyr/sys/iterable_sections.h>
-#include <zephyr/sys/clock.h>
+#include <nuttx/clock.h>
 
 #include "host/classic/l2cap_br_interface.h"
 /* TODO: we should include conn_internal.h for bt_conn_tx_cb_t but that causes redefinitions */

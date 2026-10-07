@@ -29,7 +29,7 @@
 #include <zephyr/shell/shell_string_conv.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/clock.h>
+#include <nuttx/clock.h>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/time_units.h>
 #include <zephyr/sys/util.h>
@@ -68,11 +68,12 @@ static bool metrics;
 static int l2cap_recv_metrics(struct bt_l2cap_chan *chan, struct net_buf *buf)
 {
 	static uint32_t len;
-	static uint32_t cycle_stamp;
-	uint32_t delta;
+	static uint64_t nsec_stamp;
+	uint64_t now;
+	uint64_t delta;
 
-	delta = k_cycle_get_32() - cycle_stamp;
-	delta = (uint32_t)k_cyc_to_ns_floor64(delta);
+	now = clock_systime_nsec();
+	delta = now - nsec_stamp;
 
 	/* if last data rx-ed was greater than 1 second in the past,
 	 * reset the metrics.
@@ -80,7 +81,7 @@ static int l2cap_recv_metrics(struct bt_l2cap_chan *chan, struct net_buf *buf)
 	if (delta > NSEC_PER_SEC) {
 		len = 0U;
 		l2cap_rate = 0U;
-		cycle_stamp = k_cycle_get_32();
+		nsec_stamp = now;
 	} else {
 		len += buf->len;
 		l2cap_rate = ((uint64_t)len << 3) * NSEC_PER_SEC / delta;

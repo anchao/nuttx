@@ -27,7 +27,7 @@
 #include <assert.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/time_units.h>
-#include <zephyr/sys/clock.h>
+#include <nuttx/clock.h>
 #include <zephyr/sys/util.h>
 #include <sys/types.h>
 
@@ -46,11 +46,12 @@ static struct write_stats {
 
 static void update_write_stats(uint16_t len)
 {
-	static uint32_t cycle_stamp;
-	uint32_t delta;
+	static uint64_t nsec_stamp;
+	uint64_t now;
+	uint64_t delta;
 
-	delta = k_cycle_get_32() - cycle_stamp;
-	delta = (uint32_t)k_cyc_to_ns_floor64(delta);
+	now = clock_systime_nsec();
+	delta = now - nsec_stamp;
 
 	if (!delta) {
 		delta = 1;
@@ -65,7 +66,7 @@ static void update_write_stats(uint16_t len)
 	if (delta > NSEC_PER_SEC) {
 		write_stats.len = 0U;
 		write_stats.rate = 0U;
-		cycle_stamp = k_cycle_get_32();
+		nsec_stamp = now;
 	} else {
 		write_stats.len += len;
 		write_stats.rate = ((uint64_t)write_stats.len << 3) *

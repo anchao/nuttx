@@ -43,7 +43,7 @@
 #include <nuttx/list.h>
 #include <zephyr/sys/byteorder.h>
 #include <assert.h>
-#include <zephyr/sys/clock.h>
+#include <nuttx/clock.h>
 #include <zephyr/toolchain.h>
 #include <soc.h>
 

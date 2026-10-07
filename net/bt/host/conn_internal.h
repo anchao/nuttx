@@ -22,7 +22,7 @@
 #include <nuttx/atomic.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util_macro.h>
-#include <zephyr/sys/clock.h>
+#include <nuttx/clock.h>
 #include <zephyr/toolchain.h>
 
 typedef enum __packed {

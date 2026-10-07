@@ -18,7 +18,7 @@
 #include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>
 #include <nuttx/list.h>
-#include <zephyr/sys/clock.h>
+#include <nuttx/clock.h>
 
 enum bt_iso_cig_state {
 	BT_ISO_CIG_STATE_IDLE,

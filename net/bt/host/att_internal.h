@@ -10,7 +10,7 @@
 #include <nuttx/mm/net_buf.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/clock.h>
+#include <nuttx/clock.h>
 
 /*
  * Copyright (c) 2015-2016 Intel Corporation

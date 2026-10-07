@@ -38,7 +38,7 @@
 #include <nuttx/list.h>
 #include <zephyr/debug/stack.h>
 #include <assert.h>
-#include <zephyr/sys/clock.h>
+#include <nuttx/clock.h>
 #include <zephyr/toolchain.h>
 
 #include "addr_internal.h"

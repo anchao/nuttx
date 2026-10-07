@@ -31,10 +31,9 @@
 #include <zephyr/settings/settings.h>
 #include <assert.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/clock.h>
+#include <nuttx/clock.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
-#include <zephyr/sys/clock.h>
 #include <zephyr/toolchain.h>
 #include <zephyr/types.h>
 #include <zephyr/sys/byteorder.h>

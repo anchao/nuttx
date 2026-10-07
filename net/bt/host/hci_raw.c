@@ -26,7 +26,7 @@
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util_macro.h>
-#include <zephyr/sys/clock.h>
+#include <nuttx/clock.h>
 #include <zephyr/toolchain.h>
 
 #include "common/hci_common_internal.h"

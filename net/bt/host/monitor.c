@@ -29,9 +29,8 @@
 #include <zephyr/logging/log_output.h>
 #include <zephyr/logging/log.h>
 #include <nuttx/atomic.h>
-#include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/clock.h>
+#include <nuttx/clock.h>
 #include <zephyr/sys/printk-hooks.h>
 #include <zephyr/sys/libc-hooks.h>
 #include <zephyr/drivers/uart.h>
@@ -339,18 +338,10 @@ static uint64_t monitor_ts_get(void)
 	uint64_t us;
 
 	if (IS_ENABLED(CONFIG_LOG_TIMESTAMP_USE_REALTIME) &&
-	    sys_clock_gettime(SYS_CLOCK_REALTIME, &ts) == 0) {
+	    clock_gettime(CLOCK_REALTIME, &ts) == 0) {
 		us = ((uint64_t)ts.tv_sec * USEC_PER_SEC) + (ts.tv_nsec / NSEC_PER_USEC);
-	} else if (IS_ENABLED(CONFIG_TIMER_HAS_64BIT_CYCLE_COUNTER)) {
-		us = k_cyc_to_us_floor64(k_cycle_get_64());
-	} else if (sys_clock_hw_cycles_per_sec() > USEC_PER_SEC) {
-		/* A 32-bit cycle counter this fast wraps within minutes, so
-		 * use the tick counter instead, like the logging core does
-		 * (it uses uptime for cycle rates above 1 MHz).
-		 */
-		us = TICK2USEC(clock_systime_ticks());
 	} else {
-		us = k_cyc_to_us_floor64(k_cycle_get_32());
+		us = clock_systime_nsec() / NSEC_PER_USEC;
 	}
 
 	return monitor_ts_from_us(us);
