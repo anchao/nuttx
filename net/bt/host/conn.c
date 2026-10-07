@@ -744,7 +744,7 @@ static int send_buf(struct bt_conn *conn, struct net_buf *buf,
 
 	/* Keep track of sent buffers. We have to append _before_
 	 * sending, as we might get pre-empted if the HCI driver calls
-	 * k_yield() before returning.
+	 * sched_yield() before returning.
 	 *
 	 * In that case, the controller could also send a num-complete-packets
 	 * event and our handler will be confused that there is no corresponding

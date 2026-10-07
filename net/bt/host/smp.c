@@ -5141,7 +5141,7 @@ static void bt_smp_encrypt_change(struct bt_l2cap_chan *chan,
 		 * HCI events can be re-ordered, and pairing information appears
 		 * to be sent unencrypted.
 		 */
-		k_sleep(MSEC2TICK(100));
+		nxsched_msleep(100);
 	}
 
 	if (bt_smp_distribute_keys(smp)) {

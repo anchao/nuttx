@@ -591,7 +591,7 @@ static int cmd_write_without_rsp(const struct shell *sh,
 			break;
 		}
 
-		k_yield();
+		sched_yield();
 	}
 
 	shell_print(sh, "Write Complete (err %d)", err);

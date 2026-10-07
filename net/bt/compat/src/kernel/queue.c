@@ -48,7 +48,7 @@ void *k_fifo_get(struct k_fifo *fifo, clock_t timeout)
                     if (node)
                         return node;
                     /* Yield to allow producer */
-                    k_yield();
+                    sched_yield();
                 }
         }
 
@@ -62,7 +62,7 @@ void *k_fifo_get(struct k_fifo *fifo, clock_t timeout)
                 spin_unlock_irqrestore(&fifo->lock, flags);
                 if (node)
                     return node;
-                k_yield();
+                sched_yield();
             }
     }
 
@@ -176,6 +176,6 @@ int k_poll(struct k_poll_event *events, int num_events, clock_t timeout)
                     return -EAGAIN;
                 }
 
-            k_yield();
+            sched_yield();
         }
 }

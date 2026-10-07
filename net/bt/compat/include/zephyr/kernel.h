@@ -5,7 +5,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <sched.h>
+#include <nuttx/arch.h>
 #include <nuttx/semaphore.h>
+#include <nuttx/sched.h>
 #include <nuttx/wqueue.h>
 #include <nuttx/spinlock.h>
 #include <nuttx/clock.h>
@@ -181,12 +184,6 @@ int k_work_queue_start(struct k_work_q *queue, char *stack,
 #define K_PRIO_COOP(prio) (prio)
 
 extern struct k_work_q k_sys_work_q;
-
-/* ===== Time ===== */
-int32_t k_sleep(clock_t timeout);
-int32_t k_msleep(int32_t ms);
-void k_busy_wait(int32_t usec_to_wait);
-void k_yield(void);
 
 /* ===== Memory Slab ===== */
 struct k_mem_slab {

@@ -553,7 +553,7 @@ static void lc3_encoder_thread_func(void *arg1, void *arg2, void *arg3)
 	 */
 	while (true) {
 		bap_foreach_stream(encode_and_send_cb, NULL);
-		k_sleep(MSEC2TICK(1U));
+		nxsched_msleep(1U);
 	}
 }
 #endif /* CONFIG_LIBLC3 && CONFIG_BT_AUDIO_TX */

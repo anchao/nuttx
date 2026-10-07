@@ -786,7 +786,7 @@ void bt_hci_le_scan_timeout(struct net_buf *buf)
 	int err = bt_le_scan_user_remove(BT_LE_SCAN_USER_EXPLICIT_SCAN);
 
 	if (err) {
-		k_yield();
+		sched_yield();
 		err = bt_le_scan_user_remove(BT_LE_SCAN_USER_EXPLICIT_SCAN);
 	}
 

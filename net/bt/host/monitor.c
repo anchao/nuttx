@@ -585,7 +585,7 @@ static void monitor_log_panic(const struct log_backend *const backend)
 			break;
 		}
 
-		k_busy_wait(10);
+		up_udelay(10);
 	}
 
 	len = bt_monitor_ring_buf_get_ptr(&monitor_tx_buf, &data);

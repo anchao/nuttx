@@ -109,7 +109,7 @@ static int bt_data_send(uint8_t num_events, uint16_t adv_int,
 	}
 
 	if (!is_mesh_suspended()) {
-		k_sleep(MSEC2TICK(duration));
+		nxsched_msleep(duration);
 	}
 
 	err = bt_le_adv_stop();
@@ -197,7 +197,7 @@ static void adv_thread(void *p1, void *p2, void *p3)
 		bt_mesh_adv_send_end(0, &ctx);
 
 		/* Give other threads a chance to run */
-		k_yield();
+		sched_yield();
 	}
 
 	/* Empty the advertising pool when advertising is disabled */

@@ -174,41 +174,6 @@ struct net_buf *net_buf_get(struct k_fifo *fifo, clock_t timeout)
     return (struct net_buf *)k_fifo_get(fifo, timeout);
 }
 
-/* ===== Scheduling ===== */
-int32_t k_sleep(clock_t timeout)
-{
-    if (((timeout) == (0)))
-        return 0;
-
-    if (((timeout) == (((clock_t)-1))))
-        {
-            while (1) { nxsched_usleep(1000000); }
-        }
-
-    uint32_t ms = TICK2MSEC(timeout);
-    nxsched_usleep(ms * 1000);
-    return 0;
-}
-
-int32_t k_msleep(int32_t ms)
-{
-    nxsched_usleep(ms * 1000);
-    return 0;
-}
-
-void k_busy_wait(int32_t usec_to_wait)
-{
-    uint32_t start = (uint32_t)clock_systime_ticks();
-    uint32_t ticks = USEC2TICK(usec_to_wait);
-    while (((uint32_t)clock_systime_ticks() - start) < ticks)
-        ;
-}
-
-void k_yield(void)
-{
-    sched_yield();
-}
-
 /* ===== Condvar ===== */
 int k_condvar_init(struct k_condvar *condvar)
 {

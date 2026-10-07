@@ -4870,7 +4870,7 @@ static void rx_work_handler(struct k_work *work)
 	/* Schedule the work handler to be executed again if there are
 	 * additional items in the queue. This allows for other users of the
 	 * work queue to get a chance at running, which wouldn't be possible if
-	 * we used a while() loop with a k_yield() statement.
+	 * we used a while() loop with a sched_yield() statement.
 	 */
 	if (!list_is_empty(&bt_dev.rx_queue)) {
 		err = bt_work_submit(&rx_work);
