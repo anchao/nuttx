@@ -26,12 +26,12 @@ LOG_MODULE_REGISTER(bt_mesh_dfu_slot);
 #define PROP_FWID "id"
 #define PROP_METADATA "m"
 
-static sys_slist_t list;
+static struct list_node list;
 
 static struct slot {
 	uint32_t idx;
 	struct bt_mesh_dfu_slot slot;
-	sys_snode_t n;
+	struct list_node n;
 } slots[CONFIG_BT_MESH_DFU_SLOT_CNT];
 
 static uint32_t slot_index;
@@ -56,7 +56,7 @@ static bool is_slot_committed(struct slot *slot_to_check)
 {
 	struct slot *s;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&list, s, n) {
+	list_for_every_container(&list, s, n) {
 		if (s == slot_to_check) {
 			return true;
 		}
@@ -105,7 +105,7 @@ static void slot_index_defrag(void)
 	slot_index = 0;
 	struct slot *s;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&list, s, n) {
+	list_for_every_container(&list, s, n) {
 		s->idx = ++slot_index;
 		slot_store(s);
 	}
@@ -114,9 +114,9 @@ static void slot_index_defrag(void)
 int bt_mesh_dfu_slot_count(void)
 {
 	int cnt = 0;
-	sys_snode_t *n;
+	struct list_node *n;
 
-	SYS_SLIST_FOR_EACH_NODE(&list, n) {
+	list_for_every(&list, n) {
 		cnt++;
 	}
 
@@ -216,7 +216,7 @@ int bt_mesh_dfu_slot_commit(struct bt_mesh_dfu_slot *dfu_slot)
 		return err;
 	}
 
-	sys_slist_append(&list, &slot->n);
+	list_add_tail(&list, &slot->n);
 
 	LOG_DBG("Stored slot #%u: %s", ARRAY_INDEX(slots, slot),
 		bt_hex(slot->slot.fwid, slot->slot.fwid_len));
@@ -238,7 +238,7 @@ int bt_mesh_dfu_slot_del(const struct bt_mesh_dfu_slot *dfu_slot)
 {
 	struct slot *slot = CONTAINER_OF(dfu_slot, struct slot, slot);
 
-	if (!sys_slist_find_and_remove(&list, &slot->n)) {
+	if (!list_find_and_remove(&list, &slot->n)) {
 		return -EINVAL;
 	}
 
@@ -255,19 +255,19 @@ int bt_mesh_dfu_slot_del(const struct bt_mesh_dfu_slot *dfu_slot)
 void bt_mesh_dfu_slot_del_all(void)
 {
 	struct slot *s;
-	SYS_SLIST_FOR_EACH_CONTAINER(&list, s, n) {
+	list_for_every_container(&list, s, n) {
 		slot_erase(s);
 		s->idx = 0;
 	}
 
-	sys_slist_init(&list);
+	list_initialize(&list);
 }
 
 const struct bt_mesh_dfu_slot *bt_mesh_dfu_slot_at(uint16_t img_idx)
 {
 	struct slot *s;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&list, s, n) {
+	list_for_every_container(&list, s, n) {
 		if (!img_idx--) {
 			return &s->slot;
 		}
@@ -281,7 +281,7 @@ int bt_mesh_dfu_slot_get(const uint8_t *fwid, size_t fwid_len, struct bt_mesh_df
 	struct slot *s;
 	int idx = 0;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&list, s, n) {
+	list_for_every_container(&list, s, n) {
 		if (slot_eq(&s->slot, fwid, fwid_len)) {
 			if (slot) {
 				*slot = &s->slot;
@@ -299,7 +299,7 @@ int bt_mesh_dfu_slot_img_idx_get(const struct bt_mesh_dfu_slot *dfu_slot)
 	struct slot *s;
 	int idx = 0;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&list, s, n) {
+	list_for_every_container(&list, s, n) {
 		if (&s->slot == dfu_slot) {
 			return idx;
 		}
@@ -315,7 +315,7 @@ size_t bt_mesh_dfu_slot_foreach(bt_mesh_dfu_slot_cb_t cb, void *user_data)
 	size_t cnt = 0;
 	struct slot *s;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&list, s, n) {
+	list_for_every_container(&list, s, n) {
 		cnt++;
 
 		if (!cb) {
@@ -350,7 +350,7 @@ static int slot_data_load(const char *key, size_t len_rd,
 		if (read_cb(cb_arg, &slots[idx], HEADER_SIZE) > 0) {
 			struct slot *s, *prev = NULL;
 
-			SYS_SLIST_FOR_EACH_CONTAINER(&list, s, n) {
+			list_for_every_container(&list, s, n) {
 				if (s->idx > slots[idx].idx) {
 					break;
 				}
@@ -359,9 +359,9 @@ static int slot_data_load(const char *key, size_t len_rd,
 			}
 
 			if (prev == NULL) {
-				sys_slist_prepend(&list, &slots[idx].n);
+				list_add_head(&list, &slots[idx].n);
 			} else {
-				sys_slist_insert(&list, &prev->n, &slots[idx].n);
+				list_insert_after(&list, &prev->n, &slots[idx].n);
 			}
 
 			if (slots[idx].idx >= slot_index) {
@@ -375,7 +375,7 @@ static int slot_data_load(const char *key, size_t len_rd,
 		if (read_cb(cb_arg, &slots[idx].slot.fwid,
 			    sizeof(slots[idx].slot.fwid)) < 0) {
 			slots[idx].idx = 0;
-			sys_slist_find_and_remove(&list, &slots[idx].n);
+			list_find_and_remove(&list, &slots[idx].n);
 			return 0;
 		}
 
@@ -387,7 +387,7 @@ static int slot_data_load(const char *key, size_t len_rd,
 		if (read_cb(cb_arg, &slots[idx].slot.metadata,
 			    sizeof(slots[idx].slot.metadata)) < 0) {
 			slots[idx].idx = 0;
-			sys_slist_find_and_remove(&list, &slots[idx].n);
+			list_find_and_remove(&list, &slots[idx].n);
 			return 0;
 		}
 

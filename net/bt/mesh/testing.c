@@ -11,7 +11,7 @@
 
 #include <zephyr/bluetooth/mesh/access.h>
 #include <zephyr/kernel.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 
 #include "net.h"
 #include "lpn.h"
@@ -19,22 +19,22 @@
 #include "testing.h"
 #include "transport.h"
 
-static sys_slist_t cb_slist;
+static struct list_node cb_slist;
 
 int bt_mesh_test_cb_register(struct bt_mesh_test_cb *cb)
 {
-	if (sys_slist_find(&cb_slist, &cb->node, NULL)) {
+	if (list_find(&cb_slist, &cb->node, NULL)) {
 		return -EEXIST;
 	}
 
-	sys_slist_append(&cb_slist, &cb->node);
+	list_add_tail(&cb_slist, &cb->node);
 
 	return 0;
 }
 
 void bt_mesh_test_cb_unregister(struct bt_mesh_test_cb *cb)
 {
-	sys_slist_find_and_remove(&cb_slist, &cb->node);
+	list_find_and_remove(&cb_slist, &cb->node);
 }
 
 void bt_mesh_test_net_recv(uint8_t ttl, uint8_t ctl, uint16_t src, uint16_t dst,
@@ -42,7 +42,7 @@ void bt_mesh_test_net_recv(uint8_t ttl, uint8_t ctl, uint16_t src, uint16_t dst,
 {
 	struct bt_mesh_test_cb *cb;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&cb_slist, cb, node) {
+	list_for_every_container(&cb_slist, cb, node) {
 		if (cb->net_recv) {
 			cb->net_recv(ttl, ctl, src, dst, payload, payload_len);
 		}
@@ -53,7 +53,7 @@ void bt_mesh_test_model_recv(uint16_t src, uint16_t dst, const void *payload, si
 {
 	struct bt_mesh_test_cb *cb;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&cb_slist, cb, node) {
+	list_for_every_container(&cb_slist, cb, node) {
 		if (cb->model_recv) {
 			cb->model_recv(src, dst, payload, payload_len);
 		}
@@ -64,7 +64,7 @@ void bt_mesh_test_model_bound(uint16_t addr, const struct bt_mesh_model *model, 
 {
 	struct bt_mesh_test_cb *cb;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&cb_slist, cb, node) {
+	list_for_every_container(&cb_slist, cb, node) {
 		if (cb->model_bound) {
 			cb->model_bound(addr, model, key_idx);
 		}
@@ -75,7 +75,7 @@ void bt_mesh_test_model_unbound(uint16_t addr, const struct bt_mesh_model *model
 {
 	struct bt_mesh_test_cb *cb;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&cb_slist, cb, node) {
+	list_for_every_container(&cb_slist, cb, node) {
 		if (cb->model_unbound) {
 			cb->model_unbound(addr, model, key_idx);
 		}
@@ -86,7 +86,7 @@ void bt_mesh_test_prov_invalid_bearer(uint8_t opcode)
 {
 	struct bt_mesh_test_cb *cb;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&cb_slist, cb, node) {
+	list_for_every_container(&cb_slist, cb, node) {
 		if (cb->prov_invalid_bearer) {
 			cb->prov_invalid_bearer(opcode);
 		}
@@ -97,7 +97,7 @@ void bt_mesh_test_trans_incomp_timer_exp(void)
 {
 	struct bt_mesh_test_cb *cb;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&cb_slist, cb, node) {
+	list_for_every_container(&cb_slist, cb, node) {
 		if (cb->trans_incomp_timer_exp) {
 			cb->trans_incomp_timer_exp();
 		}

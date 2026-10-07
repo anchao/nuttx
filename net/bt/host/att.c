@@ -30,7 +30,7 @@
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/sys/clock.h>
@@ -118,7 +118,7 @@ struct bt_att_chan {
 	struct bt_att_req	*req;
 	struct k_fifo		tx_queue;
 	struct k_work_delayable	timeout_work;
-	sys_snode_t		node;
+	struct list_node		node;
 };
 
 static bool bt_att_is_enhanced(struct bt_att_chan *chan)
@@ -145,13 +145,13 @@ static uint16_t bt_att_mtu(struct bt_att_chan *chan)
 struct bt_att {
 	struct bt_conn		*conn;
 	/* Shared request queue */
-	sys_slist_t		reqs;
+	struct list_node		reqs;
 	struct k_fifo		tx_queue;
 #if CONFIG_BT_ATT_PREPARE_COUNT > 0
-	sys_slist_t		prep_queue;
+	struct list_node		prep_queue;
 #endif
 	/* Contains bt_att_chan instance(s) */
-	sys_slist_t		chans;
+	struct list_node		chans;
 #if defined(CONFIG_BT_EATT)
 	struct {
 		struct k_work_delayable connection_work;
@@ -248,25 +248,25 @@ const char *bt_att_err_to_str(uint8_t att_err)
 static void att_tx_destroy_work_handler(struct k_work *work);
 static K_WORK_DEFINE(att_tx_destroy_work, att_tx_destroy_work_handler);
 static spinlock_t tx_destroy_queue_lock;
-static sys_slist_t tx_destroy_queue = SYS_SLIST_STATIC_INIT(&tx_destroy_queue);
+static struct list_node tx_destroy_queue = LIST_INITIAL_VALUE(tx_destroy_queue);
 
 static void att_tx_destroy_work_handler(struct k_work *work)
 {
 	struct net_buf *buf;
 	struct bt_att_tx_meta_data *p_meta;
 	struct bt_att_tx_meta_data meta;
-	sys_snode_t *buf_node;
+	struct list_node *buf_node;
 	irqstate_t key;
 	bool resubmit;
 
 	key = spin_lock_irqsave(&tx_destroy_queue_lock);
-	buf_node = sys_slist_get(&tx_destroy_queue);
+	buf_node = list_remove_head(&tx_destroy_queue);
 	/* If there are more items in the queue, those likely have
 	 * been there before this handler started running and
 	 * coalesced into a single work submission, so we need to
 	 * resubmit.
 	 */
-	resubmit = !sys_slist_is_empty(&tx_destroy_queue);
+	resubmit = !list_is_empty(&tx_destroy_queue);
 	spin_unlock_irqrestore(&tx_destroy_queue_lock, key);
 
 	/* Spurious wakeups can occur in with some thread interleavings. */
@@ -338,7 +338,7 @@ static void att_tx_destroy(struct net_buf *buf)
 	 * this workqueue is processing similar "completion" events.
 	 */
 	key = spin_lock_irqsave(&tx_destroy_queue_lock);
-	sys_slist_append(&tx_destroy_queue, &buf->node);
+	list_add_tail(&tx_destroy_queue, &buf->node);
 	spin_unlock_irqrestore(&tx_destroy_queue_lock, key);
 
 	err = k_work_submit(&att_tx_destroy_work);
@@ -562,13 +562,13 @@ static struct net_buf *get_first_buf_matching_chan(struct k_fifo *fifo, struct b
 	}
 }
 
-static struct bt_att_req *get_first_req_matching_chan(sys_slist_t *reqs, struct bt_att_chan *chan)
+static struct bt_att_req *get_first_req_matching_chan(struct list_node *reqs, struct bt_att_chan *chan)
 {
 	if (IS_ENABLED(CONFIG_BT_EATT)) {
-		sys_snode_t *curr, *prev = NULL;
+		struct list_node *curr, *prev = NULL;
 		struct bt_att_tx_meta_data *meta = NULL;
 
-		SYS_SLIST_FOR_EACH_NODE(reqs, curr) {
+		list_for_every(reqs, curr) {
 			meta = att_get_tx_meta_data(ATT_REQ(curr)->buf);
 			if (att_chan_matches_chan_opt(chan, meta->chan_opt)) {
 				break;
@@ -578,7 +578,7 @@ static struct bt_att_req *get_first_req_matching_chan(sys_slist_t *reqs, struct 
 		}
 
 		if (curr) {
-			sys_slist_remove(reqs, prev, curr);
+			list_remove(reqs, prev, curr);
 
 			return ATT_REQ(curr);
 		}
@@ -586,7 +586,7 @@ static struct bt_att_req *get_first_req_matching_chan(sys_slist_t *reqs, struct 
 		return NULL;
 	}
 
-	sys_snode_t *node = sys_slist_get(reqs);
+	struct list_node *node = list_remove_head(reqs);
 
 	if (node) {
 		return ATT_REQ(node);
@@ -673,8 +673,8 @@ static void bt_att_sent(struct bt_l2cap_chan *ch)
 	 * processed before they may always contain a buffer starving the
 	 * request queue.
 	 */
-	if (!chan->req && !sys_slist_is_empty(&att->reqs)) {
-		sys_snode_t *node = sys_slist_get(&att->reqs);
+	if (!chan->req && !list_is_empty(&att->reqs)) {
+		struct list_node *node = list_remove_head(&att->reqs);
 
 		err = bt_att_chan_req_send(chan, ATT_REQ(node));
 		if (err == 0) {
@@ -682,7 +682,7 @@ static void bt_att_sent(struct bt_l2cap_chan *ch)
 		}
 
 		/* Prepend back to the list as it could not be sent */
-		sys_slist_prepend(&att->reqs, node);
+		list_add_head(&att->reqs, node);
 	}
 
 	/* Process channel queue */
@@ -868,7 +868,7 @@ static void att_send_process(struct bt_att *att)
 	struct bt_att_chan *chan, *tmp, *prev = NULL;
 	int err = 0;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&att->chans, chan, tmp, node) {
+	list_for_every_container_safe(&att->chans, chan, tmp, node) {
 		if (err == -ENOENT && prev &&
 		    (bt_att_is_enhanced(chan) == bt_att_is_enhanced(prev))) {
 			/* If there was nothing to send for the previous channel and the current
@@ -991,7 +991,7 @@ static void att_req_send_process(struct bt_att *att)
 	struct bt_att_req *req = NULL;
 	struct bt_att_chan *chan, *tmp, *prev = NULL;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&att->chans, chan, tmp, node) {
+	list_for_every_container_safe(&att->chans, chan, tmp, node) {
 		/* If there is an ongoing transaction, do not use the channel */
 		if (chan->req) {
 			continue;
@@ -1018,7 +1018,7 @@ static void att_req_send_process(struct bt_att *att)
 		}
 
 		/* Prepend back to the list as it could not be sent */
-		sys_slist_prepend(&att->reqs, &req->node);
+		list_add_head(&att->reqs, &req->node);
 	}
 }
 
@@ -2363,14 +2363,14 @@ static uint8_t att_prepare_write_req(struct bt_att_chan *chan, struct net_buf *b
 }
 
 static uint8_t exec_write_reassemble(uint16_t handle, uint16_t offset,
-				     sys_slist_t *list,
+				     struct list_node *list,
 				     struct net_buf_simple *buf)
 {
 	struct net_buf *entry, *next;
-	sys_snode_t *prev;
+	struct list_node *prev;
 
 	prev = NULL;
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(list, entry, next, node) {
+	list_for_every_container_safe(list, entry, next, node) {
 		struct bt_attr_data *tmp_data = net_buf_user_data(entry);
 
 		LOG_DBG("entry %p handle 0x%04x, offset %u", entry, tmp_data->handle,
@@ -2405,7 +2405,7 @@ static uint8_t exec_write_reassemble(uint16_t handle, uint16_t offset,
 			}
 
 			net_buf_simple_add_mem(buf, entry->data, entry->len);
-			sys_slist_remove(list, prev, &entry->node);
+			list_remove(list, prev, &entry->node);
 			net_buf_unref(entry);
 		} else {
 			prev = &entry->node;
@@ -2425,7 +2425,7 @@ static uint8_t att_exec_write_rsp(struct bt_att_chan *chan, uint8_t flags)
 	 * Once a handle has been reassembled, it is sent to the upper layers,
 	 * and the next handle is processed
 	 */
-	while (!sys_slist_is_empty(&chan->att->prep_queue)) {
+	while (!list_is_empty(&chan->att->prep_queue)) {
 		struct bt_attr_data *data;
 		uint16_t handle;
 
@@ -3109,7 +3109,7 @@ struct net_buf *bt_att_create_pdu(struct bt_conn *conn, uint8_t op, size_t len)
 	}
 
 	/* This allocator should _not_ be used for RSPs. */
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&att->chans, chan, tmp, node) {
+	list_for_every_container_safe(&att->chans, chan, tmp, node) {
 		if (len + sizeof(op) > bt_att_mtu(chan)) {
 			continue;
 		}
@@ -3174,11 +3174,11 @@ static void att_reset(struct bt_att *att)
 	}
 
 	/* Notify pending requests */
-	while (!sys_slist_is_empty(&att->reqs)) {
+	while (!list_is_empty(&att->reqs)) {
 		struct bt_att_req *req;
-		sys_snode_t *node;
+		struct list_node *node;
 
-		node = sys_slist_get_not_empty(&att->reqs);
+		node = list_remove_head(&att->reqs);
 		req = CONTAINER_OF(node, struct bt_att_req, node);
 		if (req->func) {
 			req->func(att->conn, -ECONNRESET, NULL, 0,
@@ -3201,7 +3201,7 @@ static void att_chan_detach(struct bt_att_chan *chan)
 
 	LOG_DBG("chan %p", chan);
 
-	sys_slist_find_and_remove(&chan->att->chans, &chan->node);
+	list_find_and_remove(&chan->att->chans, &chan->node);
 
 	/* Release pending buffers */
 	while ((buf = k_fifo_get(&chan->tx_queue, K_NO_WAIT))) {
@@ -3256,15 +3256,15 @@ static void att_chan_attach(struct bt_att *att, struct bt_att_chan *chan)
 {
 	LOG_DBG("att %p chan %p flags %lu", att, chan, atomic_get(chan->flags));
 
-	if (sys_slist_is_empty(&att->chans)) {
+	if (list_is_empty(&att->chans)) {
 		/* Init general queues when attaching the first channel */
 		k_fifo_init(&att->tx_queue);
 #if CONFIG_BT_ATT_PREPARE_COUNT > 0
-		sys_slist_init(&att->prep_queue);
+		list_initialize(&att->prep_queue);
 #endif
 	}
 
-	sys_slist_prepend(&att->chans, &chan->node);
+	list_add_head(&att->chans, &chan->node);
 }
 
 static void bt_att_connected(struct bt_l2cap_chan *chan)
@@ -3299,7 +3299,7 @@ static void bt_att_disconnected(struct bt_l2cap_chan *chan)
 	att_chan_detach(att_chan);
 
 	/* Don't reset if there are still channels to be used */
-	if (!sys_slist_is_empty(&att->chans)) {
+	if (!list_is_empty(&att->chans)) {
 		return;
 	}
 
@@ -3399,7 +3399,7 @@ static void bt_att_encrypt_change(struct bt_l2cap_chan *chan,
 static void bt_att_status(struct bt_l2cap_chan *ch, atomic_t *status)
 {
 	struct bt_att_chan *chan = ATT_CHAN(ch);
-	sys_snode_t *node;
+	struct list_node *node;
 
 	LOG_DBG("chan %p status %p", ch, status);
 
@@ -3418,7 +3418,7 @@ static void bt_att_status(struct bt_l2cap_chan *ch, atomic_t *status)
 	}
 
 	/* Pull next request from the list */
-	node = sys_slist_get(&chan->att->reqs);
+	node = list_remove_head(&chan->att->reqs);
 	if (!node) {
 		return;
 	}
@@ -3428,7 +3428,7 @@ static void bt_att_status(struct bt_l2cap_chan *ch, atomic_t *status)
 	}
 
 	/* Prepend back to the list as it could not be sent */
-	sys_slist_prepend(&chan->att->reqs, node);
+	list_add_head(&chan->att->reqs, node);
 }
 
 static void bt_att_released(struct bt_l2cap_chan *ch)
@@ -3482,7 +3482,7 @@ static struct bt_att_chan *att_chan_new(struct bt_att *att, atomic_val_t flags)
 	};
 	struct bt_att_chan *chan;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&att->chans, chan, node) {
+	list_for_every_container(&att->chans, chan, node) {
 		if (chan->att == att) {
 			quota++;
 		}
@@ -3538,7 +3538,7 @@ size_t bt_eatt_count(struct bt_conn *conn)
 		return 0;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&att->chans, chan, node) {
+	list_for_every_container(&att->chans, chan, node) {
 		if (bt_att_is_enhanced(chan) &&
 		    atomic_test_bit(chan->flags, ATT_CONNECTED)) {
 			eatt_count++;
@@ -3582,8 +3582,8 @@ static int bt_att_accept(struct bt_conn *conn, struct bt_l2cap_chan **ch)
 
 	(void)memset(att, 0, sizeof(*att));
 	att->conn = conn;
-	sys_slist_init(&att->reqs);
-	sys_slist_init(&att->chans);
+	list_initialize(&att->reqs);
+	list_initialize(&att->chans);
 
 #if defined(CONFIG_BT_EATT)
 	k_work_init_delayable(&att->eatt.connection_work,
@@ -3823,7 +3823,7 @@ int bt_eatt_disconnect(struct bt_conn *conn)
 	chan = att_get_fixed_chan(conn);
 	att = chan->att;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&att->chans, chan, node) {
+	list_for_every_container(&att->chans, chan, node) {
 		if (bt_att_is_enhanced(chan)) {
 			err = bt_l2cap_chan_disconnect(&chan->chan.chan);
 		}
@@ -3845,7 +3845,7 @@ int bt_eatt_disconnect_one(struct bt_conn *conn)
 	chan = att_get_fixed_chan(conn);
 	att = chan->att;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&att->chans, chan, node) {
+	list_for_every_container(&att->chans, chan, node) {
 		if (bt_att_is_enhanced(chan)) {
 			return bt_l2cap_chan_disconnect(&chan->chan.chan);
 		}
@@ -3863,7 +3863,7 @@ int bt_eatt_reconfigure(struct bt_conn *conn, uint16_t mtu)
 	size_t i = 0;
 	int err;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&att->chans, att_chan, node) {
+	list_for_every_container(&att->chans, att_chan, node) {
 		if (bt_att_is_enhanced(att_chan)) {
 			chans[i] = &att_chan->chan.chan;
 			i++;
@@ -3955,7 +3955,7 @@ uint16_t bt_att_get_mtu(struct bt_conn *conn)
 		return 0;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&att->chans, chan, tmp, node) {
+	list_for_every_container_safe(&att->chans, chan, tmp, node) {
 		if (bt_att_mtu(chan) > mtu) {
 			mtu = bt_att_mtu(chan);
 		}
@@ -3974,7 +3974,7 @@ uint16_t bt_att_get_uatt_mtu(struct bt_conn *conn)
 		return 0;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&att->chans, chan, tmp, node) {
+	list_for_every_container_safe(&att->chans, chan, tmp, node) {
 		if (!bt_att_is_enhanced(chan)) {
 			return bt_att_mtu(chan);
 		}
@@ -4020,7 +4020,7 @@ int bt_att_get_max_notify_size(struct bt_conn *conn, enum bt_att_chan_opt chan_o
 		return -ENOTCONN;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&att->chans, chan, tmp, node) {
+	list_for_every_container_safe(&att->chans, chan, tmp, node) {
 		if (att_chan_matches_chan_opt(chan, chan_opt) && (bt_att_mtu(chan) > mtu)) {
 			mtu = bt_att_mtu(chan);
 		}
@@ -4040,7 +4040,7 @@ static void att_chan_mtu_updated(struct bt_att_chan *updated_chan)
 	uint16_t max_tx = 0, max_rx = 0;
 
 	/* Get maximum MTU's of other channels */
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&att->chans, chan, tmp, node) {
+	list_for_every_container_safe(&att->chans, chan, tmp, node) {
 		if (chan == updated_chan) {
 			continue;
 		}
@@ -4147,7 +4147,7 @@ int bt_att_req_send(struct bt_conn *conn, struct bt_att_req *req)
 		return -ENOTCONN;
 	}
 
-	sys_slist_append(&att->reqs, &req->node);
+	list_add_tail(&att->reqs, &req->node);
 	att_req_send_process(att);
 
 	k_sched_unlock();
@@ -4201,7 +4201,7 @@ void bt_att_req_cancel(struct bt_conn *conn, struct bt_att_req *req)
 		return;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&att->chans, chan, tmp, node) {
+	list_for_every_container_safe(&att->chans, chan, tmp, node) {
 		/* Check if request is outstanding */
 		if (bt_att_chan_req_cancel(chan, req)) {
 			return;
@@ -4209,7 +4209,7 @@ void bt_att_req_cancel(struct bt_conn *conn, struct bt_att_req *req)
 	}
 
 	/* Remove request from the list */
-	sys_slist_find_and_remove(&att->reqs, &req->node);
+	list_find_and_remove(&att->reqs, &req->node);
 
 	bt_att_req_free(req);
 }
@@ -4229,13 +4229,13 @@ struct bt_att_req *bt_att_find_req_by_user_data(struct bt_conn *conn, const void
 		return NULL;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&att->chans, chan, node) {
+	list_for_every_container(&att->chans, chan, node) {
 		if (chan->req != NULL && chan->req->user_data == user_data) {
 			return chan->req;
 		}
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&att->reqs, req, node) {
+	list_for_every_container(&att->reqs, req, node) {
 		if (req->user_data == user_data) {
 			return req;
 		}
@@ -4262,7 +4262,7 @@ void bt_att_clear_out_of_sync_sent(struct bt_conn *conn)
 		return;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&att->chans, chan, node) {
+	list_for_every_container(&att->chans, chan, node) {
 		atomic_clear_bit(chan->flags, ATT_OUT_OF_SYNC_SENT);
 	}
 }

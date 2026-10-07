@@ -56,7 +56,7 @@ static const struct {
 typedef void (*bt_hfp_ag_tx_cb_t)(struct bt_hfp_ag *ag, void *user_data);
 
 struct bt_ag_tx {
-	sys_snode_t node;
+	struct list_node node;
 
 	struct bt_hfp_ag *ag;
 	struct net_buf *buf;
@@ -371,9 +371,9 @@ static int hfp_ag_next_step(struct bt_hfp_ag *ag, bt_hfp_ag_tx_cb_t cb, void *us
 
 	hfp_ag_lock(ag);
 	if (atomic_test_bit(ag->flags, BT_HFP_AG_AT_PROCESS)) {
-		sys_slist_append(&ag->tx_submit_pending, &tx->node);
+		list_add_tail(&ag->tx_submit_pending, &tx->node);
 	} else {
-		sys_slist_append(&ag->tx_pending, &tx->node);
+		list_add_tail(&ag->tx_pending, &tx->node);
 		/* Always active tx work */
 		bt_work_reschedule(&ag->tx_work, K_NO_WAIT);
 	}
@@ -435,7 +435,7 @@ static int hfp_ag_send_data(struct bt_hfp_ag *ag, bt_hfp_ag_tx_cb_t cb, void *us
 	LOG_HEXDUMP_DBG(buf->data, buf->len, "Sending:");
 
 	hfp_ag_lock(ag);
-	sys_slist_append(&ag->tx_pending, &tx->node);
+	list_add_tail(&ag->tx_pending, &tx->node);
 	hfp_ag_unlock(ag);
 
 	/* Always active tx work */
@@ -903,7 +903,7 @@ static void bt_ag_tx_notify(struct bt_ag_tx *tx)
 
 static void bt_ag_tx_done_with_err(struct bt_hfp_ag *ag, struct bt_ag_tx *tx, int err)
 {
-	sys_slist_find_and_remove(&ag->tx_pending, &tx->node);
+	list_find_and_remove(&ag->tx_pending, &tx->node);
 	tx->err = err;
 	bt_ag_tx_notify(tx);
 	/* Clear the tx ongoing flag */
@@ -918,7 +918,7 @@ static void bt_ag_tx_work(struct k_work *work)
 {
 	struct k_work_delayable *dwork = k_work_delayable_from_work(work);
 	struct bt_hfp_ag *ag = CONTAINER_OF(dwork, struct bt_hfp_ag, tx_work);
-	sys_snode_t *node;
+	struct list_node *node;
 	struct bt_ag_tx *tx;
 	bt_hfp_state_t state;
 
@@ -929,7 +929,7 @@ static void bt_ag_tx_work(struct k_work *work)
 		goto unlock;
 	}
 
-	node = sys_slist_peek_head(&ag->tx_pending);
+	node = list_peek_head(&ag->tx_pending);
 	if (!node) {
 		LOG_DBG("No pending tx");
 		goto unlock;
@@ -3645,12 +3645,12 @@ static void hfp_ag_connected(struct bt_rfcomm_dlc *dlc)
 	LOG_DBG("AG %p", ag);
 }
 
-static struct bt_ag_tx *ag_get_tx(struct bt_hfp_ag *ag, sys_slist_t *list)
+static struct bt_ag_tx *ag_get_tx(struct bt_hfp_ag *ag, struct list_node *list)
 {
-	sys_snode_t *node;
+	struct list_node *node;
 
 	hfp_ag_lock(ag);
-	node = sys_slist_get(list);
+	node = list_remove_head(list);
 	hfp_ag_unlock(ag);
 	if (node == NULL) {
 		return NULL;
@@ -3716,17 +3716,17 @@ static void hfp_ag_preprocess_at_cmd(struct bt_hfp_ag *ag)
 
 static void hfp_ag_postprocess_at_cmd(struct bt_hfp_ag *ag)
 {
-	sys_snode_t *node;
+	struct list_node *node;
 
 	if (!atomic_test_and_clear_bit(ag->flags, BT_HFP_AG_AT_PROCESS)) {
 		LOG_WRN("No AT CMD is processing");
 	}
 
 	hfp_ag_lock(ag);
-	node = sys_slist_get(&ag->tx_submit_pending);
+	node = list_remove_head(&ag->tx_submit_pending);
 	while (node != NULL) {
-		sys_slist_append(&ag->tx_pending, node);
-		node = sys_slist_get(&ag->tx_submit_pending);
+		list_add_tail(&ag->tx_pending, node);
+		node = list_remove_head(&ag->tx_submit_pending);
 	}
 	hfp_ag_unlock(ag);
 
@@ -3807,7 +3807,7 @@ static int hfp_ag_recv(struct bt_rfcomm_dlc *dlc, struct net_buf *buf)
 static void hfp_ag_sent(struct bt_rfcomm_dlc *dlc, int err)
 {
 	struct bt_hfp_ag *ag = CONTAINER_OF(dlc, struct bt_hfp_ag, rfcomm_dlc);
-	sys_snode_t *node;
+	struct list_node *node;
 	struct bt_ag_tx *tx;
 
 	hfp_ag_lock(ag);
@@ -3818,7 +3818,7 @@ static void hfp_ag_sent(struct bt_rfcomm_dlc *dlc, int err)
 		return;
 	}
 
-	node = sys_slist_get(&ag->tx_pending);
+	node = list_remove_head(&ag->tx_pending);
 	hfp_ag_unlock(ag);
 	if (!node) {
 		LOG_ERR("No pending tx");
@@ -4195,8 +4195,8 @@ static struct bt_hfp_ag *hfp_ag_create(struct bt_conn *conn)
 		return NULL;
 	}
 
-	sys_slist_init(&ag->tx_pending);
-	sys_slist_init(&ag->tx_submit_pending);
+	list_initialize(&ag->tx_pending);
+	list_initialize(&ag->tx_submit_pending);
 
 	k_sem_init(&ag->lock, 1, 1);
 

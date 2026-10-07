@@ -310,8 +310,8 @@ struct bt_hfp_ag {
 	int ack_err;
 
 	/* HFP TX pending */
-	sys_slist_t tx_pending;
-	sys_slist_t tx_submit_pending;
+	struct list_node tx_pending;
+	struct list_node tx_submit_pending;
 
 	/* Critical locker */
 	struct k_sem lock;

@@ -58,7 +58,7 @@ LOG_MODULE_REGISTER(hrs);
 	(BT_GATT_PERM_READ | BT_GATT_PERM_WRITE))			\
 
 static uint8_t hrs_blsc;
-static sys_slist_t hrs_cbs = SYS_SLIST_STATIC_INIT(&hrs_cbs);
+static struct list_node hrs_cbs = LIST_INITIAL_VALUE(hrs_cbs);
 
 static void hrmc_ccc_cfg_changed(const struct bt_gatt_attr *attr, uint16_t value)
 {
@@ -70,7 +70,7 @@ static void hrmc_ccc_cfg_changed(const struct bt_gatt_attr *attr, uint16_t value
 
 	LOG_INF("HRS notifications %s", notif_enabled ? "enabled" : "disabled");
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&hrs_cbs, listener, _node) {
+	list_for_every_container(&hrs_cbs, listener, _node) {
 		if (listener->ntf_changed) {
 			listener->ntf_changed(notif_enabled);
 		}
@@ -92,7 +92,7 @@ static ssize_t ctrl_point_write(struct bt_conn *conn, const struct bt_gatt_attr 
 
 	LOG_INF("HRS CTRL Point Written %d", len);
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&hrs_cbs, listener, _node) {
+	list_for_every_container(&hrs_cbs, listener, _node) {
 		if (listener->ctrl_point_write) {
 			err = listener->ctrl_point_write(*((uint8_t *)buf));
 			/* If we get an error other than ENOTSUP then immediately
@@ -140,7 +140,7 @@ int bt_hrs_cb_register(struct bt_hrs_cb *cb)
 		return -EINVAL;
 	}
 
-	sys_slist_append(&hrs_cbs, &cb->_node);
+	list_add_tail(&hrs_cbs, &cb->_node);
 
 	return 0;
 }
@@ -151,7 +151,7 @@ int bt_hrs_cb_unregister(struct bt_hrs_cb *cb)
 		return -EINVAL;
 	}
 
-	if (!sys_slist_find_and_remove(&hrs_cbs, &cb->_node)) {
+	if (!list_find_and_remove(&hrs_cbs, &cb->_node)) {
 		return -ENOENT;
 	}
 

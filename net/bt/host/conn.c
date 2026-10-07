@@ -35,7 +35,7 @@
 #include <zephyr/sys/iterable_sections.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/debug/stack.h>
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/clock.h>
@@ -114,16 +114,16 @@ NET_BUF_POOL_DEFINE(acl_tx_pool, CONFIG_BT_L2CAP_TX_BUF_COUNT,
 
 #if defined(CONFIG_BT_SMP) || defined(CONFIG_BT_CLASSIC)
 const struct bt_conn_auth_cb *bt_auth;
-sys_slist_t bt_auth_info_cbs = SYS_SLIST_STATIC_INIT(&bt_auth_info_cbs);
+struct list_node bt_auth_info_cbs = LIST_INITIAL_VALUE(bt_auth_info_cbs);
 #endif /* CONFIG_BT_SMP || CONFIG_BT_CLASSIC */
 
 #if defined(CONFIG_BT_CONN_DYNAMIC_CALLBACKS)
-static sys_slist_t conn_cbs = SYS_SLIST_STATIC_INIT(&conn_cbs);
+static struct list_node conn_cbs = LIST_INITIAL_VALUE(conn_cbs);
 
 #define BT_CONN_CB_DYNAMIC_FOREACH(_cn) \
-	for (struct bt_conn_cb *_cn = SYS_SLIST_PEEK_HEAD_CONTAINER(&conn_cbs, _cn, _node); \
+	for (struct bt_conn_cb *_cn = list_peek_head_container(&conn_cbs, _cn, _node); \
 	     _cn != NULL; \
-	     _cn = SYS_SLIST_PEEK_NEXT_CONTAINER(_cn, _node))
+	     _cn = list_next_container(&conn_cbs, _cn, _node))
 #else
 #define BT_CONN_CB_DYNAMIC_FOREACH(_cn) \
 	for (struct bt_conn_cb *_cn = NULL; false; )
@@ -303,8 +303,8 @@ static void tx_notify_process(struct bt_conn *conn)
 		void *user_data;
 
 		key = irq_lock();
-		if (!sys_slist_is_empty(&conn->tx_complete)) {
-			const sys_snode_t *node = sys_slist_get_not_empty(&conn->tx_complete);
+		if (!list_is_empty(&conn->tx_complete)) {
+			const struct list_node *node = list_remove_head(&conn->tx_complete);
 
 			tx = CONTAINER_OF(node, struct bt_conn_tx, node);
 		}
@@ -751,7 +751,7 @@ static int send_buf(struct bt_conn *conn, struct net_buf *buf,
 	 * callback node in the `tx_pending` list.
 	 */
 	atomic_inc(&conn->in_ll);
-	sys_slist_append(&conn->tx_pending, &tx->node);
+	list_add_tail(&conn->tx_pending, &tx->node);
 
 	if (is_iso_tx_conn(conn)) {
 		err = send_iso(conn, frag, flags);
@@ -768,7 +768,7 @@ static int send_buf(struct bt_conn *conn, struct net_buf *buf,
 
 	/* Remove buf from pending list */
 	atomic_dec(&conn->in_ll);
-	(void)sys_slist_find_and_remove(&conn->tx_pending, &tx->node);
+	(void)list_find_and_remove(&conn->tx_pending, &tx->node);
 
 	LOG_ERR("Unable to send to driver (err %d)", err);
 
@@ -820,7 +820,7 @@ void bt_conn_cleanup_all(void)
 /* Returns true if L2CAP has data to send on this conn */
 static bool acl_has_data(struct bt_conn *conn)
 {
-	return sys_slist_peek_head(&conn->l2cap_data_ready) != NULL;
+	return list_peek_head(&conn->l2cap_data_ready) != NULL;
 }
 #endif	/* defined(CONFIG_BT_CONN) */
 
@@ -880,8 +880,8 @@ void bt_conn_data_ready(struct bt_conn *conn)
 	 */
 	bt_dev_lock();
 
-	if (!sys_slist_find(&bt_dev.le.conn_ready, &conn->_conn_ready, NULL)) {
-		sys_slist_append(&bt_dev.le.conn_ready, &conn->_conn_ready);
+	if (!list_find(&bt_dev.le.conn_ready, &conn->_conn_ready, NULL)) {
+		list_add_tail(&bt_dev.le.conn_ready, &conn->_conn_ready);
 
 		added = true;
 	} else {
@@ -917,7 +917,7 @@ static bool dont_have_viewbufs(void)
 	}
 
 	/* In practice k_fifo == k_lifo ABI. NuttX uses free_list directly. */
-	return fragments.free_list == NULL;
+	return list_is_empty(&fragments.free_list);
 
 #else  /* !CONFIG_BT_CONN_TX */
 	return false;
@@ -934,7 +934,7 @@ __maybe_unused static bool dont_have_methods(struct bt_conn *conn)
 static struct bt_conn *get_conn_ready(void)
 {
 	struct bt_conn *conn, *tmp;
-	sys_snode_t *prev = NULL;
+	struct list_node *prev = NULL;
 
 	/* Called from the TX processor with the host lock held; the lock
 	 * serializes conn_ready list access against bt_conn_data_ready().
@@ -949,7 +949,7 @@ static struct bt_conn *get_conn_ready(void)
 		return NULL;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&bt_dev.le.conn_ready, conn, tmp, _conn_ready) {
+	list_for_every_container_safe(&bt_dev.le.conn_ready, conn, tmp, _conn_ready) {
 		__ASSERT_NO_MSG(tmp != conn);
 
 		/* Iterate over the list of connections that have data to send
@@ -980,7 +980,7 @@ static struct bt_conn *get_conn_ready(void)
 		if (should_stop_tx(conn)) {
 			/* Move reference off the list */
 			__ASSERT_NO_MSG(prev != &conn->_conn_ready);
-			sys_slist_remove(&bt_dev.le.conn_ready, prev, &conn->_conn_ready);
+			list_remove(&bt_dev.le.conn_ready, prev, &conn->_conn_ready);
 
 			/* Append connection to list if it is connected and still has data */
 			if (conn->has_data(conn) && (conn->state == BT_CONN_CONNECTED)) {
@@ -1110,9 +1110,9 @@ static void process_unack_tx(struct bt_conn *conn)
 	/* Return any unacknowledged packets */
 	while (1) {
 		struct bt_conn_tx *tx;
-		sys_snode_t *node;
+		struct list_node *node;
 
-		node = sys_slist_get(&conn->tx_pending);
+		node = list_remove_head(&conn->tx_pending);
 
 		if (!node) {
 			bt_tx_irq_raise();
@@ -1205,7 +1205,7 @@ void bt_conn_set_state(struct bt_conn *conn, bt_conn_state_t state)
 		}
 
 #if defined(CONFIG_BT_CONN)
-		sys_slist_init(&conn->channels);
+		list_initialize(&conn->channels);
 
 		if (IS_ENABLED(CONFIG_BT_PERIPHERAL) &&
 		    conn->role == BT_CONN_ROLE_PERIPHERAL) {
@@ -2738,11 +2738,11 @@ bt_security_t bt_conn_get_security(const struct bt_conn *conn)
 
 int bt_conn_cb_register(struct bt_conn_cb *cb)
 {
-	if (sys_slist_find(&conn_cbs, &cb->_node, NULL)) {
+	if (list_find(&conn_cbs, &cb->_node, NULL)) {
 		return -EEXIST;
 	}
 
-	sys_slist_append(&conn_cbs, &cb->_node);
+	list_add_tail(&conn_cbs, &cb->_node);
 
 	return 0;
 }
@@ -2753,7 +2753,7 @@ int bt_conn_cb_unregister(struct bt_conn_cb *cb)
 		return -EINVAL;
 	}
 
-	if (!sys_slist_find_and_remove(&conn_cbs, &cb->_node)) {
+	if (!list_find_and_remove(&conn_cbs, &cb->_node)) {
 		return -ENOENT;
 	}
 
@@ -3680,7 +3680,7 @@ void bt_conn_notify_frame_space_update_complete(struct bt_conn *conn,
 	if (IS_ENABLED(CONFIG_BT_CONN_DYNAMIC_CALLBACKS)) {
 		struct bt_conn_cb *callback;
 
-		SYS_SLIST_FOR_EACH_CONTAINER(&conn_cbs, callback, _node) {
+		list_for_every_container(&conn_cbs, callback, _node) {
 			if (callback->frame_space_updated != NULL) {
 				callback->frame_space_updated(conn, params);
 			}
@@ -4386,11 +4386,11 @@ int bt_conn_auth_info_cb_register(struct bt_conn_auth_info_cb *cb)
 		return -EINVAL;
 	}
 
-	if (sys_slist_find(&bt_auth_info_cbs, &cb->node, NULL)) {
+	if (list_find(&bt_auth_info_cbs, &cb->node, NULL)) {
 		return -EALREADY;
 	}
 
-	sys_slist_append(&bt_auth_info_cbs, &cb->node);
+	list_add_tail(&bt_auth_info_cbs, &cb->node);
 
 	return 0;
 }
@@ -4401,7 +4401,7 @@ int bt_conn_auth_info_cb_unregister(struct bt_conn_auth_info_cb *cb)
 		return -EINVAL;
 	}
 
-	if (!sys_slist_find_and_remove(&bt_auth_info_cbs, &cb->node)) {
+	if (!list_find_and_remove(&bt_auth_info_cbs, &cb->node)) {
 		return -EALREADY;
 	}
 

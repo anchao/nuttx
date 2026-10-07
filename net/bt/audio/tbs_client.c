@@ -26,7 +26,7 @@
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/atomic.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/sys/util_utf8.h>
@@ -76,7 +76,7 @@ struct bt_tbs_server_inst {
 	struct bt_tbs_instance *current_inst;
 };
 
-static sys_slist_t tbs_client_cbs = SYS_SLIST_STATIC_INIT(&tbs_client_cbs);
+static struct list_node tbs_client_cbs = LIST_INITIAL_VALUE(tbs_client_cbs);
 
 static struct bt_tbs_server_inst srv_insts[CONFIG_BT_MAX_CONN];
 
@@ -258,7 +258,7 @@ static void current_calls_changed(struct bt_conn *conn, int err, uint8_t inst_in
 {
 	struct bt_tbs_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&tbs_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&tbs_client_cbs, listener, next, _node) {
 		if (listener->current_calls != NULL) {
 			listener->current_calls(conn, err, inst_index, call_count, calls);
 		}
@@ -310,7 +310,7 @@ static void call_cp_callback_handler(struct bt_conn *conn, int err,
 	LOG_DBG("Status: %s for the %s opcode for call 0x%02x", bt_tbs_status_str(err),
 		bt_tbs_opcode_str(opcode), call_index);
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&tbs_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&tbs_client_cbs, listener, next, _node) {
 		switch (opcode) {
 #if defined(CONFIG_BT_TBS_CLIENT_ACCEPT_CALL)
 		case BT_TBS_CALL_OPCODE_ACCEPT:
@@ -382,7 +382,7 @@ static void provider_name_changed(struct bt_conn *conn, int err, uint8_t inst_in
 {
 	struct bt_tbs_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&tbs_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&tbs_client_cbs, listener, next, _node) {
 		if (listener->bearer_provider_name != NULL) {
 			listener->bearer_provider_name(conn, err, inst_index, name);
 		}
@@ -408,7 +408,7 @@ static void technology_changed(struct bt_conn *conn, int err, uint8_t inst_index
 {
 	struct bt_tbs_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&tbs_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&tbs_client_cbs, listener, next, _node) {
 		if (listener->technology != NULL) {
 			listener->technology(conn, err, inst_index, technology);
 		}
@@ -440,7 +440,7 @@ static void signal_strength_changed(struct bt_conn *conn, int err, uint8_t inst_
 {
 	struct bt_tbs_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&tbs_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&tbs_client_cbs, listener, next, _node) {
 		if (listener->signal_strength != NULL) {
 			listener->signal_strength(conn, err, inst_index, signal_strength);
 		}
@@ -487,7 +487,7 @@ static void status_flags_changed(struct bt_conn *conn, int err, uint8_t inst_ind
 {
 	struct bt_tbs_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&tbs_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&tbs_client_cbs, listener, next, _node) {
 		if (listener->status_flags != NULL) {
 			listener->status_flags(conn, err, inst_index, status_flags);
 		}
@@ -517,7 +517,7 @@ static void call_uri_changed(struct bt_conn *conn, int err, uint8_t inst_index,
 {
 	struct bt_tbs_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&tbs_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&tbs_client_cbs, listener, next, _node) {
 		if (listener->call_uri != NULL) {
 			listener->call_uri(conn, err, inst_index, call_uri);
 		}
@@ -543,7 +543,7 @@ static void call_state_changed(struct bt_conn *conn, int err, uint8_t inst_index
 {
 	struct bt_tbs_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&tbs_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&tbs_client_cbs, listener, next, _node) {
 		if (listener->call_state != NULL) {
 			listener->call_state(conn, err, inst_index, call_count, call_states);
 		}
@@ -613,7 +613,7 @@ static void terminate_reason_changed(struct bt_conn *conn, int err, uint8_t inst
 {
 	struct bt_tbs_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&tbs_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&tbs_client_cbs, listener, next, _node) {
 		if (listener->termination_reason != NULL) {
 			listener->termination_reason(conn, err, inst_index, reason.call_index,
 						     reason.reason);
@@ -644,7 +644,7 @@ static void remote_uri_changed(struct bt_conn *conn, int err, uint8_t inst_index
 {
 	struct bt_tbs_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&tbs_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&tbs_client_cbs, listener, next, _node) {
 		if (listener->remote_uri != NULL) {
 			listener->remote_uri(conn, err, inst_index, remote_uri);
 		}
@@ -670,7 +670,7 @@ static void friendly_name_changed(struct bt_conn *conn, int err, uint8_t inst_in
 {
 	struct bt_tbs_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&tbs_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&tbs_client_cbs, listener, next, _node) {
 		if (listener->friendly_name != NULL) {
 			listener->friendly_name(conn, err, inst_index, friendly_name);
 		}
@@ -850,7 +850,7 @@ static void tbs_client_discover_complete(struct bt_conn *conn, int err)
 	}
 #endif /* CONFIG_BT_TBS_CLIENT_TBS */
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&tbs_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&tbs_client_cbs, listener, next, _node) {
 		if (listener->discover != NULL) {
 			listener->discover(conn, err, inst_cnt(srv_inst), gtbs_found(srv_inst));
 		}
@@ -983,7 +983,7 @@ static void bearer_uci_changed(struct bt_conn *conn, int err, uint8_t inst_index
 {
 	struct bt_tbs_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&tbs_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&tbs_client_cbs, listener, next, _node) {
 		if (listener->bearer_uci != NULL) {
 			listener->bearer_uci(conn, err, inst_index, uci);
 		}
@@ -1064,7 +1064,7 @@ static void uri_list_changed(struct bt_conn *conn, int err, uint8_t inst_index,
 {
 	struct bt_tbs_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&tbs_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&tbs_client_cbs, listener, next, _node) {
 		if (listener->uri_list != NULL) {
 			listener->uri_list(conn, err, inst_index, uri_list);
 		}
@@ -1140,7 +1140,7 @@ static void signal_interval_changed(struct bt_conn *conn, int err, uint8_t inst_
 {
 	struct bt_tbs_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&tbs_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&tbs_client_cbs, listener, next, _node) {
 		if (listener->signal_interval != NULL) {
 			listener->signal_interval(conn, err, inst_index, signal_interval);
 		}
@@ -1241,7 +1241,7 @@ static void ccid_changed(struct bt_conn *conn, int err, uint8_t inst_index, uint
 {
 	struct bt_tbs_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&tbs_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&tbs_client_cbs, listener, next, _node) {
 		if (listener->ccid != NULL) {
 			listener->ccid(conn, err, inst_index, ccid);
 		}
@@ -1426,7 +1426,7 @@ static void optional_opcodes_changed(struct bt_conn *conn, int err, uint8_t inst
 {
 	struct bt_tbs_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&tbs_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&tbs_client_cbs, listener, next, _node) {
 		if (listener->optional_opcodes != NULL) {
 			listener->optional_opcodes(conn, err, inst_index, optional_opcodes);
 		}
@@ -2501,11 +2501,11 @@ int bt_tbs_client_register_cb(struct bt_tbs_client_cb *cb)
 		return -EINVAL;
 	}
 
-	if (sys_slist_find(&tbs_client_cbs, &cb->_node, NULL)) {
+	if (list_find(&tbs_client_cbs, &cb->_node, NULL)) {
 		return -EEXIST;
 	}
 
-	sys_slist_append(&tbs_client_cbs, &cb->_node);
+	list_add_tail(&tbs_client_cbs, &cb->_node);
 
 	return 0;
 }

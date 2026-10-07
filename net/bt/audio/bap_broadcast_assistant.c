@@ -35,7 +35,7 @@
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
@@ -106,7 +106,7 @@ struct bap_broadcast_assistant_instance {
 	ATOMIC_DEFINE(flags, BAP_BA_FLAG_NUM_FLAGS);
 };
 
-static sys_slist_t broadcast_assistant_cbs = SYS_SLIST_STATIC_INIT(&broadcast_assistant_cbs);
+static struct list_node broadcast_assistant_cbs = LIST_INITIAL_VALUE(broadcast_assistant_cbs);
 
 static struct bap_broadcast_assistant_instance broadcast_assistants[CONFIG_BT_MAX_CONN];
 
@@ -158,7 +158,7 @@ static void bap_broadcast_assistant_discover_complete(struct bt_conn *conn, int 
 		atomic_clear_bit(inst->flags, BAP_BA_FLAG_DISCOVER_IN_PROGRESS);
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&broadcast_assistant_cbs,
+	list_for_every_container_safe(&broadcast_assistant_cbs,
 					  listener, next, _node) {
 		if (listener->discover) {
 			listener->discover(conn, err, recv_state_count);
@@ -171,7 +171,7 @@ static void bap_broadcast_assistant_recv_state_changed(
 {
 	struct bt_bap_broadcast_assistant_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&broadcast_assistant_cbs,
+	list_for_every_container_safe(&broadcast_assistant_cbs,
 					  listener, next, _node) {
 		if (listener->recv_state) {
 			listener->recv_state(conn, err, state);
@@ -183,7 +183,7 @@ static void bap_broadcast_assistant_recv_state_removed(struct bt_conn *conn, uin
 {
 	struct bt_bap_broadcast_assistant_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&broadcast_assistant_cbs,
+	list_for_every_container_safe(&broadcast_assistant_cbs,
 					  listener, next, _node) {
 		if (listener->recv_state_removed) {
 			listener->recv_state_removed(conn, src_id);
@@ -196,7 +196,7 @@ static void bap_broadcast_assistant_scan_results(const struct bt_le_scan_recv_in
 {
 	struct bt_bap_broadcast_assistant_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&broadcast_assistant_cbs, listener, next, _node) {
+	list_for_every_container_safe(&broadcast_assistant_cbs, listener, next, _node) {
 		if (listener->scan) {
 			listener->scan(info, broadcast_id);
 		}
@@ -770,7 +770,7 @@ static void bap_broadcast_assistant_write_cp_cb(struct bt_conn *conn, uint8_t er
 
 	atomic_clear_bit(inst->flags, BAP_BA_FLAG_BUSY);
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&broadcast_assistant_cbs, listener, next, _node) {
+	list_for_every_container_safe(&broadcast_assistant_cbs, listener, next, _node) {
 		switch (opcode) {
 		case BT_BAP_BASS_OP_SCAN_STOP:
 			if (listener->scan_stop != NULL) {
@@ -1080,14 +1080,14 @@ int bt_bap_broadcast_assistant_register_cb(struct bt_bap_broadcast_assistant_cb 
 		return -EINVAL;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&broadcast_assistant_cbs, tmp, _node) {
+	list_for_every_container(&broadcast_assistant_cbs, tmp, _node) {
 		if (tmp == cb) {
 			LOG_DBG("Already registered");
 			return -EALREADY;
 		}
 	}
 
-	sys_slist_append(&broadcast_assistant_cbs, &cb->_node);
+	list_add_tail(&broadcast_assistant_cbs, &cb->_node);
 
 	return 0;
 }
@@ -1098,7 +1098,7 @@ int bt_bap_broadcast_assistant_unregister_cb(struct bt_bap_broadcast_assistant_c
 		return -EINVAL;
 	}
 
-	if (!sys_slist_find_and_remove(&broadcast_assistant_cbs, &cb->_node)) {
+	if (!list_find_and_remove(&broadcast_assistant_cbs, &cb->_node)) {
 		return -EALREADY;
 	}
 

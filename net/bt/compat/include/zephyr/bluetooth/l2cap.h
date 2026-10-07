@@ -29,7 +29,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/atomic.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <sys/types.h>
 
@@ -222,7 +222,7 @@ struct bt_l2cap_chan {
 	struct bt_conn			*conn;
 	/** Channel operations reference */
 	const struct bt_l2cap_chan_ops	*ops;
-	sys_snode_t			node;
+	struct list_node			node;
 	bt_l2cap_chan_destroy_t		destroy;
 
 	ATOMIC_DEFINE(status, BT_L2CAP_NUM_STATUS);
@@ -320,7 +320,7 @@ struct bt_l2cap_le_chan {
 #endif
 
 	/** @internal To be used with @ref bt_conn.upper_data_ready */
-	sys_snode_t			_pdu_ready;
+	struct list_node			_pdu_ready;
 	/** @internal Holds the length of the current PDU/segment */
 	size_t				_pdu_remaining;
 };
@@ -491,7 +491,7 @@ struct bt_l2cap_br_endpoint {
 
 /** I-Frame transmission window for none `BASIC` mode L2cap connected channel. */
 struct bt_l2cap_br_window {
-	sys_snode_t node;
+	struct list_node node;
 
 	/** tx seq */
 	uint16_t tx_seq;
@@ -536,11 +536,11 @@ struct bt_l2cap_br_chan {
 	struct k_work_sync              rtx_sync;
 
 	/** @internal To be used with @ref bt_conn.upper_data_ready */
-	sys_snode_t                     _pdu_ready;
+	struct list_node                     _pdu_ready;
 	/** @internal To be used with @ref bt_conn.upper_data_ready */
 	atomic_t                        _pdu_ready_lock;
 	/** @internal List of net bufs not yet sent to lower layer */
-	sys_slist_t                     _pdu_tx_queue;
+	struct list_node                     _pdu_tx_queue;
 
 #if defined(CONFIG_BT_L2CAP_RET_FC) || defined(__DOXYGEN__)
 	/** @internal Holds the remaining length of current sending buffer */
@@ -550,7 +550,7 @@ struct bt_l2cap_br_chan {
 	struct net_buf                  *_pdu_buf;
 
 	/** @internal TX windows for outstanding frame */
-	sys_slist_t                     _pdu_outstanding;
+	struct list_node                     _pdu_outstanding;
 
 	/** @internal PDU restore state */
 	struct net_buf_simple_state     _pdu_state;
@@ -872,7 +872,7 @@ struct bt_l2cap_server {
 	int (*accept)(struct bt_conn *conn, struct bt_l2cap_server *server,
 		      struct bt_l2cap_chan **chan);
 
-	sys_snode_t node;
+	struct list_node node;
 };
 
 /** @brief Register L2CAP server.

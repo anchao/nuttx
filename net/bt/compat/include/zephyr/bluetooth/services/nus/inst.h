@@ -9,7 +9,7 @@
 
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/sys/iterable_sections.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,7 +20,7 @@ struct bt_nus_inst {
 	const struct bt_gatt_service_static *svc;
 
 	/** List of subscribers to invoke callbacks on asynchronous events */
-	sys_slist_t *cbs;
+	struct list_node *cbs;
 };
 
 #define BT_UUID_NUS_SERVICE BT_UUID_DECLARE_128(BT_UUID_NUS_SRV_VAL)
@@ -49,7 +49,7 @@ BT_GATT_SERVICE_DEFINE(_name##_svc,								   \
 		NULL, nus_bt_chr_write, NULL),							   \
 );												   \
 												   \
-sys_slist_t _name##_cbs = SYS_SLIST_STATIC_INIT(&_name##_cbs);					   \
+struct list_node _name##_cbs = LIST_INITIAL_VALUE(_name##_cbs);					   \
 												   \
 STRUCT_SECTION_ITERABLE(bt_nus_inst, _name) = {							   \
 	.svc = &_name##_svc,									   \

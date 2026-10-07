@@ -32,7 +32,7 @@
 #include <zephyr/bluetooth/audio/aics.h>
 #include <zephyr/bluetooth/audio/vocs.h>
 #include <zephyr/bluetooth/conn.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -410,7 +410,7 @@ struct bt_vcp_vol_ctlr_cb {
 
 	/** @cond INTERNAL_HIDDEN */
 	/** Internally used field for list handling */
-	sys_snode_t _node;
+	struct list_node _node;
 	/** @endcond */
 };
 

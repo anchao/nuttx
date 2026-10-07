@@ -18,7 +18,7 @@ ssize_t nus_bt_chr_write(struct bt_conn *conn, const struct bt_gatt_attr *attr,
 	instance = bt_nus_inst_get_from_attr(attr);
 	__ASSERT_NO_MSG(instance);
 
-	SYS_SLIST_FOR_EACH_CONTAINER(instance->cbs, listener, _node) {
+	list_for_every_container(instance->cbs, listener, _node) {
 		if (listener->received) {
 			listener->received(conn, buf, len, listener->ctx);
 		}
@@ -35,7 +35,7 @@ void nus_ccc_cfg_changed(const struct bt_gatt_attr *attr, uint16_t value)
 	instance = bt_nus_inst_get_from_attr(attr);
 	__ASSERT_NO_MSG(instance);
 
-	SYS_SLIST_FOR_EACH_CONTAINER(instance->cbs, listener, _node) {
+	list_for_every_container(instance->cbs, listener, _node) {
 		if (listener->notif_enabled) {
 			listener->notif_enabled((value == 1), listener->ctx);
 		}
@@ -57,7 +57,7 @@ int bt_nus_inst_cb_register(struct bt_nus_inst *instance, struct bt_nus_cb *cb, 
 	}
 
 	cb->ctx = ctx;
-	sys_slist_append(instance->cbs, &cb->_node);
+	list_add_tail(instance->cbs, &cb->_node);
 
 	return 0;
 }

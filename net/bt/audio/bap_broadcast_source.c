@@ -29,7 +29,7 @@
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 
@@ -42,13 +42,13 @@ LOG_MODULE_REGISTER(bt_bap_broadcast_source, CONFIG_BT_BAP_BROADCAST_SOURCE_LOG_
 
 struct bt_bap_broadcast_subgroup {
 	/* The streams used to create the broadcast source */
-	sys_slist_t streams;
+	struct list_node streams;
 
 	/* The codec of the subgroup */
 	struct bt_audio_codec_cfg codec_cfg;
 
 	/* List node */
-	sys_snode_t _node;
+	struct list_node _node;
 };
 
 static struct bt_bap_ep broadcast_source_eps[CONFIG_BT_BAP_BROADCAST_SRC_COUNT]
@@ -57,7 +57,7 @@ static struct bt_bap_broadcast_subgroup
 	broadcast_source_subgroups[CONFIG_BT_BAP_BROADCAST_SRC_COUNT]
 				  [CONFIG_BT_BAP_BROADCAST_SRC_SUBGROUP_COUNT];
 static struct bt_bap_broadcast_source broadcast_sources[CONFIG_BT_BAP_BROADCAST_SRC_COUNT];
-static sys_slist_t bap_broadcast_source_cbs = SYS_SLIST_STATIC_INIT(&bap_broadcast_source_cbs);
+static struct list_node bap_broadcast_source_cbs = LIST_INITIAL_VALUE(bap_broadcast_source_cbs);
 
 /**
  * 2 octets UUID
@@ -129,10 +129,10 @@ static void broadcast_source_set_state(struct bt_bap_broadcast_source *source, u
 {
 	struct bt_bap_broadcast_subgroup *subgroup;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&source->subgroups, subgroup, _node) {
+	list_for_every_container(&source->subgroups, subgroup, _node) {
 		struct bt_bap_stream *stream;
 
-		SYS_SLIST_FOR_EACH_CONTAINER(&subgroup->streams, stream, _node) {
+		list_for_every_container(&subgroup->streams, stream, _node) {
 			broadcast_source_set_ep_state(stream->ep, state);
 		}
 	}
@@ -285,7 +285,7 @@ static struct bt_bap_broadcast_subgroup *broadcast_source_new_subgroup(uint8_t i
 	for (size_t i = 0U; i < ARRAY_SIZE(broadcast_source_subgroups[index]); i++) {
 		struct bt_bap_broadcast_subgroup *subgroup = &broadcast_source_subgroups[index][i];
 
-		if (sys_slist_is_empty(&subgroup->streams)) {
+		if (list_is_empty(&subgroup->streams)) {
 			return subgroup;
 		}
 	}
@@ -401,7 +401,7 @@ static bool encode_base_subgroup(struct bt_bap_broadcast_subgroup *subgroup,
 	uint8_t len;
 
 	stream_count = 0U;
-	SYS_SLIST_FOR_EACH_CONTAINER(&subgroup->streams, stream, _node) {
+	list_for_every_container(&subgroup->streams, stream, _node) {
 		stream_count++;
 	}
 
@@ -485,13 +485,13 @@ static bool encode_base(struct bt_bap_broadcast_source *source, struct net_buf_s
 	}
 
 	subgroup_count = 0U;
-	SYS_SLIST_FOR_EACH_CONTAINER(&source->subgroups, subgroup, _node) {
+	list_for_every_container(&source->subgroups, subgroup, _node) {
 		/* All broadcast stream share the same PD, so just take the PD from the first stream
 		 * in the first subgroup
 		 */
 		if (subgroup_count == 0U) {
 			const struct bt_bap_stream *stream =
-				SYS_SLIST_PEEK_HEAD_CONTAINER(&subgroup->streams, stream, _node);
+				list_peek_head_container(&subgroup->streams, stream, _node);
 
 			__ASSERT(stream != NULL && stream->ep != NULL,
 				 "stream or stream->ep was NULL");
@@ -516,7 +516,7 @@ static bool encode_base(struct bt_bap_broadcast_source *source, struct net_buf_s
 	 * we need to provide that information when encoding each subgroup
 	 */
 	streams_encoded = 0U;
-	SYS_SLIST_FOR_EACH_CONTAINER(&source->subgroups, subgroup, _node) {
+	list_for_every_container(&source->subgroups, subgroup, _node) {
 		if (!encode_base_subgroup(subgroup, &source->stream_data[streams_encoded],
 					  &streams_encoded, buf)) {
 			return false;
@@ -530,10 +530,10 @@ static void broadcast_source_cleanup(struct bt_bap_broadcast_source *source)
 {
 	struct bt_bap_broadcast_subgroup *subgroup, *next_subgroup;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&source->subgroups, subgroup, next_subgroup, _node) {
+	list_for_every_container_safe(&source->subgroups, subgroup, next_subgroup, _node) {
 		struct bt_bap_stream *stream, *next_stream;
 
-		SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&subgroup->streams, stream, next_stream, _node) {
+		list_for_every_container_safe(&subgroup->streams, stream, next_stream, _node) {
 			bt_bap_iso_unbind_ep(stream->ep->iso, stream->ep);
 			stream->iso = NULL;
 			stream->ep->stream = NULL;
@@ -542,9 +542,9 @@ static void broadcast_source_cleanup(struct bt_bap_broadcast_source *source)
 			stream->qos = NULL;
 			stream->group = NULL;
 
-			sys_slist_remove(&subgroup->streams, NULL, &stream->_node);
+			list_remove(&subgroup->streams, NULL, &stream->_node);
 		}
-		sys_slist_remove(&source->subgroups, NULL, &subgroup->_node);
+		list_remove(&source->subgroups, NULL, &subgroup->_node);
 	}
 
 	(void)memset(source, 0, sizeof(*source));
@@ -731,15 +731,15 @@ static enum bt_bap_ep_state broadcast_source_get_state(struct bt_bap_broadcast_s
 		return state;
 	}
 
-	if (sys_slist_is_empty(&source->subgroups)) {
+	if (list_is_empty(&source->subgroups)) {
 		LOG_DBG("Source does not have any streams");
 		return state;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&source->subgroups, subgroup, _node) {
+	list_for_every_container(&source->subgroups, subgroup, _node) {
 		struct bt_bap_stream *stream;
 
-		SYS_SLIST_FOR_EACH_CONTAINER(&subgroup->streams, stream, _node) {
+		list_for_every_container(&subgroup->streams, stream, _node) {
 			if (stream->ep != NULL) {
 				state = MAX(state, stream->ep->state);
 			}
@@ -773,7 +773,7 @@ int bt_bap_broadcast_source_create(struct bt_bap_broadcast_source_param *param,
 
 	source = NULL;
 	for (index = 0U; index < ARRAY_SIZE(broadcast_sources); index++) {
-		if (sys_slist_is_empty(&broadcast_sources[index].subgroups)) { /* Find free entry */
+		if (list_is_empty(&broadcast_sources[index].subgroups)) { /* Find free entry */
 			source = &broadcast_sources[index];
 			break;
 		}
@@ -804,7 +804,7 @@ int bt_bap_broadcast_source_create(struct bt_bap_broadcast_source_param *param,
 
 		(void)memcpy(&subgroup->codec_cfg, subgroup_param->codec_cfg,
 			     sizeof(subgroup->codec_cfg));
-		sys_slist_append(&source->subgroups, &subgroup->_node);
+		list_add_tail(&source->subgroups, &subgroup->_node);
 
 		/* Check that we are not above the maximum BIS count */
 		if (subgroup_param->params_count + stream_count > BROADCAST_STREAM_CNT) {
@@ -845,7 +845,7 @@ int bt_bap_broadcast_source_create(struct bt_bap_broadcast_source_param *param,
 				source->stream_data[stream_count].data_len = 0U;
 			}
 
-			sys_slist_append(&subgroup->streams, &stream->_node);
+			list_add_tail(&subgroup->streams, &stream->_node);
 			stream_count++;
 		}
 	}
@@ -878,14 +878,14 @@ static bool valid_broadcast_source_reconfig_param(const struct bt_bap_broadcast_
 	size_t bis_count = 0U;
 
 	/* Verify that the parameter counts do not exceed existing number of subgroups and streams*/
-	SYS_SLIST_FOR_EACH_CONTAINER(&source->subgroups, subgroup, _node) {
+	list_for_every_container(&source->subgroups, subgroup, _node) {
 		const struct bt_bap_broadcast_source_subgroup_param *subgroup_param =
 			&param->params[subgroup_cnt];
 		const size_t subgroup_stream_param_cnt = subgroup_param->params_count;
 		struct bt_bap_stream *stream;
 		size_t subgroup_stream_cnt = 0U;
 
-		SYS_SLIST_FOR_EACH_CONTAINER(&subgroup->streams, stream, _node) {
+		list_for_every_container(&subgroup->streams, stream, _node) {
 			subgroup_stream_cnt++;
 		}
 
@@ -897,7 +897,7 @@ static bool valid_broadcast_source_reconfig_param(const struct bt_bap_broadcast_
 
 			param_stream = subgroup_param->params[i].stream;
 
-			SYS_SLIST_FOR_EACH_CONTAINER(&subgroup->streams, subgroup_stream, _node) {
+			list_for_every_container(&subgroup->streams, subgroup_stream, _node) {
 				if (subgroup_stream == param_stream) {
 					stream_in_subgroup = true;
 					break;
@@ -971,7 +971,7 @@ static void broadcast_source_reconfig_update_subgroup(
 	/* Apply the codec_cfg to all streams in the subgroup, and not just the ones in the
 	 * params
 	 */
-	SYS_SLIST_FOR_EACH_CONTAINER(&subgroup->streams, stream, _node) {
+	list_for_every_container(&subgroup->streams, stream, _node) {
 		const struct bt_audio_broadcast_stream_data *stream_data =
 			&source->stream_data[stream->ep->id];
 		struct bt_audio_codec_cfg *codec_cfg = &stream->ep->codec_cfg;
@@ -1017,13 +1017,13 @@ int bt_bap_broadcast_source_reconfig(struct bt_bap_broadcast_source *source,
 
 		if (i == 0) {
 			subgroup =
-				SYS_SLIST_PEEK_HEAD_CONTAINER(&source->subgroups, subgroup, _node);
+				list_peek_head_container(&source->subgroups, subgroup, _node);
 		} else {
 			/* Number of subgroups in `source` are verified in
 			 * valid_broadcast_source_reconfig_param so this should never happen
 			 */
 			__ASSERT_NO_MSG(subgroup != NULL);
-			subgroup = SYS_SLIST_PEEK_NEXT_CONTAINER(subgroup, _node);
+			subgroup = list_next_container(&source->subgroups, subgroup, _node);
 		}
 
 		subgroup_param = &param->params[i];
@@ -1032,10 +1032,10 @@ int bt_bap_broadcast_source_reconfig(struct bt_bap_broadcast_source *source,
 	}
 
 	/* Finally we apply the new qos and to all streams */
-	SYS_SLIST_FOR_EACH_CONTAINER(&source->subgroups, subgroup, _node) {
+	list_for_every_container(&source->subgroups, subgroup, _node) {
 		struct bt_bap_stream *stream;
 
-		SYS_SLIST_FOR_EACH_CONTAINER(&subgroup->streams, stream, _node) {
+		list_for_every_container(&subgroup->streams, stream, _node) {
 			struct bt_bap_ep *ep = stream->ep;
 
 			(void)memcpy(&ep->qos, qos, sizeof(*qos));
@@ -1080,7 +1080,7 @@ int bt_bap_broadcast_source_update_metadata(struct bt_bap_broadcast_source *sour
 	/* TODO: We should probably find a way to update the metadata
 	 * for each subgroup individually
 	 */
-	SYS_SLIST_FOR_EACH_CONTAINER(&source->subgroups, subgroup, _node) {
+	list_for_every_container(&source->subgroups, subgroup, _node) {
 		(void)memset(subgroup->codec_cfg.meta, 0, sizeof(subgroup->codec_cfg.meta));
 
 		if (meta != NULL) {
@@ -1121,8 +1121,8 @@ int bt_bap_broadcast_source_start(struct bt_bap_broadcast_source *source, struct
 
 	bis_count = 0U;
 	qos = NULL;
-	SYS_SLIST_FOR_EACH_CONTAINER(&source->subgroups, subgroup, _node) {
-		SYS_SLIST_FOR_EACH_CONTAINER(&subgroup->streams, stream, _node) {
+	list_for_every_container(&source->subgroups, subgroup, _node) {
+		list_for_every_container(&subgroup->streams, stream, _node) {
 			struct bt_bap_ep *ep = stream->ep;
 			struct bt_iso_chan_io_qos *iso_qos = ep->iso->chan.qos->tx;
 
@@ -1284,7 +1284,7 @@ static void big_started_cb(struct bt_iso_big *big)
 		return;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&bap_broadcast_source_cbs, listener, _node) {
+	list_for_every_container(&bap_broadcast_source_cbs, listener, _node) {
 		if (listener->started != NULL) {
 			listener->started(source);
 		}
@@ -1303,7 +1303,7 @@ static void big_stopped_cb(struct bt_iso_big *big, uint8_t reason)
 
 	source->big = NULL;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&bap_broadcast_source_cbs, listener, _node) {
+	list_for_every_container(&bap_broadcast_source_cbs, listener, _node) {
 		if (listener->stopped != NULL) {
 			listener->stopped(source, reason);
 		}
@@ -1320,7 +1320,7 @@ int bt_bap_broadcast_source_register_cb(struct bt_bap_broadcast_source_cb *cb)
 		return -EINVAL;
 	}
 
-	if (sys_slist_find(&bap_broadcast_source_cbs, &cb->_node, NULL)) {
+	if (list_find(&bap_broadcast_source_cbs, &cb->_node, NULL)) {
 		LOG_DBG("cb %p is already registered", cb);
 
 		return -EEXIST;
@@ -1340,7 +1340,7 @@ int bt_bap_broadcast_source_register_cb(struct bt_bap_broadcast_source_cb *cb)
 		iso_big_cb_registered = true;
 	}
 
-	sys_slist_append(&bap_broadcast_source_cbs, &cb->_node);
+	list_add_tail(&bap_broadcast_source_cbs, &cb->_node);
 
 	return 0;
 }
@@ -1353,7 +1353,7 @@ int bt_bap_broadcast_source_unregister_cb(struct bt_bap_broadcast_source_cb *cb)
 		return -EINVAL;
 	}
 
-	if (!sys_slist_find_and_remove(&bap_broadcast_source_cbs, &cb->_node)) {
+	if (!list_find_and_remove(&bap_broadcast_source_cbs, &cb->_node)) {
 		LOG_DBG("cb %p is not registered", cb);
 
 		return -ENOENT;
@@ -1378,10 +1378,10 @@ int bt_bap_broadcast_source_foreach_stream(struct bt_bap_broadcast_source *sourc
 		return -EINVAL;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&source->subgroups, subgroup, next_subgroup, _node) {
+	list_for_every_container_safe(&source->subgroups, subgroup, next_subgroup, _node) {
 		struct bt_bap_stream *stream, *next_stream;
 
-		SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&subgroup->streams, stream, next_stream, _node) {
+		list_for_every_container_safe(&subgroup->streams, stream, next_stream, _node) {
 			if (!func(stream, user_data)) {
 				return -ECANCELED;
 			}

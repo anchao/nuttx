@@ -52,7 +52,7 @@ struct bt_avrcp_tg {
 	struct bt_avrcp *avrcp;
 
 	/* AVRCP vendor dependent response TX pending */
-	sys_slist_t vd_rsp_tx_pending;
+	struct list_node vd_rsp_tx_pending;
 
 	/* Critical locker */
 	struct k_sem lock;
@@ -526,7 +526,7 @@ static void avrcp_disconnected(struct bt_avctp *session)
 	struct bt_avrcp *avrcp = AVRCP_AVCTP(session);
 	struct bt_avrcp_ct *ct = get_avrcp_ct(avrcp);
 	struct bt_avrcp_tg *tg = get_avrcp_tg(avrcp);
-	sys_snode_t *node;
+	struct list_node *node;
 
 	if ((avrcp_ct_cb != NULL) && (avrcp_ct_cb->disconnected != NULL)) {
 		avrcp_ct_cb->disconnected(ct);
@@ -547,10 +547,10 @@ static void avrcp_disconnected(struct bt_avctp *session)
 	k_work_cancel_delayable(&tg->vd_rsp_tx_work);
 
 	avrcp_tg_lock(tg);
-	node = sys_slist_get(&tg->vd_rsp_tx_pending);
+	node = list_remove_head(&tg->vd_rsp_tx_pending);
 	while (node != NULL) {
 		net_buf_unref(CONTAINER_OF(node, struct net_buf, node));
-		node = sys_slist_get(&tg->vd_rsp_tx_pending);
+		node = list_remove_head(&tg->vd_rsp_tx_pending);
 	}
 	avrcp_tg_unlock(tg);
 
@@ -942,14 +942,14 @@ static int bt_avrcp_ct_send_abort_continuing_rsp(struct bt_avrcp_ct *ct, uint8_t
 static void bt_avrcp_tg_process_continuing_cmd(struct bt_avrcp_tg *tg, bool abort_continuing,
 					       uint8_t tid, struct net_buf *buf)
 {
-	sys_snode_t *node;
+	struct list_node *node;
 	struct bt_avrcp_tg_vd_rsp_tx *tx;
 	struct net_buf *tx_buf;
 	uint8_t pdu_id;
 
 	avrcp_tg_lock(tg);
 
-	node = sys_slist_peek_head(&tg->vd_rsp_tx_pending);
+	node = list_peek_head(&tg->vd_rsp_tx_pending);
 	if (!node) {
 		LOG_WRN("No pending tx");
 		avrcp_tg_unlock(tg);
@@ -995,7 +995,7 @@ static void bt_avrcp_tg_process_continuing_cmd(struct bt_avrcp_tg *tg, bool abor
 static void avrcp_tg_tx_remove(struct bt_avrcp_tg *tg, struct net_buf *buf)
 {
 	avrcp_tg_lock(tg);
-	sys_slist_find_and_remove(&tg->vd_rsp_tx_pending, &buf->node);
+	list_find_and_remove(&tg->vd_rsp_tx_pending, &buf->node);
 	avrcp_tg_unlock(tg);
 }
 
@@ -1003,7 +1003,7 @@ static void bt_avrcp_tg_vendor_tx_work(struct k_work *work)
 {
 	struct k_work_delayable *dwork = k_work_delayable_from_work(work);
 	struct bt_avrcp_tg *tg = CONTAINER_OF(dwork, struct bt_avrcp_tg, vd_rsp_tx_work);
-	sys_snode_t *node;
+	struct list_node *node;
 	struct net_buf *buf;
 	struct bt_avrcp_tg_vd_rsp_tx *tx;
 	uint16_t max_payload_size;
@@ -1011,7 +1011,7 @@ static void bt_avrcp_tg_vendor_tx_work(struct k_work *work)
 
 	avrcp_tg_lock(tg);
 
-	node = sys_slist_peek_head(&tg->vd_rsp_tx_pending);
+	node = list_peek_head(&tg->vd_rsp_tx_pending);
 	if (node == NULL) {
 		LOG_DBG("No pending tx");
 		avrcp_tg_unlock(tg);
@@ -1139,7 +1139,7 @@ static int bt_avrcp_tg_send_vendor_rsp(struct bt_avrcp_tg *tg, uint8_t tid, uint
 
 	LOG_DBG("Sending vendor dependent response: tid=%u, total_len=%u", tid, buf->len);
 	avrcp_tg_lock(tg);
-	sys_slist_append(&tg->vd_rsp_tx_pending, &buf->node);
+	list_add_tail(&tg->vd_rsp_tx_pending, &buf->node);
 	avrcp_tg_unlock(tg);
 
 	k_work_reschedule(&tg->vd_rsp_tx_work, K_NO_WAIT);
@@ -2981,7 +2981,7 @@ void bt_avrcp_init(void)
 			/* Init delay work */
 			k_work_init_delayable(&bt_avrcp_tg_pool[i].vd_rsp_tx_work,
 					      bt_avrcp_tg_vendor_tx_work);
-			sys_slist_init(&bt_avrcp_tg_pool[i].vd_rsp_tx_pending);
+			list_initialize(&bt_avrcp_tg_pool[i].vd_rsp_tx_pending);
 
 			k_sem_init(&bt_avrcp_tg_pool[i].lock, 1, 1);
 		}

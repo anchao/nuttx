@@ -20,7 +20,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 
@@ -46,7 +46,7 @@ NET_BUF_POOL_FIXED_DEFINE(reassembly_buf_pool, CONFIG_BT_CHANNEL_SOUNDING_REASSE
 			  CONFIG_BT_CHANNEL_SOUNDING_REASSEMBLY_BUFFER_SIZE,
 			  sizeof(struct reassembly_buf_meta_data), NULL);
 
-static sys_slist_t reassembly_bufs = SYS_SLIST_STATIC_INIT(&reassembly_bufs);
+static struct list_node reassembly_bufs = LIST_INITIAL_VALUE(reassembly_bufs);
 
 struct bt_conn_le_cs_subevent_result reassembled_result;
 
@@ -96,7 +96,7 @@ static void free_reassembly_buf(struct net_buf **buf)
 		(struct reassembly_buf_meta_data *)((*buf)->user_data);
 
 	LOG_DBG("De-allocating reassembly buffer for conn handle %d", buf_meta_data->conn_handle);
-	if (!sys_slist_find_and_remove(&reassembly_bufs, &(*buf)->node)) {
+	if (!list_find_and_remove(&reassembly_bufs, &(*buf)->node)) {
 		LOG_WRN("The buffer was not in the list");
 	}
 
@@ -111,9 +111,9 @@ static void free_reassembly_buf(struct net_buf **buf)
  */
 static struct net_buf *get_reassembly_buf(uint16_t conn_handle, bool allocate)
 {
-	sys_snode_t *node;
+	struct list_node *node;
 
-	SYS_SLIST_FOR_EACH_NODE(&reassembly_bufs, node) {
+	list_for_every(&reassembly_bufs, node) {
 		struct net_buf *buf = CONTAINER_OF(node, struct net_buf, node);
 		struct reassembly_buf_meta_data *buf_meta_data =
 			(struct reassembly_buf_meta_data *)(buf->user_data);

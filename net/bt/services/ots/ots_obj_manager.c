@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <errno.h>
-#include <zephyr/sys/dlist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/byteorder.h>
 
 #include <zephyr/bluetooth/services/ots.h>
@@ -20,13 +20,13 @@ LOG_MODULE_DECLARE(bt_ots, CONFIG_BT_OTS_LOG_LEVEL);
 
 
 struct bt_gatt_ots_pool_item {
-	sys_dnode_t dnode;
+	struct list_node dnode;
 	struct bt_gatt_ots_object val;
 	bool is_allocated;
 };
 
 struct bt_gatt_ots_obj_manager {
-	sys_dlist_t list;
+	struct list_node list;
 	struct bt_gatt_ots_pool_item pool[CONFIG_BT_OTS_MAX_OBJ_CNT];
 	bool is_assigned;
 };
@@ -61,14 +61,14 @@ int bt_gatt_ots_obj_manager_first_obj_get(
 	struct bt_gatt_ots_obj_manager *obj_manager,
 	struct bt_gatt_ots_object **obj)
 {
-	sys_dnode_t *obj_dnode;
+	struct list_node *obj_dnode;
 	struct bt_gatt_ots_pool_item *first_item;
 
-	if (sys_dlist_is_empty(&obj_manager->list)) {
+	if (list_is_empty(&obj_manager->list)) {
 		return -ENOENT;
 	}
 
-	obj_dnode = sys_dlist_peek_head_not_empty(&obj_manager->list);
+	obj_dnode = list_peek_head(&obj_manager->list);
 	first_item = CONTAINER_OF(obj_dnode, struct bt_gatt_ots_pool_item,
 				  dnode);
 	*obj = &first_item->val;
@@ -80,14 +80,14 @@ int bt_gatt_ots_obj_manager_last_obj_get(
 	struct bt_gatt_ots_obj_manager *obj_manager,
 	struct bt_gatt_ots_object **obj)
 {
-	sys_dnode_t *obj_dnode;
+	struct list_node *obj_dnode;
 	struct bt_gatt_ots_pool_item *last_item;
 
-	if (sys_dlist_is_empty(&obj_manager->list)) {
+	if (list_is_empty(&obj_manager->list)) {
 		return -ENOENT;
 	}
 
-	obj_dnode = sys_dlist_peek_tail(&obj_manager->list);
+	obj_dnode = list_peek_tail(&obj_manager->list);
 	last_item = CONTAINER_OF(obj_dnode, struct bt_gatt_ots_pool_item,
 				 dnode);
 	*obj = &last_item->val;
@@ -100,16 +100,15 @@ int bt_gatt_ots_obj_manager_prev_obj_get(
 	const struct bt_gatt_ots_object *cur_obj,
 	struct bt_gatt_ots_object **prev_obj)
 {
-	sys_dnode_t *prev_obj_dnode;
+	struct list_node *prev_obj_dnode;
 	struct bt_gatt_ots_pool_item *cur_item, *prev_item;
 
-	if (sys_dlist_is_empty(&obj_manager->list)) {
+	if (list_is_empty(&obj_manager->list)) {
 		return -ENOENT;
 	}
 
 	cur_item = CONTAINER_OF(cur_obj, struct bt_gatt_ots_pool_item, val);
-	prev_obj_dnode = sys_dlist_peek_prev_no_check(&obj_manager->list,
-						      &cur_item->dnode);
+	prev_obj_dnode = list_prev(&obj_manager->list, &cur_item->dnode);
 	if (!prev_obj_dnode) {
 		return -ENFILE;
 	}
@@ -127,16 +126,15 @@ int bt_gatt_ots_obj_manager_next_obj_get(
 	const struct bt_gatt_ots_object *cur_obj,
 	struct bt_gatt_ots_object **next_obj)
 {
-	sys_dnode_t *next_obj_dnode;
+	struct list_node *next_obj_dnode;
 	struct bt_gatt_ots_pool_item *cur_item, *next_item;
 
-	if (sys_dlist_is_empty(&obj_manager->list)) {
+	if (list_is_empty(&obj_manager->list)) {
 		return -ENOENT;
 	}
 
 	cur_item = CONTAINER_OF(cur_obj, struct bt_gatt_ots_pool_item, val);
-	next_obj_dnode = sys_dlist_peek_next_no_check(&obj_manager->list,
-						      &cur_item->dnode);
+	next_obj_dnode = list_next(&obj_manager->list, &cur_item->dnode);
 	if (!next_obj_dnode) {
 		return -ENFILE;
 	}
@@ -155,7 +153,7 @@ int bt_gatt_ots_obj_manager_obj_get(
 {
 	uint64_t index;
 
-	if (sys_dlist_is_empty(&obj_manager->list)) {
+	if (list_is_empty(&obj_manager->list)) {
 		return -ENOENT;
 	}
 
@@ -189,7 +187,7 @@ int bt_gatt_ots_obj_manager_obj_add(
 		if (!cur_obj->is_allocated) {
 			cur_obj->is_allocated = true;
 			cur_obj->val.id = obj_index_to_id(i);
-			sys_dlist_append(&obj_manager->list, &cur_obj->dnode);
+			list_add_tail(&obj_manager->list, &cur_obj->dnode);
 
 			*object = &cur_obj->val;
 			return 0;
@@ -215,7 +213,7 @@ int bt_gatt_ots_obj_manager_obj_delete(struct bt_gatt_ots_object *obj)
 	}
 
 	item->is_allocated = false;
-	sys_dlist_remove(&item->dnode);
+	list_delete(&item->dnode);
 
 	return 0;
 }
@@ -251,7 +249,7 @@ void *bt_gatt_ots_obj_manager_assign(void)
 	}
 
 	cur_manager->is_assigned = true;
-	sys_dlist_init(&cur_manager->list);
+	list_initialize(&cur_manager->list);
 
 	return cur_manager;
 }

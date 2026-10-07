@@ -18,7 +18,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/atomic.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util_macro.h>
 
 /* LL connection parameters */
@@ -352,7 +352,7 @@ struct bt_dev_le {
 	 *
 	 * Each element in this list contains a reference to its `conn` object.
 	 */
-	sys_slist_t		conn_ready;
+	struct list_node		conn_ready;
 };
 
 struct bt_dev_br {
@@ -443,7 +443,7 @@ struct bt_dev {
 	struct net_buf		*sent_cmd;
 
 	/* Queue for incoming HCI events & ACL data */
-	sys_slist_t rx_queue;
+	struct list_node rx_queue;
 
 	/* Queue for outgoing HCI commands */
 	struct k_fifo		cmd_tx_queue;
@@ -510,7 +510,7 @@ static inline void bt_dev_unlock(void)
 	__ASSERT(bt_dev.lock.owner == k_current_get(),			\
 		 "host lock not held by %p", k_current_get())
 extern const struct bt_conn_auth_cb *bt_auth;
-extern sys_slist_t bt_auth_info_cbs;
+extern struct list_node bt_auth_info_cbs;
 enum bt_security_err bt_security_err_get(uint8_t hci_err);
 
 /* Submit work to the general purpose Bluetooth workqueue.

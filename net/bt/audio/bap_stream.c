@@ -29,7 +29,7 @@
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
@@ -1288,12 +1288,12 @@ int bt_bap_stream_qos(struct bt_conn *conn, struct bt_bap_unicast_group *group)
 		return -EINVAL;
 	}
 
-	if (sys_slist_is_empty(&group->streams)) {
+	if (list_is_empty(&group->streams)) {
 		LOG_DBG("group stream list is empty");
 		return -ENOEXEC;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&group->streams, stream, _node) {
+	list_for_every_container(&group->streams, stream, _node) {
 		const struct bt_bap_ep *ep = stream->ep;
 
 		if (conn != stream->conn) {

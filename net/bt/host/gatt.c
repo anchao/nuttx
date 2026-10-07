@@ -32,7 +32,7 @@
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/iterable_sections.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/sys/clock.h>
@@ -73,7 +73,7 @@ struct ccc_store {
 struct gatt_sub {
 	uint8_t id;
 	bt_addr_le_t peer;
-	sys_slist_t list;
+	struct list_node list;
 };
 
 #if defined(CONFIG_BT_GATT_CLIENT)
@@ -84,14 +84,14 @@ struct gatt_sub {
 
 /**
  * Entry x is free for reuse whenever (subscriptions[x].peer == BT_ADDR_LE_ANY).
- * Invariant: (sys_slist_is_empty(subscriptions[x].list))
+ * Invariant: (list_is_empty(subscriptions[x].list))
  *              <=> (subscriptions[x].peer == BT_ADDR_LE_ANY).
  */
 static struct gatt_sub subscriptions[SUB_MAX];
-static sys_slist_t callback_list = SYS_SLIST_STATIC_INIT(&callback_list);
+static struct list_node callback_list = LIST_INITIAL_VALUE(callback_list);
 
 #if defined(CONFIG_BT_GATT_DYNAMIC_DB)
-static sys_slist_t db;
+static struct list_node db;
 #endif /* CONFIG_BT_GATT_DYNAMIC_DB */
 
 enum gatt_global_flags {
@@ -1153,17 +1153,17 @@ static void gatt_insert(struct bt_gatt_service *svc, uint16_t last_handle)
 	struct bt_gatt_service *tmp, *prev = NULL;
 
 	if (last_handle == 0 || svc->attrs[0].handle > last_handle) {
-		sys_slist_append(&db, &svc->node);
+		list_add_tail(&db, &svc->node);
 		return;
 	}
 
 	/* DB shall always have its service in ascending order */
-	SYS_SLIST_FOR_EACH_CONTAINER(&db, tmp, node) {
+	list_for_every_container(&db, tmp, node) {
 		if (tmp->attrs[0].handle > svc->attrs[0].handle) {
 			if (prev) {
-				sys_slist_insert(&db, &prev->node, &svc->node);
+				list_insert_after(&db, &prev->node, &svc->node);
 			} else {
-				sys_slist_prepend(&db, &svc->node);
+				list_add_head(&db, &svc->node);
 			}
 			return;
 		}
@@ -1181,13 +1181,13 @@ static int gatt_register(struct bt_gatt_service *svc)
 
 	BT_DEV_LOCK_ASSERT();
 
-	if (sys_slist_is_empty(&db)) {
+	if (list_is_empty(&db)) {
 		handle = last_static_handle;
 		last_handle = 0;
 		goto populate;
 	}
 
-	last = SYS_SLIST_PEEK_TAIL_CONTAINER(&db, last, node);
+	last = list_peek_tail_container(&db, last, node);
 	handle = last->attrs[last->attr_count - 1].handle;
 	last_handle = handle;
 
@@ -1542,7 +1542,7 @@ submit:
 
 void bt_gatt_cb_register(struct bt_gatt_cb *cb)
 {
-	sys_slist_append(&callback_list, &cb->node);
+	list_add_tail(&callback_list, &cb->node);
 }
 
 int bt_gatt_cb_unregister(struct bt_gatt_cb *cb)
@@ -1551,7 +1551,7 @@ int bt_gatt_cb_unregister(struct bt_gatt_cb *cb)
 		return -EINVAL;
 	}
 
-	if (!sys_slist_find_and_remove(&callback_list, &cb->node)) {
+	if (!list_find_and_remove(&callback_list, &cb->node)) {
 		return -ENOENT;
 	}
 
@@ -1636,7 +1636,7 @@ static void gatt_unregister_ccc(struct bt_gatt_ccc_managed_user_data *ccc)
 
 static int gatt_unregister(struct bt_gatt_service *svc)
 {
-	if (!sys_slist_find_and_remove(&db, &svc->node)) {
+	if (!list_find_and_remove(&db, &svc->node)) {
 		return -ENOENT;
 	}
 
@@ -1763,10 +1763,10 @@ int bt_gatt_service_unregister(struct bt_gatt_service *svc)
 bool bt_gatt_service_is_registered(const struct bt_gatt_service *svc)
 {
 	bool registered = false;
-	sys_snode_t *node;
+	struct list_node *node;
 
 	bt_dev_lock();
-	SYS_SLIST_FOR_EACH_NODE(&db, node) {
+	list_for_every(&db, node) {
 		if (&svc->node == node) {
 			registered = true;
 			break;
@@ -2016,10 +2016,10 @@ static void foreach_attr_type_dyndb(uint16_t start_handle, uint16_t end_handle,
 	size_t i;
 	struct bt_gatt_service *svc;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&db, svc, node) {
+	list_for_every_container(&db, svc, node) {
 		struct bt_gatt_service *next;
 
-		next = SYS_SLIST_PEEK_NEXT_CONTAINER(svc, node);
+		next = list_next_container(&db, svc, node);
 		if (next) {
 			/* Skip ahead if start is not within service handles */
 			if (next->attrs[0].handle <= start_handle) {
@@ -3647,7 +3647,7 @@ bool bt_gatt_is_subscribed(struct bt_conn *conn,
 
 static bool gatt_sub_is_empty(struct gatt_sub *sub)
 {
-	return sys_slist_is_empty(&sub->list);
+	return list_is_empty(&sub->list);
 }
 
 /** @brief Free sub for reuse.
@@ -3659,12 +3659,12 @@ static void gatt_sub_free(struct gatt_sub *sub)
 }
 
 static void gatt_sub_remove(struct bt_conn *conn, struct gatt_sub *sub,
-			    sys_snode_t *prev,
+			    struct list_node *prev,
 			    struct bt_gatt_subscribe_params *params)
 {
 	if (params) {
 		/* Remove subscription from the list*/
-		sys_slist_remove(&sub->list, prev, &params->node);
+		list_remove(&sub->list, prev, &params->node);
 		/* Notify removal */
 		params->notify(conn, params, NULL, 0);
 	}
@@ -3763,7 +3763,7 @@ static void call_notify_cb_and_maybe_unsubscribe(struct bt_conn *conn, struct ga
 		return;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&sub->list, params, tmp, node) {
+	list_for_every_container_safe(&sub->list, params, tmp, node) {
 		if (handle != params->value_handle) {
 			continue;
 		}
@@ -3846,7 +3846,7 @@ static void remove_subscriptions(struct bt_conn *conn)
 {
 	struct gatt_sub *sub;
 	struct bt_gatt_subscribe_params *params, *tmp;
-	sys_snode_t *prev = NULL;
+	struct list_node *prev = NULL;
 
 	sub = gatt_sub_find(conn);
 	if (!sub) {
@@ -3854,7 +3854,7 @@ static void remove_subscriptions(struct bt_conn *conn)
 	}
 
 	/* Lookup existing subscriptions */
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&sub->list, params, tmp, node) {
+	list_for_every_container_safe(&sub->list, params, tmp, node) {
 		atomic_clear_bit(params->flags, BT_GATT_SUBSCRIBE_FLAG_SENT);
 
 		if (!bt_le_bond_exists(conn->id, &conn->le.dst) ||
@@ -5463,7 +5463,7 @@ static void gatt_write_ccc_rsp(struct bt_conn *conn, int err,
 	/* if write to CCC failed we remove subscription and notify app */
 	if (err) {
 		struct gatt_sub *sub;
-		sys_snode_t *node, *tmp, *prev;
+		struct list_node *node, *tmp, *prev;
 
 		sub = gatt_sub_find(conn);
 		if (!sub) {
@@ -5478,7 +5478,7 @@ static void gatt_write_ccc_rsp(struct bt_conn *conn, int err,
 
 		prev = NULL;
 
-		SYS_SLIST_FOR_EACH_NODE_SAFE(&sub->list, node, tmp) {
+		list_for_every_safe(&sub->list, node, tmp) {
 			if (node == &params->node) {
 				gatt_sub_remove(conn, sub, prev, params);
 				break;
@@ -5624,7 +5624,7 @@ int bt_gatt_subscribe(struct bt_conn *conn,
 #endif
 
 	/* Lookup existing subscriptions */
-	SYS_SLIST_FOR_EACH_CONTAINER(&sub->list, tmp, node) {
+	list_for_every_container(&sub->list, tmp, node) {
 		/* Fail if entry already exists */
 		if (tmp == params) {
 			gatt_sub_remove(conn, sub, NULL, NULL);
@@ -5658,7 +5658,7 @@ int bt_gatt_subscribe(struct bt_conn *conn,
 	 * Add subscription before write complete as some implementation were
 	 * reported to send notification before reply to CCC write.
 	 */
-	sys_slist_prepend(&sub->list, &params->node);
+	list_add_head(&sub->list, &params->node);
 
 	return 0;
 }
@@ -5679,7 +5679,7 @@ int bt_gatt_resubscribe(uint8_t id, const bt_addr_le_t *peer,
 	}
 
 	/* Lookup existing subscriptions */
-	SYS_SLIST_FOR_EACH_CONTAINER(&sub->list, tmp, node) {
+	list_for_every_container(&sub->list, tmp, node) {
 		/* Fail if entry already exists */
 		if (tmp == params) {
 			gatt_sub_remove(NULL, sub, NULL, NULL);
@@ -5687,7 +5687,7 @@ int bt_gatt_resubscribe(uint8_t id, const bt_addr_le_t *peer,
 		}
 	}
 
-	sys_slist_prepend(&sub->list, &params->node);
+	list_add_head(&sub->list, &params->node);
 	return 0;
 }
 
@@ -5739,7 +5739,7 @@ int bt_gatt_unsubscribe(struct bt_conn *conn,
 	}
 
 	/* Lookup existing subscriptions */
-	SYS_SLIST_FOR_EACH_CONTAINER(&sub->list, tmp, node) {
+	list_for_every_container(&sub->list, tmp, node) {
 		if (params == tmp) {
 			found = true;
 			continue;
@@ -5774,7 +5774,7 @@ int bt_gatt_unsubscribe(struct bt_conn *conn,
 		}
 	}
 
-	sys_slist_find_and_remove(&sub->list, &params->node);
+	list_find_and_remove(&sub->list, &params->node);
 
 	if (gatt_sub_is_empty(sub)) {
 		gatt_sub_free(sub);
@@ -5832,7 +5832,7 @@ static void add_subscriptions(struct bt_conn *conn)
 	}
 
 	/* Lookup existing subscriptions */
-	SYS_SLIST_FOR_EACH_CONTAINER(&sub->list, params, node) {
+	list_for_every_container(&sub->list, params, node) {
 		if (!atomic_test_bit(params->flags,
 				     BT_GATT_SUBSCRIBE_FLAG_SENT) &&
 		    !atomic_test_bit(params->flags,
@@ -6142,7 +6142,7 @@ void bt_gatt_att_max_mtu_changed(struct bt_conn *conn, uint16_t tx, uint16_t rx)
 {
 	struct bt_gatt_cb *cb, *tmp;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&callback_list, cb, tmp, node) {
+	list_for_every_container_safe(&callback_list, cb, tmp, node) {
 		if (cb->att_mtu_updated) {
 			cb->att_mtu_updated(conn, tx, rx);
 		}
@@ -6194,7 +6194,7 @@ static uint8_t gatt_central_addr_res_rsp(struct bt_conn *conn, uint8_t err,
 
 	params->func = NULL;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&bt_auth_info_cbs, listener, next, node) {
+	list_for_every_container_safe(&bt_auth_info_cbs, listener, next, node) {
 		if (listener->addr_res_support_read != NULL) {
 			listener->addr_res_support_read(conn, support);
 		}
@@ -6723,14 +6723,14 @@ static void bt_gatt_clear_subscriptions(uint8_t id, const bt_addr_le_t *addr)
 {
 	struct gatt_sub *sub;
 	struct bt_gatt_subscribe_params *params, *tmp;
-	sys_snode_t *prev = NULL;
+	struct list_node *prev = NULL;
 
 	sub = find_gatt_sub(id, addr);
 	if (!sub) {
 		return;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&sub->list, params, tmp,
+	list_for_every_container_safe(&sub->list, params, tmp,
 					  node) {
 		params->value = 0U;
 		gatt_sub_remove(NULL, sub, prev, params);

@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 
 /** Key size used in Bluetooth's ECC domain. */
 #define BT_ECC_KEY_SIZE            32
@@ -35,7 +35,7 @@ struct bt_pub_key_cb {
 	void (*func)(const uint8_t key[BT_PUB_KEY_LEN]);
 
 	/* Internal */
-	sys_snode_t node;
+	struct list_node node;
 };
 
 /*  @brief Check if public key is equal to the debug public key.

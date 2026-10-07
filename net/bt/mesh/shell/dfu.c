@@ -515,7 +515,7 @@ static struct {
 
 static void dfu_tx_prepare(void)
 {
-	sys_slist_init(&dfu_tx.inputs.targets);
+	list_initialize(&dfu_tx.inputs.targets);
 
 	for (size_t i = 0; i < dfu_tx.target_cnt; i++) {
 		/* Reset target context. */
@@ -526,7 +526,7 @@ static void dfu_tx_prepare(void)
 		dfu_tx.targets[i].blob.addr = addr;
 		dfu_tx.targets[i].blob.pull = &dfu_tx.pull[i];
 
-		sys_slist_append(&dfu_tx.inputs.targets, &dfu_tx.targets[i].blob.n);
+		list_add_tail(&dfu_tx.inputs.targets, &dfu_tx.targets[i].blob.n);
 	}
 }
 
@@ -558,7 +558,7 @@ static int cmd_dfu_target(const struct shell *sh, size_t argc, char *argv[])
 
 	dfu_tx.targets[dfu_tx.target_cnt].blob.addr = addr;
 	dfu_tx.targets[dfu_tx.target_cnt].img_idx = img_idx;
-	sys_slist_append(&dfu_tx.inputs.targets, &dfu_tx.targets[dfu_tx.target_cnt].blob.n);
+	list_add_tail(&dfu_tx.inputs.targets, &dfu_tx.targets[dfu_tx.target_cnt].blob.n);
 	dfu_tx.target_cnt++;
 
 	shell_print(sh, "Added target 0x%04x", addr);

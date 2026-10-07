@@ -270,7 +270,7 @@ struct bt_goep_transport_rfcomm_server {
 	int (*accept)(struct bt_conn *conn, struct bt_goep_transport_rfcomm_server *server,
 		      struct bt_goep **goep);
 
-	sys_snode_t node;
+	struct list_node node;
 };
 
 /** @brief Register GOEP RFCOMM server.
@@ -392,7 +392,7 @@ struct bt_goep_transport_l2cap_server {
 	int (*accept)(struct bt_conn *conn, struct bt_goep_transport_l2cap_server *server,
 		      struct bt_goep **goep);
 
-	sys_snode_t node;
+	struct list_node node;
 };
 
 /** @brief Register GOEP L2CAP server.

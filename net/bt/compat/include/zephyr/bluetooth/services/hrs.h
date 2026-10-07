@@ -19,7 +19,7 @@
 
 #include <stdint.h>
 
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,7 +56,7 @@ struct bt_hrs_cb {
 	int (*ctrl_point_write)(uint8_t request);
 
 	/** Internal member to form a list of callbacks */
-	sys_snode_t _node;
+	struct list_node _node;
 };
 
 /** @brief Heart rate service callback register

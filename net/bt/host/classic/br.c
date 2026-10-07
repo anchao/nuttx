@@ -34,7 +34,7 @@ enum __packed resolve_name_state {
 struct bt_br_discovery_result *discovery_results;
 static size_t discovery_results_size;
 static size_t discovery_results_count;
-static sys_slist_t discovery_cbs = SYS_SLIST_STATIC_INIT(&discovery_cbs);
+static struct list_node discovery_cbs = LIST_INITIAL_VALUE(discovery_cbs);
 
 static bt_br_conn_req_func_t br_conn_req_func;
 
@@ -430,7 +430,7 @@ static void report_discovery_results(void)
 
 	atomic_clear_bit(bt_dev.flags, BT_DEV_INQUIRY);
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&discovery_cbs, listener, next, node) {
+	list_for_every_container_safe(&discovery_cbs, listener, next, node) {
 		if (listener->timeout) {
 			listener->timeout(discovery_results, discovery_results_count);
 		}
@@ -536,7 +536,7 @@ void bt_hci_inquiry_result_with_rssi(struct net_buf *buf)
 		/* we could reuse slot so make sure EIR is cleared */
 		(void)memset(result->eir, 0, sizeof(result->eir));
 
-		SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&discovery_cbs, listener, next, node) {
+		list_for_every_container_safe(&discovery_cbs, listener, next, node) {
 			if (listener->recv) {
 				listener->recv(result);
 			}
@@ -570,7 +570,7 @@ void bt_hci_extended_inquiry_result(struct net_buf *buf)
 	memcpy(result->cod, evt->cod, 3);
 	memcpy(result->eir, evt->eir, sizeof(result->eir));
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&discovery_cbs, listener, next, node) {
+	list_for_every_container_safe(&discovery_cbs, listener, next, node) {
 		if (listener->recv) {
 			listener->recv(result);
 		}
@@ -637,7 +637,7 @@ void bt_hci_remote_name_request_complete(struct net_buf *buf)
 		eir += eir[0] + 1;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&discovery_cbs, listener, next, node) {
+	list_for_every_container_safe(&discovery_cbs, listener, next, node) {
 		if (listener->recv) {
 			listener->recv(result);
 		}
@@ -652,7 +652,7 @@ check_names:
 	/* all names resolved, report discovery results */
 	atomic_clear_bit(bt_dev.flags, BT_DEV_INQUIRY);
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&discovery_cbs, listener, next, node) {
+	list_for_every_container_safe(&discovery_cbs, listener, next, node) {
 		if (listener->timeout) {
 			listener->timeout(discovery_results, discovery_results_count);
 		}
@@ -1161,12 +1161,12 @@ int bt_br_discovery_stop(void)
 
 void bt_br_discovery_cb_register(struct bt_br_discovery_cb *cb)
 {
-	sys_slist_append(&discovery_cbs, &cb->node);
+	list_add_tail(&discovery_cbs, &cb->node);
 }
 
 void bt_br_discovery_cb_unregister(struct bt_br_discovery_cb *cb)
 {
-	sys_slist_find_and_remove(&discovery_cbs, &cb->node);
+	list_find_and_remove(&discovery_cbs, &cb->node);
 }
 
 static int write_scan_enable(uint8_t scan)
@@ -1641,7 +1641,7 @@ static void unpair(const bt_addr_t *addr)
 
 	bt_keys_link_key_clear_addr(addr);
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&bt_auth_info_cbs, listener,
+	list_for_every_container_safe(&bt_auth_info_cbs, listener,
 					  next, node) {
 		if (listener->br_bond_deleted) {
 			listener->br_bond_deleted(addr);

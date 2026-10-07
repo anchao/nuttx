@@ -40,7 +40,7 @@
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util_macro.h>
 
 #ifdef __cplusplus
@@ -745,7 +745,7 @@ struct bt_bap_stream {
 
 	/** @cond INTERNAL_HIDDEN */
 	/** Internally used list node */
-	sys_snode_t _node;
+	struct list_node _node;
 	/** @endcond */
 };
 
@@ -1868,7 +1868,7 @@ struct bt_bap_unicast_client_cb {
 
 	/** @cond INTERNAL_HIDDEN */
 	/** Internally used field for list handling */
-	sys_snode_t _node;
+	struct list_node _node;
 	/** @endcond */
 };
 
@@ -2176,7 +2176,7 @@ struct bt_bap_broadcast_source_cb {
 
 	/** @cond INTERNAL_HIDDEN */
 	/** Internally used field for list handling */
-	sys_snode_t _node;
+	struct list_node _node;
 	/** @endcond */
 };
 
@@ -2490,7 +2490,7 @@ struct bt_bap_broadcast_sink_cb {
 
 	/** @cond INTERNAL_HIDDEN */
 	/** Internally used list node */
-	sys_snode_t _node;
+	struct list_node _node;
 	/** @endcond */
 };
 
@@ -2873,7 +2873,7 @@ struct bt_bap_broadcast_assistant_cb {
 
 	/** @cond INTERNAL_HIDDEN */
 	/** Internally used list node */
-	sys_snode_t _node;
+	struct list_node _node;
 	/** @endcond */
 };
 

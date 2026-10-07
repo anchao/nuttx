@@ -54,7 +54,7 @@ struct bt_mesh_blob_target_pull {
 /** BLOB Transfer Client Target node. */
 struct bt_mesh_blob_target {
 	/** Linked list node */
-	sys_snode_t n;
+	struct list_node n;
 
 	/** Target node address. */
 	uint16_t addr;
@@ -111,7 +111,7 @@ struct bt_mesh_blob_cli_inputs {
 	/** Linked list of Target nodes. Each node should point to @ref
 	 *  bt_mesh_blob_target::n.
 	 */
-	sys_slist_t targets;
+	struct list_node targets;
 
 	/** AppKey index to send with. */
 	uint16_t app_idx;

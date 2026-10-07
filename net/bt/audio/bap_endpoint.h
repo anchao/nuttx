@@ -19,7 +19,7 @@
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/atomic.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/types.h>
 
 #include "bap_stream.h"
@@ -88,7 +88,7 @@ struct bt_bap_unicast_group {
 	struct bt_iso_cig *cig;
 	/* The ISO API for CIG creation requires an array of pointers to ISO channels */
 	struct bt_iso_chan *cis[UNICAST_GROUP_STREAM_CNT];
-	sys_slist_t streams;
+	struct list_node streams;
 
 	/* Configured sink presentation delay */
 	uint32_t sink_pd;
@@ -121,7 +121,7 @@ struct bt_bap_broadcast_source {
 	uint8_t broadcast_code[BT_ISO_BROADCAST_CODE_SIZE];
 
 	/* The subgroups containing the streams used to create the broadcast source */
-	sys_slist_t subgroups;
+	struct list_node subgroups;
 };
 
 enum bt_bap_broadcast_sink_flag {
@@ -174,7 +174,7 @@ struct bt_bap_broadcast_sink {
 	struct bt_bap_broadcast_sink_subgroup subgroups[CONFIG_BT_BAP_BROADCAST_SNK_SUBGROUP_COUNT];
 	const struct bt_bap_scan_delegator_recv_state *recv_state;
 	/* The streams used to create the broadcast sink */
-	sys_slist_t streams;
+	struct list_node streams;
 
 	/** Flags */
 	ATOMIC_DEFINE(flags, BT_BAP_BROADCAST_SINK_FLAG_NUM_FLAGS);

@@ -20,15 +20,15 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/atomic.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
 
 LOG_MODULE_REGISTER(bt_ccp_call_control_client, CONFIG_BT_CCP_CALL_CONTROL_CLIENT_LOG_LEVEL);
 
-static sys_slist_t ccp_call_control_client_cbs =
-	SYS_SLIST_STATIC_INIT(&ccp_call_control_client_cbs);
+static struct list_node ccp_call_control_client_cbs =
+	LIST_INITIAL_VALUE(ccp_call_control_client_cbs);
 
 /* A service instance can either be a GTBS or a TBS instance */
 struct bt_ccp_call_control_client_bearer {
@@ -146,7 +146,7 @@ static void tbs_client_discover_cb(struct bt_conn *conn, int err, uint8_t tbs_co
 
 	atomic_clear_bit(client->flags, CCP_CALL_CONTROL_CLIENT_FLAG_BUSY);
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&ccp_call_control_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&ccp_call_control_client_cbs, listener, next, _node) {
 		if (listener->discover != NULL) {
 			void *user_data =
 				COND_CODE_1(CONFIG_BT_CCP_CALL_CONTROL_CLIENT_CB_USER_DATA,
@@ -225,11 +225,11 @@ int bt_ccp_call_control_client_register_cb(struct bt_ccp_call_control_client_cb 
 		return -EINVAL;
 	}
 
-	if (sys_slist_find(&ccp_call_control_client_cbs, &cb->_node, NULL)) {
+	if (list_find(&ccp_call_control_client_cbs, &cb->_node, NULL)) {
 		return -EEXIST;
 	}
 
-	sys_slist_append(&ccp_call_control_client_cbs, &cb->_node);
+	list_add_tail(&ccp_call_control_client_cbs, &cb->_node);
 
 	return 0;
 }
@@ -241,7 +241,7 @@ int bt_ccp_call_control_client_unregister_cb(struct bt_ccp_call_control_client_c
 		return -EINVAL;
 	}
 
-	if (!sys_slist_find_and_remove(&ccp_call_control_client_cbs, &cb->_node)) {
+	if (!list_find_and_remove(&ccp_call_control_client_cbs, &cb->_node)) {
 		return -EALREADY;
 	}
 
@@ -326,7 +326,7 @@ static void tbs_client_read_bearer_provider_name_cb(struct bt_conn *conn, int er
 		return;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&ccp_call_control_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&ccp_call_control_client_cbs, listener, next, _node) {
 		if (listener->bearer_provider_name != NULL) {
 			void *user_data =
 				COND_CODE_1(CONFIG_BT_CCP_CALL_CONTROL_CLIENT_CB_USER_DATA,
@@ -386,7 +386,7 @@ static void tbs_client_read_bearer_uci_cb(struct bt_conn *conn, int err, uint8_t
 		return;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&ccp_call_control_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&ccp_call_control_client_cbs, listener, next, _node) {
 		if (listener->bearer_uci != NULL) {
 			void *user_data =
 				COND_CODE_1(CONFIG_BT_CCP_CALL_CONTROL_CLIENT_CB_USER_DATA,
@@ -445,7 +445,7 @@ static void tbs_client_read_bearer_tech_cb(struct bt_conn *conn, int err, uint8_
 		return;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&ccp_call_control_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&ccp_call_control_client_cbs, listener, next, _node) {
 		if (listener->bearer_tech != NULL) {
 			void *user_data =
 				COND_CODE_1(CONFIG_BT_CCP_CALL_CONTROL_CLIENT_CB_USER_DATA,
@@ -504,7 +504,7 @@ static void tbs_client_read_bearer_uri_schemes_cb(struct bt_conn *conn, int err,
 		return;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&ccp_call_control_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&ccp_call_control_client_cbs, listener, next, _node) {
 		if (listener->bearer_uri_schemes != NULL) {
 			void *user_data =
 				COND_CODE_1(CONFIG_BT_CCP_CALL_CONTROL_CLIENT_CB_USER_DATA,

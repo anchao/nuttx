@@ -531,7 +531,7 @@ struct bt_obex_server {
 	uint32_t _conn_id;
 
 	/** @internal sys snode */
-	sys_snode_t _node;
+	struct list_node _node;
 };
 
 /** @brief OBEX client structure. */
@@ -577,7 +577,7 @@ struct bt_obex_client {
 	uint32_t _conn_id;
 
 	/** @internal sys snode */
-	sys_snode_t _node;
+	struct list_node _node;
 };
 
 /** @brief OBEX structure. */
@@ -607,10 +607,10 @@ struct bt_obex {
 	atomic_ptr_t _active_server;
 
 	/** @internal OBEX clients */
-	sys_slist_t _clients;
+	struct list_node _clients;
 
 	/** @internal OBEX servers */
-	sys_slist_t _servers;
+	struct list_node _servers;
 };
 
 /** @brief OBEX server register

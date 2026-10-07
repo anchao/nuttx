@@ -27,7 +27,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/atomic.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
 #include <zephyr/types.h>
@@ -39,7 +39,7 @@
 LOG_MODULE_REGISTER(bt_micp_mic_ctlr, CONFIG_BT_MICP_MIC_CTLR_LOG_LEVEL);
 
 /* Callback functions */
-static sys_slist_t micp_mic_ctlr_cbs = SYS_SLIST_STATIC_INIT(&micp_mic_ctlr_cbs);
+static struct list_node micp_mic_ctlr_cbs = LIST_INITIAL_VALUE(micp_mic_ctlr_cbs);
 
 static struct bt_micp_mic_ctlr mic_ctlrs[CONFIG_BT_MAX_CONN];
 static const struct bt_uuid *mics_uuid = BT_UUID_MICS;
@@ -67,7 +67,7 @@ static void micp_mic_ctlr_mute_changed(struct bt_micp_mic_ctlr *mic_ctlr, int er
 {
 	struct bt_micp_mic_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&micp_mic_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&micp_mic_ctlr_cbs, listener, next, _node) {
 		if (listener->mute) {
 			listener->mute(mic_ctlr, err, mute_val);
 		}
@@ -78,7 +78,7 @@ static void micp_mic_ctlr_mute_written(struct bt_micp_mic_ctlr *mic_ctlr, int er
 {
 	struct bt_micp_mic_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&micp_mic_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&micp_mic_ctlr_cbs, listener, next, _node) {
 		if (mute_val == BT_MICP_MUTE_UNMUTED) {
 			if (listener->unmute_written) {
 				listener->unmute_written(mic_ctlr, err);
@@ -97,7 +97,7 @@ static void micp_mic_ctlr_discover_complete(struct bt_micp_mic_ctlr *mic_ctlr, i
 
 	atomic_clear_bit(mic_ctlr->flags, BT_MICP_MIC_CTLR_FLAG_BUSY);
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&micp_mic_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&micp_mic_ctlr_cbs, listener, next, _node) {
 		if (listener->discover) {
 			uint8_t aics_cnt = 0U;
 
@@ -204,7 +204,7 @@ static void micp_mic_ctlr_aics_state_cb(struct bt_aics *inst, int err, int8_t ga
 {
 	struct bt_micp_mic_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&micp_mic_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&micp_mic_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.state) {
 			listener->aics_cb.state(inst, err, gain, mute, mode);
 		}
@@ -216,7 +216,7 @@ static void micp_mic_ctlr_aics_gain_setting_cb(struct bt_aics *inst, int err, ui
 {
 	struct bt_micp_mic_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&micp_mic_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&micp_mic_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.gain_setting) {
 			listener->aics_cb.gain_setting(inst, err, units, minimum, maximum);
 		}
@@ -227,7 +227,7 @@ static void micp_mic_ctlr_aics_type_cb(struct bt_aics *inst, int err, uint8_t ty
 {
 	struct bt_micp_mic_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&micp_mic_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&micp_mic_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.type) {
 			listener->aics_cb.type(inst, err, type);
 		}
@@ -238,7 +238,7 @@ static void micp_mic_ctlr_aics_status_cb(struct bt_aics *inst, int err, bool act
 {
 	struct bt_micp_mic_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&micp_mic_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&micp_mic_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.status) {
 			listener->aics_cb.status(inst, err, active);
 		}
@@ -249,7 +249,7 @@ static void micp_mic_ctlr_aics_description_cb(struct bt_aics *inst, int err, cha
 {
 	struct bt_micp_mic_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&micp_mic_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&micp_mic_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.description) {
 			listener->aics_cb.description(inst, err, description);
 		}
@@ -277,7 +277,7 @@ static void micp_mic_ctlr_aics_discover_cb(struct bt_aics *inst, int err)
 		micp_mic_ctlr_discover_complete(mic_ctlr, err);
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&micp_mic_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&micp_mic_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.discover) {
 			listener->aics_cb.discover(inst, err);
 		}
@@ -288,7 +288,7 @@ static void micp_mic_ctlr_aics_set_gain_cb(struct bt_aics *inst, int err)
 {
 	struct bt_micp_mic_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&micp_mic_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&micp_mic_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.set_gain) {
 			listener->aics_cb.set_gain(inst, err);
 		}
@@ -299,7 +299,7 @@ static void micp_mic_ctlr_aics_unmute_cb(struct bt_aics *inst, int err)
 {
 	struct bt_micp_mic_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&micp_mic_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&micp_mic_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.unmute) {
 			listener->aics_cb.unmute(inst, err);
 		}
@@ -310,7 +310,7 @@ static void micp_mic_ctlr_aics_mute_cb(struct bt_aics *inst, int err)
 {
 	struct bt_micp_mic_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&micp_mic_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&micp_mic_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.mute) {
 			listener->aics_cb.mute(inst, err);
 		}
@@ -321,7 +321,7 @@ static void micp_mic_ctlr_aics_set_manual_mode_cb(struct bt_aics *inst, int err)
 {
 	struct bt_micp_mic_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&micp_mic_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&micp_mic_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.set_manual_mode) {
 			listener->aics_cb.set_manual_mode(inst, err);
 		}
@@ -332,7 +332,7 @@ static void micp_mic_ctlr_aics_set_auto_mode_cb(struct bt_aics *inst, int err)
 {
 	struct bt_micp_mic_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&micp_mic_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&micp_mic_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.set_auto_mode) {
 			listener->aics_cb.set_auto_mode(inst, err);
 		}
@@ -649,14 +649,14 @@ int bt_micp_mic_ctlr_cb_register(struct bt_micp_mic_ctlr_cb *cb)
 		return -EINVAL;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&micp_mic_ctlr_cbs, tmp, _node) {
+	list_for_every_container(&micp_mic_ctlr_cbs, tmp, _node) {
 		if (tmp == cb) {
 			LOG_DBG("Already registered");
 			return -EALREADY;
 		}
 	}
 
-	sys_slist_append(&micp_mic_ctlr_cbs, &cb->_node);
+	list_add_tail(&micp_mic_ctlr_cbs, &cb->_node);
 
 	return 0;
 }

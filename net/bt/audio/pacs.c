@@ -33,7 +33,7 @@
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
@@ -50,7 +50,7 @@ LOG_MODULE_REGISTER(bt_pacs, CONFIG_BT_PACS_LOG_LEVEL);
 #define READ_BUF_SEM_TIMEOUT K_MSEC(50U)
 
 #if defined(CONFIG_BT_PAC_SRC)
-static sys_slist_t src_pac_list = SYS_SLIST_STATIC_INIT(&src_pac_list);
+static struct list_node src_pac_list = LIST_INITIAL_VALUE(src_pac_list);
 static uint16_t src_supported_contexts;
 #if defined(CONFIG_BT_PAC_SRC_LOC)
 static uint32_t pacs_src_location;
@@ -58,7 +58,7 @@ static uint32_t pacs_src_location;
 #endif /* CONFIG_BT_PAC_SRC */
 
 #if defined(CONFIG_BT_PAC_SNK)
-static sys_slist_t snk_pac_list = SYS_SLIST_STATIC_INIT(&snk_pac_list);
+static struct list_node snk_pac_list = LIST_INITIAL_VALUE(snk_pac_list);
 static uint16_t snk_supported_contexts;
 #if defined(CONFIG_BT_PAC_SNK_LOC)
 static uint32_t pacs_snk_location;
@@ -216,19 +216,19 @@ fail:
 	return false;
 }
 
-static void foreach_cap(sys_slist_t *list, bt_pacs_cap_foreach_func_t func,
+static void foreach_cap(struct list_node *list, bt_pacs_cap_foreach_func_t func,
 			void *user_data)
 {
 	struct bt_pacs_cap *cap;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(list, cap, _node) {
+	list_for_every_container(list, cap, _node) {
 		if (!func(cap, user_data)) {
 			break;
 		}
 	}
 }
 
-static void get_pac_records(sys_slist_t *list, struct net_buf_simple *buf)
+static void get_pac_records(struct list_node *list, struct net_buf_simple *buf)
 {
 	struct pac_records_build_data data;
 
@@ -625,7 +625,7 @@ static ssize_t src_loc_write(struct bt_conn *conn,
 #endif /* CONFIG_BT_PAC_SRC_LOC_WRITEABLE */
 
 
-static sys_slist_t *pacs_get_pac(enum bt_audio_dir dir)
+static struct list_node *pacs_get_pac(enum bt_audio_dir dir)
 {
 	switch (dir) {
 #if defined(CONFIG_BT_PAC_SNK)
@@ -1024,7 +1024,7 @@ static int pac_notify_loc(struct bt_conn *conn, enum bt_audio_dir dir)
 static int pac_notify(struct bt_conn *conn, enum bt_audio_dir dir)
 {
 	int err = 0;
-	sys_slist_t *pac;
+	struct list_node *pac;
 	const struct bt_uuid *uuid;
 
 	switch (dir) {
@@ -1405,7 +1405,7 @@ static struct bt_conn_auth_info_cb auth_callbacks = {
 
 void bt_pacs_cap_foreach(enum bt_audio_dir dir, bt_pacs_cap_foreach_func_t func, void *user_data)
 {
-	sys_slist_t *pac;
+	struct list_node *pac;
 
 	if (func == NULL) {
 		LOG_ERR("func is NULL");
@@ -1440,7 +1440,7 @@ int bt_pacs_cap_register(enum bt_audio_dir dir, struct bt_pacs_cap *cap)
 {
 	const struct bt_audio_codec_cap *codec_cap;
 	static bool first_register;
-	sys_slist_t *pac;
+	struct list_node *pac;
 
 	if (!cap || !cap->codec_cap) {
 		return -EINVAL;
@@ -1456,7 +1456,7 @@ int bt_pacs_cap_register(enum bt_audio_dir dir, struct bt_pacs_cap *cap)
 	LOG_DBG("cap %p dir %s codec_cap id 0x%02x codec_cap cid 0x%04x codec_cap vid 0x%04x", cap,
 		bt_audio_dir_to_str(dir), codec_cap->id, codec_cap->cid, codec_cap->vid);
 
-	sys_slist_append(pac, &cap->_node);
+	list_add_tail(pac, &cap->_node);
 
 	if (!first_register) {
 		__maybe_unused int err;
@@ -1486,7 +1486,7 @@ int bt_pacs_cap_register(enum bt_audio_dir dir, struct bt_pacs_cap *cap)
 /* Unregister Audio Capability */
 int bt_pacs_cap_unregister(enum bt_audio_dir dir, struct bt_pacs_cap *cap)
 {
-	sys_slist_t *pac;
+	struct list_node *pac;
 
 	if (!cap) {
 		return -EINVAL;
@@ -1499,7 +1499,7 @@ int bt_pacs_cap_unregister(enum bt_audio_dir dir, struct bt_pacs_cap *cap)
 
 	LOG_DBG("cap %p dir %s", cap, bt_audio_dir_to_str(dir));
 
-	if (!sys_slist_find_and_remove(pac, &cap->_node)) {
+	if (!list_find_and_remove(pac, &cap->_node)) {
 		return -ENOENT;
 	}
 

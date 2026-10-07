@@ -18,7 +18,7 @@
 #include <zephyr/sys/math_extras.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/debug/stack.h>
 #include <zephyr/sys/__assert.h>
 

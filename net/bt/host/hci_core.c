@@ -40,7 +40,7 @@
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/clock.h>
@@ -725,13 +725,13 @@ static void hci_num_completed_packets(struct net_buf *buf)
 		}
 
 		while (count--) {
-			sys_snode_t *node;
+			struct list_node *node;
 			unsigned int key;
 
 			/* move the next TX context from the `pending` list to
 			 * the `complete` list.
 			 */
-			node = sys_slist_get(&conn->tx_pending);
+			node = list_remove_head(&conn->tx_pending);
 
 			if (!node) {
 				LOG_ERR("packets count mismatch");
@@ -745,7 +745,7 @@ static void hci_num_completed_packets(struct net_buf *buf)
 			 * which uses the same lock.
 			 */
 			key = irq_lock();
-			sys_slist_append(&conn->tx_complete, node);
+			list_add_tail(&conn->tx_complete, node);
 			irq_unlock(key);
 
 			/* align the `pending` value */
@@ -2321,7 +2321,7 @@ static void unpair(uint8_t id, const bt_addr_le_t *addr)
 	if (IS_ENABLED(CONFIG_BT_SMP) && was_bonded) {
 		struct bt_conn_auth_info_cb *listener, *next;
 
-		SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&bt_auth_info_cbs, listener,
+		list_for_every_container_safe(&bt_auth_info_cbs, listener,
 						  next, node) {
 			if (listener->bond_deleted) {
 				listener->bond_deleted(id, addr);
@@ -4872,7 +4872,7 @@ static void rx_work_handler(struct k_work *work)
 	 * work queue to get a chance at running, which wouldn't be possible if
 	 * we used a while() loop with a k_yield() statement.
 	 */
-	if (!sys_slist_is_empty(&bt_dev.rx_queue)) {
+	if (!list_is_empty(&bt_dev.rx_queue)) {
 		err = bt_work_submit(&rx_work);
 		if (err < 0) {
 			LOG_ERR("Could not submit rx_work: %d", err);

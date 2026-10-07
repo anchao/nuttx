@@ -5,8 +5,8 @@
 
 void k_fifo_init(struct k_fifo *fifo)
 {
-    sys_sflist_init(&fifo->data_q);
-    sys_dlist_init(&fifo->wait_q);
+    list_initialize(&fifo->data_q);
+    list_initialize(&fifo->wait_q);
     fifo->lock = SP_UNLOCKED;
 }
 
@@ -20,19 +20,19 @@ void k_fifo_cancel_wait(struct k_fifo *fifo)
 void k_fifo_put(struct k_fifo *fifo, void *data)
 {
     irqstate_t flags = spin_lock_irqsave(&fifo->lock);
-    sys_sflist_append(&fifo->data_q, (sys_sfnode_t *)data);
+    list_add_tail(&fifo->data_q, (struct list_node *)data);
     spin_unlock_irqrestore(&fifo->lock, flags);
 }
 
 void *k_fifo_get(struct k_fifo *fifo, k_timeout_t timeout)
 {
     irqstate_t flags;
-    sys_sfnode_t *node;
+    struct list_node *node;
 
     if (K_TIMEOUT_EQ(timeout, K_NO_WAIT))
         {
             flags = spin_lock_irqsave(&fifo->lock);
-            node = sys_sflist_get(&fifo->data_q);
+            node = list_remove_head(&fifo->data_q);
             spin_unlock_irqrestore(&fifo->lock, flags);
             return node;
         }
@@ -43,7 +43,7 @@ void *k_fifo_get(struct k_fifo *fifo, k_timeout_t timeout)
             while (1)
                 {
                     flags = spin_lock_irqsave(&fifo->lock);
-                    node = sys_sflist_get(&fifo->data_q);
+                    node = list_remove_head(&fifo->data_q);
                     spin_unlock_irqrestore(&fifo->lock, flags);
                     if (node)
                         return node;
@@ -58,7 +58,7 @@ void *k_fifo_get(struct k_fifo *fifo, k_timeout_t timeout)
         while (k_uptime_ticks() < deadline)
             {
                 flags = spin_lock_irqsave(&fifo->lock);
-                node = sys_sflist_get(&fifo->data_q);
+                node = list_remove_head(&fifo->data_q);
                 spin_unlock_irqrestore(&fifo->lock, flags);
                 if (node)
                     return node;
@@ -72,7 +72,7 @@ void *k_fifo_get(struct k_fifo *fifo, k_timeout_t timeout)
 bool k_fifo_is_empty(struct k_fifo *fifo)
 {
     irqstate_t flags = spin_lock_irqsave(&fifo->lock);
-    bool empty = sys_sflist_is_empty(&fifo->data_q);
+    bool empty = list_is_empty(&fifo->data_q);
     spin_unlock_irqrestore(&fifo->lock, flags);
     return empty;
 }
@@ -80,7 +80,7 @@ bool k_fifo_is_empty(struct k_fifo *fifo)
 void *k_fifo_peek_head(struct k_fifo *fifo)
 {
     irqstate_t flags = spin_lock_irqsave(&fifo->lock);
-    sys_sfnode_t *node = sys_sflist_peek_head(&fifo->data_q);
+    struct list_node *node = list_peek_head(&fifo->data_q);
     spin_unlock_irqrestore(&fifo->lock, flags);
     return node;
 }
@@ -88,7 +88,7 @@ void *k_fifo_peek_head(struct k_fifo *fifo)
 void *k_fifo_peek_tail(struct k_fifo *fifo)
 {
     irqstate_t flags = spin_lock_irqsave(&fifo->lock);
-    sys_sfnode_t *node = sys_sflist_peek_tail(&fifo->data_q);
+    struct list_node *node = list_peek_tail(&fifo->data_q);
     spin_unlock_irqrestore(&fifo->lock, flags);
     return node;
 }
@@ -96,7 +96,7 @@ void *k_fifo_peek_tail(struct k_fifo *fifo)
 void z_k_queue_prepend_fifo(struct k_fifo *fifo, void *data)
 {
     irqstate_t flags = spin_lock_irqsave(&fifo->lock);
-    sys_sflist_prepend(&fifo->data_q, (sys_sfnode_t *)data);
+    list_add_head(&fifo->data_q, (struct list_node *)data);
     spin_unlock_irqrestore(&fifo->lock, flags);
 }
 
@@ -106,8 +106,8 @@ bool z_k_queue_remove_fifo(struct k_fifo *fifo, void *data)
     bool removed;
 
     flags = spin_lock_irqsave(&fifo->lock);
-    removed = sys_sflist_find_and_remove(&fifo->data_q,
-                                         (sys_sfnode_t *)data);
+    removed = list_find_and_remove(&fifo->data_q,
+                                         (struct list_node *)data);
     spin_unlock_irqrestore(&fifo->lock, flags);
 
     return removed;

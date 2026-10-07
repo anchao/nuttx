@@ -919,7 +919,7 @@ static struct bt_obex_server *obex_get_server_from_conn_id(struct bt_obex *obex,
 {
 	struct bt_obex_server *server, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&obex->_servers, server, next, _node) {
+	list_for_every_container_safe(&obex->_servers, server, next, _node) {
 		if (server->_conn_id == conn_id) {
 			return server;
 		}
@@ -931,7 +931,7 @@ static struct bt_obex_server *obex_get_server_from_uuid(struct bt_obex *obex, st
 {
 	struct bt_obex_server *server, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&obex->_servers, server, next, _node) {
+	list_for_every_container_safe(&obex->_servers, server, next, _node) {
 		if (server->uuid != NULL && bt_uuid_cmp(&server->uuid->uuid, uuid) == 0) {
 			return server;
 		}
@@ -944,7 +944,7 @@ static struct bt_obex_server *obex_get_server_with_state(struct bt_obex *obex,
 {
 	struct bt_obex_server *server, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&obex->_servers, server, next, _node) {
+	list_for_every_container_safe(&obex->_servers, server, next, _node) {
 		if (server->uuid == NULL && atomic_get(&server->_state) == state) {
 			return server;
 		}
@@ -1023,9 +1023,9 @@ static int obex_server_recv(struct bt_obex *obex, struct net_buf *buf)
 			server = obex_get_server_from_conn_id(obex, conn_id);
 		} else if (atomic_ptr_get(&obex->_active_server) != NULL) {
 			server = atomic_ptr_get(&obex->_active_server);
-		} else if (sys_slist_len(&obex->_servers) == 1) {
+		} else if (list_length(&obex->_servers) == 1) {
 			/* Only if the count of servers is 1, use it as default. */
-			server = OBEX_SERVER(sys_slist_peek_head(&obex->_servers));
+			server = OBEX_SERVER(list_peek_head(&obex->_servers));
 		}
 	}
 
@@ -1201,7 +1201,7 @@ static int obex_client_connect(struct bt_obex_client *client, uint8_t rsp_code, 
 		   rsp_code == BT_OBEX_RSP_CODE_SUCCESS ? BT_OBEX_CONNECTED : BT_OBEX_DISCONNECTED);
 
 	if (atomic_get(&client->_state) == BT_OBEX_DISCONNECTED) {
-		sys_slist_find_and_remove(&client->obex->_clients, &client->_node);
+		list_find_and_remove(&client->obex->_clients, &client->_node);
 	}
 
 	obex_client_save_last_operation(client, BT_OBEX_OPCODE_CONNECT);
@@ -1232,7 +1232,7 @@ static int obex_client_disconn(struct bt_obex_client *client, uint8_t rsp_code, 
 		   rsp_code == BT_OBEX_RSP_CODE_SUCCESS ? BT_OBEX_DISCONNECTED : BT_OBEX_CONNECTED);
 
 	if (atomic_get(&client->_state) == BT_OBEX_DISCONNECTED) {
-		sys_slist_find_and_remove(&client->obex->_clients, &client->_node);
+		list_find_and_remove(&client->obex->_clients, &client->_node);
 	}
 
 	obex_client_save_last_operation(client, BT_OBEX_OPCODE_DISCONN);
@@ -1690,18 +1690,18 @@ int bt_obex_transport_disconnected(struct bt_obex *obex)
 	atomic_ptr_clear(&obex->_active_client);
 	atomic_ptr_clear(&obex->_last_client);
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&obex->_clients, client, cnext, _node) {
+	list_for_every_container_safe(&obex->_clients, client, cnext, _node) {
 		atomic_clear(&client->_opcode);
 		atomic_clear(&client->_pre_opcode);
 		atomic_set(&client->_state, BT_OBEX_DISCONNECTED);
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&obex->_servers, server, snext, _node) {
+	list_for_every_container_safe(&obex->_servers, server, snext, _node) {
 		atomic_clear(&server->_opcode);
 		atomic_set(&server->_state, BT_OBEX_DISCONNECTED);
 	}
 
-	sys_slist_init(&obex->_clients);
+	list_initialize(&obex->_clients);
 	return 0;
 }
 
@@ -1752,12 +1752,12 @@ int bt_obex_server_register(struct bt_obex_server *server, const struct bt_uuid_
 		return -EINPROGRESS;
 	}
 
-	if (sys_slist_find(&server->obex->_servers, &server->_node, NULL)) {
+	if (list_find(&server->obex->_servers, &server->_node, NULL)) {
 		LOG_ERR("server %p has been registered", server);
 		return -EALREADY;
 	}
 
-	if (!sys_slist_is_empty(&server->obex->_servers) && server->uuid == NULL) {
+	if (!list_is_empty(&server->obex->_servers) && server->uuid == NULL) {
 		LOG_ERR("UUID of server %p should not be NULL", server);
 		return -EINVAL;
 	}
@@ -1768,7 +1768,7 @@ int bt_obex_server_register(struct bt_obex_server *server, const struct bt_uuid_
 
 	server->uuid = uuid;
 
-	sys_slist_append(&server->obex->_servers, &server->_node);
+	list_add_tail(&server->obex->_servers, &server->_node);
 
 	return 0;
 }
@@ -1780,7 +1780,7 @@ int bt_obex_server_unregister(struct bt_obex_server *server)
 		return -EINVAL;
 	}
 
-	if (!sys_slist_find(&server->obex->_servers, &server->_node, NULL)) {
+	if (!list_find(&server->obex->_servers, &server->_node, NULL)) {
 		LOG_ERR("server %p has not been registered", server);
 		return -EALREADY;
 	}
@@ -1790,7 +1790,7 @@ int bt_obex_server_unregister(struct bt_obex_server *server)
 		return -EINPROGRESS;
 	}
 
-	sys_slist_find_and_remove(&server->obex->_servers, &server->_node);
+	list_find_and_remove(&server->obex->_servers, &server->_node);
 
 	return 0;
 }
@@ -1831,7 +1831,7 @@ int bt_obex_connect(struct bt_obex_client *client, uint16_t mopl, struct net_buf
 		return -EINPROGRESS;
 	}
 
-	if (!sys_slist_is_empty(&client->obex->_clients) &&
+	if (!list_is_empty(&client->obex->_clients) &&
 	    !bt_obex_has_header(buf, BT_OBEX_HEADER_ID_TARGET)) {
 		LOG_ERR("The Header target should be added");
 		return -EINVAL;
@@ -1881,9 +1881,9 @@ int bt_obex_connect(struct bt_obex_client *client, uint16_t mopl, struct net_buf
 	client->tx.mopl = BT_OBEX_MIN_MTU;
 	atomic_set(&client->_state, BT_OBEX_CONNECTING);
 
-	if (!sys_slist_find(&client->obex->_clients, &client->_node, NULL)) {
+	if (!list_find(&client->obex->_clients, &client->_node, NULL)) {
 		appended = true;
-		sys_slist_append(&client->obex->_clients, &client->_node);
+		list_add_tail(&client->obex->_clients, &client->_node);
 	}
 
 	req_hdr = net_buf_push(buf, sizeof(*req_hdr));
@@ -1902,7 +1902,7 @@ int bt_obex_connect(struct bt_obex_client *client, uint16_t mopl, struct net_buf
 failed:
 	atomic_set(&client->_state, BT_OBEX_DISCONNECTED);
 	if (appended) {
-		sys_slist_find_and_remove(&client->obex->_clients, &client->_node);
+		list_find_and_remove(&client->obex->_clients, &client->_node);
 	}
 	atomic_set(&client->_flags, flags);
 	obex_client_clear_active_state(client);

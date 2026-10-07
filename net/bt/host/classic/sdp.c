@@ -76,7 +76,7 @@ struct bt_sdp {
 	struct net_buf_simple_state recv_state;
 };
 
-static sys_slist_t sdp_db = SYS_SLIST_STATIC_INIT(&sdp_db);
+static struct list_node sdp_db = LIST_INITIAL_VALUE(sdp_db);
 
 static struct bt_sdp bt_sdp_pool[CONFIG_BT_MAX_CONN];
 
@@ -494,7 +494,7 @@ static struct bt_sdp_record *bt_sdp_foreach_svc(bt_sdp_svc_func_t func, void *us
 {
 	struct bt_sdp_record *rec, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&sdp_db, rec, next, node) {
+	list_for_every_container_safe(&sdp_db, rec, next, node) {
 		if (func(rec, user_data) == BT_SDP_ITER_STOP) {
 			break;
 		}
@@ -715,7 +715,7 @@ static uint16_t sdp_svc_search_req(struct bt_sdp *sdp, struct net_buf *buf, uint
 	__ASSERT(resp_buf != NULL, "response buffer is NULL");
 	rsp = net_buf_add(resp_buf, sizeof(*rsp));
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&sdp_db, record, next, node) {
+	list_for_every_container_safe(&sdp_db, record, next, node) {
 		uint16_t require_len;
 
 		if (!service_search_pattern_matched(&ssp, record)) {
@@ -1528,7 +1528,7 @@ static uint16_t sdp_svc_search_att_req(struct bt_sdp *sdp, struct net_buf *buf, 
 
 	rsp_buf_cpy = rsp_buf;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&sdp_db, record, next, node) {
+	list_for_every_container_safe(&sdp_db, record, next, node) {
 		if (!service_search_pattern_matched(&ssp, record)) {
 			continue;
 		}
@@ -1795,15 +1795,15 @@ int bt_sdp_register_service(struct bt_sdp_record *service)
 		return 0;
 	}
 
-	if (sys_slist_find(&sdp_db, &service->node, NULL)) {
+	if (list_find(&sdp_db, &service->node, NULL)) {
 		LOG_ERR("Service already registered");
 		return -EEXIST;
 	}
 
-	if (!sys_slist_is_empty(&sdp_db)) {
+	if (!list_is_empty(&sdp_db)) {
 		struct bt_sdp_record *last;
 
-		last = CONTAINER_OF(sys_slist_peek_tail(&sdp_db), struct bt_sdp_record, node);
+		last = CONTAINER_OF(list_peek_tail(&sdp_db), struct bt_sdp_record, node);
 		index = last->index + 1;
 
 		if (last->index > index) {
@@ -1816,7 +1816,7 @@ int bt_sdp_register_service(struct bt_sdp_record *service)
 	service->handle = SDP_SERVICE_HANDLE_BASE + index;
 	*((uint32_t *)(service->attrs[0].val.data)) = service->handle;
 
-	sys_slist_append(&sdp_db, &service->node);
+	list_add_tail(&sdp_db, &service->node);
 
 	LOG_DBG("Service registered at %u", service->handle);
 
@@ -1837,7 +1837,7 @@ int bt_sdp_unregister_service(struct bt_sdp_record *service)
 		}
 	}
 
-	if (!sys_slist_find_and_remove(&sdp_db, &service->node)) {
+	if (!list_find_and_remove(&sdp_db, &service->node)) {
 		return -ENOENT;
 	}
 

@@ -17,7 +17,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/atomic.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/clock.h>
 
 enum bt_iso_cig_state {
@@ -29,7 +29,7 @@ enum bt_iso_cig_state {
 
 struct bt_iso_cig {
 	/** List of ISO channels to setup as CIS (the CIG). */
-	sys_slist_t cis_channels;
+	struct list_node cis_channels;
 
 	/** Total number of CISes in the CIG. */
 	uint8_t  num_cis;
@@ -62,7 +62,7 @@ enum {
 
 struct bt_iso_big {
 	/** List of ISO channels to setup as BIS (the BIG). */
-	sys_slist_t bis_channels;
+	struct list_node bis_channels;
 
 	/** Total number of BISes in the BIG. */
 	uint8_t  num_bis;

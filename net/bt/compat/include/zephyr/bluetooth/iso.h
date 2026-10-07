@@ -33,7 +33,7 @@
 #include <zephyr/bluetooth/hci.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/atomic.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util_macro.h>
 
 #ifdef __cplusplus
@@ -212,7 +212,7 @@ struct bt_iso_chan {
 	/** Channel state */
 	enum bt_iso_state		state;
 	/** @internal Node used internally by the stack */
-	sys_snode_t node;
+	struct list_node node;
 };
 
 /** @brief ISO Channel IO QoS structure. */
@@ -1297,7 +1297,7 @@ struct bt_iso_big_cb {
 	void (*stopped)(struct bt_iso_big *big, uint8_t reason);
 
 	/** @internal Internally used field for list handling */
-	sys_snode_t _node;
+	struct list_node _node;
 };
 
 /**

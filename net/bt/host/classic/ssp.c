@@ -230,7 +230,7 @@ static void ssp_pairing_complete(struct bt_conn *conn, uint8_t status)
 		bool bond = !atomic_test_bit(conn->flags, BT_CONN_BR_NOBOND);
 		struct bt_conn_auth_info_cb *listener, *next;
 
-		SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&bt_auth_info_cbs, listener,
+		list_for_every_container_safe(&bt_auth_info_cbs, listener,
 						  next, node) {
 			if (listener->pairing_complete) {
 				listener->pairing_complete(conn, bond);
@@ -239,7 +239,7 @@ static void ssp_pairing_complete(struct bt_conn *conn, uint8_t status)
 	} else {
 		struct bt_conn_auth_info_cb *listener, *next;
 
-		SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&bt_auth_info_cbs, listener,
+		list_for_every_container_safe(&bt_auth_info_cbs, listener,
 						  next, node) {
 			if (listener->pairing_failed) {
 				listener->pairing_failed(conn, status);

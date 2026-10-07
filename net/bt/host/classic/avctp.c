@@ -40,11 +40,11 @@ LOG_MODULE_REGISTER(bt_avctp);
 
 #define AVCTP_CHAN(_ch) CONTAINER_OF(_ch, struct bt_avctp, br_chan.chan)
 /* L2CAP Server list */
-static sys_slist_t avctp_l2cap_server = SYS_SLIST_STATIC_INIT(&avctp_l2cap_server);
+static struct list_node avctp_l2cap_server = LIST_INITIAL_VALUE(avctp_l2cap_server);
 static struct k_sem avctp_lock;
 
 /* tx list for packets */
-static sys_slist_t avctp_tx_list = SYS_SLIST_STATIC_INIT(&avctp_tx_list);
+static struct list_node avctp_tx_list = LIST_INITIAL_VALUE(avctp_tx_list);
 static struct k_work_delayable avctp_tx_work;
 
 struct avctp_buf_user_data {
@@ -59,7 +59,7 @@ struct avctp_buf_user_data {
 
 static void avctp_tx_raise(int msec)
 {
-	if (sys_slist_is_empty(&avctp_tx_list)) {
+	if (list_is_empty(&avctp_tx_list)) {
 		LOG_DBG("TX list is empty, no work to submit");
 		return;
 	}
@@ -71,9 +71,9 @@ static void bt_avctp_clear_tx(struct bt_avctp *session)
 {
 	struct net_buf *buf, *next;
 	struct avctp_buf_user_data *user_data;
-	const sys_snode_t *head = sys_slist_peek_head(&avctp_tx_list);
+	const struct list_node *head = list_peek_head(&avctp_tx_list);
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&avctp_tx_list, buf, next, node) {
+	list_for_every_container_safe(&avctp_tx_list, buf, next, node) {
 		user_data = net_buf_user_data(buf);
 
 		if (user_data->session != session) {
@@ -82,12 +82,12 @@ static void bt_avctp_clear_tx(struct bt_avctp *session)
 
 		bool is_head = (&buf->node == head);
 
-		sys_slist_find_and_remove(&avctp_tx_list, &buf->node);
+		list_find_and_remove(&avctp_tx_list, &buf->node);
 		net_buf_unref(buf);
 
 		if (is_head) {
 			avctp_tx_raise(0);
-			head = sys_slist_peek_head(&avctp_tx_list);
+			head = list_peek_head(&avctp_tx_list);
 		}
 	}
 }
@@ -171,7 +171,7 @@ static void avctp_tx_cb(struct bt_conn *conn, void *user_data, int err)
 static void avctp_tx_remove(struct net_buf *buf)
 {
 	k_sem_take(&avctp_lock, K_FOREVER);
-	sys_slist_find_and_remove(&avctp_tx_list, &buf->node);
+	list_find_and_remove(&avctp_tx_list, &buf->node);
 	k_sem_give(&avctp_lock);
 }
 
@@ -292,7 +292,7 @@ static void avctp_tx_processor(struct k_work *item)
 {
 	struct bt_avctp *session;
 	struct avctp_buf_user_data *user_data;
-	const sys_snode_t *node;
+	const struct list_node *node;
 	struct net_buf *buf;
 	int err = 0;
 	uint16_t chunk_size;
@@ -300,7 +300,7 @@ static void avctp_tx_processor(struct k_work *item)
 	uint16_t max_payload_size;
 
 	k_sem_take(&avctp_lock, K_FOREVER);
-	node = sys_slist_peek_head(&avctp_tx_list);
+	node = list_peek_head(&avctp_tx_list);
 	if (node == NULL) {
 		k_sem_give(&avctp_lock);
 		LOG_DBG("No pending tx");
@@ -383,7 +383,7 @@ static int bt_avctp_send_common(struct bt_avctp *session, struct net_buf *buf,
 	user_data->tid = tid;
 
 	k_sem_take(&avctp_lock, K_FOREVER);
-	sys_slist_append(&avctp_tx_list, &buf->node);
+	list_add_tail(&avctp_tx_list, &buf->node);
 	k_sem_give(&avctp_lock);
 
 	avctp_tx_raise(0);
@@ -657,7 +657,7 @@ static int avctp_l2cap_accept(struct bt_conn *conn, struct bt_l2cap_server *serv
 
 	k_sem_take(&avctp_lock, K_FOREVER);
 
-	if (!sys_slist_find(&avctp_l2cap_server, &avctp_server->node, NULL)) {
+	if (!list_find(&avctp_l2cap_server, &avctp_server->node, NULL)) {
 		LOG_WRN("Invalid l2cap server");
 		k_sem_give(&avctp_lock);
 		return -EINVAL;
@@ -692,7 +692,7 @@ int bt_avctp_server_register(struct bt_avctp_server *server)
 
 	k_sem_take(&avctp_lock, K_FOREVER);
 
-	if (sys_slist_find(&avctp_l2cap_server, &server->node, NULL)) {
+	if (list_find(&avctp_l2cap_server, &server->node, NULL)) {
 		LOG_WRN("L2CAP server has been registered");
 		k_sem_give(&avctp_lock);
 		return -EEXIST;
@@ -707,7 +707,7 @@ int bt_avctp_server_register(struct bt_avctp_server *server)
 	}
 
 	LOG_DBG("Register L2CAP server %p", server);
-	sys_slist_append(&avctp_l2cap_server, &server->node);
+	list_add_tail(&avctp_l2cap_server, &server->node);
 
 	k_sem_give(&avctp_lock);
 

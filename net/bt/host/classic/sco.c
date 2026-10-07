@@ -33,8 +33,8 @@ struct bt_sco_server *sco_server;
 
 #define SCO_CHAN(_sco) ((_sco)->sco.chan);
 
-static sys_slist_t sco_conn_cbs = SYS_SLIST_STATIC_INIT(&sco_conn_cbs);
-static sys_slist_t sco_hci_cbs = SYS_SLIST_STATIC_INIT(&sco_hci_cbs);
+static struct list_node sco_conn_cbs = LIST_INITIAL_VALUE(sco_conn_cbs);
+static struct list_node sco_hci_cbs = LIST_INITIAL_VALUE(sco_hci_cbs);
 
 int bt_sco_server_register(struct bt_sco_server *server)
 {
@@ -82,7 +82,7 @@ static void notify_connected(struct bt_conn *conn)
 {
 	struct bt_sco_conn_cb *callback;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&sco_conn_cbs, callback, _node) {
+	list_for_every_container(&sco_conn_cbs, callback, _node) {
 		if (callback->connected) {
 			callback->connected(conn, conn->err);
 		}
@@ -99,7 +99,7 @@ static void notify_disconnected(struct bt_conn *conn)
 {
 	struct bt_sco_conn_cb *callback;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&sco_conn_cbs, callback, _node) {
+	list_for_every_container(&sco_conn_cbs, callback, _node) {
 		if (callback->disconnected) {
 			callback->disconnected(conn, conn->err);
 		}
@@ -116,7 +116,7 @@ static void notify_setup_sco_cmd(struct bt_conn *conn, struct bt_hci_cp_setup_sy
 {
 	struct bt_sco_hci_cb *callback;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&sco_hci_cbs, callback, _node) {
+	list_for_every_container(&sco_hci_cbs, callback, _node) {
 		if (callback->setup != NULL) {
 			callback->setup(conn, cp);
 		}
@@ -133,7 +133,7 @@ static void notify_accept_sco_req_cmd(struct bt_hci_cp_accept_sync_conn_req *cp)
 {
 	struct bt_sco_hci_cb *callback;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&sco_hci_cbs, callback, _node) {
+	list_for_every_container(&sco_hci_cbs, callback, _node) {
 		if (callback->accept != NULL) {
 			callback->accept(cp);
 		}
@@ -499,11 +499,11 @@ int bt_sco_conn_cb_register(struct bt_sco_conn_cb *cb)
 		return -EINVAL;
 	}
 
-	if (sys_slist_find(&sco_conn_cbs, &cb->_node, NULL)) {
+	if (list_find(&sco_conn_cbs, &cb->_node, NULL)) {
 		return -EEXIST;
 	}
 
-	sys_slist_append(&sco_conn_cbs, &cb->_node);
+	list_add_tail(&sco_conn_cbs, &cb->_node);
 
 	return 0;
 }
@@ -514,7 +514,7 @@ int bt_sco_conn_cb_unregister(struct bt_sco_conn_cb *cb)
 		return -EINVAL;
 	}
 
-	if (!sys_slist_find_and_remove(&sco_conn_cbs, &cb->_node)) {
+	if (!list_find_and_remove(&sco_conn_cbs, &cb->_node)) {
 		return -ENOENT;
 	}
 
@@ -527,11 +527,11 @@ int bt_sco_hci_cb_register(struct bt_sco_hci_cb *cb)
 		return -EINVAL;
 	}
 
-	if (sys_slist_find(&sco_hci_cbs, &cb->_node, NULL)) {
+	if (list_find(&sco_hci_cbs, &cb->_node, NULL)) {
 		return -EEXIST;
 	}
 
-	sys_slist_append(&sco_hci_cbs, &cb->_node);
+	list_add_tail(&sco_hci_cbs, &cb->_node);
 
 	return 0;
 }
@@ -542,7 +542,7 @@ int bt_sco_hci_cb_unregister(struct bt_sco_hci_cb *cb)
 		return -EINVAL;
 	}
 
-	if (!sys_slist_find_and_remove(&sco_hci_cbs, &cb->_node)) {
+	if (!list_find_and_remove(&sco_hci_cbs, &cb->_node)) {
 		return -ENOENT;
 	}
 

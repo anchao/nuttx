@@ -23,7 +23,7 @@
 #if !defined(_ASMLANGUAGE)
 #include <zephyr/sys/atomic.h>
 #include <zephyr/types.h>
-#include <zephyr/sys/dlist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/sys_heap.h>
 #include <zephyr/arch/structs.h>
@@ -120,7 +120,7 @@ struct _priq_rb {
  * to represent their requirements.
  */
 struct _priq_mq {
-	sys_dlist_t queues[K_NUM_THREAD_PRIO];
+	struct list_node queues[K_NUM_THREAD_PRIO];
 	unsigned long bitmask[PRIQ_BITMAP_SIZE];
 };
 
@@ -131,7 +131,7 @@ struct _ready_q {
 #endif
 
 #if defined(CONFIG_SCHED_DUMB)
-	sys_dlist_t runq;
+	struct list_node runq;
 #elif defined(CONFIG_SCHED_SCALABLE)
 	struct _priq_rb runq;
 #elif defined(CONFIG_SCHED_MULTIQ)
@@ -276,10 +276,10 @@ bool z_priq_rb_lessthan(struct rbnode *a, struct rbnode *b);
 #else
 
 typedef struct {
-	sys_dlist_t waitq;
+	struct list_node waitq;
 } _wait_q_t;
 
-#define Z_WAIT_Q_INIT(wait_q) { SYS_DLIST_STATIC_INIT(&(wait_q)->waitq) }
+#define Z_WAIT_Q_INIT(wait_q) { LIST_INITIAL_VALUE((wait_q)->waitq) }
 
 #endif /* CONFIG_WAITQ_SCALABLE */
 
@@ -288,7 +288,7 @@ struct _timeout;
 typedef void (*_timeout_func_t)(struct _timeout *t);
 
 struct _timeout {
-	sys_dnode_t node;
+	struct list_node node;
 	_timeout_func_t fn;
 #ifdef CONFIG_TIMEOUT_64BIT
 	/* Can't use k_ticks_t for header dependency reasons */

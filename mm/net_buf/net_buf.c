@@ -193,10 +193,12 @@ struct net_buf *net_buf_alloc_len(struct net_buf_pool *pool, size_t size,
 
       if (pool->uninit_count < pool->buf_count)
         {
-          buf = pool->free_list;
-          if (buf != NULL)
+          struct list_node *node;
+
+          node = list_remove_head(&pool->free_list);
+          if (node != NULL)
             {
-              pool->free_list = buf->node;
+              buf = list_container_of(node, struct net_buf, node);
               spin_unlock_irqrestore(&pool->lock, flags);
               goto success;
             }
@@ -211,11 +213,7 @@ struct net_buf *net_buf_alloc_len(struct net_buf_pool *pool, size_t size,
 
   /* All buffers initialized.  Try to get from free list once. */
 
-  buf = pool->free_list;
-  if (buf != NULL)
-    {
-      pool->free_list = buf->node;
-    }
+  buf = list_remove_head_type(&pool->free_list, struct net_buf, node);
 
   spin_unlock_irqrestore(&pool->lock, flags);
 
@@ -255,10 +253,9 @@ struct net_buf *net_buf_alloc_len(struct net_buf_pool *pool, size_t size,
 
       flags = spin_lock_irqsave(&pool->lock);
 
-      buf = pool->free_list;
+      buf = list_remove_head_type(&pool->free_list, struct net_buf, node);
       if (buf != NULL)
         {
-          pool->free_list = buf->node;
           spin_unlock_irqrestore(&pool->lock, flags);
           goto success;
         }
@@ -286,7 +283,7 @@ success:
   buf->ref   = 1U;
   buf->flags = 0U;
   buf->frags = NULL;
-  buf->node  = NULL;
+  list_clear_node(&buf->node);
   buf->size  = pool->alloc->max_alloc_size > 0 ?
     (uint16_t)pool->alloc->max_alloc_size : 0;
   memset(buf->user_data, 0, buf->user_data_size);
@@ -357,7 +354,7 @@ void net_buf_reset(struct net_buf *buf)
 
 static spinlock_t g_net_buf_slist_lock = SP_UNLOCKED;
 
-void net_buf_slist_put(struct net_buf **list, struct net_buf *buf)
+void net_buf_slist_put(struct list_node *list, struct net_buf *buf)
 {
   irqstate_t flags;
 
@@ -365,25 +362,7 @@ void net_buf_slist_put(struct net_buf **list, struct net_buf *buf)
   DEBUGASSERT(buf != NULL);
 
   flags = spin_lock_irqsave(&g_net_buf_slist_lock);
-
-  buf->node = NULL;
-
-  if (*list == NULL)
-    {
-      *list = buf;
-    }
-  else
-    {
-      struct net_buf *last = *list;
-
-      while (last->node != NULL)
-        {
-          last = last->node;
-        }
-
-      last->node = buf;
-    }
-
+  list_add_tail(list, &buf->node);
   spin_unlock_irqrestore(&g_net_buf_slist_lock, flags);
 }
 
@@ -394,25 +373,18 @@ void net_buf_slist_put(struct net_buf **list, struct net_buf *buf)
  *   Get a buffer from a singly-linked list (thread-safe with spinlock).
  ****************************************************************************/
 
-struct net_buf *net_buf_slist_get(struct net_buf **list)
+struct net_buf *net_buf_slist_get(struct list_node *list)
 {
-  struct net_buf *buf;
+  struct list_node *node;
   irqstate_t flags;
 
   DEBUGASSERT(list != NULL);
 
   flags = spin_lock_irqsave(&g_net_buf_slist_lock);
-
-  buf = *list;
-  if (buf != NULL)
-    {
-      *list = buf->node;
-      buf->node = NULL;
-    }
-
+  node = list_remove_head(list);
   spin_unlock_irqrestore(&g_net_buf_slist_lock, flags);
 
-  return buf;
+  return node != NULL ? list_container_of(node, struct net_buf, node) : NULL;
 }
 
 /****************************************************************************
@@ -426,7 +398,7 @@ void net_buf_lifo_init(struct net_buf_lifo *lifo)
 {
   DEBUGASSERT(lifo != NULL);
 
-  lifo->head = NULL;
+  list_initialize(&lifo->list);
   lifo->lock = SP_UNLOCKED;
   nxsem_init(&lifo->sem, 0, 0);
 }
@@ -449,8 +421,7 @@ void net_buf_lifo_put(struct net_buf_lifo *lifo, struct net_buf *buf)
 
   flags = spin_lock_irqsave(&lifo->lock);
 
-  buf->node = lifo->head;
-  lifo->head = buf;
+  list_add_head(&lifo->list, &buf->node);
 
   spin_unlock_irqrestore(&lifo->lock, flags);
 
@@ -487,12 +458,7 @@ struct net_buf *net_buf_lifo_get(struct net_buf_lifo *lifo, int32_t timeout)
     {
       flags = spin_lock_irqsave(&lifo->lock);
 
-      buf = lifo->head;
-      if (buf != NULL)
-        {
-          lifo->head = buf->node;
-          buf->node = NULL;
-        }
+      buf = list_remove_head_type(&lifo->list, struct net_buf, node);
 
       spin_unlock_irqrestore(&lifo->lock, flags);
 
@@ -525,11 +491,9 @@ struct net_buf *net_buf_lifo_get(struct net_buf_lifo *lifo, int32_t timeout)
 
       flags = spin_lock_irqsave(&lifo->lock);
 
-      buf = lifo->head;
+      buf = list_remove_head_type(&lifo->list, struct net_buf, node);
       if (buf != NULL)
         {
-          lifo->head = buf->node;
-          buf->node = NULL;
           spin_unlock_irqrestore(&lifo->lock, flags);
           return buf;
         }
@@ -583,8 +547,7 @@ void net_buf_unref(struct net_buf *buf)
         {
           /* Return to pool free list (LIFO) */
           flags = spin_lock_irqsave(&pool->lock);
-          buf->node = pool->free_list;
-          pool->free_list = buf;
+          list_add_head(&pool->free_list, &buf->node);
           spin_unlock_irqrestore(&pool->lock, flags);
         }
 

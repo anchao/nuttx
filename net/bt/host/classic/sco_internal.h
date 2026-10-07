@@ -189,7 +189,7 @@ struct bt_sco_conn_cb {
 	void (*disconnected)(struct bt_conn *conn, uint8_t reason);
 
 	/** @internal Internally used field for list handling */
-	sys_snode_t _node;
+	struct list_node _node;
 };
 
 /** @brief Register SCO connection callbacks.
@@ -261,7 +261,7 @@ struct bt_sco_hci_cb {
 	 */
 	void (*accept)(struct bt_hci_cp_accept_sync_conn_req *cp);
 
-	sys_snode_t _node;
+	struct list_node _node;
 };
 
 /** @brief Register SCO HCI activity callbacks.

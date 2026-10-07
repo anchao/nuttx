@@ -184,7 +184,7 @@ enum {
 	L2CAP_FLAG_DISCONNECT_ACL,	/* Disconnect ACL */
 };
 
-static sys_slist_t br_servers;
+static struct list_node br_servers;
 
 
 /* Pool for outgoing BR/EDR signaling packets, min MTU is 48 */
@@ -225,14 +225,14 @@ struct bt_l2cap_br {
 
 static struct bt_l2cap_br bt_l2cap_br_pool[CONFIG_BT_MAX_CONN];
 
-static sys_slist_t bt_l2cap_br_echo_cbs = SYS_SLIST_STATIC_INIT(&bt_l2cap_br_echo_cbs);
+static struct list_node bt_l2cap_br_echo_cbs = LIST_INITIAL_VALUE(bt_l2cap_br_echo_cbs);
 
 struct bt_l2cap_chan *bt_l2cap_br_lookup_rx_cid(struct bt_conn *conn,
 						uint16_t cid)
 {
 	struct bt_l2cap_chan *chan;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&conn->channels, chan, node) {
+	list_for_every_container(&conn->channels, chan, node) {
 		if (BR_CHAN(chan)->rx.cid == cid) {
 			return chan;
 		}
@@ -246,7 +246,7 @@ struct bt_l2cap_chan *bt_l2cap_br_lookup_tx_cid(struct bt_conn *conn,
 {
 	struct bt_l2cap_chan *chan;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&conn->channels, chan, node) {
+	list_for_every_container(&conn->channels, chan, node) {
 		if (BR_CHAN(chan)->tx.cid == cid) {
 			return chan;
 		}
@@ -423,7 +423,7 @@ static uint8_t l2cap_br_get_ident(void)
 /* L2CAP channel wants to send a PDU */
 static bool chan_has_data(struct bt_l2cap_br_chan *br_chan)
 {
-	return !sys_slist_is_empty(&br_chan->_pdu_tx_queue);
+	return !list_is_empty(&br_chan->_pdu_tx_queue);
 }
 
 static void raise_data_ready(struct bt_l2cap_br_chan *br_chan)
@@ -436,7 +436,7 @@ static void raise_data_ready(struct bt_l2cap_br_chan *br_chan)
 	bt_dev_lock();
 
 	if (!atomic_set(&br_chan->_pdu_ready_lock, 1)) {
-		sys_slist_append(&br_chan->chan.conn->l2cap_data_ready,
+		list_add_tail(&br_chan->chan.conn->l2cap_data_ready,
 				 &br_chan->_pdu_ready);
 		LOG_DBG("data ready raised");
 	} else {
@@ -451,14 +451,14 @@ static void raise_data_ready(struct bt_l2cap_br_chan *br_chan)
 static void lower_data_ready(struct bt_l2cap_br_chan *br_chan)
 {
 	struct bt_conn *conn = br_chan->chan.conn;
-	__maybe_unused sys_snode_t *s;
+	__maybe_unused struct list_node *s;
 
 	/* Only called from the TX processor, which holds the host lock
 	 * across the whole processing pass.
 	 */
 	BT_DEV_LOCK_ASSERT();
 
-	s = sys_slist_get(&conn->l2cap_data_ready);
+	s = list_remove_head(&conn->l2cap_data_ready);
 
 	__ASSERT_NO_MSG(s == &br_chan->_pdu_ready);
 
@@ -477,7 +477,7 @@ static void cancel_data_ready(struct bt_l2cap_br_chan *br_chan)
 	 */
 	bt_dev_lock();
 
-	sys_slist_find_and_remove(&conn->l2cap_data_ready,
+	list_find_and_remove(&conn->l2cap_data_ready,
 				  &br_chan->_pdu_ready);
 
 	atomic_set(&br_chan->_pdu_ready_lock, 0);
@@ -591,7 +591,7 @@ static uint16_t bt_l2cap_br_get_outstanding_count(struct bt_l2cap_br_chan *br_ch
 	struct bt_l2cap_br_window *tx_win, *next;
 	uint16_t count = 0;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&br_chan->_pdu_outstanding, tx_win, next, node) {
+	list_for_every_container_safe(&br_chan->_pdu_outstanding, tx_win, next, node) {
 		count++;
 	}
 
@@ -646,7 +646,7 @@ static struct bt_l2cap_br_window *l2cap_br_find_srej(struct bt_l2cap_br_chan *br
 {
 	struct bt_l2cap_br_window *tx_win, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&br_chan->_pdu_outstanding, tx_win, next, node) {
+	list_for_every_container_safe(&br_chan->_pdu_outstanding, tx_win, next, node) {
 		if (tx_win->srej) {
 			return tx_win;
 		}
@@ -700,7 +700,7 @@ static void l2cap_br_sdu_is_done(struct bt_l2cap_br_chan *br_chan, struct net_bu
 	/* The SDU is done */
 	LOG_DBG("SDU is done, removing %p", sdu);
 
-	if (!sys_slist_find_and_remove(&br_chan->_pdu_tx_queue, &sdu->node)) {
+	if (!list_find_and_remove(&br_chan->_pdu_tx_queue, &sdu->node)) {
 		LOG_WRN("SDU %p is not found", sdu);
 	}
 
@@ -727,21 +727,21 @@ static int bt_l2cap_br_update_req_seq_direct(struct bt_l2cap_br_chan *br_chan, u
 	struct bt_l2cap_br_window *tx_win;
 	struct net_buf *sdu;
 
-	tx_win = (void *)sys_slist_peek_head(&br_chan->_pdu_outstanding);
+	tx_win = (void *)list_peek_head(&br_chan->_pdu_outstanding);
 	while (tx_win && (tx_win->tx_seq != req_seq)) {
 		sdu = tx_win->sdu;
 		if ((tx_win->sar == BT_L2CAP_CONTROL_SAR_UNSEG) ||
 		    (tx_win->sar == BT_L2CAP_CONTROL_SAR_END)) {
 			l2cap_br_sdu_is_done(br_chan, sdu, 0);
 		}
-		tx_win = (void *)sys_slist_get(&br_chan->_pdu_outstanding);
+		tx_win = (void *)list_remove_head(&br_chan->_pdu_outstanding);
 		l2cap_br_free_window(br_chan, tx_win);
-		tx_win = (void *)sys_slist_peek_head(&br_chan->_pdu_outstanding);
+		tx_win = (void *)list_peek_head(&br_chan->_pdu_outstanding);
 	}
 	br_chan->expected_ack_seq = req_seq;
 
 	if (rej) {
-		tx_win = (void *)sys_slist_peek_head(&br_chan->_pdu_outstanding);
+		tx_win = (void *)list_peek_head(&br_chan->_pdu_outstanding);
 		if (tx_win) {
 			sdu = tx_win->sdu;
 			__ASSERT(sdu, "Invalid sdu buffer on chan %p", br_chan);
@@ -750,9 +750,9 @@ static int bt_l2cap_br_update_req_seq_direct(struct bt_l2cap_br_chan *br_chan, u
 		}
 
 		while (tx_win) {
-			tx_win = (void *)sys_slist_get(&br_chan->_pdu_outstanding);
+			tx_win = (void *)list_remove_head(&br_chan->_pdu_outstanding);
 			l2cap_br_free_window(br_chan, tx_win);
-			tx_win = (void *)sys_slist_peek_head(&br_chan->_pdu_outstanding);
+			tx_win = (void *)list_peek_head(&br_chan->_pdu_outstanding);
 			if (tx_win) {
 				sdu = tx_win->sdu;
 				__ASSERT(sdu, "Invalid sdu buffer on chan %p", br_chan);
@@ -836,7 +836,7 @@ static void l2cap_br_ret_timeout(struct k_work *work)
 
 	LOG_DBG("chan %p retransmission timeout", br_chan);
 
-	if (sys_slist_peek_head(&br_chan->_pdu_outstanding) == NULL) {
+	if (list_peek_head(&br_chan->_pdu_outstanding) == NULL) {
 		return;
 	}
 
@@ -941,7 +941,7 @@ static bool l2cap_br_chan_add(struct bt_conn *conn, struct bt_l2cap_chan *chan,
 		return false;
 	}
 
-	sys_slist_init(&ch->_pdu_tx_queue);
+	list_initialize(&ch->_pdu_tx_queue);
 
 	/* All dynamic channels have the destroy handler which makes sure that
 	 * the RTX work structure is properly released with a cancel sync.
@@ -1048,7 +1048,7 @@ int bt_l2cap_br_send_cb(struct bt_conn *conn, uint16_t cid, struct net_buf *buf,
 		return err;
 	}
 
-	sys_slist_append(&br_chan->_pdu_tx_queue, &buf->node);
+	list_add_tail(&br_chan->_pdu_tx_queue, &buf->node);
 	raise_data_ready(br_chan);
 
 	return 0;
@@ -1255,7 +1255,7 @@ static struct net_buf *l2cap_br_get_next_sdu(struct bt_l2cap_br_chan *br_chan)
 		return br_chan->_pdu_buf;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&br_chan->_pdu_tx_queue, sdu, next, node) {
+	list_for_every_container_safe(&br_chan->_pdu_tx_queue, sdu, next, node) {
 		if (l2cap_br_sdu_is_pending(sdu)) {
 			return sdu;
 		}
@@ -1268,7 +1268,7 @@ static bool l2cap_br_retransmit_is_required(struct bt_l2cap_br_chan *br_chan)
 {
 	struct bt_l2cap_br_window *tx_win, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&br_chan->_pdu_outstanding, tx_win, next, node) {
+	list_for_every_container_safe(&br_chan->_pdu_outstanding, tx_win, next, node) {
 		if (tx_win->retransmit) {
 			return true;
 		}
@@ -1290,7 +1290,7 @@ static bool l2cap_br_send_i_frame(struct bt_l2cap_br_chan *br_chan, struct net_b
 	}
 
 	if (atomic_test_bit(br_chan->flags, L2CAP_FLAG_RET_I_FRAME)) {
-		if (sys_slist_peek_head(&br_chan->_pdu_outstanding) != NULL) {
+		if (list_peek_head(&br_chan->_pdu_outstanding) != NULL) {
 			return true;
 		}
 	}
@@ -1326,7 +1326,7 @@ static struct bt_l2cap_br_window *l2cap_br_get_ret_win(struct bt_l2cap_br_chan *
 {
 	struct bt_l2cap_br_window *tx_win, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&br_chan->_pdu_outstanding, tx_win, next, node) {
+	list_for_every_container_safe(&br_chan->_pdu_outstanding, tx_win, next, node) {
 		if (tx_win->retransmit) {
 			return tx_win;
 		}
@@ -1339,7 +1339,7 @@ static struct bt_l2cap_br_window *l2cap_br_get_ret_win(struct bt_l2cap_br_chan *
 static struct net_buf *l2cap_br_ret_fc_data_pull(struct bt_conn *conn, size_t amount,
 						 size_t *length)
 {
-	const sys_snode_t *pdu_ready = sys_slist_peek_head(&conn->l2cap_data_ready);
+	const struct list_node *pdu_ready = list_peek_head(&conn->l2cap_data_ready);
 
 	if (!pdu_ready) {
 		LOG_DBG("nothing to send on this conn");
@@ -1439,7 +1439,7 @@ static struct net_buf *l2cap_br_ret_fc_data_pull(struct bt_conn *conn, size_t am
 
 		/* Retransmission i-Frame */
 		if (atomic_test_and_clear_bit(br_chan->flags, L2CAP_FLAG_RET_I_FRAME)) {
-			tx_win = (void *)sys_slist_peek_head(&br_chan->_pdu_outstanding);
+			tx_win = (void *)list_peek_head(&br_chan->_pdu_outstanding);
 			if (tx_win != NULL) {
 				first = false;
 				goto send_i_frame;
@@ -1638,7 +1638,7 @@ send_i_frame:
 			l2cap_br_sdu_pull(pdu, pdu_len);
 
 			if (br_chan->rx.mode != BT_L2CAP_BR_LINK_MODE_STREAM) {
-				sys_slist_append(&br_chan->_pdu_outstanding, &tx_win->node);
+				list_add_tail(&br_chan->_pdu_outstanding, &tx_win->node);
 			} else {
 				l2cap_br_free_window(br_chan, tx_win);
 
@@ -1701,7 +1701,7 @@ done:
 
 struct net_buf *l2cap_br_data_pull(struct bt_conn *conn, size_t amount, size_t *length)
 {
-	const sys_snode_t *pdu_ready = sys_slist_peek_head(&conn->l2cap_data_ready);
+	const struct list_node *pdu_ready = list_peek_head(&conn->l2cap_data_ready);
 
 	if (!pdu_ready) {
 		LOG_DBG("nothing to send on this conn");
@@ -1717,7 +1717,7 @@ struct net_buf *l2cap_br_data_pull(struct bt_conn *conn, size_t amount, size_t *
 #if defined(CONFIG_BT_L2CAP_RET_FC)
 	if (br_chan->tx.mode != BT_L2CAP_BR_LINK_MODE_BASIC) {
 		struct net_buf *buf;
-		const sys_snode_t *next_pdu_ready;
+		const struct list_node *next_pdu_ready;
 
 		buf = l2cap_br_ret_fc_data_pull(conn, amount, length);
 
@@ -1727,7 +1727,7 @@ struct net_buf *l2cap_br_data_pull(struct bt_conn *conn, size_t amount, size_t *
 		 * call the function `l2cap_br_data_pull()` again and the pending buffer will be
 		 * pulled from following L2CAP.
 		 */
-		next_pdu_ready = sys_slist_peek_head(&conn->l2cap_data_ready);
+		next_pdu_ready = list_peek_head(&conn->l2cap_data_ready);
 		if ((buf == NULL) && (next_pdu_ready != NULL) && (next_pdu_ready != pdu_ready)) {
 			bt_tx_irq_raise();
 		}
@@ -1739,7 +1739,7 @@ struct net_buf *l2cap_br_data_pull(struct bt_conn *conn, size_t amount, size_t *
 	/* Leave the PDU buffer in the queue until we have sent all its
 	 * fragments.
 	 */
-	const sys_snode_t *tx_pdu = sys_slist_peek_head(&br_chan->_pdu_tx_queue);
+	const struct list_node *tx_pdu = list_peek_head(&br_chan->_pdu_tx_queue);
 
 	__ASSERT(tx_pdu, "signaled ready but no PDUs in the TX queue");
 
@@ -1762,7 +1762,7 @@ struct net_buf *l2cap_br_data_pull(struct bt_conn *conn, size_t amount, size_t *
 		LOG_DBG("last frag, removing %p", q_pdu);
 		__maybe_unused bool found;
 
-		found = sys_slist_find_and_remove(&br_chan->_pdu_tx_queue, &q_pdu->node);
+		found = list_find_and_remove(&br_chan->_pdu_tx_queue, &q_pdu->node);
 
 		__ASSERT_NO_MSG(found);
 
@@ -2130,7 +2130,7 @@ void bt_l2cap_br_disconnected(struct bt_conn *conn)
 {
 	struct bt_l2cap_chan *chan, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&conn->channels, chan, next, node) {
+	list_for_every_container_safe(&conn->channels, chan, next, node) {
 		bt_l2cap_br_chan_del(chan);
 	}
 }
@@ -2139,7 +2139,7 @@ static struct bt_l2cap_server *l2cap_br_server_lookup_psm(uint16_t psm)
 {
 	struct bt_l2cap_server *server;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&br_servers, server, node) {
+	list_for_every_container(&br_servers, server, node) {
 		if (server->psm == psm) {
 			return server;
 		}
@@ -2293,7 +2293,7 @@ static int l2cap_br_check_chan_config(struct bt_conn *conn, struct bt_l2cap_br_c
 
 	memset(&br_chan->tx_win[0], 0, sizeof(br_chan->tx_win));
 
-	sys_slist_init(&br_chan->_pdu_outstanding);
+	list_initialize(&br_chan->_pdu_outstanding);
 	k_fifo_init(&br_chan->_free_tx_win);
 
 	for (int i = 0; i < ARRAY_SIZE(br_chan->tx_win); i++) {
@@ -2800,7 +2800,7 @@ void bt_l2cap_br_chan_del(struct bt_l2cap_chan *chan)
 
 	/* Remove buffers on the PDU TX queue. */
 	while (chan_has_data(br_chan)) {
-		const sys_snode_t *tx_buf = sys_slist_get(&br_chan->_pdu_tx_queue);
+		const struct list_node *tx_buf = list_remove_head(&br_chan->_pdu_tx_queue);
 
 		struct net_buf *buf = CONTAINER_OF(tx_buf, struct net_buf, node);
 
@@ -3983,7 +3983,7 @@ bt_security_t bt_l2cap_br_get_max_sec_level(void)
 	struct bt_l2cap_server *server;
 	bt_security_t sec_level = BT_SECURITY_L0;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&br_servers, server, node) {
+	list_for_every_container(&br_servers, server, node) {
 		if (sec_level < server->sec_level) {
 			sec_level = server->sec_level;
 		}
@@ -4000,7 +4000,7 @@ int bt_l2cap_br_server_register(struct bt_l2cap_server *server)
 		return -EINVAL;
 	}
 
-	if (sys_slist_find(&br_servers, &server->node, NULL)) {
+	if (list_find(&br_servers, &server->node, NULL)) {
 		return -EEXIST;
 	}
 
@@ -4035,7 +4035,7 @@ int bt_l2cap_br_server_register(struct bt_l2cap_server *server)
 
 	LOG_DBG("PSM 0x%04x", server->psm);
 
-	sys_slist_append(&br_servers, &server->node);
+	list_add_tail(&br_servers, &server->node);
 
 	return 0;
 }
@@ -4046,7 +4046,7 @@ int bt_l2cap_br_server_unregister(struct bt_l2cap_server *server)
 		return -EINVAL;
 	}
 
-	if (!sys_slist_find_and_remove(&br_servers, &server->node)) {
+	if (!list_find_and_remove(&br_servers, &server->node)) {
 		return -ENOENT;
 	}
 
@@ -4885,16 +4885,16 @@ send_rsp:
 static struct bt_l2cap_br_chan *l2cap_br_remove_tx_cid(struct bt_conn *conn, uint16_t cid)
 {
 	struct bt_l2cap_chan *chan;
-	sys_snode_t *prev = NULL;
+	struct list_node *prev = NULL;
 
 	/* Protect fixed channels against accidental removal */
 	if (!L2CAP_BR_CID_IS_DYN(cid)) {
 		return NULL;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&conn->channels, chan, node) {
+	list_for_every_container(&conn->channels, chan, node) {
 		if (BR_CHAN(chan)->tx.cid == cid) {
-			sys_slist_remove(&conn->channels, prev, &chan->node);
+			list_remove(&conn->channels, prev, &chan->node);
 			return BR_CHAN(chan);
 		}
 
@@ -5249,7 +5249,7 @@ static struct bt_l2cap_br_chan *bt_l2cap_br_lookup_ident(struct bt_conn *conn, u
 {
 	struct bt_l2cap_chan *chan;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&conn->channels, chan, node) {
+	list_for_every_container(&conn->channels, chan, node) {
 		if (BR_CHAN(chan)->ident == ident) {
 			return BR_CHAN(chan);
 		}
@@ -5276,7 +5276,7 @@ static void l2cap_br_echo_req(struct bt_l2cap_br *l2cap, uint8_t ident, struct n
 	struct bt_conn *conn = l2cap->chan.chan.conn;
 	struct bt_l2cap_br_echo_cb *callback;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&bt_l2cap_br_echo_cbs, callback, _node) {
+	list_for_every_container(&bt_l2cap_br_echo_cbs, callback, _node) {
 		if (callback->req) {
 			callback->req(conn, ident, buf);
 		}
@@ -5293,7 +5293,7 @@ static void l2cap_br_echo_rsp(struct bt_l2cap_br *l2cap, uint8_t ident, struct n
 		goto failed;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&bt_l2cap_br_echo_cbs, callback, _node) {
+	list_for_every_container(&bt_l2cap_br_echo_cbs, callback, _node) {
 		if (callback->rsp) {
 			callback->rsp(conn, buf);
 		}
@@ -5476,7 +5476,7 @@ void l2cap_br_encrypt_change(struct bt_conn *conn, uint8_t hci_status)
 {
 	struct bt_l2cap_chan *chan;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&conn->channels, chan, node) {
+	list_for_every_container(&conn->channels, chan, node) {
 		l2cap_br_conn_pend(chan, hci_status);
 
 		if (chan->conn == NULL) {
@@ -5567,7 +5567,7 @@ static void bt_l2cap_br_update_srej(struct bt_l2cap_br_chan *br_chan, uint16_t r
 	if (bt_l2cap_br_check_req_seq_valid(br_chan, req_seq)) {
 		struct bt_l2cap_br_window *tx_win, *next;
 
-		SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&br_chan->_pdu_outstanding, tx_win, next, node) {
+		list_for_every_container_safe(&br_chan->_pdu_outstanding, tx_win, next, node) {
 			if (tx_win->tx_seq == req_seq) {
 				tx_win->srej = true;
 				break;
@@ -5596,11 +5596,11 @@ static void l2cap_br_retransmit_i_frames(struct bt_l2cap_br_chan *br_chan)
 		return;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&br_chan->_pdu_outstanding, tx_win, next, node) {
+	list_for_every_container_safe(&br_chan->_pdu_outstanding, tx_win, next, node) {
 		tx_win->retransmit = true;
 	}
 
-	if (sys_slist_peek_head(&br_chan->_pdu_outstanding) != NULL) {
+	if (list_peek_head(&br_chan->_pdu_outstanding) != NULL) {
 		atomic_set_bit(br_chan->flags, L2CAP_FLAG_RET_I_FRAMES);
 	}
 }
@@ -5690,7 +5690,7 @@ static void l2cap_br_stop_retransmit_i_frames(struct bt_l2cap_br_chan *br_chan)
 		LOG_WRN("Retransmit-I-frames was not started");
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&br_chan->_pdu_outstanding, tx_win, next, node) {
+	list_for_every_container_safe(&br_chan->_pdu_outstanding, tx_win, next, node) {
 		tx_win->retransmit = false;
 	}
 }
@@ -6546,11 +6546,11 @@ int bt_l2cap_br_echo_cb_register(struct bt_l2cap_br_echo_cb *cb)
 		return -EINVAL;
 	}
 
-	if (sys_slist_find(&bt_l2cap_br_echo_cbs, &cb->_node, NULL)) {
+	if (list_find(&bt_l2cap_br_echo_cbs, &cb->_node, NULL)) {
 		return -EEXIST;
 	}
 
-	sys_slist_append(&bt_l2cap_br_echo_cbs, &cb->_node);
+	list_add_tail(&bt_l2cap_br_echo_cbs, &cb->_node);
 
 	return 0;
 }
@@ -6561,7 +6561,7 @@ int bt_l2cap_br_echo_cb_unregister(struct bt_l2cap_br_echo_cb *cb)
 		return -EINVAL;
 	}
 
-	if (!sys_slist_find_and_remove(&bt_l2cap_br_echo_cbs, &cb->_node)) {
+	if (!list_find_and_remove(&bt_l2cap_br_echo_cbs, &cb->_node)) {
 		return -ENOENT;
 	}
 
@@ -6672,7 +6672,7 @@ int bt_l2cap_br_echo_rsp(struct bt_conn *conn, uint8_t identifier, struct net_bu
 
 #if defined(CONFIG_BT_L2CAP_CONNLESS)
 
-static sys_slist_t br_connless_cbs = SYS_SLIST_STATIC_INIT(br_connless_cbs);
+static struct list_node br_connless_cbs = LIST_INITIAL_VALUE(br_connless_cbs);
 
 int bt_l2cap_br_connless_register(struct bt_l2cap_br_connless_cb *cb)
 {
@@ -6696,11 +6696,11 @@ int bt_l2cap_br_connless_register(struct bt_l2cap_br_connless_cb *cb)
 		return -EINVAL;
 	}
 
-	if (sys_slist_find(&br_connless_cbs, &cb->_node, NULL)) {
+	if (list_find(&br_connless_cbs, &cb->_node, NULL)) {
 		return -EEXIST;
 	}
 
-	sys_slist_append(&br_connless_cbs, &cb->_node);
+	list_add_tail(&br_connless_cbs, &cb->_node);
 	return 0;
 }
 
@@ -6710,7 +6710,7 @@ int bt_l2cap_br_connless_unregister(struct bt_l2cap_br_connless_cb *cb)
 		return -EINVAL;
 	}
 
-	if (!sys_slist_find_and_remove(&br_connless_cbs, &cb->_node)) {
+	if (!list_find_and_remove(&br_connless_cbs, &cb->_node)) {
 		return -ENOENT;
 	}
 
@@ -6814,7 +6814,7 @@ static int l2cap_br_conless_recv(struct bt_l2cap_chan *chan, struct net_buf *buf
 	psm = net_buf_pull_le16(buf);
 
 	/* Iterate through registered connless callbacks to find matching PSM */
-	SYS_SLIST_FOR_EACH_CONTAINER(&br_connless_cbs, cb, _node) {
+	list_for_every_container(&br_connless_cbs, cb, _node) {
 		if ((cb->psm == 0) || (cb->psm == psm)) {
 			/* Found matching PSM, call registered callback */
 			if ((conn->sec_level >= cb->sec_level) && (cb->recv != NULL)) {

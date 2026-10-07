@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 #include <zephyr/types.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <sys/types.h>
 
 #include <zephyr/bluetooth/l2cap.h>
@@ -24,7 +24,7 @@ struct bt_gatt_ots_l2cap_tx {
 };
 
 struct bt_gatt_ots_l2cap {
-	sys_snode_t node;
+	struct list_node node;
 	struct bt_l2cap_le_chan ot_chan;
 	struct bt_gatt_ots_l2cap_tx tx;
 	void (*tx_done)(struct bt_gatt_ots_l2cap *l2cap_ctx,

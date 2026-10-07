@@ -354,7 +354,7 @@ struct bt_sdp_record {
 	struct bt_sdp_attribute     *attrs;       /**< Base addr of attr array */
 	size_t                      attr_count;   /**< Number of attributes */
 	uint8_t                     index;        /**< Index of the record in LL */
-	sys_snode_t                 node;
+	struct list_node                 node;
 };
 
 /*
@@ -686,7 +686,7 @@ struct bt_sdp_attribute_id_list {
 
 /** @brief Main user structure used in SDP discovery of remote. */
 struct bt_sdp_discover_params {
-	sys_snode_t _node;
+	struct list_node _node;
 	union {
 		/** UUID (service) to be discovered on remote SDP entity */
 		const struct bt_uuid *uuid;

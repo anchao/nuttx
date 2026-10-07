@@ -30,6 +30,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <nuttx/list.h>
 #include <nuttx/spinlock.h>
 #include <nuttx/semaphore.h>
 
@@ -115,7 +116,7 @@ struct net_buf_pool_fixed
 
 struct net_buf_pool
 {
-  struct net_buf *free_list;               /* Head of LIFO free list */
+  struct list_node free_list;              /* LIFO free list */
   spinlock_t lock;                         /* Prevents concurrent access */
   const uint16_t buf_count;                /* Number of buffers in pool */
   uint16_t uninit_count;                   /* Number of uninitialized bufs */
@@ -132,7 +133,7 @@ struct net_buf_pool
 
 struct net_buf
 {
-  struct net_buf *node;         /* Linked list node (free list / slist) */
+  struct list_node node;        /* Linked list node */
   struct net_buf *frags;        /* Fragment chain */
   struct net_buf_pool *pool;    /* Owning pool */
   uint8_t ref;                  /* Reference count */
@@ -166,7 +167,7 @@ struct net_buf
 
 struct net_buf_lifo
 {
-  struct net_buf *head;    /* Head of LIFO stack (most recently put) */
+  struct list_node list;   /* LIFO list */
   spinlock_t lock;         /* Prevents concurrent put/get */
   sem_t sem;               /* Counting semaphore for blocking get */
 };
@@ -371,8 +372,8 @@ int net_buf_id(const struct net_buf *buf);
 int net_buf_user_data_copy(struct net_buf *dst,
                            const struct net_buf *src);
 
-void net_buf_slist_put(struct net_buf **list, struct net_buf *buf);
-struct net_buf *net_buf_slist_get(struct net_buf **list);
+void net_buf_slist_put(struct list_node *list, struct net_buf *buf);
+struct net_buf *net_buf_slist_get(struct list_node *list);
 
 /* LIFO queue operations (inter-thread buffer passing) */
 
@@ -423,7 +424,7 @@ size_t net_buf_frags_len(struct net_buf *buf);
 #define NET_BUF_POOL_INITIALIZER(_pool, _alloc, _bufs, _count,    \
                                  _ud_size, _destroy)              \
   {                                                               \
-    .free_list = NULL,                                            \
+    .free_list = LIST_INITIAL_VALUE(_pool.free_list),             \
     .lock = SP_UNLOCKED,                                          \
     .buf_count = _count,                                          \
     .uninit_count = _count,                                       \
@@ -486,8 +487,7 @@ static inline void net_buf_destroy(struct net_buf *buf)
       buf->__buf = NULL;
     }
 
-  buf->node = pool->free_list;
-  pool->free_list = buf;
+  list_add_head(&pool->free_list, &buf->node);
 
   /* Wake up a thread blocked in net_buf_alloc_len */
 

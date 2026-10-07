@@ -22,7 +22,7 @@
 #include <string.h>
 
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/bluetooth/addr.h>
 #include <zephyr/bluetooth/data.h>
@@ -134,7 +134,7 @@ struct bt_br_discovery_cb {
 	void (*timeout)(const struct bt_br_discovery_result *results,
 				  size_t count);
 
-	sys_snode_t node;
+	struct list_node node;
 };
 
 /**

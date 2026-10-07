@@ -5,7 +5,7 @@
  */
 
 #include <stdlib.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/bluetooth/hci.h>
 #include <zephyr/bluetooth/crypto.h>

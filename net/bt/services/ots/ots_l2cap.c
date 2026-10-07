@@ -43,7 +43,7 @@ NET_BUF_POOL_FIXED_DEFINE(ot_chan_rx_pool, 1, CONFIG_BT_OTS_L2CAP_CHAN_RX_MTU, 8
 #endif
 
 /* List of Object Transfer Channels. */
-static sys_slist_t channels;
+static struct list_node channels;
 
 static int ots_l2cap_send(struct bt_gatt_ots_l2cap *l2cap_ctx)
 {
@@ -175,7 +175,7 @@ static struct bt_gatt_ots_l2cap *find_free_l2cap_ctx(void)
 {
 	struct bt_gatt_ots_l2cap *l2cap_ctx;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&channels, l2cap_ctx, node) {
+	list_for_every_container(&channels, l2cap_ctx, node) {
 		if (l2cap_ctx->ot_chan.chan.conn) {
 			continue;
 		}
@@ -215,7 +215,7 @@ static int bt_gatt_ots_l2cap_init(void)
 {
 	int err;
 
-	sys_slist_init(&channels);
+	list_initialize(&channels);
 
 	err = bt_l2cap_server_register(&l2cap_server);
 	if (err) {
@@ -262,14 +262,14 @@ int bt_gatt_ots_l2cap_send(struct bt_gatt_ots_l2cap *l2cap_ctx,
 
 int bt_gatt_ots_l2cap_register(struct bt_gatt_ots_l2cap *l2cap_ctx)
 {
-	sys_slist_append(&channels, &l2cap_ctx->node);
+	list_add_tail(&channels, &l2cap_ctx->node);
 
 	return 0;
 }
 
 int bt_gatt_ots_l2cap_unregister(struct bt_gatt_ots_l2cap *l2cap_ctx)
 {
-	sys_slist_find_and_remove(&channels, &l2cap_ctx->node);
+	list_find_and_remove(&channels, &l2cap_ctx->node);
 
 	return 0;
 }

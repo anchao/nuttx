@@ -26,7 +26,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/atomic.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <sys/types.h>
 
@@ -68,7 +68,7 @@ struct bt_l2cap_br_echo_cb {
 	void (*rsp)(struct bt_conn *conn, struct net_buf *buf);
 
 	/** @internal Internally used field for list handling */
-	sys_snode_t _node;
+	struct list_node _node;
 };
 
 /**
@@ -178,7 +178,7 @@ struct bt_l2cap_br_connless_cb {
 	void (*recv)(struct bt_conn *conn, uint16_t psm, struct net_buf *buf);
 
 	/** @internal Internally used field for list handling */
-	sys_snode_t _node;
+	struct list_node _node;
 };
 
 /**

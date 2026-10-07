@@ -1167,7 +1167,7 @@ static void dfd_srv_reset(const struct bt_mesh_model *mod)
 	dfd_phase_set(srv, BT_MESH_DFD_PHASE_IDLE);
 	srv->upload.phase = BT_MESH_DFD_UPLOAD_PHASE_IDLE;
 
-	sys_slist_init(&srv->inputs.targets);
+	list_initialize(&srv->inputs.targets);
 	srv->target_cnt = 0;
 
 	bt_mesh_dfu_slot_foreach(slot_del_cb, srv);
@@ -1255,7 +1255,7 @@ static int dfd_srv_settings_set(const struct bt_mesh_model *mod, const char *nam
 	srv->dfu.xfer.blob.mode = state.xfer_mode;
 
 	srv->target_cnt = state.target_cnt;
-	sys_slist_init(&srv->inputs.targets);
+	list_initialize(&srv->inputs.targets);
 	for (int i = 0; i < srv->target_cnt; i++) {
 		memset(&srv->targets[i], 0, sizeof(struct bt_mesh_dfu_target));
 		memset(&srv->pull_ctxs[i], 0, sizeof(struct bt_mesh_blob_target_pull));
@@ -1265,7 +1265,7 @@ static int dfd_srv_settings_set(const struct bt_mesh_model *mod, const char *nam
 		srv->targets[i].phase = state.targets[i].phase;
 		srv->targets[i].status = state.targets[i].status;
 		srv->targets[i].effect = state.targets[i].effect;
-		sys_slist_append(&srv->inputs.targets,
+		list_add_tail(&srv->inputs.targets,
 				 &srv->targets[i].blob.n);
 	}
 
@@ -1332,7 +1332,7 @@ enum bt_mesh_dfd_status bt_mesh_dfd_srv_receivers_delete_all(struct bt_mesh_dfd_
 		return BT_MESH_DFD_ERR_BUSY_WITH_DISTRIBUTION;
 	}
 
-	sys_slist_init(&srv->inputs.targets);
+	list_initialize(&srv->inputs.targets);
 	srv->target_cnt = 0;
 
 	return BT_MESH_DFD_SUCCESS;
@@ -1389,7 +1389,7 @@ enum bt_mesh_dfd_status bt_mesh_dfd_srv_start(struct bt_mesh_dfd_srv *srv,
 		return BT_MESH_DFD_ERR_INTERNAL;
 	}
 
-	sys_slist_init(&srv->inputs.targets);
+	list_initialize(&srv->inputs.targets);
 	for (i = 0; i < srv->target_cnt; i++) {
 		uint16_t addr = srv->targets[i].blob.addr;
 
@@ -1398,7 +1398,7 @@ enum bt_mesh_dfd_status bt_mesh_dfd_srv_start(struct bt_mesh_dfd_srv *srv,
 		srv->targets[i].blob.addr = addr;
 		srv->targets[i].blob.pull = &srv->pull_ctxs[i];
 
-		sys_slist_append(&srv->inputs.targets, &srv->targets[i].blob.n);
+		list_add_tail(&srv->inputs.targets, &srv->targets[i].blob.n);
 	}
 
 	srv->slot_idx = params->slot_idx;

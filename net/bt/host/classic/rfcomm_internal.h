@@ -29,7 +29,7 @@ struct bt_rfcomm_session {
 	/* Binary sem for aggregate fc */
 	struct k_sem fc;
 	/* DLC list */
-	sys_slist_t dlcs;
+	struct list_node dlcs;
 	uint16_t mtu;
 	uint8_t state;
 	bt_rfcomm_role_t role;

@@ -8,7 +8,7 @@
 #include <zephyr/bluetooth/l2cap.h>
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/clock.h>
 
@@ -290,7 +290,7 @@ typedef int (*bt_att_encode_t)(struct net_buf *buf, size_t len,
 
 /* ATT request context */
 struct bt_att_req {
-	sys_snode_t node;
+	struct list_node node;
 	bt_att_func_t func;
 	struct net_buf *buf;
 #if defined(CONFIG_BT_ATT_RETRY_ON_SEC_ERR)

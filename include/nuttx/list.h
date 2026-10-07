@@ -47,6 +47,7 @@
 
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include <nuttx/list_type.h>
 
@@ -76,6 +77,8 @@
 #define list_is_empty(list)    ((list)->next == list)
 #define list_is_clear(list)    ((list)->next == NULL)
 #define list_is_singular(list) ((list)->next == (list)->prev)
+#define list_has_multiple_nodes(list) \
+  (!list_is_empty(list) && !list_is_singular(list))
 
 #define list_initialize(list) \
   do \
@@ -317,6 +320,24 @@
       &entry->member != (list); \
       entry = list_container_of(entry->member.prev, type, member))
 
+#define list_for_every_container(list, entry, member) \
+  list_for_every_entry(list, entry, __typeof__(*(entry)), member)
+
+#define list_for_every_container_safe(list, entry, temp, member) \
+  list_for_every_entry_safe(list, entry, temp, __typeof__(*(entry)), member)
+
+#define list_peek_head_container(list, entry, member) \
+  list_peek_head_type(list, __typeof__(*(entry)), member)
+
+#define list_peek_tail_container(list, entry, member) \
+  list_peek_tail_type(list, __typeof__(*(entry)), member)
+
+#define list_next_container(list, entry, member) \
+  list_next_type(list, &(entry)->member, __typeof__(*(entry)), member)
+
+#define list_prev_container(list, entry, member) \
+  list_prev_type(list, &(entry)->member, __typeof__(*(entry)), member)
+
 /****************************************************************************
  * Inline Functions
  ****************************************************************************/
@@ -362,6 +383,103 @@ static inline size_t list_length(FAR struct list_node *list)
     }
 
   return cnt;
+}
+
+static inline void list_add_list(FAR struct list_node *list,
+                                 FAR struct list_node *head,
+                                 FAR struct list_node *tail)
+{
+  FAR struct list_node *node = head;
+  FAR struct list_node *end = tail;
+
+  while (node != NULL)
+    {
+      FAR struct list_node *next = (node == end) ? NULL : node->next;
+
+      list_add_tail(list, node);
+      if (node == end)
+        {
+          break;
+        }
+
+      node = next;
+    }
+}
+
+static inline void list_merge(FAR struct list_node *list,
+                              FAR struct list_node *list_to_append)
+{
+  FAR struct list_node *node;
+
+  while ((node = list_remove_head(list_to_append)) != NULL)
+    {
+      list_add_tail(list, node);
+    }
+}
+
+static inline void list_insert_after(FAR struct list_node *list,
+                                     FAR struct list_node *prev,
+                                     FAR struct list_node *node)
+{
+  if (prev == NULL)
+    {
+      list_add_head(list, node);
+    }
+  else
+    {
+      list_add_after(prev, node);
+    }
+}
+
+static inline bool list_find(FAR struct list_node *list,
+                             FAR const struct list_node *node,
+                             FAR struct list_node **prev)
+{
+  FAR struct list_node *cur;
+  FAR struct list_node *last = NULL;
+
+  list_for_every(list, cur)
+    {
+      if (cur == node)
+        {
+          if (prev != NULL)
+            {
+              *prev = last;
+            }
+
+          return true;
+        }
+
+      last = cur;
+    }
+
+  if (prev != NULL)
+    {
+      *prev = last;
+    }
+
+  return false;
+}
+
+static inline bool list_find_and_remove(FAR struct list_node *list,
+                                        FAR struct list_node *node)
+{
+  if (!list_find(list, node, NULL))
+    {
+      return false;
+    }
+
+  list_delete(node);
+  return true;
+}
+
+static inline void list_remove(FAR struct list_node *list,
+                               FAR struct list_node *prev,
+                               FAR struct list_node *node)
+{
+  (void)list;
+  (void)prev;
+  list_delete(node);
 }
 
 #endif /* __INCLUDE_NUTTX_LIST_H */

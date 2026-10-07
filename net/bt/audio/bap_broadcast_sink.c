@@ -32,7 +32,7 @@
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
@@ -61,7 +61,7 @@ struct codec_cap_lookup_id_data {
 	const struct bt_audio_codec_cap *codec_cap;
 };
 
-static sys_slist_t sink_cbs = SYS_SLIST_STATIC_INIT(&sink_cbs);
+static struct list_node sink_cbs = LIST_INITIAL_VALUE(sink_cbs);
 
 /* The mod_src_param is and shall only be used by the BT RX thread. It is statically defined due to
  * the size of it, and that it's configurable in size, and can cause stack overflow issues otherwise
@@ -356,13 +356,13 @@ static bool broadcast_sink_is_in_state(struct bt_bap_broadcast_sink *sink,
 		return state == BT_BAP_EP_STATE_IDLE;
 	}
 
-	if (sys_slist_is_empty(&sink->streams)) {
+	if (list_is_empty(&sink->streams)) {
 		LOG_DBG("Sink does not have any streams");
 
 		return state == BT_BAP_EP_STATE_IDLE;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&sink->streams, stream, _node) {
+	list_for_every_container(&sink->streams, stream, _node) {
 		if (stream->ep != NULL && stream->ep->state != state) {
 			return false;
 		}
@@ -450,7 +450,7 @@ static void broadcast_sink_iso_disconnected(struct bt_iso_chan *chan,
 	if (sink == NULL) {
 		LOG_ERR("Could not lookup sink by iso %p", chan);
 	} else {
-		if (!sys_slist_find_and_remove(&sink->streams, &stream->_node)) {
+		if (!list_find_and_remove(&sink->streams, &stream->_node)) {
 			LOG_DBG("Could not find and remove stream %p from sink %p", stream, sink);
 		}
 	}
@@ -774,7 +774,7 @@ static bool pa_decode_base(struct bt_data *data, void *user_data)
 		}
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&sink_cbs, listener, _node) {
+	list_for_every_container(&sink_cbs, listener, _node) {
 		if (listener->base_recv != NULL) {
 			listener->base_recv(sink, base, (size_t)base_size);
 		}
@@ -796,7 +796,7 @@ static void pa_recv(struct bt_le_per_adv_sync *sync,
 		return;
 	}
 
-	if (sys_slist_is_empty(&sink_cbs)) {
+	if (list_is_empty(&sink_cbs)) {
 		/* Terminate early if we do not have any broadcast sink listeners */
 		return;
 	}
@@ -915,7 +915,7 @@ static void biginfo_recv(struct bt_le_per_adv_sync *sync,
 
 	(void)memcpy(&sink->biginfo, biginfo, sizeof(sink->biginfo));
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&sink_cbs, listener, _node) {
+	list_for_every_container(&sink_cbs, listener, _node) {
 		if (listener->syncable != NULL) {
 			listener->syncable(sink, biginfo);
 		}
@@ -948,7 +948,7 @@ static void big_started_cb(struct bt_iso_big *big)
 		return;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&sink_cbs, listener, _node) {
+	list_for_every_container(&sink_cbs, listener, _node) {
 		if (listener->started != NULL) {
 			listener->started(sink);
 		}
@@ -967,7 +967,7 @@ static void big_stopped_cb(struct bt_iso_big *big, uint8_t reason)
 
 	broadcast_sink_clear_big(sink, reason);
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&sink_cbs, listener, _node) {
+	list_for_every_container(&sink_cbs, listener, _node) {
 		if (listener->stopped != NULL) {
 			listener->stopped(sink, reason);
 		}
@@ -984,7 +984,7 @@ int bt_bap_broadcast_sink_register_cb(struct bt_bap_broadcast_sink_cb *cb)
 		return -EINVAL;
 	}
 
-	if (sys_slist_find(&sink_cbs, &cb->_node, NULL)) {
+	if (list_find(&sink_cbs, &cb->_node, NULL)) {
 		LOG_DBG("cb %p is already registered", cb);
 
 		return -EEXIST;
@@ -1004,7 +1004,7 @@ int bt_bap_broadcast_sink_register_cb(struct bt_bap_broadcast_sink_cb *cb)
 		iso_big_cb_registered = true;
 	}
 
-	sys_slist_append(&sink_cbs, &cb->_node);
+	list_add_tail(&sink_cbs, &cb->_node);
 
 	return 0;
 }
@@ -1102,7 +1102,7 @@ static void broadcast_sink_cleanup_streams(struct bt_bap_broadcast_sink *sink)
 {
 	struct bt_bap_stream *stream, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&sink->streams, stream, next, _node) {
+	list_for_every_container_safe(&sink->streams, stream, next, _node) {
 		if (stream->ep != NULL) {
 			bt_bap_iso_unbind_ep(stream->ep->iso, stream->ep);
 			stream->iso = NULL;
@@ -1114,7 +1114,7 @@ static void broadcast_sink_cleanup_streams(struct bt_bap_broadcast_sink *sink)
 		stream->codec_cfg = NULL;
 		stream->group = NULL;
 
-		sys_slist_remove(&sink->streams, NULL, &stream->_node);
+		list_remove(&sink->streams, NULL, &stream->_node);
 	}
 
 	sink->stream_count = 0U;
@@ -1436,7 +1436,7 @@ int bt_bap_broadcast_sink_sync(struct bt_bap_broadcast_sink *sink, uint32_t inde
 		}
 
 		sink->bis[i].chan = bt_bap_stream_iso_chan_get(stream);
-		sys_slist_append(&sink->streams, &stream->_node);
+		list_add_tail(&sink->streams, &stream->_node);
 		sink->stream_count++;
 
 		bis_channels[i] = sink->bis[i].chan;
@@ -1480,7 +1480,7 @@ int bt_bap_broadcast_sink_stop(struct bt_bap_broadcast_sink *sink)
 		return -EINVAL;
 	}
 
-	if (sys_slist_is_empty(&sink->streams)) {
+	if (list_is_empty(&sink->streams)) {
 		LOG_DBG("Source does not have any streams (already stopped)");
 		return -EALREADY;
 	}

@@ -409,13 +409,13 @@ struct bt_bip {
 	uint32_t _supp_funcs;
 
 	/** @internal List of clients */
-	sys_slist_t _clients;
+	struct list_node _clients;
 
 	/** @internal List of servers */
-	sys_slist_t _servers;
+	struct list_node _servers;
 
 	/** @internal Node for linking in lists */
-	sys_snode_t _node;
+	struct list_node _node;
 };
 
 /**
@@ -898,7 +898,7 @@ struct bt_bip_server {
 	void (*_req_cb)(struct bt_bip_server *server, bool final, struct net_buf *buf);
 
 	/** @internal Node for linking in lists */
-	sys_snode_t _node;
+	struct list_node _node;
 };
 
 /**
@@ -941,7 +941,7 @@ struct bt_bip_client {
 	const char *_req_type;
 
 	/** @internal Node for linking in lists */
-	sys_snode_t _node;
+	struct list_node _node;
 };
 
 /**

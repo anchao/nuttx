@@ -185,7 +185,7 @@ struct bt_avdtp_sep {
 	/** SEP state */
 	uint8_t state;
 	/* Internally used list node */
-	sys_snode_t _node;
+	struct list_node _node;
 };
 
 #ifdef __cplusplus

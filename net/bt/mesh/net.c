@@ -86,7 +86,7 @@ static uint16_t msg_cache_next;
 
 /* Singleton network context (the implementation only supports one) */
 struct bt_mesh_net bt_mesh = {
-	.local_queue = SYS_SLIST_STATIC_INIT(&bt_mesh.local_queue),
+	.local_queue = LIST_INITIAL_VALUE(bt_mesh.local_queue),
 	.sar_tx = BT_MESH_SAR_TX_INIT,
 	.sar_rx = BT_MESH_SAR_RX_INIT,
 
@@ -104,7 +104,7 @@ struct bt_mesh_net bt_mesh = {
 static bool ivi_was_recovered;
 
 struct loopback_buf {
-	sys_snode_t node;
+	struct list_node node;
 	struct bt_mesh_subnet *sub;
 	uint8_t len;
 	uint8_t data[LOOPBACK_MAX_PDU_LEN];
@@ -437,9 +437,9 @@ uint32_t bt_mesh_next_seq(void)
 static void bt_mesh_net_local(struct k_work *work)
 {
 	struct net_buf_simple sbuf;
-	sys_snode_t *node;
+	struct list_node *node;
 
-	while ((node = sys_slist_get(&bt_mesh.local_queue))) {
+	while ((node = list_remove_head(&bt_mesh.local_queue))) {
 		struct loopback_buf *buf = CONTAINER_OF(node, struct loopback_buf, node);
 		struct bt_mesh_net_rx rx = {
 			.ctx = {
@@ -561,7 +561,7 @@ static int net_loopback(const struct bt_mesh_net_tx *tx, const uint8_t *data,
 	(void)memcpy(buf->data, data, len);
 	buf->len = len;
 
-	sys_slist_append(&bt_mesh.local_queue, &buf->node);
+	list_add_tail(&bt_mesh.local_queue, &buf->node);
 
 	k_work_submit(&bt_mesh.local_work);
 
@@ -638,21 +638,21 @@ done:
 
 void bt_mesh_net_loopback_clear(uint16_t net_idx)
 {
-	sys_slist_t new_list;
-	sys_snode_t *node;
+	struct list_node new_list;
+	struct list_node *node;
 
 	LOG_DBG("0x%04x", net_idx);
 
-	sys_slist_init(&new_list);
+	list_initialize(&new_list);
 
-	while ((node = sys_slist_get(&bt_mesh.local_queue))) {
+	while ((node = list_remove_head(&bt_mesh.local_queue))) {
 		struct loopback_buf *buf = CONTAINER_OF(node, struct loopback_buf, node);
 
 		if (net_idx == BT_MESH_KEY_ANY || net_idx == buf->sub->net_idx) {
 			LOG_DBG("Dropped 0x%06x", pdu_seq(buf->data));
 			k_mem_slab_free(&loopback_buf_pool, (void *)buf);
 		} else {
-			sys_slist_append(&new_list, &buf->node);
+			list_add_tail(&new_list, &buf->node);
 		}
 	}
 

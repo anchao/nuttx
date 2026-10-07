@@ -18,8 +18,8 @@
 LOG_MODULE_REGISTER(bt_mesh_dfu_cli);
 
 #define TARGETS_FOR_EACH(cli, target)                                          \
-	SYS_SLIST_FOR_EACH_CONTAINER(                                          \
-		(sys_slist_t *)&((cli)->blob.inputs)->targets, target, blob.n)
+	list_for_every_container(                                          \
+		(struct list_node *)&((cli)->blob.inputs)->targets, target, blob.n)
 
 #define MSG_CTX(cli, dst)                                                      \
 	{                                                                      \
@@ -380,8 +380,8 @@ static void send_update_start(struct bt_mesh_blob_cli *b, uint16_t dst)
 	if (b->tx.ctx.force_unicast) {
 		target = target_get(cli, dst);
 	} else {
-		target = SYS_SLIST_PEEK_HEAD_CONTAINER(
-						(sys_slist_t *)&((cli)->blob.inputs)->targets,
+		target = list_peek_head_container(
+						(struct list_node *)&((cli)->blob.inputs)->targets,
 						target, blob.n);
 	}
 

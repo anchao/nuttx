@@ -9,13 +9,11 @@
 #include <nuttx/wqueue.h>
 #include <nuttx/spinlock.h>
 #include <nuttx/clock.h>
+#include <nuttx/list.h>
 #include <pthread.h>
 
 #include "sys_clock.h"
 #include "sys/atomic.h"
-#include "sys/slist.h"
-#include "sys/sflist.h"
-#include "sys/dlist.h"
 #include "toolchain.h"
 #include "arch/posix/arch.h"
 #include "irq.h"
@@ -60,8 +58,8 @@ int k_mutex_unlock(struct k_mutex *mutex);
 
 /* ===== FIFO / Queue ===== */
 struct k_fifo {
-    sys_sflist_t data_q;
-    sys_dlist_t wait_q;
+    struct list_node data_q;
+    struct list_node wait_q;
     spinlock_t lock;  /* Use raw spinlock for ISR safety */
 };
 
@@ -85,8 +83,8 @@ bool z_k_queue_remove_fifo(struct k_fifo *fifo, void *data);
 
 #define K_FIFO_DEFINE(name) \
     struct k_fifo name = { \
-        .data_q = SYS_SFLIST_STATIC_INIT(&name.data_q), \
-        .wait_q = SYS_DLIST_STATIC_INIT(&name.wait_q), \
+        .data_q = LIST_INITIAL_VALUE(name.data_q), \
+        .wait_q = LIST_INITIAL_VALUE(name.wait_q), \
     }
 
 /* ===== Thread ===== */
@@ -268,7 +266,7 @@ struct k_mem_slab {
     uint32_t num_used;
     uint32_t max_used;
     spinlock_t lock;
-    sys_dlist_t wait_q;
+    struct list_node wait_q;
 };
 
 void k_mem_slab_init(struct k_mem_slab *slab, void *buffer, size_t block_size,
@@ -313,13 +311,13 @@ uint32_t k_mem_slab_max_used_get(struct k_mem_slab *slab);
 #define K_POLL_MODE_NOTIFY_ONLY       0
 
 struct k_poll_signal {
-    sys_dlist_t poll_events;
+    struct list_node poll_events;
     unsigned int signaled;
     int result;
 };
 
 #define K_POLL_SIGNAL_INITIALIZER(obj) \
-    { .poll_events = SYS_DLIST_STATIC_INIT(&obj.poll_events), .signaled = 0, .result = 0 }
+    { .poll_events = LIST_INITIAL_VALUE(obj.poll_events), .signaled = 0, .result = 0 }
 
 void k_poll_signal_init(struct k_poll_signal *signal);
 void k_poll_signal_check(struct k_poll_signal *signal, unsigned int *signaled, int *result);

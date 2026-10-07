@@ -20,7 +20,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/atomic.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/sys/clock.h>
 #include <zephyr/toolchain.h>
@@ -203,7 +203,7 @@ struct bt_conn_iso {
 typedef void (*bt_conn_tx_cb_t)(struct bt_conn *conn, void *user_data, int err);
 
 struct bt_conn_tx {
-	sys_snode_t node;
+	struct list_node node;
 
 	bt_conn_tx_cb_t cb;
 	void *user_data;
@@ -249,16 +249,16 @@ struct bt_conn {
 	struct net_buf		*rx;
 
 	/* Pending TX that are awaiting the NCP event. len(tx_pending) == in_ll */
-	sys_slist_t		tx_pending;
+	struct list_node		tx_pending;
 
 	/* Completed TX for which we need to call the callback */
-	sys_slist_t		tx_complete;
+	struct list_node		tx_complete;
 #if defined(CONFIG_BT_CONN_TX)
 	struct k_work           tx_complete_work;
 #endif /* CONFIG_BT_CONN_TX */
 
 	/* Active L2CAP channels */
-	sys_slist_t		channels;
+	struct list_node		channels;
 
 	/* Delayed work deferred tasks:
 	 * - Peripheral delayed connection update.
@@ -324,12 +324,12 @@ struct bt_conn {
 	 * pulling HCI fragments. Channels are only ever removed from this list
 	 * when a whole PDU (ie all its frags) have been sent.
 	 */
-	sys_slist_t		l2cap_data_ready;
+	struct list_node		l2cap_data_ready;
 
 	/* Node for putting this connection in a data-ready mode for the bt_dev.
 	 * This will be used by the TX processor to then fetch HCI frags from it.
 	 */
-	sys_snode_t		_conn_ready;
+	struct list_node		_conn_ready;
 
 	/* Holds the number of packets that have been sent to the controller but
 	 * not yet ACKd (by receiving an Number of Completed Packets). This

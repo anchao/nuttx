@@ -31,7 +31,7 @@
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/iterable_sections.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
 
@@ -2663,7 +2663,7 @@ struct bt_conn_cb {
 
 #if defined(CONFIG_BT_CONN_DYNAMIC_CALLBACKS)
 	/** @internal Internally used field for list handling */
-	sys_snode_t _node;
+	struct list_node _node;
 #endif
 };
 
@@ -3211,7 +3211,7 @@ struct bt_conn_auth_info_cb {
 #endif /* CONFIG_BT_CLASSIC */
 
 	/** Internally used field for list handling */
-	sys_snode_t node;
+	struct list_node node;
 };
 
 /** @brief Register authentication callbacks.

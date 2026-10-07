@@ -43,7 +43,7 @@
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
@@ -92,7 +92,7 @@ struct bt_csip_set_coordinator_inst {
 
 static struct bt_uuid_16 uuid = BT_UUID_INIT_16(0);
 
-static sys_slist_t csip_set_coordinator_cbs = SYS_SLIST_STATIC_INIT(&csip_set_coordinator_cbs);
+static struct list_node csip_set_coordinator_cbs = LIST_INITIAL_VALUE(csip_set_coordinator_cbs);
 static struct bt_csip_set_coordinator_inst client_insts[CONFIG_BT_MAX_CONN];
 
 static int read_sirk(struct bt_csip_set_coordinator_svc_inst *svc_inst);
@@ -296,7 +296,7 @@ static void lock_changed(struct bt_csip_set_coordinator_csis_inst *inst, bool lo
 
 	active_members_reset();
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&csip_set_coordinator_cbs, listener, _node) {
+	list_for_every_container(&csip_set_coordinator_cbs, listener, _node) {
 		if (listener->lock_changed) {
 			listener->lock_changed(inst, locked);
 		}
@@ -307,7 +307,7 @@ static void sirk_changed(struct bt_csip_set_coordinator_csis_inst *inst)
 {
 	struct bt_csip_set_coordinator_cb *listener;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&csip_set_coordinator_cbs, listener, _node) {
+	list_for_every_container(&csip_set_coordinator_cbs, listener, _node) {
 		if (listener->sirk_changed) {
 			listener->sirk_changed(inst);
 		}
@@ -318,7 +318,7 @@ static void size_changed(struct bt_conn *conn, struct bt_csip_set_coordinator_cs
 {
 	struct bt_csip_set_coordinator_cb *listener;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&csip_set_coordinator_cbs, listener, _node) {
+	list_for_every_container(&csip_set_coordinator_cbs, listener, _node) {
 		if (listener->size_changed != NULL) {
 			listener->size_changed(conn, inst);
 		}
@@ -331,7 +331,7 @@ static void release_set_complete(int err)
 
 	active_members_reset();
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&csip_set_coordinator_cbs, listener, _node) {
+	list_for_every_container(&csip_set_coordinator_cbs, listener, _node) {
 		if (listener->release_set) {
 			listener->release_set(err);
 		}
@@ -344,7 +344,7 @@ static void lock_set_complete(int err)
 
 	active_members_reset();
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&csip_set_coordinator_cbs, listener, _node) {
+	list_for_every_container(&csip_set_coordinator_cbs, listener, _node) {
 		if (listener->lock_set) {
 			listener->lock_set(err);
 		}
@@ -360,7 +360,7 @@ static void ordered_access_complete(const struct bt_csip_set_coordinator_set_inf
 
 	active_members_reset();
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&csip_set_coordinator_cbs, listener, _node) {
+	list_for_every_container(&csip_set_coordinator_cbs, listener, _node) {
 		if (listener->ordered_access) {
 			listener->ordered_access(set_info, err, locked, member);
 		}
@@ -375,7 +375,7 @@ static void discover_complete(struct bt_csip_set_coordinator_inst *client,
 	client->cur_inst = NULL;
 	atomic_clear_bit(client->flags, SET_COORDINATOR_FLAG_BUSY);
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&csip_set_coordinator_cbs, listener, _node) {
+	list_for_every_container(&csip_set_coordinator_cbs, listener, _node) {
 		if (listener->discover) {
 			if (err == 0) {
 				listener->discover(client->conn,
@@ -1458,7 +1458,7 @@ int bt_csip_set_coordinator_register_cb(struct bt_csip_set_coordinator_cb *cb)
 		return -EINVAL;
 	}
 
-	sys_slist_append(&csip_set_coordinator_cbs, &cb->_node);
+	list_add_tail(&csip_set_coordinator_cbs, &cb->_node);
 
 	return 0;
 }

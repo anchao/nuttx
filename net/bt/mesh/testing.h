@@ -14,7 +14,7 @@
 
 #include <zephyr/bluetooth/mesh.h>
 #include <zephyr/bluetooth/mesh/access.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 
 /** @brief Bluetooth Testing callbacks structure.
  *
@@ -30,7 +30,7 @@ struct bt_mesh_test_cb {
 	void (*prov_invalid_bearer)(uint8_t opcode);
 	void (*trans_incomp_timer_exp)(void);
 
-	sys_snode_t node;
+	struct list_node node;
 };
 
 /** Register callbacks for Bluetooth testing purposes

@@ -13,7 +13,7 @@
 #include <stdint.h>
 
 #include <zephyr/sys/iterable_sections.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 
 /**
  * @brief Heartbeat

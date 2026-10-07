@@ -16,7 +16,7 @@
 LOG_MODULE_REGISTER(bt_mesh_blob_cli);
 
 #define TARGETS_FOR_EACH(cli, target)                                          \
-	SYS_SLIST_FOR_EACH_CONTAINER((sys_slist_t *)&(cli)->inputs->targets,   \
+	list_for_every_container((struct list_node *)&(cli)->inputs->targets,   \
 				     target, n)
 
 /* The Maximum BLOB Poll Interval - T_MBPI */
@@ -349,10 +349,11 @@ static struct bt_mesh_blob_target *next_target(struct bt_mesh_blob_cli *cli,
 					       struct bt_mesh_blob_target **current)
 {
 	if (*current) {
-		*current = SYS_SLIST_PEEK_NEXT_CONTAINER(*current, n);
+		*current = list_next_container((struct list_node *)&cli->inputs->targets,
+						       *current, n);
 	} else {
-		*current = SYS_SLIST_PEEK_HEAD_CONTAINER(
-			(sys_slist_t *)&cli->inputs->targets, *current, n);
+		*current = list_peek_head_container(
+			(struct list_node *)&cli->inputs->targets, *current, n);
 	}
 
 	while (*current) {
@@ -374,7 +375,8 @@ static struct bt_mesh_blob_target *next_target(struct bt_mesh_blob_cli *cli,
 		break;
 
 next:
-		*current = SYS_SLIST_PEEK_NEXT_CONTAINER(*current, n);
+		*current = list_next_container((struct list_node *)&cli->inputs->targets,
+						       *current, n);
 	}
 
 	return *current;

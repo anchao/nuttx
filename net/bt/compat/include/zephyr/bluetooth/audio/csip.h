@@ -39,7 +39,7 @@
 #include <zephyr/bluetooth/data.h>
 #include <zephyr/bluetooth/gap.h>
 #include <zephyr/kernel.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -534,7 +534,7 @@ struct bt_csip_set_coordinator_cb {
 
 	/** @cond INTERNAL_HIDDEN */
 	/** Internally used field for list handling */
-	sys_snode_t _node;
+	struct list_node _node;
 	/** @endcond */
 };
 

@@ -10,7 +10,7 @@
 
 #include <nuttx/spinlock.h>
 
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 
 #include <zephyr/net_buf.h>
 #include <zephyr/bluetooth/mesh.h>
@@ -27,13 +27,13 @@ static void delayable_msg_handler(struct k_work *w);
 static bool push_msg_from_delayable_msgs(void);
 
 static struct delayable_msg_chunk {
-	sys_snode_t node;
+	struct list_node node;
 	uint8_t data[CONFIG_BT_MESH_ACCESS_DELAYABLE_MSG_CHUNK_SIZE];
 } delayable_msg_chunks[CONFIG_BT_MESH_ACCESS_DELAYABLE_MSG_CHUNK_COUNT];
 
 static struct delayable_msg_ctx {
-	sys_snode_t node;
-	sys_slist_t chunks;
+	struct list_node node;
+	struct list_node chunks;
 	struct bt_mesh_msg_ctx ctx;
 	uint16_t src_addr;
 	const struct bt_mesh_send_cb *cb;
@@ -43,9 +43,9 @@ static struct delayable_msg_ctx {
 } delayable_msgs_ctx[CONFIG_BT_MESH_ACCESS_DELAYABLE_MSG_COUNT];
 
 static struct {
-	sys_slist_t busy_ctx;
-	sys_slist_t free_ctx;
-	sys_slist_t free_chunks;
+	struct list_node busy_ctx;
+	struct list_node free_ctx;
+	struct list_node free_chunks;
 	struct k_work_delayable random_delay;
 } access_delayable_msg = {.random_delay = Z_WORK_DELAYABLE_INITIALIZER(delayable_msg_handler)};
 
@@ -59,13 +59,13 @@ static spinlock_t lock;
 static void put_ctx_to_busy_list(struct delayable_msg_ctx *ctx)
 {
 	struct delayable_msg_ctx *curr_ctx;
-	sys_slist_t *list = &access_delayable_msg.busy_ctx;
-	sys_snode_t *head = sys_slist_peek_head(list);
-	sys_snode_t *curr = head;
-	sys_snode_t *prev = curr;
+	struct list_node *list = &access_delayable_msg.busy_ctx;
+	struct list_node *head = list_peek_head(list);
+	struct list_node *curr = head;
+	struct list_node *prev = curr;
 
 	if (!head) {
-		sys_slist_append(list, &ctx->node);
+		list_add_tail(list, &ctx->node);
 		return;
 	}
 
@@ -73,22 +73,22 @@ static void put_ctx_to_busy_list(struct delayable_msg_ctx *ctx)
 		curr_ctx = CONTAINER_OF(curr, struct delayable_msg_ctx, node);
 		if (ctx->fired_time < curr_ctx->fired_time) {
 			if (curr == head) {
-				sys_slist_prepend(list, &ctx->node);
+				list_add_head(list, &ctx->node);
 			} else {
-				sys_slist_insert(list, prev, &ctx->node);
+				list_insert_after(list, prev, &ctx->node);
 			}
 			return;
 		}
 		prev = curr;
-	} while ((curr = sys_slist_peek_next(curr)));
+	} while ((curr = list_next(list, curr)));
 
-	sys_slist_append(list, &ctx->node);
+	list_add_tail(list, &ctx->node);
 }
 
 static struct delayable_msg_ctx *peek_pending_msg(void)
 {
 	struct delayable_msg_ctx *pending_msg = NULL;
-	sys_snode_t *node = sys_slist_peek_head(&access_delayable_msg.busy_ctx);
+	struct list_node *node = list_peek_head(&access_delayable_msg.busy_ctx);
 
 	if (node) {
 		pending_msg = CONTAINER_OF(node, struct delayable_msg_ctx, node);
@@ -130,17 +130,17 @@ static void reschedule_delayable_msg(struct delayable_msg_ctx *msg)
 
 static int allocate_delayable_msg_chunks(struct delayable_msg_ctx *msg, int number)
 {
-	sys_snode_t *node;
+	struct list_node *node;
 	irqstate_t key = spin_lock_irqsave(&lock);
 
 	for (int i = 0; i < number; i++) {
-		node = sys_slist_get(&access_delayable_msg.free_chunks);
+		node = list_remove_head(&access_delayable_msg.free_chunks);
 		if (!node) {
 			spin_unlock_irqrestore(&lock, key);
 			LOG_WRN("Unable allocate %u chunks, allocated %u", number, i);
 			return i;
 		}
-		sys_slist_append(&msg->chunks, node);
+		list_add_tail(&msg->chunks, node);
 	}
 
 	spin_unlock_irqrestore(&lock, key);
@@ -149,11 +149,11 @@ static int allocate_delayable_msg_chunks(struct delayable_msg_ctx *msg, int numb
 
 static void release_delayable_msg_chunks(struct delayable_msg_ctx *msg)
 {
-	sys_snode_t *node;
+	struct list_node *node;
 	irqstate_t key = spin_lock_irqsave(&lock);
 
-	while ((node = sys_slist_get(&msg->chunks))) {
-		sys_slist_append(&access_delayable_msg.free_chunks, node);
+	while ((node = list_remove_head(&msg->chunks))) {
+		list_add_tail(&access_delayable_msg.free_chunks, node);
 	}
 	spin_unlock_irqrestore(&lock, key);
 }
@@ -161,11 +161,11 @@ static void release_delayable_msg_chunks(struct delayable_msg_ctx *msg)
 static struct delayable_msg_ctx *allocate_delayable_msg_ctx(void)
 {
 	struct delayable_msg_ctx *msg;
-	sys_snode_t *node;
+	struct list_node *node;
 	irqstate_t key;
 
 	key = spin_lock_irqsave(&lock);
-	node = sys_slist_get(&access_delayable_msg.free_ctx);
+	node = list_remove_head(&access_delayable_msg.free_ctx);
 	spin_unlock_irqrestore(&lock, key);
 
 	if (!node) {
@@ -176,7 +176,7 @@ static struct delayable_msg_ctx *allocate_delayable_msg_ctx(void)
 		}
 
 		key = spin_lock_irqsave(&lock);
-		node = sys_slist_get(&access_delayable_msg.free_ctx);
+		node = list_remove_head(&access_delayable_msg.free_ctx);
 		spin_unlock_irqrestore(&lock, key);
 
 		/* Another context may have taken the purged ctx before we retried. */
@@ -187,7 +187,7 @@ static struct delayable_msg_ctx *allocate_delayable_msg_ctx(void)
 
 	msg = CONTAINER_OF(node, struct delayable_msg_ctx, node);
 	/* msg is off every list here, so it is private to this caller. */
-	sys_slist_init(&msg->chunks);
+	list_initialize(&msg->chunks);
 
 	return msg;
 }
@@ -197,8 +197,8 @@ static void release_delayable_msg_ctx(struct delayable_msg_ctx *ctx)
 	irqstate_t key = spin_lock_irqsave(&lock);
 
 	/* Not on busy_ctx when called from the manage() error path. */
-	(void)sys_slist_find_and_remove(&access_delayable_msg.busy_ctx, &ctx->node);
-	sys_slist_append(&access_delayable_msg.free_ctx, &ctx->node);
+	(void)list_find_and_remove(&access_delayable_msg.busy_ctx, &ctx->node);
+	list_add_tail(&access_delayable_msg.free_ctx, &ctx->node);
 	spin_unlock_irqrestore(&lock, key);
 }
 
@@ -240,7 +240,7 @@ static struct delayable_msg_ctx *take_expired_msg(void)
 	if (msg && !msg_expired(msg)) {
 		msg = NULL;
 	} else if (msg) {
-		(void)sys_slist_get(&access_delayable_msg.busy_ctx);
+		(void)list_remove_head(&access_delayable_msg.busy_ctx);
 	}
 	spin_unlock_irqrestore(&lock, key);
 
@@ -250,13 +250,13 @@ static struct delayable_msg_ctx *take_expired_msg(void)
 /* Takes the head whatever its fired_time, so the purge path can force out the earliest msg. */
 static struct delayable_msg_ctx *take_earliest_msg(void)
 {
-	sys_snode_t *node;
+	struct list_node *node;
 	irqstate_t key = spin_lock_irqsave(&lock);
 
 	/* Dequeueing under the lock stops concurrent callers from sending and releasing the same
 	 * msg twice.
 	 */
-	node = sys_slist_get(&access_delayable_msg.busy_ctx);
+	node = list_remove_head(&access_delayable_msg.busy_ctx);
 	spin_unlock_irqrestore(&lock, key);
 
 	return node ? CONTAINER_OF(node, struct delayable_msg_ctx, node) : NULL;
@@ -265,7 +265,7 @@ static struct delayable_msg_ctx *take_earliest_msg(void)
 /* Sends `msg` and releases it. Returns false if a transient failure put it back on busy_ctx. */
 static bool send_delayable_msg(struct delayable_msg_ctx *msg)
 {
-	sys_snode_t *node;
+	struct list_node *node;
 	struct delayable_msg_chunk *chunk;
 	uint16_t len = msg->len;
 	int err;
@@ -286,7 +286,7 @@ static bool send_delayable_msg(struct delayable_msg_ctx *msg)
 	/* msg is off busy_ctx, so it is unreachable from other contexts and its chunks can be
 	 * walked unlocked.
 	 */
-	SYS_SLIST_FOR_EACH_NODE(&msg->chunks, node) {
+	list_for_every(&msg->chunks, node) {
 		uint16_t tmp = MIN((uint16_t)CONFIG_BT_MESH_ACCESS_DELAYABLE_MSG_CHUNK_SIZE, len);
 
 		chunk = CONTAINER_OF(node, struct delayable_msg_chunk, node);
@@ -344,7 +344,7 @@ static void delayable_msg_handler(struct k_work *w)
 int bt_mesh_delayable_msg_manage(struct bt_mesh_msg_ctx *ctx, struct net_buf_simple *buf,
 				 uint16_t src_addr, const struct bt_mesh_send_cb *cb, void *cb_data)
 {
-	sys_snode_t *node;
+	struct list_node *node;
 	struct delayable_msg_ctx *msg;
 	uint16_t random_delay;
 	int total_number = DIV_ROUND_UP(buf->len, CONFIG_BT_MESH_ACCESS_DELAYABLE_MSG_CHUNK_SIZE);
@@ -382,7 +382,7 @@ int bt_mesh_delayable_msg_manage(struct bt_mesh_msg_ctx *ctx, struct net_buf_sim
 		}
 	} while (total_number > allocated_number);
 
-	SYS_SLIST_FOR_EACH_NODE(&msg->chunks, node) {
+	list_for_every(&msg->chunks, node) {
 		uint16_t tmp = MIN(CONFIG_BT_MESH_ACCESS_DELAYABLE_MSG_CHUNK_SIZE, buf->len);
 
 		struct delayable_msg_chunk *chunk =
@@ -407,29 +407,29 @@ int bt_mesh_delayable_msg_manage(struct bt_mesh_msg_ctx *ctx, struct net_buf_sim
 
 void bt_mesh_delayable_msg_init(void)
 {
-	sys_slist_init(&access_delayable_msg.busy_ctx);
-	sys_slist_init(&access_delayable_msg.free_ctx);
-	sys_slist_init(&access_delayable_msg.free_chunks);
+	list_initialize(&access_delayable_msg.busy_ctx);
+	list_initialize(&access_delayable_msg.free_ctx);
+	list_initialize(&access_delayable_msg.free_chunks);
 
 	for (int i = 0; i < CONFIG_BT_MESH_ACCESS_DELAYABLE_MSG_COUNT; i++) {
-		sys_slist_append(&access_delayable_msg.free_ctx, &delayable_msgs_ctx[i].node);
+		list_add_tail(&access_delayable_msg.free_ctx, &delayable_msgs_ctx[i].node);
 	}
 
 	for (int i = 0; i < CONFIG_BT_MESH_ACCESS_DELAYABLE_MSG_CHUNK_COUNT; i++) {
-		sys_slist_append(&access_delayable_msg.free_chunks, &delayable_msg_chunks[i].node);
+		list_add_tail(&access_delayable_msg.free_chunks, &delayable_msg_chunks[i].node);
 	}
 }
 
 void bt_mesh_delayable_msg_stop(void)
 {
-	sys_snode_t *node;
+	struct list_node *node;
 	irqstate_t key;
 
 	k_work_cancel_delayable(&access_delayable_msg.random_delay);
 
 	for (;;) {
 		key = spin_lock_irqsave(&lock);
-		node = sys_slist_get(&access_delayable_msg.busy_ctx);
+		node = list_remove_head(&access_delayable_msg.busy_ctx);
 		spin_unlock_irqrestore(&lock, key);
 
 		if (!node) {

@@ -31,7 +31,7 @@
 
 #include <zephyr/bluetooth/assigned_numbers.h>
 #include <zephyr/bluetooth/conn.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util_macro.h>
 
 #ifdef __cplusplus
@@ -771,7 +771,7 @@ struct bt_tbs_client_cb {
 
 	/** @cond INTERNAL_HIDDEN */
 	/** Internally used field for list handling */
-	sys_snode_t _node;
+	struct list_node _node;
 	/** @endcond */
 };
 

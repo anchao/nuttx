@@ -31,7 +31,7 @@
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/sys/clock.h>
@@ -956,7 +956,7 @@ static void smp_pairing_br_complete(struct bt_smp_br *smp, uint8_t status)
 			bt_keys_clear(keys);
 		}
 
-		SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&bt_auth_info_cbs, listener,
+		list_for_every_container_safe(&bt_auth_info_cbs, listener,
 						  next, node) {
 			if (listener->pairing_failed) {
 				listener->pairing_failed(smp->chan.chan.conn,
@@ -975,7 +975,7 @@ static void smp_pairing_br_complete(struct bt_smp_br *smp, uint8_t status)
 			bt_keys_store(keys);
 		}
 
-		SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&bt_auth_info_cbs, listener,
+		list_for_every_container_safe(&bt_auth_info_cbs, listener,
 						  next, node) {
 			if (listener->pairing_complete) {
 				listener->pairing_complete(smp->chan.chan.conn,
@@ -1974,7 +1974,7 @@ static void smp_pairing_complete(struct bt_smp *smp, uint8_t status)
 			bt_keys_store(conn->le.keys);
 		}
 
-		SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&bt_auth_info_cbs, listener,
+		list_for_every_container_safe(&bt_auth_info_cbs, listener,
 						  next, node) {
 			if (listener->pairing_complete) {
 				listener->pairing_complete(conn, bond_flag);
@@ -2006,7 +2006,7 @@ static void smp_pairing_complete(struct bt_smp *smp, uint8_t status)
 		if (atomic_test_bit(smp->flags, SMP_FLAG_PAIRING)) {
 			struct bt_conn_auth_info_cb *listener, *next;
 
-			SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&bt_auth_info_cbs,
+			list_for_every_container_safe(&bt_auth_info_cbs,
 							  listener, next,
 							  node) {
 				if (listener->pairing_failed) {

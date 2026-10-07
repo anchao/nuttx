@@ -28,7 +28,7 @@
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/clock.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/sys/util_utf8.h>
@@ -581,11 +581,11 @@ static struct has_preset {
 	const char *name;
 #endif /* CONFIG_BT_HAS_PRESET_NAME_DYNAMIC */
 	const struct bt_has_preset_ops *ops;
-	sys_snode_t node;
+	struct list_node node;
 } preset_pool[CONFIG_BT_HAS_PRESET_COUNT];
 
-static sys_slist_t preset_list = SYS_SLIST_STATIC_INIT(&preset_list);
-static sys_slist_t preset_free_list = SYS_SLIST_STATIC_INIT(&preset_free_list);
+static struct list_node preset_list = LIST_INITIAL_VALUE(preset_list);
+static struct list_node preset_free_list = LIST_INITIAL_VALUE(preset_free_list);
 
 typedef bool (*preset_func_t)(const struct has_preset *preset, void *user_data);
 
@@ -599,7 +599,7 @@ static int preset_foreach(uint8_t start_index, uint8_t end_index, preset_func_t 
 		return -EINVAL;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&preset_list, preset, tmp, node) {
+	list_for_every_container_safe(&preset_list, preset, tmp, node) {
 		if (preset->index < start_index) {
 			continue;
 		}
@@ -629,12 +629,12 @@ static void preset_insert(struct has_preset *preset)
 {
 	struct has_preset *tmp, *prev = NULL;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&preset_list, tmp, node) {
+	list_for_every_container(&preset_list, tmp, node) {
 		if (tmp->index > preset->index) {
 			if (prev) {
-				sys_slist_insert(&preset_list, &prev->node, &preset->node);
+				list_insert_after(&preset_list, &prev->node, &preset->node);
 			} else {
-				sys_slist_prepend(&preset_list, &preset->node);
+				list_add_head(&preset_list, &preset->node);
 			}
 			return;
 		}
@@ -642,16 +642,16 @@ static void preset_insert(struct has_preset *preset)
 		prev = tmp;
 	}
 
-	sys_slist_append(&preset_list, &preset->node);
+	list_add_tail(&preset_list, &preset->node);
 }
 
 static struct has_preset *preset_alloc(uint8_t index, enum bt_has_properties properties,
 				       const char *name, const struct bt_has_preset_ops *ops)
 {
 	struct has_preset *preset;
-	sys_snode_t *node;
+	struct list_node *node;
 
-	node = sys_slist_get(&preset_free_list);
+	node = list_remove_head(&preset_free_list);
 	if (node == NULL) {
 		return NULL;
 	}
@@ -675,9 +675,9 @@ static void preset_free(struct has_preset *preset)
 {
 	bool removed;
 
-	removed = sys_slist_find_and_remove(&preset_list, &preset->node);
+	removed = list_find_and_remove(&preset_list, &preset->node);
 	if (removed) {
-		sys_slist_append(&preset_free_list, &preset->node);
+		list_add_tail(&preset_free_list, &preset->node);
 	}
 }
 
@@ -685,22 +685,22 @@ static struct has_preset *preset_get_head(void)
 {
 	struct has_preset *next;
 
-	return SYS_SLIST_PEEK_HEAD_CONTAINER(&preset_list, next, node);
+	return list_peek_head_container(&preset_list, next, node);
 }
 
 static struct has_preset *preset_get_tail(void)
 {
 	struct has_preset *prev;
 
-	return SYS_SLIST_PEEK_TAIL_CONTAINER(&preset_list, prev, node);
+	return list_peek_tail_container(&preset_list, prev, node);
 }
 
 static struct has_preset *preset_get_prev(const struct has_preset *preset)
 {
 	struct has_preset *prev;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&preset_list, prev, node) {
-		if (SYS_SLIST_PEEK_NEXT_CONTAINER(prev, node) == preset) {
+	list_for_every_container(&preset_list, prev, node) {
+		if (list_next_container(&preset_list, prev, node) == preset) {
 			return prev;
 		}
 	}
@@ -717,7 +717,7 @@ static struct has_preset *preset_lookup_index(uint8_t index)
 {
 	struct has_preset *preset;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&preset_list, preset, node) {
+	list_for_every_container(&preset_list, preset, node) {
 		if (preset->index == index) {
 			return preset;
 		}
@@ -730,7 +730,7 @@ static struct has_preset *preset_get_next(struct has_preset *preset)
 {
 	struct has_preset *next;
 
-	next = SYS_SLIST_PEEK_NEXT_CONTAINER(preset, node);
+	next = list_next_container(&preset_list, preset, node);
 	if (next == NULL) {
 		next = preset_get_head();
 		if (next == preset) {
@@ -1136,7 +1136,7 @@ static int preset_list_changed(struct has_client *client)
 	bool is_last = true;
 	int err;
 
-	if (sys_slist_is_empty(&preset_list)) {
+	if (list_is_empty(&preset_list)) {
 		/* The preset list is empty. We need to indicate deletion of all presets */
 		atomic_set_bit(client->context->flags,
 			       FLAG_NOTIFY_PRESET_LIST_GENERIC_UPDATE_TAIL);
@@ -1859,7 +1859,7 @@ int bt_has_register(const struct bt_has_features_param *features)
 	for (size_t i = 0U; i < ARRAY_SIZE(preset_pool); i++) {
 		struct has_preset *preset = &preset_pool[i];
 
-		sys_slist_append(&preset_free_list, &preset->node);
+		list_add_tail(&preset_free_list, &preset->node);
 	}
 #endif /* CONFIG_BT_HAS_PRESET_SUPPORT */
 

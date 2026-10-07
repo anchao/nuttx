@@ -22,7 +22,7 @@
 #include <zephyr/bluetooth/buf.h>
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/l2cap.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -193,7 +193,7 @@ struct bt_rfcomm_dlc {
 	/** @cond INTERNAL_HIDDEN */
 
 	/** Internally used field for list handling. */
-	sys_snode_t _node;
+	struct list_node _node;
 
 	/** @endcond */
 
@@ -308,7 +308,7 @@ struct bt_rfcomm_server {
 		      struct bt_rfcomm_dlc **dlc);
 
 	/** @cond INTERNAL_HIDDEN */
-	sys_snode_t node;
+	struct list_node node;
 	/** @endcond */
 };
 

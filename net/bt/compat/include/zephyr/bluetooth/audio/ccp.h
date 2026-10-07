@@ -38,7 +38,7 @@
 #include <zephyr/bluetooth/assigned_numbers.h>
 #include <zephyr/bluetooth/audio/tbs.h>
 #include <zephyr/bluetooth/conn.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -347,7 +347,7 @@ struct bt_ccp_call_control_client_cb {
 
 	/** @cond INTERNAL_HIDDEN */
 	/** Internally used field for list handling */
-	sys_snode_t _node;
+	struct list_node _node;
 	/** @endcond */
 };
 

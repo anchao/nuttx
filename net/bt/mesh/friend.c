@@ -138,7 +138,7 @@ static int friend_cred_create(struct bt_mesh_friend *frnd, uint8_t idx)
 					  &frnd->subnet->keys[idx].net);
 }
 
-static void purge_buffers(sys_slist_t *list)
+static void purge_buffers(struct list_node *list)
 {
 	struct net_buf *buf;
 
@@ -767,7 +767,7 @@ int bt_mesh_friend_poll(struct bt_mesh_net_rx *rx, struct net_buf_simple *buf)
 
 		frnd->fsn = msg->fsn;
 
-		if (sys_slist_is_empty(&frnd->queue)) {
+		if (list_is_empty(&frnd->queue)) {
 			enqueue_update(frnd, 0);
 			LOG_DBG("Enqueued Friend Update to empty queue");
 		}
@@ -1123,7 +1123,7 @@ init_friend:
 
 static bool is_seg(struct bt_mesh_friend_seg *seg, uint16_t src, uint16_t seq_zero)
 {
-	struct net_buf *buf = (void *)sys_slist_peek_head(&seg->queue);
+	struct net_buf *buf = (void *)list_peek_head(&seg->queue);
 	struct net_buf_simple_state state;
 	uint16_t buf_seq_zero;
 	uint16_t buf_src;
@@ -1156,7 +1156,7 @@ static struct bt_mesh_friend_seg *get_seg(struct bt_mesh_friend *frnd,
 			return seg;
 		}
 
-		if (!unassigned && !sys_slist_peek_head(&seg->queue)) {
+		if (!unassigned && !list_peek_head(&seg->queue)) {
 			unassigned = seg;
 		}
 	}
@@ -1194,7 +1194,7 @@ static void enqueue_friend_pdu(struct bt_mesh_friend *frnd,
 	net_buf_slist_put(&seg->queue, buf);
 
 	if (type == BT_MESH_FRIEND_PDU_COMPLETE) {
-		sys_slist_merge_slist(&frnd->queue, &seg->queue);
+		list_merge(&frnd->queue, &seg->queue);
 
 		frnd->queue_size += seg->seg_count;
 		seg->seg_count = 0U;
@@ -1315,7 +1315,7 @@ static void friend_timeout(struct k_work *work)
 		return;
 	}
 
-	md = (uint8_t)(sys_slist_peek_head(&frnd->queue) != NULL);
+	md = (uint8_t)(list_peek_head(&frnd->queue) != NULL);
 
 	update_overwrite(frnd->last, md);
 
@@ -1399,13 +1399,13 @@ int bt_mesh_friend_init(void)
 		struct bt_mesh_friend *frnd = &bt_mesh.frnd[i];
 		int j;
 
-		sys_slist_init(&frnd->queue);
+		list_initialize(&frnd->queue);
 
 		k_work_init_delayable(&frnd->timer, friend_timeout);
 		k_work_init_delayable(&frnd->clear.timer, clear_timeout);
 
 		for (j = 0; j < ARRAY_SIZE(frnd->seg); j++) {
-			sys_slist_init(&frnd->seg[j].queue);
+			list_initialize(&frnd->seg[j].queue);
 		}
 	}
 
@@ -1451,18 +1451,18 @@ end:
 static void friend_purge_old_ack(struct bt_mesh_friend *frnd,
 				 const uint64_t *seq_auth, uint16_t src)
 {
-	sys_snode_t *cur, *prev = NULL;
+	struct list_node *cur, *prev = NULL;
 
 	LOG_DBG("SeqAuth %llx src 0x%04x", *seq_auth, src);
 
-	for (cur = sys_slist_peek_head(&frnd->queue);
-	     cur != NULL; prev = cur, cur = sys_slist_peek_next(cur)) {
+	for (cur = list_peek_head(&frnd->queue);
+	     cur != NULL; prev = cur, cur = list_next(&frnd->queue, cur)) {
 		struct net_buf *buf = (void *)cur;
 
 		if (is_segack(buf, seq_auth, src)) {
 			LOG_DBG("Removing old ack from Friend Queue");
 
-			sys_slist_remove(&frnd->queue, prev, cur);
+			list_remove(&frnd->queue, prev, cur);
 			frnd->queue_size--;
 
 			net_buf_unref(buf);
@@ -1693,10 +1693,10 @@ static bool friend_queue_check_dup(struct bt_mesh_friend *frnd, uint32_t seq,
 				   uint16_t src)
 {
 	struct bt_mesh_net_rx rx;
-	sys_snode_t *cur;
+	struct list_node *cur;
 
-	for (cur = sys_slist_peek_head(&frnd->queue); cur != NULL;
-	     cur = sys_slist_peek_next(cur)) {
+	for (cur = list_peek_head(&frnd->queue); cur != NULL;
+	     cur = list_next(&frnd->queue, cur)) {
 		struct net_buf *buf = (void *)cur;
 
 		bt_mesh_net_header_parse(&buf->b, &rx);

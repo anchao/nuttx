@@ -37,7 +37,7 @@
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
@@ -143,7 +143,7 @@ static struct unicast_client {
 	ATOMIC_DEFINE(flags, UNICAST_CLIENT_FLAG_NUM_FLAGS);
 } uni_cli_insts[CONFIG_BT_MAX_CONN];
 
-static sys_slist_t unicast_client_cbs = SYS_SLIST_STATIC_INIT(&unicast_client_cbs);
+static struct list_node unicast_client_cbs = LIST_INITIAL_VALUE(unicast_client_cbs);
 
 /* TODO: Move the functions to avoid these prototypes */
 static int unicast_client_ep_set_metadata(struct bt_bap_ep *ep, void *data, uint8_t len);
@@ -617,7 +617,7 @@ static void unicast_client_notify_location(struct bt_conn *conn, enum bt_audio_d
 {
 	struct bt_bap_unicast_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&unicast_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&unicast_client_cbs, listener, next, _node) {
 		if (listener->location != NULL) {
 			listener->location(conn, dir, loc);
 		}
@@ -630,7 +630,7 @@ static void unicast_client_notify_available_contexts(struct bt_conn *conn,
 {
 	struct bt_bap_unicast_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&unicast_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&unicast_client_cbs, listener, next, _node) {
 		if (listener->available_contexts != NULL) {
 			listener->available_contexts(conn, snk_ctx, src_ctx);
 		}
@@ -649,7 +649,7 @@ static void unicast_client_notify_pac_record(struct bt_conn *conn,
 	 * upper layers to determine when a new set of PAC records is being reported.
 	 */
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&unicast_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&unicast_client_cbs, listener, next, _node) {
 		if (listener->pac_record != NULL) {
 			listener->pac_record(conn, dir, codec_cap);
 		}
@@ -662,7 +662,7 @@ static void unicast_client_notify_endpoint(struct bt_conn *conn, struct bt_bap_e
 	struct bt_bap_unicast_client_cb *listener, *next;
 	const enum bt_audio_dir dir = client->dir;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&unicast_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&unicast_client_cbs, listener, next, _node) {
 		if (listener->endpoint != NULL) {
 			listener->endpoint(conn, dir, ep);
 		}
@@ -681,7 +681,7 @@ static void unicast_client_discover_complete(struct bt_conn *conn, int err)
 	atomic_clear_bit(client->flags, UNICAST_CLIENT_FLAG_DISCOVERY_IN_PROGRESS);
 	atomic_clear_bit(client->flags, UNICAST_CLIENT_FLAG_BUSY);
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&unicast_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&unicast_client_cbs, listener, next, _node) {
 		if (listener->discover != NULL) {
 			listener->discover(conn, err, dir);
 		}
@@ -694,7 +694,7 @@ static void unicast_client_notify_ep_config(struct bt_bap_stream *stream,
 {
 	struct bt_bap_unicast_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&unicast_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&unicast_client_cbs, listener, next, _node) {
 		if (listener->config != NULL) {
 			listener->config(stream, rsp_code, reason);
 		}
@@ -707,7 +707,7 @@ static void unicast_client_notify_ep_qos(struct bt_bap_stream *stream,
 {
 	struct bt_bap_unicast_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&unicast_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&unicast_client_cbs, listener, next, _node) {
 		if (listener->qos != NULL) {
 			listener->qos(stream, rsp_code, reason);
 		}
@@ -720,7 +720,7 @@ static void unicast_client_notify_ep_enable(struct bt_bap_stream *stream,
 {
 	struct bt_bap_unicast_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&unicast_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&unicast_client_cbs, listener, next, _node) {
 		if (listener->enable != NULL) {
 			listener->enable(stream, rsp_code, reason);
 		}
@@ -733,7 +733,7 @@ static void unicast_client_notify_ep_start(struct bt_bap_stream *stream,
 {
 	struct bt_bap_unicast_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&unicast_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&unicast_client_cbs, listener, next, _node) {
 		if (listener->start != NULL) {
 			listener->start(stream, rsp_code, reason);
 		}
@@ -746,7 +746,7 @@ static void unicast_client_notify_ep_stop(struct bt_bap_stream *stream,
 {
 	struct bt_bap_unicast_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&unicast_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&unicast_client_cbs, listener, next, _node) {
 		if (listener->stop != NULL) {
 			listener->stop(stream, rsp_code, reason);
 		}
@@ -759,7 +759,7 @@ static void unicast_client_notify_ep_disable(struct bt_bap_stream *stream,
 {
 	struct bt_bap_unicast_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&unicast_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&unicast_client_cbs, listener, next, _node) {
 		if (listener->disable != NULL) {
 			listener->disable(stream, rsp_code, reason);
 		}
@@ -772,7 +772,7 @@ static void unicast_client_notify_ep_metadata(struct bt_bap_stream *stream,
 {
 	struct bt_bap_unicast_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&unicast_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&unicast_client_cbs, listener, next, _node) {
 		if (listener->metadata != NULL) {
 			listener->metadata(stream, rsp_code, reason);
 		}
@@ -785,7 +785,7 @@ static void unicast_client_notify_ep_released(struct bt_bap_stream *stream,
 {
 	struct bt_bap_unicast_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&unicast_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&unicast_client_cbs, listener, next, _node) {
 		if (listener->release != NULL) {
 			listener->release(stream, rsp_code, reason);
 		}
@@ -2451,7 +2451,7 @@ static void unicast_group_del_iso(struct bt_bap_unicast_group *group, struct bt_
 	__ASSERT_NO_MSG(group != NULL);
 	__ASSERT_NO_MSG(iso != NULL);
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&group->streams, stream, _node) {
+	list_for_every_container(&group->streams, stream, _node) {
 		if (stream->ep->iso == iso) {
 			/* still in use by some other stream */
 			return;
@@ -2609,7 +2609,7 @@ static void unicast_group_add_stream(struct bt_bap_unicast_group *group,
 
 	unicast_group_set_iso_stream_param(group, iso, qos, dir);
 
-	sys_slist_append(&group->streams, &stream->_node);
+	list_add_tail(&group->streams, &stream->_node);
 }
 
 static int unicast_group_add_stream_pair(struct bt_bap_unicast_group *group,
@@ -2652,7 +2652,7 @@ static void unicast_group_del_stream(struct bt_bap_unicast_group *group,
 	__ASSERT_NO_MSG(group != NULL);
 	__ASSERT_NO_MSG(stream != NULL);
 
-	if (sys_slist_find_and_remove(&group->streams, &stream->_node)) {
+	if (list_find_and_remove(&group->streams, &stream->_node)) {
 		struct bt_bap_ep *ep = stream->ep;
 
 		if (stream->iso != NULL) {
@@ -2715,7 +2715,7 @@ static void unicast_group_free(struct bt_bap_unicast_group *group)
 
 	__ASSERT_NO_MSG(group != NULL);
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&group->streams, stream, next, _node) {
+	list_for_every_container_safe(&group->streams, stream, next, _node) {
 		struct bt_bap_iso *bap_iso = CONTAINER_OF(stream->iso, struct bt_bap_iso, chan);
 		struct bt_bap_ep *ep = stream->ep;
 
@@ -2734,7 +2734,7 @@ static void unicast_group_free(struct bt_bap_unicast_group *group)
 			bt_bap_iso_unbind_ep(ep->iso, ep);
 		}
 
-		sys_slist_remove(&group->streams, NULL, &stream->_node);
+		list_remove(&group->streams, NULL, &stream->_node);
 	}
 
 	(void)memset(&group->cig_param, 0, sizeof(group->cig_param));
@@ -3073,7 +3073,7 @@ int bt_bap_unicast_group_reconfig(struct bt_bap_unicast_group *unicast_group,
 	 * controller
 	 */
 	idx = 0U;
-	SYS_SLIST_FOR_EACH_CONTAINER(&unicast_group->streams, tmp_stream, _node) {
+	list_for_every_container(&unicast_group->streams, tmp_stream, _node) {
 		const struct bt_bap_iso *bap_iso =
 			CONTAINER_OF(tmp_stream->iso, struct bt_bap_iso, chan);
 		const struct bt_iso_chan_qos *qos = bap_iso->chan.qos;
@@ -3125,7 +3125,7 @@ int bt_bap_unicast_group_reconfig(struct bt_bap_unicast_group *unicast_group,
 		/* Revert any changes above */
 		memcpy(&unicast_group->cig_param, &cig_param_backup, sizeof(cig_param_backup));
 		idx = 0U;
-		SYS_SLIST_FOR_EACH_CONTAINER(&unicast_group->streams, tmp_stream, _node) {
+		list_for_every_container(&unicast_group->streams, tmp_stream, _node) {
 			struct bt_bap_iso *bap_iso =
 				CONTAINER_OF(tmp_stream->iso, struct bt_bap_iso, chan);
 			struct bt_iso_chan_qos *qos = bap_iso->chan.qos;
@@ -3178,7 +3178,7 @@ int bt_bap_unicast_group_add_streams(struct bt_bap_unicast_group *unicast_group,
 	}
 
 	total_stream_cnt = num_param;
-	SYS_SLIST_FOR_EACH_CONTAINER(&unicast_group->streams, tmp_stream, _node) {
+	list_for_every_container(&unicast_group->streams, tmp_stream, _node) {
 		total_stream_cnt++;
 	}
 
@@ -3248,7 +3248,7 @@ int bt_bap_unicast_group_delete(struct bt_bap_unicast_group *unicast_group)
 		return -EINVAL;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&unicast_group->streams, stream, _node) {
+	list_for_every_container(&unicast_group->streams, stream, _node) {
 		/* If a stream has an endpoint, it is not ready to be removed
 		 * from a group, as it is not in an idle state
 		 */
@@ -3289,7 +3289,7 @@ int bt_bap_unicast_group_foreach_stream(struct bt_bap_unicast_group *unicast_gro
 		return -EINVAL;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&unicast_group->streams, stream, next, _node) {
+	list_for_every_container_safe(&unicast_group->streams, stream, next, _node) {
 		if (!func(stream, user_data)) {
 			return -ECANCELED;
 		}
@@ -3425,7 +3425,7 @@ int bt_bap_unicast_client_qos(struct bt_conn *conn, struct bt_bap_unicast_group 
 	 * was actually found
 	 */
 	conn_stream_found = false;
-	SYS_SLIST_FOR_EACH_CONTAINER(&group->streams, stream, _node) {
+	list_for_every_container(&group->streams, stream, _node) {
 		enum bt_audio_dir dir;
 
 		if (stream->conn == conn) {
@@ -3457,7 +3457,7 @@ int bt_bap_unicast_client_qos(struct bt_conn *conn, struct bt_bap_unicast_group 
 		return -EINVAL;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&group->streams, stream, _node) {
+	list_for_every_container(&group->streams, stream, _node) {
 		const struct bt_bap_ep *paired_ep;
 		struct bt_bap_qos_cfg qos;
 
@@ -3521,7 +3521,7 @@ int bt_bap_unicast_client_qos(struct bt_conn *conn, struct bt_bap_unicast_group 
 
 	(void)memset(op, 0, sizeof(*op));
 	ep = NULL; /* Needed to find the control point handle */
-	SYS_SLIST_FOR_EACH_CONTAINER(&group->streams, stream, _node) {
+	list_for_every_container(&group->streams, stream, _node) {
 		struct bt_bap_qos_cfg qos;
 
 		if (stream->conn != conn) {
@@ -4424,7 +4424,7 @@ static void unicast_client_notify_supp_contexts(struct bt_conn *conn, enum bt_au
 {
 	struct bt_bap_unicast_client_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&unicast_client_cbs, listener, next, _node) {
+	list_for_every_container_safe(&unicast_client_cbs, listener, next, _node) {
 		if (listener->supported_contexts != NULL) {
 			listener->supported_contexts(conn, snk_ctx, src_ctx);
 		}
@@ -4864,11 +4864,11 @@ int bt_bap_unicast_client_register_cb(struct bt_bap_unicast_client_cb *cb)
 		return -EINVAL;
 	}
 
-	if (sys_slist_find(&unicast_client_cbs, &cb->_node, NULL)) {
+	if (list_find(&unicast_client_cbs, &cb->_node, NULL)) {
 		return -EEXIST;
 	}
 
-	sys_slist_append(&unicast_client_cbs, &cb->_node);
+	list_add_tail(&unicast_client_cbs, &cb->_node);
 
 	return 0;
 }
@@ -4880,7 +4880,7 @@ int bt_bap_unicast_client_unregister_cb(struct bt_bap_unicast_client_cb *cb)
 		return -EINVAL;
 	}
 
-	if (!sys_slist_find_and_remove(&unicast_client_cbs, &cb->_node)) {
+	if (!list_find_and_remove(&unicast_client_cbs, &cb->_node)) {
 		LOG_DBG("cb was not registered");
 		return -EALREADY;
 	}

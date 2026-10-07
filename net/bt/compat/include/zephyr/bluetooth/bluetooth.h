@@ -38,7 +38,7 @@
 #include <zephyr/bluetooth/hci_types.h>
 #include <zephyr/bluetooth/classic/classic.h>
 #include <zephyr/net_buf.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
@@ -2030,7 +2030,7 @@ struct bt_le_per_adv_sync_cb {
 	void (*cte_report_cb)(struct bt_le_per_adv_sync *sync,
 			      struct bt_df_per_adv_sync_iq_samples_report const *info);
 
-	sys_snode_t node;
+	struct list_node node;
 };
 
 /** Periodic advertising sync options */
@@ -2655,7 +2655,7 @@ struct bt_le_scan_cb {
 	/** @brief The scanner has stopped scanning after scan timeout. */
 	void (*timeout)(void);
 
-	sys_snode_t node;
+	struct list_node node;
 };
 
 /**

@@ -28,7 +28,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/atomic.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
 #include <zephyr/types.h>
@@ -41,7 +41,7 @@
 LOG_MODULE_REGISTER(bt_vcp_vol_ctlr, CONFIG_BT_VCP_VOL_CTLR_LOG_LEVEL);
 
 /* Callback functions */
-static sys_slist_t vcp_vol_ctlr_cbs = SYS_SLIST_STATIC_INIT(&vcp_vol_ctlr_cbs);
+static struct list_node vcp_vol_ctlr_cbs = LIST_INITIAL_VALUE(vcp_vol_ctlr_cbs);
 
 static struct bt_vcp_vol_ctlr vol_ctlr_insts[CONFIG_BT_MAX_CONN];
 static int write_common_vcs_cp(struct bt_vcp_vol_ctlr *vol_ctlr);
@@ -84,7 +84,7 @@ static void vcp_vol_ctlr_state_changed(struct bt_vcp_vol_ctlr *vol_ctlr, int err
 {
 	struct bt_vcp_vol_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->state) {
 			listener->state(vol_ctlr, err, err == 0 ? vol_ctlr->state.volume : 0,
 					err == 0 ? vol_ctlr->state.mute : 0);
@@ -96,7 +96,7 @@ static void vcp_vol_ctlr_vol_flags_changed(struct bt_vcp_vol_ctlr *vol_ctlr, int
 {
 	struct bt_vcp_vol_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->flags) {
 			listener->flags(vol_ctlr, err, err == 0 ? vol_ctlr->vol_flags : 0);
 		}
@@ -109,7 +109,7 @@ static void vcp_vol_ctlr_discover_complete(struct bt_vcp_vol_ctlr *vol_ctlr, int
 
 	atomic_clear_bit(vol_ctlr->flags, BT_VCP_VOL_CTLR_FLAG_BUSY);
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->discover) {
 			uint8_t vocs_cnt = 0U;
 			uint8_t aics_cnt = 0U;
@@ -226,7 +226,7 @@ static void vcs_cp_notify_app(struct bt_vcp_vol_ctlr *vol_ctlr, uint8_t opcode, 
 
 	LOG_DBG("%p opcode %u err %d", vol_ctlr, opcode, err);
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		switch (opcode) {
 		case BT_VCP_OPCODE_REL_VOL_DOWN:
 			if (listener->vol_down) {
@@ -649,7 +649,7 @@ static void vcp_vol_ctlr_aics_state_cb(struct bt_aics *inst, int err, int8_t gai
 {
 	struct bt_vcp_vol_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.state) {
 			listener->aics_cb.state(inst, err, gain, mute, mode);
 		}
@@ -661,7 +661,7 @@ static void vcp_vol_ctlr_aics_gain_setting_cb(struct bt_aics *inst, int err, uin
 {
 	struct bt_vcp_vol_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.gain_setting) {
 			listener->aics_cb.gain_setting(inst, err, units, minimum, maximum);
 		}
@@ -672,7 +672,7 @@ static void vcp_vol_ctlr_aics_type_cb(struct bt_aics *inst, int err, uint8_t typ
 {
 	struct bt_vcp_vol_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.type) {
 			listener->aics_cb.type(inst, err, type);
 		}
@@ -683,7 +683,7 @@ static void vcp_vol_ctlr_aics_status_cb(struct bt_aics *inst, int err, bool acti
 {
 	struct bt_vcp_vol_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.status) {
 			listener->aics_cb.status(inst, err, active);
 		}
@@ -694,7 +694,7 @@ static void vcp_vol_ctlr_aics_description_cb(struct bt_aics *inst, int err, char
 {
 	struct bt_vcp_vol_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.description) {
 			listener->aics_cb.description(inst, err, description);
 		}
@@ -722,7 +722,7 @@ static void vcp_vol_ctlr_aics_discover_cb(struct bt_aics *inst, int err)
 		vcp_vol_ctlr_discover_complete(vol_ctlr, err);
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.discover) {
 			listener->aics_cb.discover(inst, err);
 		}
@@ -733,7 +733,7 @@ static void vcp_vol_ctlr_aics_set_gain_cb(struct bt_aics *inst, int err)
 {
 	struct bt_vcp_vol_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.set_gain) {
 			listener->aics_cb.set_gain(inst, err);
 		}
@@ -744,7 +744,7 @@ static void vcp_vol_ctlr_aics_unmute_cb(struct bt_aics *inst, int err)
 {
 	struct bt_vcp_vol_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.unmute) {
 			listener->aics_cb.unmute(inst, err);
 		}
@@ -755,7 +755,7 @@ static void vcp_vol_ctlr_aics_mute_cb(struct bt_aics *inst, int err)
 {
 	struct bt_vcp_vol_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.mute) {
 			listener->aics_cb.mute(inst, err);
 		}
@@ -766,7 +766,7 @@ static void vcp_vol_ctlr_aics_set_manual_mode_cb(struct bt_aics *inst, int err)
 {
 	struct bt_vcp_vol_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.set_manual_mode) {
 			listener->aics_cb.set_manual_mode(inst, err);
 		}
@@ -777,7 +777,7 @@ static void vcp_vol_ctlr_aics_set_auto_mode_cb(struct bt_aics *inst, int err)
 {
 	struct bt_vcp_vol_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->aics_cb.set_auto_mode) {
 			listener->aics_cb.set_auto_mode(inst, err);
 		}
@@ -805,7 +805,7 @@ static void vcp_vol_ctlr_vocs_state_cb(struct bt_vocs *inst, int err, int16_t of
 {
 	struct bt_vcp_vol_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->vocs_cb.state) {
 			listener->vocs_cb.state(inst, err, offset);
 		}
@@ -816,7 +816,7 @@ static void vcp_vol_ctlr_vocs_location_cb(struct bt_vocs *inst, int err, uint32_
 {
 	struct bt_vcp_vol_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->vocs_cb.location) {
 			listener->vocs_cb.location(inst, err, location);
 		}
@@ -827,7 +827,7 @@ static void vcp_vol_ctlr_vocs_description_cb(struct bt_vocs *inst, int err, char
 {
 	struct bt_vcp_vol_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->vocs_cb.description) {
 			listener->vocs_cb.description(inst, err, description);
 		}
@@ -854,7 +854,7 @@ static void vcp_vol_ctlr_vocs_discover_cb(struct bt_vocs *inst, int err)
 		vcp_vol_ctlr_discover_complete(vol_ctlr, err);
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->vocs_cb.discover) {
 			listener->vocs_cb.discover(inst, err);
 		}
@@ -865,7 +865,7 @@ static void vcp_vol_ctlr_vocs_set_offset_cb(struct bt_vocs *inst, int err)
 {
 	struct bt_vcp_vol_ctlr_cb *listener, *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&vcp_vol_ctlr_cbs, listener, next, _node) {
+	list_for_every_container_safe(&vcp_vol_ctlr_cbs, listener, next, _node) {
 		if (listener->vocs_cb.set_offset) {
 			listener->vocs_cb.set_offset(inst, err);
 		}
@@ -1059,14 +1059,14 @@ int bt_vcp_vol_ctlr_cb_register(struct bt_vcp_vol_ctlr_cb *cb)
 		return -EINVAL;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&vcp_vol_ctlr_cbs, tmp, _node) {
+	list_for_every_container(&vcp_vol_ctlr_cbs, tmp, _node) {
 		if (tmp == cb) {
 			LOG_DBG("Already registered");
 			return -EALREADY;
 		}
 	}
 
-	sys_slist_append(&vcp_vol_ctlr_cbs, &cb->_node);
+	list_add_tail(&vcp_vol_ctlr_cbs, &cb->_node);
 
 	return 0;
 }
@@ -1077,7 +1077,7 @@ int bt_vcp_vol_ctlr_cb_unregister(struct bt_vcp_vol_ctlr_cb *cb)
 		return -EINVAL;
 	}
 
-	if (!sys_slist_find_and_remove(&vcp_vol_ctlr_cbs, &cb->_node)) {
+	if (!list_find_and_remove(&vcp_vol_ctlr_cbs, &cb->_node)) {
 		return -EALREADY;
 	}
 

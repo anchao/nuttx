@@ -13,7 +13,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/atomic.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 
 #define BT_MESH_IV_UPDATE(flags)   ((flags >> 1) & 0x01)
 #define BT_MESH_KEY_REFRESH(flags) (flags & 0x01)
@@ -78,7 +78,7 @@ struct bt_mesh_friend {
 	struct k_work_delayable timer;
 
 	struct bt_mesh_friend_seg {
-		sys_slist_t queue;
+		struct list_node queue;
 
 		/* The target number of segments, i.e. not necessarily
 		 * the current number of segments, in the queue. This is
@@ -89,7 +89,7 @@ struct bt_mesh_friend {
 
 	struct net_buf *last;
 
-	sys_slist_t queue;
+	struct list_node queue;
 	uint32_t queue_size;
 
 	/* Friend Clear Procedure / Friend Clear Confirm */
@@ -232,7 +232,7 @@ struct bt_mesh_net {
 
 	/* Local network interface */
 	struct k_work local_work;
-	sys_slist_t local_queue;
+	struct list_node local_queue;
 
 #if defined(CONFIG_BT_MESH_FRIEND)
 	/* Friend state, unique for each LPN that we're Friends for */

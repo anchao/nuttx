@@ -35,7 +35,7 @@
 #include <zephyr/bluetooth/att.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/iterable_sections.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
@@ -372,7 +372,7 @@ struct bt_gatt_service {
 	/** @cond INTERNAL_HIDDEN
 	 *  Field used for list handling.
 	 */
-	sys_snode_t node;
+	struct list_node node;
 	/** @endcond */
 };
 
@@ -419,7 +419,7 @@ struct bt_gatt_cb {
 	/** @cond INTERNAL_HIDDEN
 	 *  Field used for list handling.
 	 */
-	sys_snode_t node;
+	struct list_node node;
 	/** @endcond */
 };
 
@@ -2327,7 +2327,7 @@ struct bt_gatt_subscribe_params {
 	/** @cond INTERNAL_HIDDEN
 	 *  Field used for list handling.
 	 */
-	sys_snode_t node;
+	struct list_node node;
 	/** @endcond */
 #if defined(CONFIG_BT_EATT) || defined(__DOXYGEN__)
 	/** Att channel options. */

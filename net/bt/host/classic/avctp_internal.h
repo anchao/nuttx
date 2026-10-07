@@ -151,7 +151,7 @@ struct bt_avctp_server {
 	int (*accept)(struct bt_conn *conn, struct bt_avctp **session);
 
 	/** @brief Internal node for list management */
-	sys_snode_t node;
+	struct list_node node;
 };
 
 /* Initialize AVCTP layer*/

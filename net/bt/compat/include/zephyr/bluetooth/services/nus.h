@@ -9,7 +9,7 @@
 
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/bluetooth/services/nus/inst.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,7 +58,7 @@ struct bt_nus_cb {
 	void *ctx;
 
 	/** Internal member to form a list of callbacks */
-	sys_snode_t _node;
+	struct list_node _node;
 };
 
 /** @brief NUS server Instance callback register

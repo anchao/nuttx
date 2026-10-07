@@ -18,7 +18,7 @@
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/bluetooth/hci.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/slist.h>
+#include <nuttx/list.h>
 #include <zephyr/sys/util_macro.h>
 #include <psa/crypto.h>
 #include <psa/crypto_struct.h>
@@ -33,7 +33,7 @@
 LOG_MODULE_REGISTER(bt_ecc);
 
 static uint8_t pub_key[BT_PUB_KEY_LEN];
-static sys_slist_t pub_key_cb_slist;
+static struct list_node pub_key_cb_slist;
 static bt_dh_key_cb_t dh_key_cb;
 
 /* Incremented by bt_pub_key_hci_disrupted() under the host lock. A public
@@ -130,7 +130,7 @@ static void generate_pub_key(struct k_work *work)
 {
 	psa_key_attributes_t attr = PSA_KEY_ATTRIBUTES_INIT;
 	struct bt_pub_key_cb *cb, *next;
-	sys_slist_t cbs;
+	struct list_node cbs;
 	psa_key_id_t key_id;
 	uint8_t tmp_pub_key_buf[BT_PUB_KEY_LEN + 1];
 	size_t tmp_len;
@@ -205,11 +205,11 @@ done:
 	}
 
 	cbs = pub_key_cb_slist;
-	sys_slist_init(&pub_key_cb_slist);
+	list_initialize(&pub_key_cb_slist);
 	atomic_clear_bit(flags, PENDING_PUB_KEY);
 	bt_dev_unlock();
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&cbs, cb, next, node) {
+	list_for_every_container_safe(&cbs, cb, next, node) {
 		if (cb->func) {
 			cb->func(err ? NULL : pub_key);
 		}
@@ -303,7 +303,7 @@ int bt_pub_key_gen(struct bt_pub_key_cb *new_cb)
 	 */
 	bt_dev_lock();
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&pub_key_cb_slist, cb, node) {
+	list_for_every_container(&pub_key_cb_slist, cb, node) {
 		if (cb == new_cb) {
 			bt_dev_unlock();
 			LOG_DBG("Callback already registered");
@@ -317,7 +317,7 @@ int bt_pub_key_gen(struct bt_pub_key_cb *new_cb)
 		return -EBUSY;
 	}
 
-	sys_slist_prepend(&pub_key_cb_slist, &new_cb->node);
+	list_add_head(&pub_key_cb_slist, &new_cb->node);
 
 	if (atomic_test_and_set_bit(flags, PENDING_PUB_KEY)) {
 		bt_dev_unlock();
@@ -340,16 +340,16 @@ int bt_pub_key_gen(struct bt_pub_key_cb *new_cb)
 void bt_pub_key_hci_disrupted(void)
 {
 	struct bt_pub_key_cb *cb, *next;
-	sys_slist_t cbs;
+	struct list_node cbs;
 
 	bt_dev_lock();
 	pub_key_disruptions++;
 	cbs = pub_key_cb_slist;
-	sys_slist_init(&pub_key_cb_slist);
+	list_initialize(&pub_key_cb_slist);
 	atomic_clear_bit(flags, PENDING_PUB_KEY);
 	bt_dev_unlock();
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&cbs, cb, next, node) {
+	list_for_every_container_safe(&cbs, cb, next, node) {
 		if (cb->func) {
 			cb->func(NULL);
 		}
@@ -426,7 +426,7 @@ uint8_t const *bt_ecc_get_internal_debug_public_key(void)
 	return debug_public_key;
 }
 
-sys_slist_t *bt_ecc_get_pub_key_cb_slist(void)
+struct list_node *bt_ecc_get_pub_key_cb_slist(void)
 {
 	return &pub_key_cb_slist;
 }

@@ -64,7 +64,7 @@ LOG_MODULE_REGISTER(bt_rfcomm);
 #define SESSION_RETRY_TIMEOUT(_w) CONTAINER_OF(k_work_delayable_from_work(_w), \
 					       struct bt_rfcomm_session, retry_timeout_work)
 
-static sys_slist_t servers = SYS_SLIST_STATIC_INIT(&servers);
+static struct list_node servers = LIST_INITIAL_VALUE(servers);
 
 #define RFCOMM_SESSION(_ch) CONTAINER_OF(_ch, \
 					 struct bt_rfcomm_session, br_chan.chan)
@@ -110,7 +110,7 @@ static struct bt_rfcomm_dlc *rfcomm_dlcs_lookup_dlci(struct bt_rfcomm_session *s
 		return NULL;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&session->dlcs, dlc, tmp, _node) {
+	list_for_every_container_safe(&session->dlcs, dlc, tmp, _node) {
 		if (dlc->dlci == dlci) {
 			return dlc;
 		}
@@ -130,7 +130,7 @@ static struct bt_rfcomm_dlc *rfcomm_dlcs_remove_dlci(struct bt_rfcomm_session *s
 		return NULL;
 	}
 
-	found = sys_slist_find_and_remove(&session->dlcs, &tmp->_node);
+	found = list_find_and_remove(&session->dlcs, &tmp->_node);
 	if (!found) {
 		LOG_WRN("DLC %p has been removed", tmp);
 	}
@@ -142,7 +142,7 @@ static struct bt_rfcomm_server *rfcomm_server_lookup_channel(uint8_t channel)
 	struct bt_rfcomm_server *server;
 	struct bt_rfcomm_server *next;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&servers, server, next, node) {
+	list_for_every_container_safe(&servers, server, next, node) {
 		if (server->channel == channel) {
 			return server;
 		}
@@ -199,14 +199,14 @@ int bt_rfcomm_server_register(struct bt_rfcomm_server *server)
 
 	LOG_DBG("Channel 0x%02x", server->channel);
 
-	sys_slist_prepend(&servers, &server->node);
+	list_add_head(&servers, &server->node);
 
 	return 0;
 }
 
 int bt_rfcomm_server_unregister(struct bt_rfcomm_server *server)
 {
-	if (!sys_slist_find_and_remove(&servers, &server->node)) {
+	if (!list_find_and_remove(&servers, &server->node)) {
 		return -ENOENT;
 	}
 
@@ -233,7 +233,7 @@ static void rfcomm_dlcs_tx_trigger(struct bt_rfcomm_session *session)
 {
 	struct bt_rfcomm_dlc *dlc, *tmp;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&session->dlcs, dlc, tmp, _node) {
+	list_for_every_container_safe(&session->dlcs, dlc, tmp, _node) {
 		rfcomm_dlc_tx_trigger(dlc);
 	}
 }
@@ -299,11 +299,11 @@ static void rfcomm_session_disconnected(struct bt_rfcomm_session *session)
 		return;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&session->dlcs, dlc, tmp, _node) {
+	list_for_every_container_safe(&session->dlcs, dlc, tmp, _node) {
 		rfcomm_dlc_disconnect(dlc);
 	}
 
-	sys_slist_init(&session->dlcs);
+	list_initialize(&session->dlcs);
 	/*
 	 * If the function is called, it means the session disconnection process has been requested
 	 * by peer device. Or the L2CAP connection has been closed (it is not counted in the case).
@@ -421,7 +421,7 @@ static void rfcomm_session_disconnect(struct bt_rfcomm_session *session)
 {
 	int err;
 
-	if (!sys_slist_is_empty(&session->dlcs)) {
+	if (!list_is_empty(&session->dlcs)) {
 		return;
 	}
 
@@ -604,7 +604,7 @@ static void rfcomm_dlc_init(struct bt_rfcomm_dlc *dlc,
 	/* Start a conn timer which includes auth as well */
 	bt_work_schedule(&dlc->rtx_work, RFCOMM_CONN_TIMEOUT);
 
-	sys_slist_prepend(&session->dlcs, &dlc->_node);
+	list_add_head(&session->dlcs, &dlc->_node);
 }
 
 static struct bt_rfcomm_dlc *rfcomm_dlc_accept(struct bt_rfcomm_session *session,
@@ -1532,7 +1532,7 @@ static void rfcomm_dlc_process_disc(struct bt_rfcomm_dlc *dlc)
 done:
 	rfcomm_dlc_disconnect(dlc);
 
-	if (sys_slist_is_empty(&session->dlcs)) {
+	if (list_is_empty(&session->dlcs)) {
 		/* Start a session idle timer */
 		bt_work_reschedule(&session->rtx_work, RFCOMM_IDLE_TIMEOUT);
 	}
@@ -1742,7 +1742,7 @@ static void rfcomm_session_control_channel_connected(struct bt_rfcomm_session *s
 	struct bt_rfcomm_dlc *dlc;
 	int err;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&session->dlcs, dlc, _node) {
+	list_for_every_container(&session->dlcs, dlc, _node) {
 		if (dlc->role == BT_RFCOMM_ROLE_INITIATOR && dlc->state == BT_RFCOMM_STATE_INIT) {
 			err = rfcomm_dlc_start(dlc);
 			if (err != 0) {
@@ -2446,7 +2446,7 @@ static void rfcomm_encrypt_change(struct bt_l2cap_chan *chan,
 
 	LOG_DBG("session %p status 0x%02x encr 0x%02x", session, hci_status, conn->encrypt);
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&session->dlcs, dlc, tmp, _node) {
+	list_for_every_container_safe(&session->dlcs, dlc, tmp, _node) {
 		if (dlc->state != BT_RFCOMM_STATE_SECURITY_PENDING) {
 			continue;
 		}
@@ -2568,7 +2568,7 @@ static struct bt_rfcomm_session *rfcomm_session_new(bt_rfcomm_role_t role)
 		session->state = BT_RFCOMM_STATE_INIT;
 		session->role = role;
 		session->cfc = BT_RFCOMM_CFC_UNKNOWN;
-		sys_slist_init(&session->dlcs);
+		list_initialize(&session->dlcs);
 		k_work_init_delayable(&session->rtx_work, rfcomm_session_rtx_timeout);
 		k_work_init_delayable(&session->retry_work, rfcomm_session_retry_handler);
 		k_work_init_delayable(&session->retry_timeout_work, rfcomm_session_retry_timeout);

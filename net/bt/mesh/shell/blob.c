@@ -278,7 +278,7 @@ static void blob_cli_inputs_prepare(uint16_t group)
 	blob_cli_xfer.inputs.ttl = BT_MESH_TTL_DEFAULT;
 	blob_cli_xfer.inputs.group = group;
 	blob_cli_xfer.inputs.app_idx = bt_mesh_shell_target_ctx.app_idx;
-	sys_slist_init(&blob_cli_xfer.inputs.targets);
+	list_initialize(&blob_cli_xfer.inputs.targets);
 
 	for (i = 0; i < blob_cli_xfer.target_count; ++i) {
 		/* Reset target context. */
@@ -289,7 +289,7 @@ static void blob_cli_inputs_prepare(uint16_t group)
 		blob_cli_xfer.targets[i].addr = addr;
 		blob_cli_xfer.targets[i].pull = &blob_cli_xfer.pull[i];
 
-		sys_slist_append(&blob_cli_xfer.inputs.targets,
+		list_add_tail(&blob_cli_xfer.inputs.targets,
 				 &blob_cli_xfer.targets[i].n);
 	}
 }

@@ -34,7 +34,7 @@ LOG_MODULE_REGISTER(bt_goep);
 #define GOEP_MIN_MTU BT_OBEX_MIN_MTU
 
 /* RFCOMM Server list */
-static sys_slist_t goep_rfcomm_server = SYS_SLIST_STATIC_INIT(&goep_rfcomm_server);
+static struct list_node goep_rfcomm_server = LIST_INITIAL_VALUE(goep_rfcomm_server);
 
 #define GOEP_GET_TRANSPORT_V1(_dlc) CONTAINER_OF((_dlc), struct bt_goep_transport_v1, dlc)
 
@@ -206,7 +206,7 @@ static int goep_rfcomm_accept(struct bt_conn *conn, struct bt_rfcomm_server *ser
 
 	rfcomm_server = CONTAINER_OF(server, struct bt_goep_transport_rfcomm_server, rfcomm);
 
-	if (!sys_slist_find(&goep_rfcomm_server, &rfcomm_server->node, NULL)) {
+	if (!list_find(&goep_rfcomm_server, &rfcomm_server->node, NULL)) {
 		LOG_WRN("Invalid rfcomm server");
 		return -ENOMEM;
 	}
@@ -238,7 +238,7 @@ int bt_goep_transport_rfcomm_server_register(struct bt_goep_transport_rfcomm_ser
 		return -EINVAL;
 	}
 
-	if (sys_slist_find(&goep_rfcomm_server, &server->node, NULL)) {
+	if (list_find(&goep_rfcomm_server, &server->node, NULL)) {
 		LOG_WRN("RFCOMM server has been registered");
 		return -EEXIST;
 	}
@@ -251,7 +251,7 @@ int bt_goep_transport_rfcomm_server_register(struct bt_goep_transport_rfcomm_ser
 	}
 
 	LOG_DBG("Register RFCOMM server %p", server);
-	sys_slist_append(&goep_rfcomm_server, &server->node);
+	list_add_tail(&goep_rfcomm_server, &server->node);
 
 	return 0;
 }
@@ -307,7 +307,7 @@ int bt_goep_transport_rfcomm_disconnect(struct bt_goep *goep)
 }
 
 /* L2CAP Server list */
-static sys_slist_t goep_l2cap_server = SYS_SLIST_STATIC_INIT(&goep_l2cap_server);
+static struct list_node goep_l2cap_server = LIST_INITIAL_VALUE(goep_l2cap_server);
 
 #define GOEP_GET_TRANSPORT_V2(_chan) CONTAINER_OF((_chan), struct bt_goep_transport_v2, chan.chan)
 
@@ -502,7 +502,7 @@ static int goep_l2cap_accept(struct bt_conn *conn, struct bt_l2cap_server *serve
 
 	l2cap_server = CONTAINER_OF(server, struct bt_goep_transport_l2cap_server, l2cap);
 
-	if (!sys_slist_find(&goep_l2cap_server, &l2cap_server->node, NULL)) {
+	if (!list_find(&goep_l2cap_server, &l2cap_server->node, NULL)) {
 		LOG_WRN("Invalid l2cap server");
 		return -ENOMEM;
 	}
@@ -533,7 +533,7 @@ int bt_goep_transport_l2cap_server_register(struct bt_goep_transport_l2cap_serve
 		return -EINVAL;
 	}
 
-	if (sys_slist_find(&goep_l2cap_server, &server->node, NULL)) {
+	if (list_find(&goep_l2cap_server, &server->node, NULL)) {
 		LOG_WRN("L2CAP server has been registered");
 		return -EEXIST;
 	}
@@ -546,7 +546,7 @@ int bt_goep_transport_l2cap_server_register(struct bt_goep_transport_l2cap_serve
 	}
 
 	LOG_DBG("Register L2CAP server %p", server);
-	sys_slist_append(&goep_l2cap_server, &server->node);
+	list_add_tail(&goep_l2cap_server, &server->node);
 
 	return 0;
 }

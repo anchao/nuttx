@@ -69,7 +69,7 @@ static void bip_rfcomm_disconnected(struct bt_goep *goep)
 
 	atomic_set(&bip->_transport_state, BT_BIP_TRANSPORT_STATE_DISCONNECTED);
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&bip->_clients, client, cnext, _node) {
+	list_for_every_container_safe(&bip->_clients, client, cnext, _node) {
 		if (is_bip_primary_connect(client->_type) && client->_secondary_server != NULL &&
 		    client->_secondary_server->_bip != bip) {
 			bt_bip_rfcomm_disconnect(client->_secondary_server->_bip);
@@ -77,7 +77,7 @@ static void bip_rfcomm_disconnected(struct bt_goep *goep)
 		atomic_set(&client->_state, BT_BIP_STATE_DISCONNECTED);
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&bip->_servers, server, snext, _node) {
+	list_for_every_container_safe(&bip->_servers, server, snext, _node) {
 		if (is_bip_primary_connect(server->_type) && server->_secondary_client != NULL &&
 		    server->_secondary_client->_bip != bip) {
 			bt_bip_rfcomm_disconnect(server->_secondary_client->_bip);
@@ -85,7 +85,7 @@ static void bip_rfcomm_disconnected(struct bt_goep *goep)
 		atomic_set(&server->_state, BT_BIP_STATE_DISCONNECTED);
 	}
 
-	sys_slist_init(&bip->_clients);
+	list_initialize(&bip->_clients);
 	bip->role = BT_BIP_ROLE_UNKNOWN;
 	bip->_supp_caps = 0;
 	bip->_supp_feats = 0;
@@ -208,7 +208,7 @@ static void bip_l2cap_disconnected(struct bt_goep *goep)
 
 	atomic_set(&bip->_transport_state, BT_BIP_TRANSPORT_STATE_DISCONNECTED);
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&bip->_clients, client, cnext, _node) {
+	list_for_every_container_safe(&bip->_clients, client, cnext, _node) {
 		if (is_bip_primary_connect(client->_type) && client->_secondary_server != NULL &&
 		    client->_secondary_server->_bip != bip) {
 			bt_bip_l2cap_disconnect(client->_secondary_server->_bip);
@@ -216,7 +216,7 @@ static void bip_l2cap_disconnected(struct bt_goep *goep)
 		atomic_set(&client->_state, BT_BIP_STATE_DISCONNECTED);
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&bip->_servers, server, snext, _node) {
+	list_for_every_container_safe(&bip->_servers, server, snext, _node) {
 		if (is_bip_primary_connect(server->_type) && server->_secondary_client != NULL &&
 		    server->_secondary_client->_bip != bip) {
 			bt_bip_l2cap_disconnect(server->_secondary_client->_bip);
@@ -224,7 +224,7 @@ static void bip_l2cap_disconnected(struct bt_goep *goep)
 		atomic_set(&server->_state, BT_BIP_STATE_DISCONNECTED);
 	}
 
-	sys_slist_init(&bip->_clients);
+	list_initialize(&bip->_clients);
 	bip->role = BT_BIP_ROLE_UNKNOWN;
 	bip->_supp_caps = 0;
 	bip->_supp_feats = 0;
@@ -414,7 +414,7 @@ static void bip_client_connect(struct bt_obex_client *client, uint8_t rsp_code, 
 		bt_obex_get_header_conn_id(buf, &c->_conn_id);
 	} else {
 		atomic_set(&c->_state, BT_BIP_STATE_DISCONNECTED);
-		sys_slist_find_and_remove(&c->_bip->_clients, &c->_node);
+		list_find_and_remove(&c->_bip->_clients, &c->_node);
 	}
 
 	if (c->_cb->connect != NULL) {
@@ -447,7 +447,7 @@ static void bip_client_disconnect(struct bt_obex_client *client, uint8_t rsp_cod
 			}
 		}
 
-		sys_slist_find_and_remove(&c->_bip->_clients, &c->_node);
+		list_find_and_remove(&c->_bip->_clients, &c->_node);
 
 		bip_clinet_clear_pending_request(c);
 	} else {
@@ -1154,13 +1154,13 @@ static int bt_bip_server_register(struct bt_bip *bip, struct bt_bip_server *serv
 		}
 
 		primary_bip = primary_client->_bip;
-		if (!sys_slist_find(&primary_bip->_clients, &primary_client->_node, NULL)) {
+		if (!list_find(&primary_bip->_clients, &primary_client->_node, NULL)) {
 			LOG_ERR("Primary client %p is not found", primary_client);
 			return -EINVAL;
 		}
 	}
 
-	if (sys_slist_find(&bip->_servers, &server->_node, NULL)) {
+	if (list_find(&bip->_servers, &server->_node, NULL)) {
 		LOG_ERR("Server %p has been registered", server);
 		return -EALREADY;
 	}
@@ -1171,7 +1171,7 @@ static int bt_bip_server_register(struct bt_bip *bip, struct bt_bip_server *serv
 
 	__ASSERT(uuid != NULL, "Invalid UUID");
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&bip->_servers, s, next, _node) {
+	list_for_every_container_safe(&bip->_servers, s, next, _node) {
 		if (bt_uuid_cmp(&uuid->uuid, &s->_uuid->uuid) == 0) {
 			LOG_ERR("UUID has been registered");
 			return -EALREADY;
@@ -1191,7 +1191,7 @@ static int bt_bip_server_register(struct bt_bip *bip, struct bt_bip_server *serv
 		return err;
 	}
 
-	sys_slist_append(&bip->_servers, &server->_node);
+	list_add_tail(&bip->_servers, &server->_node);
 	return 0;
 }
 
@@ -1223,7 +1223,7 @@ int bt_bip_server_unregister(struct bt_bip_server *server)
 		return -EINVAL;
 	}
 
-	if (!sys_slist_find(&server->_bip->_servers, &server->_node, NULL)) {
+	if (!list_find(&server->_bip->_servers, &server->_node, NULL)) {
 		LOG_ERR("Server %p has not found", server);
 		return -EALREADY;
 	}
@@ -1234,7 +1234,7 @@ int bt_bip_server_unregister(struct bt_bip_server *server)
 		return err;
 	}
 
-	sys_slist_find_and_remove(&server->_bip->_servers, &server->_node);
+	list_find_and_remove(&server->_bip->_servers, &server->_node);
 	return 0;
 }
 
@@ -1398,13 +1398,13 @@ static int bt_bip_client_connect(struct bt_bip *bip, struct bt_bip_client *clien
 		}
 
 		primary_bip = primary_server->_bip;
-		if (!sys_slist_find(&primary_bip->_servers, &primary_server->_node, NULL)) {
+		if (!list_find(&primary_bip->_servers, &primary_server->_node, NULL)) {
 			LOG_ERR("Primary server %p is not found", primary_server);
 			return -EINVAL;
 		}
 	}
 
-	if (sys_slist_find(&bip->_clients, &client->_node, NULL)) {
+	if (list_find(&bip->_clients, &client->_node, NULL)) {
 		LOG_ERR("Client %p is not idle", client);
 		return -EALREADY;
 	}
@@ -1434,7 +1434,7 @@ static int bt_bip_client_connect(struct bt_bip *bip, struct bt_bip_client *clien
 		return -EINVAL;
 	}
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&bip->_clients, c, next, _node) {
+	list_for_every_container_safe(&bip->_clients, c, next, _node) {
 		if (bt_uuid_cmp(&uuid->uuid, &c->_uuid.uuid) == 0) {
 			LOG_ERR("UUID has been registered");
 			return -EALREADY;
@@ -1475,7 +1475,7 @@ static int bt_bip_client_connect(struct bt_bip *bip, struct bt_bip_client *clien
 	}
 
 	atomic_set(&client->_state, BT_BIP_STATE_CONNECTING);
-	sys_slist_append(&bip->_clients, &client->_node);
+	list_add_tail(&bip->_clients, &client->_node);
 	return 0;
 
 failed:

@@ -49,7 +49,7 @@ LOG_MODULE_REGISTER(bt_avdtp);
 #define AVDTP_SEID_GET(val)  FIELD_GET(AVDTP_SEID_MASK, val)
 
 static struct bt_avdtp_event_cb *event_cb;
-static sys_slist_t seps;
+static struct list_node seps;
 
 #define AVDTP_CHAN(_ch) CONTAINER_OF(_ch, struct bt_avdtp, br_chan.chan)
 
@@ -88,7 +88,7 @@ NET_BUF_POOL_DEFINE(avdtp_frag_pool, 1,
 		    CONFIG_BT_CONN_TX_USER_DATA_SIZE, NULL);
 
 /* tx list for packets */
-sys_slist_t avdtp_tx_list = SYS_SLIST_STATIC_INIT(&avdtp_tx_list);
+struct list_node avdtp_tx_list = LIST_INITIAL_VALUE(avdtp_tx_list);
 static void avdtp_tx_processor(struct k_work *item);
 static K_WORK_DEFINE(avdtp_tx_work, avdtp_tx_processor);
 
@@ -402,7 +402,7 @@ static struct net_buf *avdtp_create_rsp(uint8_t msg_type, uint8_t sig_id, uint8_
 
 static void avdtp_tx_raise(void)
 {
-	if (!sys_slist_is_empty(&avdtp_tx_list)) {
+	if (!list_is_empty(&avdtp_tx_list)) {
 		LOG_DBG("kick TX");
 		bt_work_submit(&avdtp_tx_work);
 	}
@@ -416,7 +416,7 @@ static void avdtp_tx_cb(struct bt_conn *conn, void *user_data, int err)
 static void avdtp_tx_remove(struct net_buf *buf)
 {
 	k_sem_take(&avdtp_sem_lock, K_FOREVER);
-	sys_slist_find_and_remove(&avdtp_tx_list, &buf->node);
+	list_find_and_remove(&avdtp_tx_list, &buf->node);
 	k_sem_give(&avdtp_sem_lock);
 }
 
@@ -550,11 +550,11 @@ static void avdtp_tx_processor(struct k_work *item)
 {
 	struct bt_avdtp *session;
 	struct avdtp_buf_user_data *user_data;
-	const sys_snode_t *node;
+	const struct list_node *node;
 	struct net_buf *buf;
 
 	k_sem_take(&avdtp_sem_lock, K_FOREVER);
-	node = sys_slist_peek_head(&avdtp_tx_list);
+	node = list_peek_head(&avdtp_tx_list);
 	if (node == NULL) {
 		k_sem_give(&avdtp_sem_lock);
 		LOG_DBG("No pending tx");
@@ -612,7 +612,7 @@ static void avdtp_send_common(struct bt_avdtp *session, struct net_buf *buf)
 {
 	avdtp_buf_init_user_data(session, buf);
 	k_sem_take(&avdtp_sem_lock, K_FOREVER);
-	sys_slist_append(&avdtp_tx_list, &buf->node);
+	list_add_tail(&avdtp_tx_list, &buf->node);
 	k_sem_give(&avdtp_sem_lock);
 
 	avdtp_tx_raise();
@@ -700,7 +700,7 @@ static void avdtp_discover_cmd(struct bt_avdtp *session, struct net_buf *buf, ui
 	} else {
 		struct bt_avdtp_sep_data sep_data;
 
-		SYS_SLIST_FOR_EACH_CONTAINER(&seps, sep, _node) {
+		list_for_every_container(&seps, sep, _node) {
 			memset(&sep_data, 0, sizeof(sep_data));
 			sep_data.inuse = sep->sep_info.inuse;
 			sep_data.id = sep->sep_info.id;
@@ -737,7 +737,7 @@ static struct bt_avdtp_sep *avdtp_get_sep(uint8_t stream_endpoint_id)
 {
 	struct bt_avdtp_sep *sep;
 
-	SYS_SLIST_FOR_EACH_CONTAINER(&seps, sep, _node) {
+	list_for_every_container(&seps, sep, _node) {
 		if (sep->sep_info.id == stream_endpoint_id) {
 			return sep;
 		}
@@ -1793,7 +1793,7 @@ static void avdtp_release_work(struct k_work *work)
 	int err;
 	uint8_t work_state;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&seps, sep, next, _node) {
+	list_for_every_container_safe(&seps, sep, next, _node) {
 		if (sep->session != session || sep->state == AVDTP_IDLE) {
 			continue;
 		}
@@ -1819,11 +1819,11 @@ void bt_avdtp_clear_tx(struct bt_avdtp *session)
 	struct net_buf *buf, *next;
 	struct avdtp_buf_user_data *user_data;
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&avdtp_tx_list, buf, next, node) {
+	list_for_every_container_safe(&avdtp_tx_list, buf, next, node) {
 		user_data = net_buf_user_data(buf);
 
 		if (user_data->session == session) {
-			sys_slist_find_and_remove(&avdtp_tx_list, &buf->node);
+			list_find_and_remove(&avdtp_tx_list, &buf->node);
 			net_buf_unref(buf);
 		}
 	}
@@ -2220,7 +2220,7 @@ int bt_avdtp_disconnect(struct bt_avdtp *session)
 
 	LOG_DBG("session %p", session);
 
-	SYS_SLIST_FOR_EACH_CONTAINER_SAFE(&seps, sep, next, _node) {
+	list_for_every_container_safe(&seps, sep, next, _node) {
 		if ((sep->session != session) || (!avdtp_media_chan_valid(sep))) {
 			continue;
 		}
@@ -2353,7 +2353,7 @@ int bt_avdtp_register_sep(uint8_t media_type, uint8_t sep_type, struct bt_avdtp_
 	}
 
 	k_sem_take(&avdtp_sem_lock, K_FOREVER);
-	if (sys_slist_find(&seps, &sep->_node, NULL)) {
+	if (list_find(&seps, &sep->_node, NULL)) {
 		k_sem_give(&avdtp_sem_lock);
 		LOG_ERR("Endpoint is already registered");
 		return -EEXIST;
@@ -2373,7 +2373,7 @@ int bt_avdtp_register_sep(uint8_t media_type, uint8_t sep_type, struct bt_avdtp_
 	 */
 	bt_avdtp_set_state(sep, AVDTP_IDLE);
 
-	sys_slist_append(&seps, &sep->_node);
+	list_add_tail(&seps, &sep->_node);
 	k_sem_give(&avdtp_sem_lock);
 
 	return 0;
