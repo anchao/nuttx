@@ -18,7 +18,6 @@
 #include <nuttx/atomic.h>
 #include "sys/util.h"
 #include "toolchain.h"
-#include "arch/posix/arch.h"
 #include "init.h"
 
 #ifdef __cplusplus

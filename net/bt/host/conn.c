@@ -1596,7 +1596,7 @@ struct net_buf *bt_conn_create_pdu_timeout(struct net_buf_pool *pool,
 	 * PDU must not be allocated from ISR as we block with '((clock_t)-1)'
 	 * during the allocation
 	 */
-	DEBUGASSERT(!k_is_in_isr());
+	DEBUGASSERT(!up_interrupt_context());
 
 	if (!((timeout) == (0)) &&
 	    nxsched_gettid() == k_work_queue_thread_get(&k_sys_work_q)) {

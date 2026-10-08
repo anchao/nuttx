@@ -21,6 +21,7 @@
 #include <assert.h>
 #include <nuttx/atomic.h>
 #include <nuttx/clock.h>
+#include <nuttx/irq.h>
 
 #include "buf_view.h"
 #include "common/hci_common_internal.h"
@@ -42,7 +43,7 @@ static void * buf_rx_freed_cb;
 static void buf_rx_freed_notify(enum bt_buf_type mask)
 {
 	bt_buf_rx_freed_cb_t cb;
-	bool in_isr = k_is_in_isr();
+	bool in_isr = up_interrupt_context();
 
 	if (!in_isr) {
 		sched_lock();
