@@ -19,7 +19,6 @@
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/audio/tbs.h>
 #include <zephyr/kernel.h>
-#include <zephyr/shell/shell_string_conv.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>

@@ -14,7 +14,6 @@
 #include <zephyr/bluetooth/mesh.h>
 #include <zephyr/bluetooth/mesh/shell.h>
 #include <zephyr/dfu/mcuboot.h>
-#include <zephyr/storage/flash_map.h>
 
 #include "common/bt_shell_private.h"
 #include "utils.h"
@@ -136,8 +135,7 @@ void bt_mesh_shell_dfu_cmds_init(void)
 #if defined(CONFIG_BT_MESH_SHELL_DFU_SRV) && defined(CONFIG_BOOTLOADER_MCUBOOT)
 	struct mcuboot_img_header img_header;
 
-	int err = boot_read_bank_header(PARTITION_ID(slot0_partition),
-					&img_header, sizeof(img_header));
+	int err = boot_read_bank_header(0, &img_header, sizeof(img_header));
 	if (!err) {
 		struct shell_dfu_fwid *fwid =
 			(struct shell_dfu_fwid *)dfu_imgs[0].fwid;

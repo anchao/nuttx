@@ -15,7 +15,6 @@
 #include <zephyr/bluetooth/classic/sdp.h>
 #include <zephyr/bluetooth/l2cap.h>
 #include <zephyr/shell/shell.h>
-#include <zephyr/shell/shell_string_conv.h>
 #include <zephyr/sys/util.h>
 
 #include <nuttx/usb/hid.h>

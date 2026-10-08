@@ -1059,22 +1059,9 @@ config BT_MESH_BLOB_IO_FLASH
 	bool "BLOB flash stream"
 	default y
 	depends on BT_MESH_BLOB_SRV || BT_MESH_BLOB_CLI
-	depends on FLASH_MAP
-	depends on FLASH_PAGE_LAYOUT
 	help
-	  Enable the BLOB flash stream for reading and writing BLOBs directly to
-	  and from flash.
-
-if BT_MESH_BLOB_IO_FLASH
-
-config BT_MESH_BLOB_IO_FLASH_WRITE_BLOCK_SIZE_MAX
-	int "Maximum supported write block size"
-	default 4
-	help
-	  The BLOB IO Flash module will support flash devices with explicit erase
-	  when this value is set to a multiple of the device write block size.
-
-endif # BT_MESH_BLOB_IO_FLASH
+	  Enable the BLOB flash stream API stub. The NuttX Bluetooth port does
+	  not provide a Zephyr flash map backend.
 
 config BT_MESH_DFU_SRV
 	bool "Support for Firmware Update Server model"

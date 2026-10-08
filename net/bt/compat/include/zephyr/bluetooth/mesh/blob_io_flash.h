@@ -27,16 +27,13 @@ extern "C" {
 
 /** BLOB flash stream. */
 struct bt_mesh_blob_io_flash {
-	/** Flash area ID to write the BLOB to. */
+	/** Flash stream area ID. */
 	uint8_t area_id;
 	/** Active stream mode. */
 	enum bt_mesh_blob_io_mode mode;
-	/** Offset into the flash area to place the BLOB at (in bytes). */
+	/** Offset into the stream area, in bytes. */
 	off_t offset;
 
-
-	/* Internal flash area pointer. */
-	const struct flash_area *area;
 	/* BLOB stream. */
 	struct bt_mesh_blob_io io;
 };
@@ -44,8 +41,8 @@ struct bt_mesh_blob_io_flash {
 /** @brief Initialize a flash stream.
  *
  *  @param flash   Flash stream.
- *  @param area_id Flash partition identifier. See @ref flash_area_open.
- *  @param offset  Offset into the flash area, in bytes.
+ *  @param area_id Stream area identifier.
+ *  @param offset  Offset into the stream area, in bytes.
  *
  *  @return 0 on success or (negative) error code otherwise.
  */

@@ -23,7 +23,6 @@
 #include <zephyr/bluetooth/services/ots.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/shell/shell.h>
-#include <zephyr/shell/shell_string_conv.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
 

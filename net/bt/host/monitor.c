@@ -87,40 +87,7 @@ static void drop_add(uint16_t opcode)
 	}
 }
 
-#if defined(CONFIG_BT_DEBUG_MONITOR_RTT)
-#include <SEGGER_RTT.h>
-
-#define RTT_BUFFER_NAME CONFIG_BT_DEBUG_MONITOR_RTT_BUFFER_NAME
-#define RTT_BUF_SIZE CONFIG_BT_DEBUG_MONITOR_RTT_BUFFER_SIZE
-
-static bool monitor_send(const struct bt_monitor_data *frags, size_t count)
-{
-	static uint8_t rtt_buf[RTT_BUF_SIZE];
-	size_t total = 0;
-	unsigned int cnt = 0;
-
-	for (size_t i = 0; i < count; i++) {
-		/* Zero-length fragments may carry a NULL data pointer */
-		if (frags[i].len == 0) {
-			continue;
-		}
-
-		/* total only grows after passing this check, so it never
-		 * exceeds sizeof(rtt_buf) and the subtraction cannot underflow.
-		 */
-		if (frags[i].len > sizeof(rtt_buf) - total) {
-			return false;
-		}
-
-		(void)memcpy(rtt_buf + total, frags[i].data, frags[i].len);
-		total += frags[i].len;
-	}
-
-	cnt = SEGGER_RTT_Write(CONFIG_BT_DEBUG_MONITOR_RTT_BUFFER, rtt_buf, total);
-
-	return cnt != 0;
-}
-#elif defined(CONFIG_BT_DEBUG_MONITOR_UART)
+#if defined(CONFIG_BT_DEBUG_MONITOR_UART)
 static const struct device *const monitor_dev = NULL;
 
 static void monitor_poll_send(const struct bt_monitor_data *frags, size_t count)
@@ -385,13 +352,7 @@ void bt_monitor_new_index(uint8_t type, uint8_t bus, const bt_addr_t *addr,
 static int bt_monitor_init(void)
 {
 
-#if defined(CONFIG_BT_DEBUG_MONITOR_RTT)
-	static uint8_t rtt_up_buf[RTT_BUF_SIZE];
-
-	SEGGER_RTT_ConfigUpBuffer(CONFIG_BT_DEBUG_MONITOR_RTT_BUFFER,
-				  RTT_BUFFER_NAME, rtt_up_buf, RTT_BUF_SIZE,
-				  SEGGER_RTT_MODE_NO_BLOCK_SKIP);
-#elif defined(CONFIG_BT_DEBUG_MONITOR_UART)
+#if defined(CONFIG_BT_DEBUG_MONITOR_UART)
 	DEBUGASSERT(device_is_ready(monitor_dev));
 
 #if defined(CONFIG_BT_DEBUG_MONITOR_UART_INTERRUPT_DRIVEN)

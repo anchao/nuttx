@@ -23,7 +23,6 @@
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/kernel.h>
 #include <zephyr/shell/shell.h>
-#include <zephyr/shell/shell_string_conv.h>
 #include <assert.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/clock.h>

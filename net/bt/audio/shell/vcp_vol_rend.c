@@ -20,7 +20,6 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/audio/vcp.h>
 #include <zephyr/shell/shell.h>
-#include <zephyr/shell/shell_string_conv.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
 

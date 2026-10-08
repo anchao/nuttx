@@ -19,7 +19,6 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/shell/shell.h>
-#include <zephyr/shell/shell_string_conv.h>
 #include <zephyr/toolchain.h>
 
 #include "../mpl_internal.h"

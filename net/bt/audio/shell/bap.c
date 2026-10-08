@@ -43,7 +43,6 @@
 #include <zephyr/kernel.h>
 #include <nuttx/mm/net_buf.h>
 #include <zephyr/shell/shell.h>
-#include <zephyr/shell/shell_string_conv.h>
 #include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>

@@ -11,16 +11,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/shell/shell_backend.h>
 #include "bt_shell_private.h"
+
+uint32_t shell_backend_count_get(void);
+const struct shell *shell_backend_get(uint32_t idx);
 
 static void wall_vfprintf(enum shell_vt100_color color, const char *fmt, va_list args)
 {
-	int count;
+	uint32_t count;
 	const struct shell *sh;
 
 	count = shell_backend_count_get();
-	for (int i = 0; i < count; i++) {
+	for (uint32_t i = 0; i < count; i++) {
 		va_list args_copy;
 
 		va_copy(args_copy, args);   /* Create a copy of 'args' to safely reuse */
@@ -32,11 +34,11 @@ static void wall_vfprintf(enum shell_vt100_color color, const char *fmt, va_list
 
 void bt_shell_hexdump(const uint8_t *data, size_t len)
 {
-	int count;
+	uint32_t count;
 	const struct shell *sh;
 
 	count = shell_backend_count_get();
-	for (int i = 0; i < count; i++) {
+	for (uint32_t i = 0; i < count; i++) {
 		sh = shell_backend_get(i);
 		shell_hexdump(sh, data, len);
 	}

@@ -22,7 +22,6 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/kernel.h>
 #include <zephyr/shell/shell.h>
-#include <zephyr/shell/shell_string_conv.h>
 #include <zephyr/toolchain.h>
 
 #include "host/shell/bt.h"

@@ -224,7 +224,6 @@ struct bt_mesh_dfd_srv {
 	struct {
 		enum bt_mesh_dfd_upload_phase phase;
 		struct bt_mesh_dfu_slot *slot;
-		const struct flash_area *area;
 		struct bt_mesh_blob_srv blob;
 #ifdef CONFIG_BT_MESH_DFD_SRV_OOB_UPLOAD
 		bool is_oob;

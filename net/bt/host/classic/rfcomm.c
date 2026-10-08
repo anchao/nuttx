@@ -10,11 +10,11 @@
 #include <zephyr/kernel.h>
 #include <string.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/crc.h>
-#include <zephyr/random/random.h>
 
 #include <zephyr/bluetooth/hci.h>
 #include <zephyr/bluetooth/bluetooth.h>
@@ -71,7 +71,7 @@ static struct list_node servers = LIST_INITIAL_VALUE(servers);
 static struct bt_rfcomm_session bt_rfcomm_pool[CONFIG_BT_MAX_CONN];
 
 #define RFCOMM_RETRY_INTERVAL_MAX 100
-#define RFCOMM_RETRY_INTERVAL (MSEC2TICK((sys_rand32_get() % RFCOMM_RETRY_INTERVAL_MAX)))
+#define RFCOMM_RETRY_INTERVAL (MSEC2TICK((arc4random() % RFCOMM_RETRY_INTERVAL_MAX)))
 
 #define RFCOMM_RETRY_TIMEOUT (SEC2TICK(5))
 

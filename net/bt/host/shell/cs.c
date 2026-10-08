@@ -23,7 +23,6 @@
 #include <zephyr/bluetooth/cs.h>
 #include <zephyr/kernel.h>
 #include <zephyr/shell/shell.h>
-#include <zephyr/shell/shell_string_conv.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 

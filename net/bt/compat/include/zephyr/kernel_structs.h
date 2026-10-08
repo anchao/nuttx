@@ -30,7 +30,6 @@
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/arch/structs.h>
-#include <zephyr/kernel/obj_core.h>
 #endif
 
 #define K_NUM_THREAD_PRIO (CONFIG_NUM_PREEMPT_PRIORITIES + CONFIG_NUM_COOP_PRIORITIES + 1)
@@ -143,10 +142,6 @@ struct _cpu {
 	uint8_t swap_ok;
 #endif
 
-#ifdef CONFIG_OBJ_CORE_SYSTEM
-	struct k_obj_core  obj_core;
-#endif
-
 	/* Per CPU architecture specifics */
 	struct _cpu_arch arch;
 };
@@ -185,10 +180,6 @@ struct z_kernel {
 #if defined(CONFIG_THREAD_MONITOR)
 	pid_t threads;
 #endif
-#ifdef CONFIG_OBJ_CORE_SYSTEM
-	struct k_obj_core  obj_core;
-#endif
-
 #if defined(CONFIG_SMP) && defined(CONFIG_SCHED_IPI_SUPPORTED)
 	/* Identify CPUs to send IPIs to at the next scheduling point */
 	int32_t pending_ipi;

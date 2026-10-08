@@ -26,7 +26,6 @@
 #include <nuttx/mm/net_buf.h>
 #include <zephyr/settings/settings.h>
 #include <zephyr/shell/shell.h>
-#include <zephyr/shell/shell_string_conv.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/clock.h>

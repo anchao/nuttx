@@ -16,7 +16,6 @@
 #include <zephyr/bluetooth/audio/tbs.h>
 #include <zephyr/bluetooth/audio/ccp.h>
 #include <zephyr/shell/shell.h>
-#include <zephyr/shell/shell_string_conv.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
 
