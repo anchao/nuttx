@@ -21,10 +21,8 @@
 #include <zephyr/logging/log.h>
 #include <assert.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/check.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
-#include <zephyr/syscalls/kernel.h>
 #include <zephyr/toolchain.h>
 
 #include "cap_internal.h"

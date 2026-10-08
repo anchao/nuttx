@@ -20,7 +20,6 @@
 #include <zephyr/bluetooth/addr.h>
 #include <zephyr/bluetooth/buf.h>
 #include <zephyr/device.h>
-#include <zephyr/drivers/uart_pipe.h>
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log_backend.h>
