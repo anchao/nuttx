@@ -35,7 +35,7 @@ extern "C" {
 #define IF_ENABLED(_cfg, _code) COND_CODE_1(_cfg, _code, ())
 
 /* Arithmetic - using simple ternary for constant-foldability */
-/* Force override toolchain/gcc.h statement-expression version */
+/* Force override toolchain.h statement-expression-compatible versions */
 #ifdef Z_MAX
 #undef Z_MAX
 #endif
