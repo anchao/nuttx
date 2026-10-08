@@ -17,7 +17,8 @@
 #include <zephyr/shell/shell.h>
 #include <zephyr/shell/shell_string_conv.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/usb/class/hid.h>
+
+#include <nuttx/usb/hid.h>
 
 #include "host/shell/bt.h"
 #include "common/bt_shell_private.h"
@@ -32,13 +33,16 @@ NET_BUF_POOL_FIXED_DEFINE(hid_host_pool, HID_HOST_TX_BUF_COUNT,
 
 NET_BUF_POOL_FIXED_DEFINE(sdp_client_pool, CONFIG_BT_MAX_CONN, SDP_CLIENT_USER_BUF_LEN, 8, NULL);
 
-/* Report Descriptor item decoding. The item type and tag values come from
- * <zephyr/usb/class/hid.h>, which only provides the HID_ITEM() encoder, so the
- * matching decode masks are defined here and checked against that encoder.
+/* Report Descriptor item decoding. NuttX provides the HID item constants in
+ * <nuttx/usb/hid.h>; keep the short-item encoder local so the masks below can
+ * be checked against it.
  */
-#define HID_ITEM_SIZE_MASK GENMASK(1, 0)
-#define HID_ITEM_TYPE_MASK GENMASK(3, 2)
-#define HID_ITEM_TAG_MASK  GENMASK(7, 4)
+#define HID_ITEM_SIZE_MASK       USBHID_RPTITEM_SIZE_MASK
+#define HID_ITEM_TYPE_MASK       USBHID_RPTITEM_TYPE_MASK
+#define HID_ITEM_TAG_MASK        USBHID_RPTITEM_TAG_MASK
+#define HID_ITEM_TYPE_GLOBAL     (USBHID_RPTITEM_TYPE_GLOBAL >> 2)
+#define HID_ITEM_TAG_REPORT_ID   (USBHID_GLOBAL_REPORTID_PREFIX >> 4)
+#define HID_ITEM(tag, type, size) (((tag) << 4) | ((type) << 2) | (size))
 
 BUILD_ASSERT(HID_ITEM(HID_ITEM_TAG_REPORT_ID, HID_ITEM_TYPE_GLOBAL, 0) ==
 		     (FIELD_PREP(HID_ITEM_TAG_MASK, HID_ITEM_TAG_REPORT_ID) |
@@ -54,9 +58,7 @@ BUILD_ASSERT(HID_ITEM(HID_ITEM_TAG_REPORT_ID, HID_ITEM_TYPE_GLOBAL, 0) ==
 BUILD_ASSERT(HID_ITEM(0, 0, HID_ITEM_SIZE_4_BYTES) == HID_ITEM_SIZE_MASK,
 	     "HID item size decode mask does not match HID_ITEM()");
 
-/* Long item prefix, followed by bDataSize and bLongItemTag. Not covered by
- * <zephyr/usb/class/hid.h>, which only builds short items.
- */
+/* Long item prefix, followed by bDataSize and bLongItemTag. */
 #define HID_ITEM_LONG_PREFIX  0xfeU
 #define HID_ITEM_LONG_HDR_LEN 2U
 
