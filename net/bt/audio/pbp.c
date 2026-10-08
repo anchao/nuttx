@@ -18,7 +18,8 @@
 #include <zephyr/logging/log.h>
 #include <nuttx/mm/net_buf.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/types.h>
+#include <stdbool.h>
+#include <sys/types.h>
 
 LOG_MODULE_REGISTER(bt_pbp, CONFIG_BT_PBP_LOG_LEVEL);
 

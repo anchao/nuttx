@@ -9,7 +9,10 @@
  */
 
 #include <errno.h>
-#include <zephyr/types.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <sys/types.h>
 
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/conn.h>

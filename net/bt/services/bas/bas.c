@@ -14,7 +14,9 @@
 #include <zephyr/init.h>
 #include <assert.h>
 #include <stdbool.h>
-#include <zephyr/types.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <sys/types.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 

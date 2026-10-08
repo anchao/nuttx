@@ -10,7 +10,10 @@
  */
 
 #include <errno.h>
-#include <zephyr/types.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <sys/types.h>
 #include <zephyr/sys/byteorder.h>
 #include <stdlib.h>
 

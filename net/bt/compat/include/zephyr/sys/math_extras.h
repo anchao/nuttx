@@ -27,7 +27,10 @@
 #ifndef ZEPHYR_INCLUDE_SYS_MATH_EXTRAS_H_
 #define ZEPHYR_INCLUDE_SYS_MATH_EXTRAS_H_
 
-#include <zephyr/types.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <sys/types.h>
 #include <stdbool.h>
 #include <stddef.h>
 

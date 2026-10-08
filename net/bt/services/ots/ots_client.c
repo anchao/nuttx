@@ -9,7 +9,10 @@
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/kernel.h>
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/types.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <sys/types.h>
 
 #include <zephyr/device.h>
 #include <zephyr/init.h>

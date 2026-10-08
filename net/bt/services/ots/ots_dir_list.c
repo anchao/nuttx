@@ -20,7 +20,6 @@
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
-#include <zephyr/types.h>
 
 #include "ots_internal.h"
 #include "ots_obj_manager_internal.h"

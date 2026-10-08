@@ -24,7 +24,8 @@
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
-#include <zephyr/types.h>
+#include <stdbool.h>
+#include <sys/types.h>
 
 #include "host/shell/bt.h"
 

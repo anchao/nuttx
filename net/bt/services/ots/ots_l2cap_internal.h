@@ -11,7 +11,10 @@
 extern "C" {
 #endif
 
-#include <zephyr/types.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <sys/types.h>
 #include <nuttx/list.h>
 #include <sys/types.h>
 

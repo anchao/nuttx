@@ -9,7 +9,9 @@
 
 #include <sys/types.h>
 #include <nuttx/atomic.h>
-#include <zephyr/types.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 /**
  * @brief  Battery level status structure definition.

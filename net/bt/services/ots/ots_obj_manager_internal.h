@@ -11,7 +11,10 @@
 extern "C" {
 #endif
 
-#include <zephyr/types.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <sys/types.h>
 
 int bt_gatt_ots_obj_manager_first_obj_get(void *obj_manager,
 	struct bt_gatt_ots_object **obj);

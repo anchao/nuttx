@@ -20,7 +20,8 @@
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/services/ots.h>
 #include <nuttx/atomic.h>
-#include <zephyr/types.h>
+#include <stddef.h>
+#include <sys/types.h>
 
 struct mcs_instance_t *lookup_inst_by_conn(struct bt_conn *conn);
 

@@ -29,7 +29,7 @@
 #include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
-#include <zephyr/types.h>
+#include <sys/types.h>
 
 #include "aics_internal.h"
 #include "common/bt_str.h"

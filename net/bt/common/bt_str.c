@@ -14,7 +14,9 @@
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/types.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <sys/types.h>
 
 const char *bt_hex(const void *buf, size_t len)
 {

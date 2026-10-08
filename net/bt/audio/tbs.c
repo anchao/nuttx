@@ -36,7 +36,6 @@
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/sys/util_utf8.h>
 #include <zephyr/toolchain.h>
-#include <zephyr/types.h>
 
 #include "audio_internal.h"
 #include "tbs_internal.h"

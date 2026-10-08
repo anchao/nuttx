@@ -18,7 +18,8 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/sys/util_macro.h>
-#include <zephyr/types.h>
+#include <stddef.h>
+#include <sys/types.h>
 
 #define BT_BAP_BASS_SCAN_STATE_NOT_SCANNING   0x00U
 #define BT_BAP_BASS_SCAN_STATE_SCANNING       0x01U

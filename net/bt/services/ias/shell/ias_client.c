@@ -8,7 +8,9 @@
  */
 
 #include <stdint.h>
-#include <zephyr/types.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <sys/types.h>
 #include <zephyr/shell/shell.h>
 #include <stdlib.h>
 #include <zephyr/bluetooth/gatt.h>

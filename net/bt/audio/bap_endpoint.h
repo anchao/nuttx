@@ -20,7 +20,7 @@
 #include <zephyr/kernel.h>
 #include <nuttx/atomic.h>
 #include <nuttx/list.h>
-#include <zephyr/types.h>
+#include <sys/types.h>
 
 #include "bap_stream.h"
 

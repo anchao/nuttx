@@ -31,7 +31,7 @@
 #include <assert.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
-#include <zephyr/types.h>
+#include <sys/types.h>
 
 #include <audio/bap_internal.h>
 #include "audio.h"

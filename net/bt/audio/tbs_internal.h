@@ -20,7 +20,7 @@
 #include <zephyr/bluetooth/gatt.h>
 #include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>
-#include <zephyr/types.h>
+#include <sys/types.h>
 
 #define BT_TBS_MIN_URI_LEN                         3U /* a:b */
 #define BT_TBS_FREE_CALL_INDEX                     0U

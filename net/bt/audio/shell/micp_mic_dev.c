@@ -22,7 +22,7 @@
 #include <zephyr/shell/shell_string_conv.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
-#include <zephyr/types.h>
+#include <sys/types.h>
 
 #include "common/bt_shell_private.h"
 

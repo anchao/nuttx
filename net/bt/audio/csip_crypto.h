@@ -8,7 +8,9 @@
 #include <stdint.h>
 
 #include <zephyr/bluetooth/audio/csip.h>
-#include <zephyr/types.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <sys/types.h>
 
 #define BT_CSIP_CRYPTO_KEY_SIZE   16U
 #define BT_CSIP_CRYPTO_SALT_SIZE  16U

@@ -25,7 +25,7 @@
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
-#include <zephyr/types.h>
+#include <stddef.h>
 
 #include "audio_internal.h"
 

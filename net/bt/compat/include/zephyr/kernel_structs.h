@@ -24,7 +24,9 @@
 #include <sys/types.h>
 
 #include <nuttx/atomic.h>
-#include <zephyr/types.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/sys_heap.h>

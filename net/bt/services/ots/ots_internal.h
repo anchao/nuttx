@@ -11,7 +11,10 @@
 extern "C" {
 #endif
 
-#include <zephyr/types.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <sys/types.h>
 #include "ots_l2cap_internal.h"
 #include "ots_oacp_internal.h"
 #include "ots_olcp_internal.h"
