@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include <zephyr/kernel.h>
-#include <zephyr/debug/stack.h>
 #include <zephyr/sys/iterable_sections.h>
 #include <nuttx/mm/net_buf.h>
 #include <zephyr/bluetooth/bluetooth.h>

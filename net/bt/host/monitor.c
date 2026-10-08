@@ -167,14 +167,18 @@ static void monitor_poll_send(const struct bt_monitor_data *frags, size_t count)
 
 #if defined(CONFIG_BT_DEBUG_MONITOR_UART_INTERRUPT_DRIVEN)
 /* Single producer (serialized by BT_LOG_BUSY) and single consumer (the UART
- * ISR), matching the ring buffer's lock-free SPSC contract. The memory
+ * ISR), matching the circular buffer's lock-free SPSC contract. The memory
  * ordering that contract additionally requires on SMP systems is provided by
  * the fences in the bt_monitor_ring_buf_* helpers. On panic the flush in
  * monitor_log_panic() becomes a second consumer; monitor_tx_lock serializes
  * it with the ISR, while producers stay lock-free.
  */
 static uint8_t monitor_tx_data[CONFIG_BT_DEBUG_MONITOR_UART_BUFFER_SIZE];
-static struct ring_buf monitor_tx_buf = RING_BUF_INIT(monitor_tx_data, sizeof(monitor_tx_data));
+static struct circbuf_s monitor_tx_buf = {
+	.base = monitor_tx_data,
+	.size = sizeof(monitor_tx_data),
+	.external = true,
+};
 static atomic_t monitor_tx_busy;
 static spinlock_t monitor_tx_lock;
 /* Set on panic or when the UART driver lacks interrupt support */
@@ -210,7 +214,8 @@ static void monitor_uart_tx(void)
 	atomic_set(&monitor_tx_busy, 0);
 
 	/* Close the race with a producer that committed while TX was disabled. */
-	if (!ring_buf_is_empty(&monitor_tx_buf) && atomic_cmpxchg_value(&monitor_tx_busy, 0, 1)) {
+	if (!circbuf_is_empty(&monitor_tx_buf) &&
+	    atomic_cmpxchg_value(&monitor_tx_busy, 0, 1)) {
 		uart_irq_tx_enable(monitor_dev);
 	}
 }

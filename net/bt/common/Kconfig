@@ -344,11 +344,10 @@ config BT_DEBUG_MONITOR_UART_INTERRUPT_DRIVEN
 config BT_DEBUG_MONITOR_UART_BUFFER_SIZE
 	int "UART monitor transmit buffer size"
 	default 1024
-	# The upper limit matches RING_BUFFER_MAX_SIZE without RING_BUFFER_LARGE
 	range 64 32767
 	depends on BT_DEBUG_MONITOR_UART_INTERRUPT_DRIVEN
 	help
-	  Size in bytes of the ring buffer used for interrupt-driven monitor
+	  Size in bytes of the circular buffer used for interrupt-driven monitor
 	  output. A record larger than the buffer can never be sent and is
 	  always dropped, so make sure the buffer can hold the largest
 	  monitor record: the largest HCI packet plus up to 25 bytes of

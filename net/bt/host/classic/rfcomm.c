@@ -14,7 +14,6 @@
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/crc.h>
-#include <zephyr/debug/stack.h>
 #include <zephyr/random/random.h>
 
 #include <zephyr/bluetooth/hci.h>

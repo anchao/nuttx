@@ -19,7 +19,6 @@
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <nuttx/list.h>
-#include <zephyr/debug/stack.h>
 #include <assert.h>
 
 #include <zephyr/bluetooth/hci.h>

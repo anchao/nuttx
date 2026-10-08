@@ -12,8 +12,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <nuttx/circbuf.h>
 #include <zephyr/sys/barrier.h>
-#include <zephyr/sys/ring_buffer.h>
 #include <zephyr/sys/util.h>
 
 struct bt_monitor_data {
@@ -26,10 +26,10 @@ struct bt_monitor_data {
  * monitor.c is the only in-tree includer, so the generated code is the same
  * as for a file-local static function.
  */
-static inline bool bt_monitor_ring_buf_put(struct ring_buf *buf,
+static inline bool bt_monitor_ring_buf_put(struct circbuf_s *buf,
 					   const struct bt_monitor_data *frags, size_t count)
 {
-	size_t space = ring_buf_space_get(buf);
+	size_t space = circbuf_space(buf);
 	size_t total = 0;
 
 	/* total only grows after passing the check, so total <= space is
@@ -62,8 +62,12 @@ static inline bool bt_monitor_ring_buf_put(struct ring_buf *buf,
 		while (remaining > 0) {
 			uint8_t *dst;
 			size_t len;
+			size_t off;
 
-			len = MIN(remaining, ring_buf_put_ptr(buf, &dst, offset));
+			off = (buf->head + offset) % buf->size;
+			dst = (uint8_t *)buf->base + off;
+			len = MIN(remaining, buf->size - off);
+
 			(void)memcpy(dst, src, len);
 			offset += len;
 			src += len;
@@ -75,7 +79,7 @@ static inline bool bt_monitor_ring_buf_put(struct ring_buf *buf,
 	 * (pairs with bt_monitor_ring_buf_get_ptr()).
 	 */
 	barrier_dmem_fence_full();
-	ring_buf_commit(buf, total);
+	circbuf_writecommit(buf, total);
 
 	return true;
 }
@@ -84,9 +88,11 @@ static inline bool bt_monitor_ring_buf_put(struct ring_buf *buf,
  * lock-free SPSC contract leaves to its users on SMP systems. The producer
  * side is handled in bt_monitor_ring_buf_put().
  */
-static inline uint32_t bt_monitor_ring_buf_get_ptr(struct ring_buf *buf, uint8_t **data)
+static inline uint32_t bt_monitor_ring_buf_get_ptr(struct circbuf_s *buf, uint8_t **data)
 {
-	uint32_t len = ring_buf_get_ptr(buf, data, 0);
+	size_t len;
+
+	*data = circbuf_get_readptr(buf, &len);
 
 	/* Order the index load against the data reads that follow */
 	barrier_dmem_fence_full();
@@ -94,11 +100,11 @@ static inline uint32_t bt_monitor_ring_buf_get_ptr(struct ring_buf *buf, uint8_t
 	return len;
 }
 
-static inline void bt_monitor_ring_buf_consume(struct ring_buf *buf, uint32_t size)
+static inline void bt_monitor_ring_buf_consume(struct circbuf_s *buf, uint32_t size)
 {
 	/* Order the data reads against the space becoming reusable */
 	barrier_dmem_fence_full();
-	ring_buf_consume(buf, size);
+	circbuf_readcommit(buf, size);
 }
 
 #endif /* ZEPHYR_SUBSYS_BLUETOOTH_HOST_MONITOR_BUFFER_H_ */

@@ -6,7 +6,6 @@
  */
 
 #include <zephyr/kernel.h>
-#include <zephyr/debug/stack.h>
 #include <zephyr/sys/util.h>
 
 #include <nuttx/mm/net_buf.h>

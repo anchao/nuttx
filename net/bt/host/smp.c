@@ -25,7 +25,6 @@
 #include <zephyr/bluetooth/hci.h>
 #include <zephyr/bluetooth/hci_types.h>
 #include <zephyr/bluetooth/l2cap.h>
-#include <zephyr/debug/stack.h>
 #include <zephyr/kernel.h>
 #include <nuttx/mm/net_buf.h>
 #include <assert.h>
