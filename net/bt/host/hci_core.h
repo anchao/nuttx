@@ -14,7 +14,6 @@
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/hci_types.h>
-#include <zephyr/devicetree.h>
 #include <zephyr/kernel.h>
 #include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>

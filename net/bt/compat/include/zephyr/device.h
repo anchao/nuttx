@@ -43,22 +43,6 @@ struct bt_hci_driver {
     void *priv;
 };
 
-/* DT helpers - hardcoded for BT */
-#define DT_NODELABEL(bt_hci) bt_hci
-#define DT_PROP(node_id, prop) 0  /* Hardcoded for NuttX */
-#define DT_IRQN(node_id) 0
-#define DT_IRQ(node_id, prop) 0
-#define DT_REG_ADDR(node_id) 0
-#define DT_REG_SIZE(node_id) 0
-
-/* Hardcode the BT HCI UART device reference */
-#define DEVICE_DT_GET(node_id) NULL
-
-/* Additional DT macros */
-#define DT_CHOSEN(prop) NULL
-#define DT_COMPAT_GET_ANY_STATUS_OKAY(compat) NULL
-#define DT_HAS_CHOSEN(prop) 0
-
 #ifdef __cplusplus
 }
 #endif

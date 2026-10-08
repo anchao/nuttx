@@ -13,7 +13,7 @@
 #include <string.h>
 
 #include <nuttx/circbuf.h>
-#include <zephyr/sys/barrier.h>
+#include <nuttx/arch.h>
 #include <zephyr/sys/util.h>
 
 struct bt_monitor_data {
@@ -49,7 +49,7 @@ static inline bool bt_monitor_ring_buf_put(struct circbuf_s *buf,
 	 * have been freed by a consumer on another CPU, whose data reads must
 	 * complete before the writes below reuse it.
 	 */
-	barrier_dmem_fence_full();
+	SMP_MB();
 
 	/* The space check guarantees that the writes below always fit, and
 	 * the single commit makes the complete record visible to the
@@ -78,7 +78,7 @@ static inline bool bt_monitor_ring_buf_put(struct circbuf_s *buf,
 	/* Make the record bytes visible before the commit publishes them
 	 * (pairs with bt_monitor_ring_buf_get_ptr()).
 	 */
-	barrier_dmem_fence_full();
+	SMP_MB();
 	circbuf_writecommit(buf, total);
 
 	return true;
@@ -95,7 +95,7 @@ static inline uint32_t bt_monitor_ring_buf_get_ptr(struct circbuf_s *buf, uint8_
 	*data = circbuf_get_readptr(buf, &len);
 
 	/* Order the index load against the data reads that follow */
-	barrier_dmem_fence_full();
+	SMP_MB();
 
 	return len;
 }
@@ -103,7 +103,7 @@ static inline uint32_t bt_monitor_ring_buf_get_ptr(struct circbuf_s *buf, uint8_
 static inline void bt_monitor_ring_buf_consume(struct circbuf_s *buf, uint32_t size)
 {
 	/* Order the data reads against the space becoming reusable */
-	barrier_dmem_fence_full();
+	SMP_MB();
 	circbuf_readcommit(buf, size);
 }
 

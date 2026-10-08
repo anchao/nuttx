@@ -29,7 +29,6 @@
 #include <zephyr/bluetooth/hci_vs.h>
 #include <zephyr/bluetooth/testing.h>
 #include <zephyr/device.h>
-#include <zephyr/devicetree.h>
 #include <zephyr/drivers/bluetooth.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
@@ -73,20 +72,10 @@
 #define LOG_LEVEL CONFIG_BT_HCI_CORE_LOG_LEVEL
 LOG_MODULE_REGISTER(bt_hci_core);
 
-#if DT_HAS_CHOSEN(zephyr_bt_hci)
-#define BT_HCI_NODE   DT_CHOSEN(zephyr_bt_hci)
-#define BT_HCI_DEV    DEVICE_DT_GET(BT_HCI_NODE)
-#define BT_HCI_BUS    BT_DT_HCI_BUS_GET(BT_HCI_NODE)
-#define BT_HCI_NAME   BT_DT_HCI_NAME_GET(BT_HCI_NODE)
-#define BT_HCI_QUIRKS BT_DT_HCI_QUIRKS_GET(BT_HCI_NODE)
-#else
-/* The zephyr,bt-hci chosen property is mandatory, except for unit tests */
-BUILD_ASSERT(IS_ENABLED(CONFIG_ZTEST), "Missing DT chosen property for HCI");
 #define BT_HCI_DEV    NULL
 #define BT_HCI_BUS    0
-#define BT_HCI_NAME   ""
+#define BT_HCI_NAME   "nuttx_bt_hci"
 #define BT_HCI_QUIRKS 0
-#endif
 
 /* These checks are added to warn if the number of ACL or ISO packets in Controller is not equal to
  * the number of bt_conn_tx contexts allocated by Host. The inequality of these two values can lead

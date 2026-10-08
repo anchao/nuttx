@@ -18,7 +18,6 @@
 #include <zephyr/autoconf.h>
 #include <zephyr/bluetooth/audio/audio.h>
 #include <zephyr/device.h>
-#include <zephyr/devicetree.h>
 #include <zephyr/drivers/usb/usb_buf.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
@@ -56,8 +55,8 @@ LOG_MODULE_REGISTER(bap_usb, CONFIG_BT_BAP_STREAM_LOG_LEVEL);
 #define USB_CHANNELS           2U
 #define USB_STEREO_FRAME_SIZE  (USB_MONO_FRAME_SIZE * USB_CHANNELS)
 
-#define IN_TERMINAL_ID  UAC2_ENTITY_ID(DT_NODELABEL(in_terminal))
-#define OUT_TERMINAL_ID UAC2_ENTITY_ID(DT_NODELABEL(out_terminal))
+#define IN_TERMINAL_ID  1
+#define OUT_TERMINAL_ID 2
 
 #if defined CONFIG_BT_AUDIO_RX
 static void usb_data_request(const struct device *dev);
@@ -719,9 +718,9 @@ static int bap_usbd_setup_device(struct usbd_context *const bap_usbd)
 
 int bap_usb_init(void)
 {
-	USBD_DEVICE_DEFINE(bap_usbd, DEVICE_DT_GET(DT_NODELABEL(zephyr_udc0)),
+	USBD_DEVICE_DEFINE(bap_usbd, NULL,
 			   CONFIG_BT_BAP_SHELL_USB_VID, CONFIG_BT_BAP_SHELL_USB_PID);
-	const struct device *uac2_headset = DEVICE_DT_GET(DT_NODELABEL(uac2_headset));
+	const struct device *uac2_headset = NULL;
 	static struct uac2_ops usb_audio_ops = {
 		.terminal_update_cb = usb_terminal_update_cb,
 		.sof_cb = usb_sof_cb,

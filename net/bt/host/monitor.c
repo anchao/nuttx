@@ -22,11 +22,6 @@
 #include <zephyr/device.h>
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
-#include <zephyr/logging/log_backend.h>
-#include <zephyr/logging/log_core.h>
-#include <zephyr/logging/log_msg.h>
-#include <zephyr/logging/log_output.h>
-#include <zephyr/logging/log.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/clock.h>
@@ -42,17 +37,8 @@
  */
 #define MONITOR_INIT_PRIORITY 60
 
-/* These defines follow the values used by syslog(2) */
-#define BT_LOG_ERR      3
-#define BT_LOG_WARN     4
-#define BT_LOG_INFO     6
-#define BT_LOG_DBG      7
-
 /* TS resolution is 1/10th of a millisecond */
 #define MONITOR_TS_FREQ 10000
-
-/* Maximum (string) length of a log message */
-#define MONITOR_MSG_MAX 128
 
 enum {
 	BT_LOG_BUSY,
@@ -104,8 +90,6 @@ static void drop_add(uint16_t opcode)
 #if defined(CONFIG_BT_DEBUG_MONITOR_RTT)
 #include <SEGGER_RTT.h>
 
-static bool panic_mode;
-
 #define RTT_BUFFER_NAME CONFIG_BT_DEBUG_MONITOR_RTT_BUFFER_NAME
 #define RTT_BUF_SIZE CONFIG_BT_DEBUG_MONITOR_RTT_BUFFER_SIZE
 
@@ -132,25 +116,12 @@ static bool monitor_send(const struct bt_monitor_data *frags, size_t count)
 		total += frags[i].len;
 	}
 
-	if (panic_mode) {
-		cnt = SEGGER_RTT_WriteNoLock(CONFIG_BT_DEBUG_MONITOR_RTT_BUFFER, rtt_buf, total);
-	} else {
-		cnt = SEGGER_RTT_Write(CONFIG_BT_DEBUG_MONITOR_RTT_BUFFER, rtt_buf, total);
-	}
+	cnt = SEGGER_RTT_Write(CONFIG_BT_DEBUG_MONITOR_RTT_BUFFER, rtt_buf, total);
 
 	return cnt != 0;
 }
 #elif defined(CONFIG_BT_DEBUG_MONITOR_UART)
-static const struct device *const monitor_dev =
-#if DT_HAS_CHOSEN(zephyr_bt_mon_uart)
-	DEVICE_DT_GET(DT_CHOSEN(zephyr_bt_mon_uart));
-#elif !defined(CONFIG_UART_CONSOLE) && DT_HAS_CHOSEN(zephyr_console)
-	/* Fall back to console UART if it's available */
-	DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
-#else
-	NULL;
-#error "BT_DEBUG_MONITOR_UART enabled but no UART specified"
-#endif
+static const struct device *const monitor_dev = NULL;
 
 static void monitor_poll_send(const struct bt_monitor_data *frags, size_t count)
 {
@@ -167,9 +138,7 @@ static void monitor_poll_send(const struct bt_monitor_data *frags, size_t count)
 /* Single producer (serialized by BT_LOG_BUSY) and single consumer (the UART
  * ISR), matching the circular buffer's lock-free SPSC contract. The memory
  * ordering that contract additionally requires on SMP systems is provided by
- * the fences in the bt_monitor_ring_buf_* helpers. On panic the flush in
- * monitor_log_panic() becomes a second consumer; monitor_tx_lock serializes
- * it with the ISR, while producers stay lock-free.
+ * the fences in the bt_monitor_ring_buf_* helpers.
  */
 static uint8_t monitor_tx_data[CONFIG_BT_DEBUG_MONITOR_UART_BUFFER_SIZE];
 static struct circbuf_s monitor_tx_buf = {
@@ -179,7 +148,7 @@ static struct circbuf_s monitor_tx_buf = {
 };
 static atomic_t monitor_tx_busy;
 static spinlock_t monitor_tx_lock;
-/* Set on panic or when the UART driver lacks interrupt support */
+/* Set when the UART driver lacks interrupt support */
 static bool poll_mode;
 
 static void monitor_uart_tx(void)
@@ -322,14 +291,12 @@ static uint64_t monitor_ts_from_us(uint64_t us)
 	return us / (USEC_PER_SEC / MONITOR_TS_FREQ);
 }
 
-/* Timestamp for HCI packets, on the same time base as the logging core's
- * clock so that log messages (converted in monitor_log_process()) and
- * packets can be compared: the real-time clock when the logging core uses
- * it, otherwise the system timer that the logging core's default clock
- * also runs off. Conversions go via microseconds rather than dividing by
- * hw_cycles / MONITOR_TS_FREQ: the latter truncates badly for cycle rates
- * that are not a multiple of MONITOR_TS_FREQ (e.g. 32768 Hz yields a
- * divisor of 3 instead of 3.2768, making the timestamps run 9.2% fast).
+/* Timestamp for HCI packets: the real-time clock when configured,
+ * otherwise the system timer. Conversions go via microseconds rather than
+ * dividing by hw_cycles / MONITOR_TS_FREQ: the latter truncates badly for
+ * cycle rates that are not a multiple of MONITOR_TS_FREQ (e.g. 32768 Hz
+ * yields a divisor of 3 instead of 3.2768, making the timestamps run 9.2%
+ * fast).
  */
 static uint64_t monitor_ts_get(void)
 {
@@ -414,165 +381,6 @@ void bt_monitor_new_index(uint8_t type, uint8_t bus, const bt_addr_t *addr,
 
 	bt_monitor_send(BT_MONITOR_NEW_INDEX, &pkt, sizeof(pkt));
 }
-
-#ifndef CONFIG_LOG_MODE_MINIMAL
-struct monitor_log_ctx {
-	size_t total_len;
-	char msg[MONITOR_MSG_MAX];
-};
-
-static int monitor_log_out(uint8_t *data, size_t length, void *user_data)
-{
-	struct monitor_log_ctx *ctx = user_data;
-	size_t i;
-
-	for (i = 0; i < length && ctx->total_len < sizeof(ctx->msg); i++) {
-		/* With CONFIG_LOG_PRINTK the line terminator will come as
-		 * as part of messages.
-		 */
-		if (IS_ENABLED(CONFIG_LOG_PRINTK) &&
-		    (data[i] == '\r' || data[i] == '\n')) {
-			break;
-		}
-
-		ctx->msg[ctx->total_len++] = data[i];
-	}
-
-	return length;
-}
-
-static uint8_t buf;
-
-LOG_OUTPUT_DEFINE(monitor_log_output, monitor_log_out, &buf, 1);
-
-static inline uint8_t monitor_priority_get(uint8_t log_level)
-{
-	static const uint8_t prios[] = {
-		[LOG_LEVEL_NONE]  = 0,
-		[LOG_LEVEL_ERR]   = BT_LOG_ERR,
-		[LOG_LEVEL_WRN]   = BT_LOG_WARN,
-		[LOG_LEVEL_INF]   = BT_LOG_INFO,
-		[LOG_LEVEL_DBG]   = BT_LOG_DBG,
-	};
-
-	if (log_level < ARRAY_SIZE(prios)) {
-		return prios[log_level];
-	}
-
-	return BT_LOG_DBG;
-}
-
-static void monitor_log_process(const struct log_backend *const backend,
-				union log_msg_generic *msg)
-{
-	struct bt_monitor_user_logging user_log;
-	struct monitor_log_ctx ctx;
-	struct bt_monitor_hdr hdr;
-	uint64_t ts_us;
-	static const char id[] = "bt";
-	struct bt_monitor_data frags[] = {
-		{ &hdr, 0 },    /* Length known only after encode_hdr() */
-		{ &user_log, sizeof(user_log) },
-		{ id, sizeof(id) },
-		{ ctx.msg, 0 }, /* Length known only after log processing */
-		{ "", 1 }, /* Terminating NUL for the message string */
-	};
-
-	log_output_ctx_set(&monitor_log_output, &ctx);
-
-	ctx.total_len = 0;
-	log_output_msg_process(&monitor_log_output, &msg->log,
-			       LOG_OUTPUT_FLAG_CRLF_NONE);
-
-	/* The message is stamped by the logging core's clock, which runs on
-	 * the same time base as monitor_ts_get() but at its own rate.
-	 * Registering monitor_ts_get() as the logging timestamp source
-	 * instead is not an option: this backend is only initialized once
-	 * the logging subsystem starts up (from the logging thread by
-	 * default), so everything logged before that (boot banner, driver and
-	 * Bluetooth initialization) would already be stamped at the original
-	 * rate, with no way to tell such messages apart.
-	 */
-	ts_us = log_output_timestamp_to_us(log_msg_get_timestamp(&msg->log));
-
-	if (atomic_test_and_set_bit(&flags, BT_LOG_BUSY)) {
-		drop_add(BT_MONITOR_USER_LOGGING);
-		return;
-	}
-
-	encode_hdr(&hdr, monitor_ts_from_us(ts_us), BT_MONITOR_USER_LOGGING,
-		   sizeof(user_log) + sizeof(id) + ctx.total_len + 1);
-
-	user_log.priority = monitor_priority_get(log_msg_get_level(&msg->log));
-	user_log.ident_len = sizeof(id);
-	frags[0].len = BT_MONITOR_BASE_HDR_LEN + hdr.hdr_len;
-	frags[3].len = ctx.total_len;
-
-	if (!monitor_send(frags, ARRAY_SIZE(frags))) {
-		restore_drops(&hdr);
-		drop_add(BT_MONITOR_USER_LOGGING);
-	}
-
-	atomic_clear_bit(&flags, BT_LOG_BUSY);
-}
-
-static void monitor_log_panic(const struct log_backend *const backend)
-{
-#if defined(CONFIG_BT_DEBUG_MONITOR_RTT)
-	panic_mode = true;
-#elif defined(CONFIG_BT_DEBUG_MONITOR_UART_INTERRUPT_DRIVEN)
-	irqstate_t key;
-	bool locked = false;
-	uint8_t *data;
-	uint32_t len;
-
-	poll_mode = true;
-
-	/* Setting monitor_tx_busy prevents a producer that read poll_mode
-	 * before it was set above from re-enabling TX interrupts: from here
-	 * on the buffer is drained only by the flush below. A record such a
-	 * producer still commits stays buffered and untransmitted, which is
-	 * accepted in panic context.
-	 */
-	atomic_set(&monitor_tx_busy, 1);
-	uart_irq_tx_disable(monitor_dev);
-
-	/* Serialize with a UART ISR that may be consuming on another CPU.
-	 * Bounded, because if the panic originated inside that ISR the lock
-	 * would never be released: then flush unserialized rather than hang
-	 * the panic path.
-	 */
-	for (int i = 0; i < 100; i++) {
-		if (spin_trylock_irqsave(&monitor_tx_lock, key)) {
-			locked = true;
-			break;
-		}
-
-		up_udelay(10);
-	}
-
-	len = bt_monitor_ring_buf_get_ptr(&monitor_tx_buf, &data);
-	while (len > 0) {
-		struct bt_monitor_data frag = { data, len };
-
-		monitor_poll_send(&frag, 1);
-		bt_monitor_ring_buf_consume(&monitor_tx_buf, len);
-		len = bt_monitor_ring_buf_get_ptr(&monitor_tx_buf, &data);
-	}
-
-	if (locked) {
-		spin_unlock_irqrestore(&monitor_tx_lock, key);
-	}
-#endif
-}
-
-static const struct log_backend_api monitor_log_api = {
-	.process = monitor_log_process,
-	.panic = monitor_log_panic,
-};
-
-LOG_BACKEND_DEFINE(bt_monitor, monitor_log_api, true);
-#endif /* CONFIG_LOG_MODE_MINIMAL */
 
 static int bt_monitor_init(void)
 {

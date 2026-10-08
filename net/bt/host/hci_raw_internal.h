@@ -6,7 +6,7 @@
 #ifndef __BT_HCI_RAW_INTERNAL_H
 #define __BT_HCI_RAW_INTERNAL_H
 
-#include <zephyr/devicetree.h>
+#include <zephyr/device.h>
 #include <nuttx/mm/net_buf.h>
 
 #ifdef __cplusplus

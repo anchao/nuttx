@@ -18,7 +18,6 @@
 #include <zephyr/bluetooth/l2cap.h>
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/device.h>
-#include <zephyr/devicetree.h>
 #include <zephyr/drivers/bluetooth.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
@@ -59,18 +58,9 @@ NET_BUF_POOL_FIXED_DEFINE(hci_iso_pool, CONFIG_BT_ISO_TX_BUF_COUNT,
 			  BT_ISO_SDU_BUF_SIZE(CONFIG_BT_ISO_TX_MTU), 0, NULL);
 #endif /* CONFIG_BT_ISO */
 
-#if DT_HAS_CHOSEN(zephyr_bt_hci)
-#define BT_HCI_NODE   DT_CHOSEN(zephyr_bt_hci)
-#define BT_HCI_DEV    DEVICE_DT_GET(BT_HCI_NODE)
-#define BT_HCI_BUS    BT_DT_HCI_BUS_GET(BT_HCI_NODE)
-#define BT_HCI_NAME   BT_DT_HCI_NAME_GET(BT_HCI_NODE)
-#else
-/* The zephyr,bt-hci chosen property is mandatory, except for unit tests */
-BUILD_ASSERT(IS_ENABLED(CONFIG_ZTEST), "Missing DT chosen property for HCI");
 #define BT_HCI_DEV    NULL
 #define BT_HCI_BUS    0
-#define BT_HCI_NAME   ""
-#endif
+#define BT_HCI_NAME   "nuttx_bt_hci"
 
 struct bt_dev_raw bt_dev = {
 	.hci = BT_HCI_DEV,
