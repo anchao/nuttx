@@ -11,24 +11,26 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
+#include <uuid.h>
 
 #include <zephyr/bluetooth/uuid.h>
 #include <assert.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/uuid.h>
 
 #define BT_UUID_STR_LEN_16  4U
 #define BT_UUID_STR_LEN_32  8U
-#define BT_UUID_STR_LEN_128 (UUID_STR_LEN - 1U)
+#define BT_UUID_STR_LEN_128 UUID_STR_LEN
+#define BT_UUID_SIZE        16U
 
 /*
  * Bluetooth Base UUID (big-endian / RFC 9562):
  *   00000000-0000-1000-8000-00805F9B34FB
  */
-static const struct uuid bt_uuid_base = {
-	.val = { 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x10U, 0x00U,
-		 0x80U, 0x00U, 0x00U, 0x80U, 0x5fU, 0x9bU, 0x34U, 0xfbU }
+static const uint8_t bt_uuid_base_be[BT_UUID_SIZE] = {
+	0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x10U, 0x00U,
+	0x80U, 0x00U, 0x00U, 0x80U, 0x5fU, 0x9bU, 0x34U, 0xfbU
 };
 
 /**
@@ -37,19 +39,24 @@ static const struct uuid bt_uuid_base = {
  * 16-bit and 32-bit short UUIDs are expanded using the Bluetooth Base UUID.
  * 128-bit UUIDs are byte-swapped from BT wire order (LE) to RFC 9562 order (BE).
  */
-static void bt_uuid_to_uuid(const struct bt_uuid *src, struct uuid *dst)
+static void bt_uuid_to_uuid(const struct bt_uuid *src, uuid_t *dst)
 {
+	uint8_t uuid_be[BT_UUID_SIZE];
+
 	switch (src->type) {
 	case BT_UUID_TYPE_16:
-		*dst = bt_uuid_base;
-		sys_put_be16(BT_UUID_16(src)->val, &dst->val[2]);
+		memcpy(uuid_be, bt_uuid_base_be, sizeof(uuid_be));
+		sys_put_be16(BT_UUID_16(src)->val, &uuid_be[2]);
+		uuid_dec_be(uuid_be, dst);
 		return;
 	case BT_UUID_TYPE_32:
-		*dst = bt_uuid_base;
-		sys_put_be32(BT_UUID_32(src)->val, dst->val);
+		memcpy(uuid_be, bt_uuid_base_be, sizeof(uuid_be));
+		sys_put_be32(BT_UUID_32(src)->val, uuid_be);
+		uuid_dec_be(uuid_be, dst);
 		return;
 	case BT_UUID_TYPE_128:
-		sys_memcpy_swap(dst->val, BT_UUID_128(src)->val, UUID_SIZE);
+		sys_memcpy_swap(uuid_be, BT_UUID_128(src)->val, sizeof(uuid_be));
+		uuid_dec_be(uuid_be, dst);
 		return;
 	default:
 		DEBUGASSERT(false);
@@ -68,11 +75,14 @@ static void bt_uuid_to_uuid(const struct bt_uuid *src, struct uuid *dst)
  *
  * @return true if the UUID matches the Bluetooth Base UUID pattern.
  */
-static bool is_bt_base_uuid(const struct uuid *u)
+static bool is_bt_base_uuid(const uuid_t *u)
 {
-	return memcmp(&u->val[BT_UUID_BASE_TAIL_OFFSET],
-		      &bt_uuid_base.val[BT_UUID_BASE_TAIL_OFFSET],
-		      UUID_SIZE - BT_UUID_BASE_TAIL_OFFSET) == 0;
+	uint8_t uuid_be[BT_UUID_SIZE];
+
+	uuid_enc_be(uuid_be, u);
+	return memcmp(&uuid_be[BT_UUID_BASE_TAIL_OFFSET],
+		      &bt_uuid_base_be[BT_UUID_BASE_TAIL_OFFSET],
+		      sizeof(uuid_be) - BT_UUID_BASE_TAIL_OFFSET) == 0;
 }
 
 /**
@@ -82,9 +92,12 @@ static bool is_bt_base_uuid(const struct uuid *u)
  *
  * @return BT_UUID_TYPE_16 or BT_UUID_TYPE_32.
  */
-static uint8_t bt_base_uuid_type(const struct uuid *u)
+static uint8_t bt_base_uuid_type(const uuid_t *u)
 {
-	if (u->val[0] == 0 && u->val[1] == 0) {
+	uint8_t uuid_be[BT_UUID_SIZE];
+
+	uuid_enc_be(uuid_be, u);
+	if (uuid_be[0] == 0 && uuid_be[1] == 0) {
 		return BT_UUID_TYPE_16;
 	}
 
@@ -94,11 +107,15 @@ static uint8_t bt_base_uuid_type(const struct uuid *u)
 int bt_uuid_cmp(const struct bt_uuid *u1, const struct bt_uuid *u2)
 {
 	if (u1->type != u2->type) {
-		struct uuid uu1, uu2;
+		uuid_t uu1, uu2;
+		uint8_t uu1_be[BT_UUID_SIZE];
+		uint8_t uu2_be[BT_UUID_SIZE];
 
 		bt_uuid_to_uuid(u1, &uu1);
 		bt_uuid_to_uuid(u2, &uu2);
-		return memcmp(uu1.val, uu2.val, UUID_SIZE);
+		uuid_enc_be(uu1_be, &uu1);
+		uuid_enc_be(uu2_be, &uu2);
+		return memcmp(uu1_be, uu2_be, sizeof(uu1_be));
 	}
 
 	switch (u1->type) {
@@ -149,16 +166,19 @@ void bt_uuid_to_str(const struct bt_uuid *uuid, char *str, size_t len)
 		DEBUGASSERT(err == BT_UUID_STR_LEN_32);
 		break;
 	case BT_UUID_TYPE_128: {
-		struct uuid gen_uuid;
-		char full[UUID_STR_LEN];
+		uuid_t gen_uuid;
+		uint32_t status;
+		char *full = NULL;
 
 		bt_uuid_to_uuid(uuid, &gen_uuid);
-		if (uuid_to_string(&gen_uuid, full) != 0) {
+		uuid_to_string(&gen_uuid, &full, &status);
+		if (status != uuid_s_ok || full == NULL) {
 			(void)memset(str, 0, len);
 			return;
 		}
 
 		err = snprintf(str, len, "%s", full);
+		free(full);
 		DEBUGASSERT(err == BT_UUID_STR_LEN_128);
 		break;
 	}
@@ -170,7 +190,9 @@ void bt_uuid_to_str(const struct bt_uuid *uuid, char *str, size_t len)
 
 int bt_uuid_from_str(const char *str, struct bt_uuid_any *uuid)
 {
-	struct uuid gen_uuid;
+	uuid_t gen_uuid;
+	uint8_t uuid_be[BT_UUID_SIZE];
+	uint32_t status;
 
 	if (str == NULL || uuid == NULL) {
 		return -EINVAL;
@@ -178,47 +200,55 @@ int bt_uuid_from_str(const char *str, struct bt_uuid_any *uuid)
 
 	switch (strlen(str)) {
 	case BT_UUID_STR_LEN_16: {
-		char full[UUID_STR_LEN];
+		char full[UUID_STR_LEN + 1U];
 
-		if (uuid_to_string(&bt_uuid_base, full) != 0) {
+		snprintf(full, sizeof(full), "00000000-0000-1000-8000-00805f9b34fb");
+		if (strlen(full) != UUID_STR_LEN) {
 			return -EINVAL;
 		}
 
 		(void)memcpy(&full[4], str, BT_UUID_STR_LEN_16);
 
-		if (uuid_from_string(full, &gen_uuid) != 0) {
+		uuid_from_string(full, &gen_uuid, &status);
+		if (status != uuid_s_ok) {
 			return -EINVAL;
 		}
 
 		/* Enforce 16-bit UUID type for 4-hex-digit input strings. */
 		uuid->uuid.type = BT_UUID_TYPE_16;
-		BT_UUID_16(&uuid->uuid)->val = sys_get_be16(&gen_uuid.val[2]);
+		uuid_enc_be(uuid_be, &gen_uuid);
+		BT_UUID_16(&uuid->uuid)->val = sys_get_be16(&uuid_be[2]);
 		return 0;
 	}
 	case BT_UUID_STR_LEN_32: {
-		char full[UUID_STR_LEN];
+		char full[UUID_STR_LEN + 1U];
 
-		if (uuid_to_string(&bt_uuid_base, full) != 0) {
+		snprintf(full, sizeof(full), "00000000-0000-1000-8000-00805f9b34fb");
+		if (strlen(full) != UUID_STR_LEN) {
 			return -EINVAL;
 		}
 
 		(void)memcpy(full, str, BT_UUID_STR_LEN_32);
-		if (uuid_from_string(full, &gen_uuid) != 0) {
+		uuid_from_string(full, &gen_uuid, &status);
+		if (status != uuid_s_ok) {
 			return -EINVAL;
 		}
 
 		/* Enforce 32-bit UUID type for 8-hex-digit input strings. */
 		uuid->uuid.type = BT_UUID_TYPE_32;
-		BT_UUID_32(&uuid->uuid)->val = sys_get_be32(gen_uuid.val);
+		uuid_enc_be(uuid_be, &gen_uuid);
+		BT_UUID_32(&uuid->uuid)->val = sys_get_be32(uuid_be);
 		return 0;
 	}
 	case BT_UUID_STR_LEN_128: /* full string -> always 128-bit */
-		if (uuid_from_string(str, &gen_uuid) != 0) {
+		uuid_from_string(str, &gen_uuid, &status);
+		if (status != uuid_s_ok) {
 			return -EINVAL;
 		}
 
 		uuid->uuid.type = BT_UUID_TYPE_128;
-		sys_memcpy_swap(BT_UUID_128(&uuid->uuid)->val, gen_uuid.val, UUID_SIZE);
+		uuid_enc_be(uuid_be, &gen_uuid);
+		sys_memcpy_swap(BT_UUID_128(&uuid->uuid)->val, uuid_be, sizeof(uuid_be));
 		return 0;
 	default:
 		return -EINVAL;
@@ -227,7 +257,8 @@ int bt_uuid_from_str(const char *str, struct bt_uuid_any *uuid)
 
 int bt_uuid_compress(const struct bt_uuid *src, struct bt_uuid_any *dst)
 {
-	struct uuid u;
+	uuid_t u;
+	uint8_t uuid_be[BT_UUID_SIZE];
 
 	if (src == NULL || dst == NULL) {
 		return -EINVAL;
@@ -250,11 +281,12 @@ int bt_uuid_compress(const struct bt_uuid *src, struct bt_uuid_any *dst)
 		}
 
 		dst->uuid.type = bt_base_uuid_type(&u);
+		uuid_enc_be(uuid_be, &u);
 
 		if (dst->uuid.type == BT_UUID_TYPE_16) {
-			BT_UUID_16(&dst->uuid)->val = sys_get_be16(&u.val[2]);
+			BT_UUID_16(&dst->uuid)->val = sys_get_be16(&uuid_be[2]);
 		} else {
-			BT_UUID_32(&dst->uuid)->val = sys_get_be32(u.val);
+			BT_UUID_32(&dst->uuid)->val = sys_get_be32(uuid_be);
 		}
 
 		return 0;

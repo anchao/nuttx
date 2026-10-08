@@ -26,7 +26,6 @@ ifeq ($(CONFIG_BT_HOST),y)
 
 # === Core sources (compiled unconditionally for BT_HCI_HOST) ===
 BT_CSRCS += bt/host/uuid.c
-BT_CSRCS += bt/host/uuid_util.c
 BT_CSRCS += bt/host/addr.c
 BT_CSRCS += bt/host/buf.c
 BT_CSRCS += bt/host/hci_core.c

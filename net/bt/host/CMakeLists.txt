@@ -9,7 +9,6 @@ if(CONFIG_BT_HOST)
   # === Core sources (compiled unconditionally for BT_HCI_HOST) ===
   set(HOST_SRCS
     ${CMAKE_CURRENT_LIST_DIR}/uuid.c
-    ${CMAKE_CURRENT_LIST_DIR}/uuid_util.c
     ${CMAKE_CURRENT_LIST_DIR}/addr.c
     ${CMAKE_CURRENT_LIST_DIR}/buf.c
     ${CMAKE_CURRENT_LIST_DIR}/hci_core.c
