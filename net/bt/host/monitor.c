@@ -31,8 +31,6 @@
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/clock.h>
-#include <zephyr/sys/printk-hooks.h>
-#include <zephyr/sys/libc-hooks.h>
 #include <zephyr/drivers/uart.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
@@ -60,7 +58,6 @@
 
 enum {
 	BT_LOG_BUSY,
-	BT_CONSOLE_BUSY,
 };
 
 static atomic_t flags;
@@ -415,33 +412,6 @@ void bt_monitor_new_index(uint8_t type, uint8_t bus, const bt_addr_t *addr,
 	bt_monitor_send(BT_MONITOR_NEW_INDEX, &pkt, sizeof(pkt));
 }
 
-#if !defined(CONFIG_UART_CONSOLE) && !defined(CONFIG_RTT_CONSOLE) && !defined(CONFIG_LOG_PRINTK)
-static int monitor_console_out(int c)
-{
-	static char buf[MONITOR_MSG_MAX];
-	static size_t len;
-
-	if (atomic_test_and_set_bit(&flags, BT_CONSOLE_BUSY)) {
-		return c;
-	}
-
-	if (c != '\n' && len < sizeof(buf) - 1) {
-		buf[len++] = c;
-		atomic_clear_bit(&flags, BT_CONSOLE_BUSY);
-		return c;
-	}
-
-	buf[len++] = '\0';
-
-	bt_monitor_send(BT_MONITOR_SYSTEM_NOTE, buf, len);
-	len = 0;
-
-	atomic_clear_bit(&flags, BT_CONSOLE_BUSY);
-
-	return c;
-}
-#endif /* !CONFIG_UART_CONSOLE && !CONFIG_RTT_CONSOLE && !CONFIG_LOG_PRINTK */
-
 #ifndef CONFIG_LOG_MODE_MINIMAL
 struct monitor_log_ctx {
 	size_t total_len;
@@ -629,12 +599,6 @@ static int bt_monitor_init(void)
 	uart_irq_tx_disable(monitor_dev);
 #endif /* CONFIG_UART_INTERRUPT_DRIVEN */
 #endif /* CONFIG_BT_DEBUG_MONITOR_UART */
-
-#if !defined(CONFIG_UART_CONSOLE) && !defined(CONFIG_RTT_CONSOLE) && !defined(CONFIG_LOG_PRINTK)
-	__printk_hook_install(monitor_console_out);
-	__stdout_hook_install(monitor_console_out);
-#endif /* !CONFIG_UART_CONSOLE && !CONFIG_RTT_CONSOLE && !CONFIG_LOG_PRINTK */
-
 	return 0;
 }
 
