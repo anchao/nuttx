@@ -29,11 +29,9 @@
 #include <stdint.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/sys_heap.h>
 #include <zephyr/arch/structs.h>
 #include <zephyr/kernel/stats.h>
 #include <zephyr/kernel/obj_core.h>
-#include <zephyr/sys/rb.h>
 #endif
 
 #define K_NUM_THREAD_PRIO (CONFIG_NUM_PREEMPT_PRIORITIES + CONFIG_NUM_COOP_PRIORITIES + 1)
@@ -91,31 +89,6 @@ extern "C" {
 
 #if !defined(_ASMLANGUAGE)
 
-/* Two abstractions are defined here for "thread priority queues".
- *
- * One is a "dumb" list implementation appropriate for systems with
- * small numbers of threads and sensitive to code size.  It is stored
- * in sorted order, taking an O(N) cost every time a thread is added
- * to the list.  This corresponds to the way the original _wait_q_t
- * abstraction worked and is very fast as long as the number of
- * threads is small.
- *
- * The other is a balanced tree "fast" implementation with rather
- * larger code size (due to the data structure itself, the code here
- * is just stubs) and higher constant-factor performance overhead, but
- * much better O(logN) scaling in the presence of large number of
- * threads.
- *
- * Each can be used for either the wait_q or system ready queue,
- * configurable at build time.
- */
-
-struct _priq_rb {
-	struct rbtree tree;
-	int next_order_key;
-};
-
-
 /* Traditional/textbook "multi-queue" structure.  Separate lists for a
  * small number (max 32 here) of fixed priorities.  This corresponds
  * to the original Zephyr scheduler.  RAM requirements are
@@ -136,8 +109,6 @@ struct _ready_q {
 
 #if defined(CONFIG_SCHED_DUMB)
 	struct list_node runq;
-#elif defined(CONFIG_SCHED_SCALABLE)
-	struct _priq_rb runq;
 #elif defined(CONFIG_SCHED_MULTIQ)
 	struct _priq_mq runq;
 #endif
@@ -266,26 +237,11 @@ bool z_smp_cpu_mobile(void);
 #endif
 
 /* kernel wait queue record */
-#ifdef CONFIG_WAITQ_SCALABLE
-
-typedef struct {
-	struct _priq_rb waitq;
-} _wait_q_t;
-
-/* defined in kernel/priority_queues.c */
-bool z_priq_rb_lessthan(struct rbnode *a, struct rbnode *b);
-
-#define Z_WAIT_Q_INIT(wait_q) { { { .lessthan_fn = z_priq_rb_lessthan } } }
-
-#else
-
 typedef struct {
 	struct list_node waitq;
 } _wait_q_t;
 
 #define Z_WAIT_Q_INIT(wait_q) { LIST_INITIAL_VALUE((wait_q)->waitq) }
-
-#endif /* CONFIG_WAITQ_SCALABLE */
 
 /* kernel timeout record */
 struct _timeout;
