@@ -25,7 +25,6 @@
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 #include <sys/types.h>
 
 #include "addr_internal.h"

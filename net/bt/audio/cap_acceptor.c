@@ -16,7 +16,6 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/util_macro.h>
 
 #include "cap_internal.h"
 

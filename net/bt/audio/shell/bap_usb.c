@@ -28,7 +28,6 @@
 #include <nuttx/clock.h>
 #include <nuttx/circbuf.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
 #include <zephyr/usb/usb_device.h>
 #include <zephyr/usb/class/usbd_uac2.h>

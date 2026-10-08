@@ -10,6 +10,7 @@
 #include "sys/types.h"
 #include <errno.h>
 #include <inttypes.h>
+#include <sched.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -34,7 +35,6 @@
 #include <zephyr/sys/iterable_sections.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 #include <nuttx/clock.h>
 #include <zephyr/toolchain.h>
 
@@ -1687,18 +1687,18 @@ int bt_gatt_service_register(struct bt_gatt_service *svc)
 	 * cooperative scheduling: hold the scheduler lock as well so that
 	 * they cannot preempt a preemptible caller mid-update.
 	 */
-	k_sched_lock();
+	sched_lock();
 
 	err = gatt_register(svc);
 	if (err < 0) {
-		k_sched_unlock();
+		sched_unlock();
 		bt_dev_unlock();
 		return err;
 	}
 
 	/* Don't submit any work until the stack is initialized */
 	if (!atomic_test_bit(gatt_flags, GATT_INITIALIZED)) {
-		k_sched_unlock();
+		sched_unlock();
 		bt_dev_unlock();
 		return 0;
 	}
@@ -1708,7 +1708,7 @@ int bt_gatt_service_register(struct bt_gatt_service *svc)
 
 	db_changed();
 
-	k_sched_unlock();
+	sched_unlock();
 	bt_dev_unlock();
 
 	return 0;
@@ -1733,18 +1733,18 @@ int bt_gatt_service_unregister(struct bt_gatt_service *svc)
 	/* See bt_gatt_service_register() for why the scheduler lock is
 	 * held as well.
 	 */
-	k_sched_lock();
+	sched_lock();
 
 	err = gatt_unregister(svc);
 	if (err) {
-		k_sched_unlock();
+		sched_unlock();
 		bt_dev_unlock();
 		return err;
 	}
 
 	/* Don't submit any work until the stack is initialized */
 	if (!atomic_test_bit(gatt_flags, GATT_INITIALIZED)) {
-		k_sched_unlock();
+		sched_unlock();
 		bt_dev_unlock();
 		return 0;
 	}
@@ -1753,7 +1753,7 @@ int bt_gatt_service_unregister(struct bt_gatt_service *svc)
 
 	db_changed();
 
-	k_sched_unlock();
+	sched_unlock();
 	bt_dev_unlock();
 
 	return 0;
@@ -5699,7 +5699,7 @@ static void gatt_cancel(struct bt_conn *conn, void *params, bool run_completion)
 	 * scheduler lock as well so that it cannot preempt a preemptible
 	 * caller mid-cancel.
 	 */
-	k_sched_lock();
+	sched_lock();
 
 	req = bt_att_find_req_by_user_data(conn, params);
 	if (req) {
@@ -5707,7 +5707,7 @@ static void gatt_cancel(struct bt_conn *conn, void *params, bool run_completion)
 		bt_att_req_cancel(conn, req);
 	}
 
-	k_sched_unlock();
+	sched_unlock();
 	bt_dev_unlock();
 
 	if (run_completion && func) {

@@ -21,7 +21,6 @@
 #include <assert.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 
 #include "bap_iso.h"
 #include "audio_internal.h"

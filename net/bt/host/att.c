@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <sched.h>
 #include <string.h>
 
 #include <nuttx/spinlock.h>
@@ -31,7 +32,6 @@
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 #include <nuttx/clock.h>
 #include <zephyr/toolchain.h>
 #include <sys/types.h>
@@ -637,7 +637,7 @@ static int bt_att_chan_req_send(struct bt_att_chan *chan, struct bt_att_req *req
 	 * caller.
 	 */
 	bt_dev_lock();
-	k_sched_lock();
+	sched_lock();
 	err = bt_att_chan_send(chan, buf);
 	if (err) {
 		/* We still have the ownership of the buffer */
@@ -646,7 +646,7 @@ static int bt_att_chan_req_send(struct bt_att_chan *chan, struct bt_att_req *req
 	} else {
 		bt_gatt_req_set_mtu(req, bt_att_mtu(chan));
 	}
-	k_sched_unlock();
+	sched_unlock();
 	bt_dev_unlock();
 
 	return err;
@@ -4137,11 +4137,11 @@ int bt_att_req_send(struct bt_conn *conn, struct bt_att_req *req)
 	 * caller mid-update.
 	 */
 	bt_dev_lock();
-	k_sched_lock();
+	sched_lock();
 
 	att = att_get(conn);
 	if (!att) {
-		k_sched_unlock();
+		sched_unlock();
 		bt_dev_unlock();
 		return -ENOTCONN;
 	}
@@ -4149,7 +4149,7 @@ int bt_att_req_send(struct bt_conn *conn, struct bt_att_req *req)
 	list_add_tail(&att->reqs, &req->node);
 	att_req_send_process(att);
 
-	k_sched_unlock();
+	sched_unlock();
 	bt_dev_unlock();
 
 	return 0;

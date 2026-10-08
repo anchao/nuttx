@@ -10,7 +10,6 @@
 #include <stdint.h>
 
 #include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/sys/util_macro.h>
 
 /** Constant Tone Extension (CTE) types. */
 enum bt_df_cte_type {

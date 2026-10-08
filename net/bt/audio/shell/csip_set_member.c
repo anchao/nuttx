@@ -28,7 +28,6 @@
 #include <zephyr/shell/shell_string_conv.h>
 #include <assert.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
 
 #include "common/bt_shell_private.h"

@@ -18,7 +18,6 @@
 #include <zephyr/kernel.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
 
 #include "host/shell/bt.h"

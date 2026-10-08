@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/sys/util_macro.h>
 #include <nuttx/clock.h>
 
 #ifndef ZEPHYR_SUBSYS_BLUETOOTH_MESH_ADV_H_

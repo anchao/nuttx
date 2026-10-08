@@ -19,7 +19,6 @@
 #include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>
 #include <nuttx/list.h>
-#include <zephyr/sys/util_macro.h>
 
 /* LL connection parameters */
 #define LE_CONN_LATENCY		0x0000

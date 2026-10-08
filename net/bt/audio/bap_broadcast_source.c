@@ -31,7 +31,6 @@
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 
 LOG_MODULE_REGISTER(bt_bap_broadcast_source, CONFIG_BT_BAP_BROADCAST_SOURCE_LOG_LEVEL);
 

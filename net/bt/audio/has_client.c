@@ -21,7 +21,6 @@
 #include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 #include <zephyr/sys/util_utf8.h>
 #include <zephyr/toolchain.h>
 

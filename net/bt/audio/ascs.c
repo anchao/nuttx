@@ -36,7 +36,6 @@
 #include <assert.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
 
 LOG_MODULE_REGISTER(bt_ascs, CONFIG_BT_ASCS_LOG_LEVEL);

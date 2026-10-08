@@ -25,7 +25,6 @@
 #include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/util_macro.h>
 #include <nuttx/clock.h>
 #include <zephyr/toolchain.h>
 

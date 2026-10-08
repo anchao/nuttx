@@ -17,7 +17,6 @@
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/iterable_sections.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 #include <nuttx/list.h>
 #include <assert.h>
 

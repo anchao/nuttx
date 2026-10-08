@@ -27,7 +27,6 @@
 #include <zephyr/logging/log.h>
 #include <assert.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 
 #include "audio_internal.h"
 #include "bap_endpoint.h"

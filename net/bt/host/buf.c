@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <sched.h>
 #include <string.h>
 
 #include <zephyr/autoconf.h>
@@ -19,7 +20,6 @@
 #include <nuttx/mm/net_buf.h>
 #include <assert.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/util_macro.h>
 #include <nuttx/clock.h>
 
 #include "buf_view.h"
@@ -45,7 +45,7 @@ static void buf_rx_freed_notify(enum bt_buf_type mask)
 	bool in_isr = k_is_in_isr();
 
 	if (!in_isr) {
-		k_sched_lock();
+		sched_lock();
 	}
 
 	cb = (bt_buf_rx_freed_cb_t)atomic_ptr_read(&buf_rx_freed_cb);
@@ -55,7 +55,7 @@ static void buf_rx_freed_notify(enum bt_buf_type mask)
 	}
 
 	if (!in_isr) {
-		k_sched_unlock();
+		sched_unlock();
 	}
 }
 

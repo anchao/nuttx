@@ -32,7 +32,6 @@
 #include <nuttx/clock.h>
 #include <zephyr/drivers/uart.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 
 #include "monitor.h"
 #include "monitor_buffer.h"

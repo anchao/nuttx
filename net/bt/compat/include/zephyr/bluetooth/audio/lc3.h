@@ -23,7 +23,6 @@
  * @{
  */
 
-#include <zephyr/sys/util_macro.h>
 #include <zephyr/bluetooth/byteorder.h>
 #include <zephyr/bluetooth/hci_types.h>
 

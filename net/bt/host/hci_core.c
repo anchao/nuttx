@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <sched.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -35,7 +36,6 @@
 #include <nuttx/mm/net_buf.h>
 #include <zephyr/settings/settings.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/util_macro.h>
 #include <zephyr/sys/util.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/byteorder.h>
@@ -4732,9 +4732,9 @@ static int bt_recv(const struct device *dev, struct net_buf *buf)
 	ARG_UNUSED(dev);
 	int err;
 
-	k_sched_lock();
+	sched_lock();
 	err = bt_recv_unsafe(buf);
-	k_sched_unlock();
+	sched_unlock();
 
 	return err;
 }
@@ -5430,7 +5430,7 @@ static void tx_processor(struct k_work *item)
 
 	/* The whole TX processing pass (command and data processors) runs
 	 * under the host lock, which replaces the historical reliance on
-	 * cooperative scheduling (k_sched_lock). This serializes it against
+	 * cooperative scheduling (sched_lock). This serializes it against
 	 * bt_conn_data_ready()/l2cap raise/cancel_data_ready() and the other
 	 * host-lock sections.
 	 *

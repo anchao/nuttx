@@ -28,17 +28,6 @@ static inline bool arch_irq_unlocked(unsigned int key)
     return key == 0;
 }
 
-/* Scheduling */
-static inline void k_sched_lock(void)
-{
-    sched_lock();
-}
-
-static inline void k_sched_unlock(void)
-{
-    sched_unlock();
-}
-
 /* ISR context check */
 static inline bool k_is_in_isr(void)
 {

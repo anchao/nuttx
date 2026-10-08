@@ -24,7 +24,6 @@
 #include <zephyr/logging/log.h>
 #include <nuttx/mm/net_buf.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 
 LOG_MODULE_REGISTER(bt_bap_base, CONFIG_BT_BAP_BASE_LOG_LEVEL);
 

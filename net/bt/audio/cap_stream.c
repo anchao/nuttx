@@ -21,7 +21,6 @@
 #include <nuttx/mm/net_buf.h>
 #include <assert.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 
 #include "cap_internal.h"
 

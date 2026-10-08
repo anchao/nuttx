@@ -23,7 +23,6 @@
 #include <zephyr/bluetooth/hci_types.h>
 #include <zephyr/bluetooth/conn.h>
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/sys/util_macro.h>
 
 #ifdef __cplusplus
 extern "C" {

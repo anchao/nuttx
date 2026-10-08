@@ -19,7 +19,6 @@
 #include <zephyr/bluetooth/hci.h>
 #include <zephyr/logging/log.h>
 #include <nuttx/list.h>
-#include <zephyr/sys/util_macro.h>
 #include <psa/crypto.h>
 #include <psa/crypto_struct.h>
 #include <psa/crypto_types.h>

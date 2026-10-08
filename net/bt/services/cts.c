@@ -13,7 +13,6 @@
 
 #ifdef CONFIG_BT_CTS_HELPER_API
 #include <time.h>
-#include <zephyr/sys/timeutil.h>
 #endif
 
 #include <errno.h>
@@ -27,6 +26,8 @@
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(cts, CONFIG_BT_CTS_LOG_LEVEL);
+
+#define CTS_BASE_YEAR 1900
 
 static const struct bt_cts_cb *cts_cb;
 
@@ -50,7 +51,7 @@ int bt_cts_time_to_unix_ms(const struct bt_cts_time_format *ct_time, int64_t *un
 	struct tm date_time;
 	/* fill date time structure */
 	date_time.tm_year = sys_le16_to_cpu(ct_time->year); /* year (little endian) */
-	date_time.tm_year -= TIME_UTILS_BASE_YEAR;
+	date_time.tm_year -= CTS_BASE_YEAR;
 	date_time.tm_mon = ct_time->mon - 1;   /* month start from 1, but need from 0 */
 	date_time.tm_mday = ct_time->mday;     /* day of month */
 	date_time.tm_hour = ct_time->hours;    /* hours of day */
@@ -61,7 +62,7 @@ int bt_cts_time_to_unix_ms(const struct bt_cts_time_format *ct_time, int64_t *un
 	LOG_DBG("CTS Write Time: %d/%d/%d %d:%d:%d", date_time.tm_year, date_time.tm_mon,
 		date_time.tm_mday, date_time.tm_hour, date_time.tm_min, date_time.tm_sec);
 	/* get unit timestamp from datetime */
-	(*unix_ms) = timeutil_timegm64(&date_time);
+	(*unix_ms) = timegm(&date_time);
 	if ((*unix_ms) == ((time_t)-1)) {
 		return -EOVERFLOW;
 	}
@@ -90,7 +91,7 @@ int bt_cts_time_from_unix_ms(struct bt_cts_time_format *ct_time, int64_t unix_ms
 	if (gmtime_r(&unix_ts, &date_time) == NULL) {
 		return -EOVERFLOW;
 	}
-	date_time.tm_year += TIME_UTILS_BASE_YEAR;
+	date_time.tm_year += CTS_BASE_YEAR;
 
 	LOG_DBG("CTS Read Time: %d/%d/%d %d:%d:%d", date_time.tm_year, date_time.tm_mon,
 		date_time.tm_mday, date_time.tm_hour, date_time.tm_min, date_time.tm_sec);

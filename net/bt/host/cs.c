@@ -22,7 +22,6 @@
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 
 #include "conn_internal.h"
 

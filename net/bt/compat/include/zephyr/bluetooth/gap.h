@@ -14,7 +14,6 @@
 #include <zephyr/bluetooth/assigned_numbers.h>
 #include <zephyr/bluetooth/byteorder.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -37,7 +37,6 @@
 #include <zephyr/bluetooth/iso.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 
 #ifdef __cplusplus
 extern "C" {

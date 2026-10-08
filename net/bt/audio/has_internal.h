@@ -15,7 +15,6 @@
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/uuid.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/util_macro.h>
 
 /* Control Point opcodes */
 #define BT_HAS_OP_READ_PRESET_REQ        0x01U

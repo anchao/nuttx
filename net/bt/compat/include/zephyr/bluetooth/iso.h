@@ -34,7 +34,6 @@
 #include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>
 #include <nuttx/list.h>
-#include <zephyr/sys/util_macro.h>
 
 #ifdef __cplusplus
 extern "C" {

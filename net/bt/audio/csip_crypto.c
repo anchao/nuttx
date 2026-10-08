@@ -19,7 +19,6 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 
 #include "crypto/bt_crypto.h"
 

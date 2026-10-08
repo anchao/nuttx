@@ -24,7 +24,6 @@
 #include <zephyr/kernel.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 #include <sys/types.h>
 
 bool bt_cap_acceptor_ccid_exist(const struct bt_conn *conn, uint8_t ccid);

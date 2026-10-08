@@ -22,7 +22,6 @@
 #include <nuttx/atomic.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
 
 LOG_MODULE_REGISTER(bt_ccp_call_control_client, CONFIG_BT_CCP_CALL_CONTROL_CLIENT_LOG_LEVEL);

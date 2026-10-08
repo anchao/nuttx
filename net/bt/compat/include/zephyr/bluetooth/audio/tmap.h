@@ -29,7 +29,6 @@
 #include <zephyr/autoconf.h>
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 
 /** @brief TMAP Role characteristic */
 enum bt_tmap_role {

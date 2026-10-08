@@ -13,7 +13,6 @@
 
 #include <zephyr/autoconf.h>
 #include <zephyr/bluetooth/audio/media_proxy.h>
-#include <zephyr/sys/util_macro.h>
 
 #define MPL_NO_TRACK_ID 0U
 

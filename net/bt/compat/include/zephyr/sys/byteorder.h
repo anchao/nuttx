@@ -19,7 +19,6 @@
 #include <string.h>
 #include <assert.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_macro.h>
 #include <zephyr/toolchain.h>
 
 #if HAS_BUILTIN(__builtin_bswap16)

@@ -17,7 +17,6 @@
 #include <zephyr/bluetooth/addr.h>
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/iso.h>
-#include <zephyr/sys/util_macro.h>
 #include <stddef.h>
 #include <sys/types.h>
 
