@@ -8,18 +8,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#ifdef __has_builtin
-#define HAS_BUILTIN(x) __has_builtin(x)
-#else
-#define HAS_BUILTIN(x) HAS_BUILTIN_##x
-#endif
-
-#if __GNUC__ >= 4
-#define HAS_BUILTIN___builtin_bswap16 1
-#define HAS_BUILTIN___builtin_bswap32 1
-#define HAS_BUILTIN___builtin_bswap64 1
-#endif
-
 #define TOOLCHAIN_WARNING_UNALIGNED_ACCESS
 #define TOOLCHAIN_DISABLE_CLANG_WARNING(warning)
 #define TOOLCHAIN_ENABLE_CLANG_WARNING(warning)

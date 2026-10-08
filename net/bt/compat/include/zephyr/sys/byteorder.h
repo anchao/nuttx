@@ -21,13 +21,13 @@
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
 
-#if HAS_BUILTIN(__builtin_bswap16)
+#ifdef CONFIG_HAVE_BUILTIN_BSWAP16
 #define BSWAP_16(x) ((uint16_t) __builtin_bswap16(x))
 #else
 #define BSWAP_16(x) ((uint16_t) ((((x) >> 8) & 0xff) | (((x) & 0xff) << 8)))
 #endif
 
-#if HAS_BUILTIN(__builtin_bswap32)
+#ifdef CONFIG_HAVE_BUILTIN_BSWAP32
 #define BSWAP_24(x) ((uint32_t) __builtin_bswap32(x) >> 8)
 #define BSWAP_32(x) ((uint32_t) __builtin_bswap32(x))
 #else
@@ -41,7 +41,7 @@
 				   (((x) & 0xff) << 24)))
 #endif
 
-#if HAS_BUILTIN(__builtin_bswap64)
+#ifdef CONFIG_HAVE_BUILTIN_BSWAP64
 #define BSWAP_40(x) ((uint64_t) __builtin_bswap64(x) >> 24)
 #define BSWAP_48(x) ((uint64_t) __builtin_bswap64(x) >> 16)
 #define BSWAP_64(x) ((uint64_t) __builtin_bswap64(x))
