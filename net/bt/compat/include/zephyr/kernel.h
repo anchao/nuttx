@@ -20,7 +20,6 @@
 #include "sys/util.h"
 #include "toolchain.h"
 #include "arch/posix/arch.h"
-#include "irq.h"
 #include "init.h"
 
 #ifdef __cplusplus
