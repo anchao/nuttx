@@ -50,7 +50,7 @@ LOG_MODULE_REGISTER(bt_mesh_proxy);
 
 #define PDU_HDR(sar, type) (sar << 6 | (type & BIT_MASK(6)))
 
-static uint8_t __noinit bufs[CONFIG_BT_MAX_CONN * CONFIG_BT_MESH_PROXY_MSG_LEN];
+static uint8_t bufs[CONFIG_BT_MAX_CONN * CONFIG_BT_MESH_PROXY_MSG_LEN];
 
 static struct bt_mesh_proxy_role roles[CONFIG_BT_MAX_CONN];
 

@@ -41,7 +41,7 @@ extern "C" {
  */
 #define TYPE_SECTION_ITERABLE(type, varname, secname, section_postfix) \
 	Z_DECL_ALIGN(type) varname \
-	__in_section(_##secname, static, _CONCAT(section_postfix, _)) __used __noasan
+	__in_section(_##secname, static, _CONCAT(section_postfix, _)) __used
 
 /**
  * @brief iterable section start symbol for a generic type

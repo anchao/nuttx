@@ -8,10 +8,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define TOOLCHAIN_WARNING_UNALIGNED_ACCESS
-#define TOOLCHAIN_DISABLE_CLANG_WARNING(warning)
-#define TOOLCHAIN_ENABLE_CLANG_WARNING(warning)
-
 #define Z_STRINGIFY(x) #x
 #define STRINGIFY(s) Z_STRINGIFY(s)
 
@@ -41,10 +37,6 @@ __extension__ ({ \
 })
 #define ___in_section(a, b, c)
 #define __in_section(a, b, c) ___in_section(a, b, c)
-
-#ifndef __noinit
-#define __noinit
-#endif
 
 #ifndef __fallthrough
 #if __GNUC__ >= 7
@@ -91,12 +83,6 @@ __extension__ ({ \
 
 #ifndef __DEPRECATED_MACRO
 #define __DEPRECATED_MACRO __WARN("Macro is deprecated")
-#endif
-
-#if defined(CONFIG_ASAN)
-#define __noasan nosanitize_address
-#else
-#define __noasan
 #endif
 
 #endif /* ZEPHYR_INCLUDE_TOOLCHAIN_H_ */
