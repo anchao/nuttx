@@ -5,6 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdint.h>
+
 #include <zephyr/kernel.h>
 #include <zephyr/debug/stack.h>
 #include <zephyr/sys/util.h>
@@ -38,7 +40,7 @@ LOG_MODULE_REGISTER(bt_mesh_adv_legacy);
 #define ADV_INT_FAST_MS    20
 
 static pid_t adv_thread_pid = INVALID_PROCESS_ID;
-static K_KERNEL_STACK_DEFINE(adv_thread_stack, CONFIG_BT_MESH_ADV_STACK_SIZE);
+static uint64_t adv_thread_stack[CONFIG_BT_MESH_ADV_STACK_SIZE / sizeof(uint64_t)];
 static int32_t adv_timeout;
 
 static bool is_mesh_suspended(void)
@@ -260,7 +262,7 @@ void bt_mesh_adv_init(void)
 	adv_thread_pid = kthread_create_with_stack("BT Mesh adv",
 						K_PRIO_COOP(CONFIG_BT_MESH_ADV_PRIO),
 						adv_thread_stack,
-						K_KERNEL_STACK_SIZEOF(adv_thread_stack),
+						sizeof(adv_thread_stack),
 						adv_thread, NULL);
 	DEBUGASSERT(adv_thread_pid > 0);
 }

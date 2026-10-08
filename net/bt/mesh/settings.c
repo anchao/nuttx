@@ -6,6 +6,7 @@
 
 #include <zephyr/kernel.h>
 #include <errno.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <zephyr/sys/util.h>
 
@@ -62,7 +63,7 @@ LOG_MODULE_REGISTER(bt_mesh_settings);
 			 RPL_STORE_TIMEOUT >= 0)
 
 static struct k_work_q settings_work_q;
-static K_THREAD_STACK_DEFINE(settings_work_stack, SETTINGS_WORKQ_STACK_SIZE);
+static uint64_t settings_work_stack[SETTINGS_WORKQ_STACK_SIZE / sizeof(uint64_t)];
 
 static struct k_work_delayable pending_store;
 static struct k_work_delayable rpl_pending_store;
@@ -246,7 +247,7 @@ void bt_mesh_settings_init(void)
 {
 	if (IS_ENABLED(CONFIG_BT_MESH_SETTINGS_WORKQ)) {
 		k_work_queue_start(&settings_work_q, settings_work_stack,
-				   K_THREAD_STACK_SIZEOF(settings_work_stack),
+				   sizeof(settings_work_stack),
 				   K_PRIO_COOP(SETTINGS_WORKQ_PRIO), NULL);
 	}
 

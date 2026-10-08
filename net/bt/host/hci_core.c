@@ -32,8 +32,6 @@
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/bluetooth.h>
 #include <zephyr/kernel.h>
-#include <zephyr/kernel/thread.h>
-#include <zephyr/kernel/thread_stack.h>
 #include <zephyr/logging/log.h>
 #include <nuttx/mm/net_buf.h>
 #include <zephyr/settings/settings.h>
@@ -123,7 +121,7 @@ static K_WORK_DEFINE(rx_work, rx_work_handler);
  * items, keeping them off the shared system workqueue.
  */
 static struct k_work_q bt_workq;
-static K_KERNEL_STACK_DEFINE(rx_thread_stack, CONFIG_BT_RX_STACK_SIZE);
+static uint64_t rx_thread_stack[CONFIG_BT_RX_STACK_SIZE / sizeof(uint64_t)];
 
 int bt_work_submit(struct k_work *work)
 {
@@ -5470,7 +5468,7 @@ exit:
 static K_WORK_DEFINE(tx_work, tx_processor);
 
 #if defined(CONFIG_BT_TX_PROCESSOR_THREAD)
-static K_THREAD_STACK_DEFINE(bt_tx_processor_stack, CONFIG_BT_TX_PROCESSOR_STACK_SIZE);
+static uint64_t bt_tx_processor_stack[CONFIG_BT_TX_PROCESSOR_STACK_SIZE / sizeof(uint64_t)];
 
 /**
  * This work queue shall never be stopped, drained or plugged.
@@ -5486,7 +5484,7 @@ static int bt_tx_processor_init(void)
 	}
 
 	k_work_queue_start(&bt_tx_processor_workq, bt_tx_processor_stack,
-			   K_THREAD_STACK_SIZEOF(bt_tx_processor_stack),
+			   sizeof(bt_tx_processor_stack),
 			   CONFIG_BT_TX_PROCESSOR_THREAD_PRIO, &cfg);
 
 	return 0;

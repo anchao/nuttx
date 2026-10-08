@@ -259,7 +259,7 @@ void k_work_queue_init(struct k_work_q *queue)
         }
 }
 
-int k_work_queue_start(struct k_work_q *queue, char *stack,
+int k_work_queue_start(struct k_work_q *queue, void *stack,
                        size_t stack_size, int prio,
                        const struct k_work_queue_config *cfg)
 {

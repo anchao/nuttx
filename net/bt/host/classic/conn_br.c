@@ -12,10 +12,10 @@
 #include <string.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/iterable_sections.h>
-#include <zephyr/sys/math_extras.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 #include <nuttx/list.h>
@@ -156,14 +156,18 @@ void bt_br_acl_recv(struct bt_conn *conn, struct net_buf *buf, bool complete)
 	struct net_buf_simple_state state;
 
 	do {
+		uint16_t l2cap_len;
+
 		net_buf_simple_save(&buf->b, &state);
 
 		hdr = (void *)buf->data;
-		if (u16_add_overflow(sys_le16_to_cpu(hdr->len),
-				     sizeof(*hdr), &acl_total_len)) {
+		l2cap_len = sys_le16_to_cpu(hdr->len);
+		if (l2cap_len > UINT16_MAX - sizeof(*hdr)) {
 			LOG_ERR("L2CAP PDU length overflow");
 			break;
 		}
+
+		acl_total_len = l2cap_len + sizeof(*hdr);
 		if (buf->len > acl_total_len) {
 			LOG_DBG("Multiple L2CAP packet (%u > %u)", buf->len, acl_total_len);
 			buf->len = acl_total_len;

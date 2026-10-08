@@ -6,6 +6,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdint.h>
+
 #include <zephyr/kernel.h>
 #include <zephyr/debug/stack.h>
 #include <zephyr/sys/iterable_sections.h>
@@ -74,7 +76,7 @@ static void send_pending_adv(struct k_work *work);
 static bool schedule_send(struct bt_mesh_ext_adv *ext_adv);
 
 static struct k_work_q bt_mesh_workq;
-static K_KERNEL_STACK_DEFINE(thread_stack, MESH_WORKQ_STACK_SIZE);
+static uint64_t thread_stack[MESH_WORKQ_STACK_SIZE / sizeof(uint64_t)];
 
 #if defined(CONFIG_BT_MESH_WORKQ_MESH)
 #define MESH_WORKQ &bt_mesh_workq

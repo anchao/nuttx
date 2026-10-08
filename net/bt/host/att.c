@@ -24,7 +24,6 @@
 #include <zephyr/bluetooth/l2cap.h>
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/kernel.h>
-#include <zephyr/kernel/thread.h>
 #include <zephyr/logging/log.h>
 #include <nuttx/mm/net_buf.h>
 #include <assert.h>

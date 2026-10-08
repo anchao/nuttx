@@ -68,7 +68,8 @@ K_FIFO_DEFINE(free_tx);
 
 #if defined(CONFIG_BT_CONN_TX_NOTIFY_WQ)
 static struct k_work_q conn_tx_workq;
-static K_KERNEL_STACK_DEFINE(conn_tx_workq_thread_stack, CONFIG_BT_CONN_TX_NOTIFY_WQ_STACK_SIZE);
+static uint64_t conn_tx_workq_thread_stack[CONFIG_BT_CONN_TX_NOTIFY_WQ_STACK_SIZE /
+						  sizeof(uint64_t)];
 #endif /* CONFIG_BT_CONN_TX_NOTIFY_WQ */
 
 static void tx_free(struct bt_conn_tx *tx);
@@ -4789,7 +4790,7 @@ static int bt_conn_tx_workq_init(void)
 
 	k_work_queue_init(&conn_tx_workq);
 	k_work_queue_start(&conn_tx_workq, conn_tx_workq_thread_stack,
-			   K_THREAD_STACK_SIZEOF(conn_tx_workq_thread_stack),
+			   sizeof(conn_tx_workq_thread_stack),
 			   K_PRIO_COOP(CONFIG_BT_CONN_TX_NOTIFY_WQ_PRIO), &cfg);
 
 	return 0;

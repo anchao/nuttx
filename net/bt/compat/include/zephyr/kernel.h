@@ -61,15 +61,6 @@ bool z_k_queue_remove_fifo(struct k_fifo *fifo, void *data);
         .sem = SEM_INITIALIZER(0), \
     }
 
-#define K_THREAD_STACK_BUFFER(sym, size)
-#define K_THREAD_STACK_MEMBER(sym, size) char sym[size]
-#define K_THREAD_STACK_SIZEOF(sym) sizeof(sym)
-#define K_THREAD_STACK_DEFINE(sym, size) K_THREAD_STACK_MEMBER(sym, size)
-
-#define K_KERNEL_STACK_DEFINE(sym, size) K_THREAD_STACK_DEFINE(sym, size)
-#define K_KERNEL_STACK_SIZEOF(sym) K_THREAD_STACK_SIZEOF(sym)
-#define K_KERNEL_STACK_MEMBER(sym, size) K_THREAD_STACK_MEMBER(sym, size)
-
 /* ===== Work Queue ===== */
 /* Work flags for k_work */
 #define K_WORK_QUEUED    BIT(0)
@@ -149,7 +140,7 @@ int k_work_delayable_busy_get(const struct k_work_delayable *dwork);
 clock_t k_work_delayable_remaining_get(const struct k_work_delayable *dwork);
 pid_t k_work_queue_thread_get(struct k_work_q *queue);
 void k_work_queue_init(struct k_work_q *queue);
-int k_work_queue_start(struct k_work_q *queue, char *stack,
+int k_work_queue_start(struct k_work_q *queue, void *stack,
                        size_t stack_size, int prio,
                        const struct k_work_queue_config *cfg);
 

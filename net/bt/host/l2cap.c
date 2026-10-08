@@ -25,7 +25,6 @@
 #include <nuttx/atomic.h>
 #include <zephyr/sys/iterable_sections.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/math_extras.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <nuttx/mm/net_buf.h>
@@ -2492,9 +2491,9 @@ static int l2cap_chan_send_credits_pdu(struct bt_conn *conn, uint16_t cid, uint1
 }
 
 /**
- * Combination of @ref atomic_add and @ref u16_add_overflow. Leaves @p
- * target unchanged if an overflow would occur. Assumes the current
- * value of @p target is representable by uint16_t.
+ * Combination of @ref atomic_add and uint16_t overflow checking. Leaves
+ * @p target unchanged if an overflow would occur. Assumes the current value
+ * of @p target is representable by uint16_t.
  */
 static bool atomic_add_safe_u16(atomic_t *target, uint16_t addition)
 {
@@ -2502,9 +2501,11 @@ static bool atomic_add_safe_u16(atomic_t *target, uint16_t addition)
 
 	do {
 		target_old = atomic_read(target);
-		if (u16_add_overflow(target_old, addition, &target_new)) {
+		if (target_old > UINT16_MAX - addition) {
 			return true;
 		}
+
+		target_new = target_old + addition;
 	} while (!atomic_cmpxchg_value(target, target_old, target_new));
 
 	return false;

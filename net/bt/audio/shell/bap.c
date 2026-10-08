@@ -41,7 +41,6 @@
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/kernel.h>
-#include <zephyr/kernel/thread_stack.h>
 #include <nuttx/mm/net_buf.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/shell/shell_string_conv.h>
@@ -4009,23 +4008,23 @@ static int cmd_init(const struct shell *sh, size_t argc, char *argv[])
 
 #if defined(CONFIG_LIBLC3)
 #if defined(CONFIG_BT_AUDIO_RX)
-	static K_KERNEL_STACK_DEFINE(lc3_decoder_thread_stack, 4096);
+	static uint64_t lc3_decoder_thread_stack[4096 / sizeof(uint64_t)];
 	const int lc3_decoder_thread_prio = LC3_THREAD_PRIO;
 
 	err = kthread_create_with_stack("LC3 Decoder", lc3_decoder_thread_prio,
 					lc3_decoder_thread_stack,
-					K_KERNEL_STACK_SIZEOF(lc3_decoder_thread_stack),
+					sizeof(lc3_decoder_thread_stack),
 					lc3_decoder_thread_func, NULL);
 	DEBUGASSERT(err > 0);
 #endif /* CONFIG_BT_AUDIO_RX */
 
 #if defined(CONFIG_BT_AUDIO_TX)
-	static K_KERNEL_STACK_DEFINE(lc3_encoder_thread_stack, 4096);
+	static uint64_t lc3_encoder_thread_stack[4096 / sizeof(uint64_t)];
 	const int lc3_encoder_thread_prio = LC3_THREAD_PRIO;
 
 	err = kthread_create_with_stack("LC3 Encoder", lc3_encoder_thread_prio,
 					lc3_encoder_thread_stack,
-					K_KERNEL_STACK_SIZEOF(lc3_encoder_thread_stack),
+					sizeof(lc3_encoder_thread_stack),
 					lc3_encoder_thread_func, NULL);
 	DEBUGASSERT(err > 0);
 
