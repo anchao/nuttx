@@ -26,7 +26,7 @@
 #include <zephyr/shell/shell.h>
 #include <zephyr/shell/shell_string_conv.h>
 #include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/time_units.h>
+#include <nuttx/clock.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 

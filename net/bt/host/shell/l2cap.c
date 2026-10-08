@@ -31,7 +31,6 @@
 #include <zephyr/sys/byteorder.h>
 #include <nuttx/clock.h>
 #include <zephyr/kernel.h>
-#include <zephyr/sys/time_units.h>
 #include <zephyr/sys/util.h>
 
 #include "common/bt_shell_private.h"

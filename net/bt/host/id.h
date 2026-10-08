@@ -10,7 +10,6 @@
 #include <zephyr/bluetooth/addr.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/kernel.h>
-#include <zephyr/sys/time_units.h>
 #include <nuttx/clock.h>
 
 #include "keys.h"
