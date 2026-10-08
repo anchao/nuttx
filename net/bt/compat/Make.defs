@@ -4,20 +4,18 @@ ifeq ($(CONFIG_BT),y)
 BT_CSRCS += queue.c timeout.c mem_slab.c
 
 # Support modules
-BT_CSRCS += assert.c defines.c fs.c
+BT_CSRCS += assert.c fs.c
 
 # HCI driver
 BT_CSRCS += hci_driver.c
 
 VPATH += bt/compat/src/kernel
 VPATH += bt/compat/src/lib/os
-VPATH += bt/compat/src/sections
 VPATH += bt/compat/src/subsys/fs
 VPATH += bt/compat/src/drivers/bluetooth/hci
 
 DEPPATH += --dep-path bt/compat/src/kernel
 DEPPATH += --dep-path bt/compat/src/lib/os
-DEPPATH += --dep-path bt/compat/src/sections
 DEPPATH += --dep-path bt/compat/src/subsys/fs
 DEPPATH += --dep-path bt/compat/src/drivers/bluetooth/hci
 

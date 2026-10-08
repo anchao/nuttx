@@ -15,7 +15,6 @@ set(BT_COMPAT_KERNEL_SRCS
 # Support module sources
 set(BT_COMPAT_SUPPORT_SRCS
   assert.c
-  defines.c
   fs.c
 )
 
@@ -31,7 +30,6 @@ target_sources(net PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/src/kernel/timeout.c
   ${CMAKE_CURRENT_LIST_DIR}/src/kernel/mem_slab.c
   ${CMAKE_CURRENT_LIST_DIR}/src/lib/os/assert.c
-  ${CMAKE_CURRENT_LIST_DIR}/src/sections/defines.c
   ${CMAKE_CURRENT_LIST_DIR}/src/subsys/fs/fs.c
   ${CMAKE_CURRENT_LIST_DIR}/src/drivers/bluetooth/hci/hci_driver.c
 )
