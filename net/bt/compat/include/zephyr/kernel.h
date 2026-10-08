@@ -14,7 +14,6 @@
 #include <nuttx/clock.h>
 #include <nuttx/list.h>
 #include <nuttx/mutex.h>
-#include <pthread.h>
 
 #include "sys_clock.h"
 #include <nuttx/atomic.h>
@@ -62,23 +61,6 @@ bool z_k_queue_remove_fifo(struct k_fifo *fifo, void *data);
         .sem = SEM_INITIALIZER(0), \
     }
 
-/* ===== Thread ===== */
-typedef struct k_thread *k_tid_t;
-
-typedef void (*k_thread_entry_t)(void *p1, void *p2, void *p3);
-
-struct k_thread {
-    pthread_t pthread;
-    k_thread_entry_t entry;
-    void *p1;
-    void *p2;
-    void *p3;
-    char *stack;
-    size_t stack_size;
-    int prio;
-    const char *name;
-};
-
 #define K_THREAD_STACK_BUFFER(sym, size)
 #define K_THREAD_STACK_MEMBER(sym, size) char sym[size]
 #define K_THREAD_STACK_SIZEOF(sym) sizeof(sym)
@@ -87,24 +69,6 @@ struct k_thread {
 #define K_KERNEL_STACK_DEFINE(sym, size) K_THREAD_STACK_DEFINE(sym, size)
 #define K_KERNEL_STACK_SIZEOF(sym) K_THREAD_STACK_SIZEOF(sym)
 #define K_KERNEL_STACK_MEMBER(sym, size) K_THREAD_STACK_MEMBER(sym, size)
-
-#define K_THREAD_DEFINE(name, stack_size, entry, p1, p2, p3, prio, options, delay) \
-    K_THREAD_STACK_DEFINE(_k_thread_stack_##name, stack_size); \
-    static struct k_thread _k_thread_obj_##name = { \
-        .entry = entry, .p1 = p1, .p2 = p2, .p3 = p3, \
-        .stack = _k_thread_stack_##name, .stack_size = stack_size, \
-        .prio = prio, .name = #name, \
-    }; \
-    const k_tid_t name = (k_tid_t)&_k_thread_obj_##name
-
-k_tid_t k_thread_create(struct k_thread *new_thread, char *stack,
-                        size_t stack_size, k_thread_entry_t entry,
-                        void *p1, void *p2, void *p3,
-                        int prio, uint32_t options, clock_t delay);
-void k_thread_start(k_tid_t thread);
-int k_thread_join(struct k_thread *thread, clock_t timeout);
-int k_thread_name_set(k_tid_t thread, const char *name);
-struct k_thread *k_current_get(void);
 
 /* ===== Work Queue ===== */
 /* Work flags for k_work */
@@ -127,7 +91,7 @@ struct k_work_delayable {
 struct k_work_q {
     FAR struct kwork_wqueue_s *wqueue;
     int qid;
-    k_tid_t thread_id;
+    pid_t thread_id;
 };
 
 struct k_work_queue_config {
@@ -183,7 +147,7 @@ int k_work_cancel_sync(struct k_work *work, struct k_work_sync *sync);
 struct k_work_delayable *k_work_delayable_from_work(struct k_work *work);
 int k_work_delayable_busy_get(const struct k_work_delayable *dwork);
 clock_t k_work_delayable_remaining_get(const struct k_work_delayable *dwork);
-struct k_thread *k_work_queue_thread_get(struct k_work_q *queue);
+pid_t k_work_queue_thread_get(struct k_work_q *queue);
 void k_work_queue_init(struct k_work_q *queue);
 int k_work_queue_start(struct k_work_q *queue, char *stack,
                        size_t stack_size, int prio,

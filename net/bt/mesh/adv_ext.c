@@ -502,7 +502,6 @@ void bt_mesh_adv_init(void)
 		k_work_queue_init(&bt_mesh_workq);
 		k_work_queue_start(&bt_mesh_workq, thread_stack, MESH_WORKQ_STACK_SIZE,
 				   K_PRIO_COOP(MESH_WORKQ_PRIORITY), NULL);
-		k_thread_name_set(bt_mesh_workq.thread_id, "BT MESH WQ");
 	}
 }
 
@@ -565,7 +564,7 @@ int bt_mesh_adv_disable(void)
 	for (int i = 0; i < ARRAY_SIZE(advs); i++) {
 		atomic_set_bit(advs[i].flags, ADV_FLAG_SUSPENDING);
 
-		if (k_current_get() != k_work_queue_thread_get(MESH_WORKQ) ||
+		if (nxsched_gettid() != k_work_queue_thread_get(MESH_WORKQ) ||
 		    (k_work_busy_get(&advs[i].work) & K_WORK_RUNNING) == 0) {
 			k_work_flush(&advs[i].work, &sync);
 		}

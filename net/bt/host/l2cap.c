@@ -702,7 +702,7 @@ struct net_buf *bt_l2cap_create_pdu_timeout(struct net_buf_pool *pool,
 					    clock_t timeout)
 {
 	if (!((timeout) == (0)) &&
-	    k_current_get() == k_work_queue_thread_get(&k_sys_work_q)) {
+	    nxsched_gettid() == k_work_queue_thread_get(&k_sys_work_q)) {
 		timeout = 0;
 	}
 
@@ -1384,7 +1384,7 @@ static void l2cap_chan_destroy(struct bt_l2cap_chan *chan)
 	 */
 	struct k_work_q *rtx_work_queue = le_chan->rtx_work.queue;
 
-	if (rtx_work_queue == NULL || k_current_get() != rtx_work_queue->thread_id) {
+	if (rtx_work_queue == NULL || nxsched_gettid() != rtx_work_queue->thread_id) {
 		k_work_cancel_delayable_sync(&le_chan->rtx_work, &le_chan->rtx_sync);
 	} else {
 		k_work_cancel_delayable(&le_chan->rtx_work);

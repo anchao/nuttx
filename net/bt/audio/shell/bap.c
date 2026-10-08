@@ -18,6 +18,8 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include <nuttx/kthread.h>
+
 #include <zephyr/autoconf.h>
 #include <zephyr/bluetooth/addr.h>
 #include <zephyr/bluetooth/assigned_numbers.h>
@@ -535,11 +537,10 @@ static void encode_and_send_cb(struct shell_stream *sh_stream, void *user_data)
 	}
 }
 
-static void lc3_encoder_thread_func(void *arg1, void *arg2, void *arg3)
+static int lc3_encoder_thread_func(int argc, char *argv[])
 {
-	ARG_UNUSED(arg1);
-	ARG_UNUSED(arg2);
-	ARG_UNUSED(arg3);
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
 
 	/* This will attempt to send on all TX streams.
 	 * If there are no buffers available or the stream already have PRIME_COUNT outstanding SDUs
@@ -552,6 +553,8 @@ static void lc3_encoder_thread_func(void *arg1, void *arg2, void *arg3)
 		bap_foreach_stream(encode_and_send_cb, NULL);
 		nxsched_msleep(1U);
 	}
+
+	return 0;
 }
 #endif /* CONFIG_LIBLC3 && CONFIG_BT_AUDIO_TX */
 
@@ -2714,11 +2717,10 @@ static void do_lc3_decode(struct lc3_data *data)
 	net_buf_unref(data->buf);
 }
 
-static void lc3_decoder_thread_func(void *arg1, void *arg2, void *arg3)
+static int lc3_decoder_thread_func(int argc, char *argv[])
 {
-	ARG_UNUSED(arg1);
-	ARG_UNUSED(arg2);
-	ARG_UNUSED(arg3);
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
 
 	while (true) {
 		struct lc3_data *data = k_fifo_get(&lc3_in_fifo, ((clock_t)-1));
@@ -2734,6 +2736,8 @@ static void lc3_decoder_thread_func(void *arg1, void *arg2, void *arg3)
 
 		k_mem_slab_free(&lc3_data_slab, (void *)data);
 	}
+
+	return 0;
 }
 
 #endif /* CONFIG_LIBLC3*/
@@ -4006,24 +4010,24 @@ static int cmd_init(const struct shell *sh, size_t argc, char *argv[])
 #if defined(CONFIG_LIBLC3)
 #if defined(CONFIG_BT_AUDIO_RX)
 	static K_KERNEL_STACK_DEFINE(lc3_decoder_thread_stack, 4096);
-	const int lc3_decoder_thread_prio = K_PRIO_PREEMPT(LC3_THREAD_PRIO);
-	static struct k_thread lc3_decoder_thread;
+	const int lc3_decoder_thread_prio = LC3_THREAD_PRIO;
 
-	k_thread_create(&lc3_decoder_thread, lc3_decoder_thread_stack,
-			K_KERNEL_STACK_SIZEOF(lc3_decoder_thread_stack), lc3_decoder_thread_func,
-			NULL, NULL, NULL, lc3_decoder_thread_prio, 0, 0);
-	k_thread_name_set(&lc3_decoder_thread, "LC3 Decoder");
+	err = kthread_create_with_stack("LC3 Decoder", lc3_decoder_thread_prio,
+					lc3_decoder_thread_stack,
+					K_KERNEL_STACK_SIZEOF(lc3_decoder_thread_stack),
+					lc3_decoder_thread_func, NULL);
+	DEBUGASSERT(err > 0);
 #endif /* CONFIG_BT_AUDIO_RX */
 
 #if defined(CONFIG_BT_AUDIO_TX)
 	static K_KERNEL_STACK_DEFINE(lc3_encoder_thread_stack, 4096);
-	const int lc3_encoder_thread_prio = K_PRIO_PREEMPT(LC3_THREAD_PRIO);
-	static struct k_thread lc3_encoder_thread;
+	const int lc3_encoder_thread_prio = LC3_THREAD_PRIO;
 
-	k_thread_create(&lc3_encoder_thread, lc3_encoder_thread_stack,
-			K_KERNEL_STACK_SIZEOF(lc3_encoder_thread_stack), lc3_encoder_thread_func,
-			NULL, NULL, NULL, lc3_encoder_thread_prio, 0, 0);
-	k_thread_name_set(&lc3_encoder_thread, "LC3 Encoder");
+	err = kthread_create_with_stack("LC3 Encoder", lc3_encoder_thread_prio,
+					lc3_encoder_thread_stack,
+					K_KERNEL_STACK_SIZEOF(lc3_encoder_thread_stack),
+					lc3_encoder_thread_func, NULL);
+	DEBUGASSERT(err > 0);
 
 #endif /* CONFIG_BT_AUDIO_TX */
 

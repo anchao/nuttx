@@ -8,7 +8,6 @@
 # Kernel compat sources
 set(BT_COMPAT_KERNEL_SRCS
   queue.c
-  thread.c
   timeout.c
   mem_slab.c
 )
@@ -30,7 +29,6 @@ set_property(GLOBAL APPEND PROPERTY NET_SRCS
 # VPATH equivalents for CMake
 target_sources(net PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/src/kernel/queue.c
-  ${CMAKE_CURRENT_LIST_DIR}/src/kernel/thread.c
   ${CMAKE_CURRENT_LIST_DIR}/src/kernel/timeout.c
   ${CMAKE_CURRENT_LIST_DIR}/src/kernel/mem_slab.c
   ${CMAKE_CURRENT_LIST_DIR}/src/lib/os/assert.c

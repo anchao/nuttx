@@ -21,6 +21,8 @@
 #define ZEPHYR_KERNEL_INCLUDE_KERNEL_STRUCTS_H_
 
 #if !defined(_ASMLANGUAGE)
+#include <sys/types.h>
+
 #include <nuttx/atomic.h>
 #include <zephyr/types.h>
 #include <nuttx/list.h>
@@ -40,7 +42,7 @@ extern "C" {
 #endif
 
 /*
- * Bitmask definitions for the struct k_thread.thread_state field.
+ * Bitmask definitions for Zephyr thread states.
  *
  * Must be before kernel_arch_data.h because it might need them to be already
  * defined.
@@ -127,7 +129,7 @@ struct _priq_mq {
 struct _ready_q {
 #ifndef CONFIG_SMP
 	/* always contains next thread to run: cannot be NULL */
-	struct k_thread *cache;
+	pid_t cache;
 #endif
 
 #if defined(CONFIG_SCHED_DUMB)
@@ -149,10 +151,10 @@ struct _cpu {
 	char *irq_stack;
 
 	/* currently scheduled thread */
-	struct k_thread *current;
+	pid_t current;
 
 	/* one assigned idle thread per CPU */
-	struct k_thread *idle_thread;
+	pid_t idle_thread;
 
 #ifdef CONFIG_SCHED_CPU_MASK_PIN_ONLY
 	struct _ready_q ready_q;
@@ -219,11 +221,11 @@ struct z_kernel {
 	 */
 
 	/* thread that owns the FP regs */
-	struct k_thread *current_fp;
+	pid_t current_fp;
 #endif
 
 #if defined(CONFIG_THREAD_MONITOR)
-	struct k_thread *threads; /* singly linked list of ALL threads */
+	pid_t threads;
 #endif
 #ifdef CONFIG_SCHED_THREAD_USAGE_ALL
 	struct k_cycle_stats usage[CONFIG_MP_MAX_NUM_CPUS];
@@ -298,7 +300,7 @@ struct _timeout {
 #endif
 };
 
-typedef void (*k_thread_timeslice_fn_t)(struct k_thread *thread, void *data);
+typedef void (*k_thread_timeslice_fn_t)(pid_t thread, void *data);
 
 #ifdef __cplusplus
 }

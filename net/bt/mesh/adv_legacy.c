@@ -9,6 +9,8 @@
 #include <zephyr/debug/stack.h>
 #include <zephyr/sys/util.h>
 
+#include <nuttx/kthread.h>
+
 #include <nuttx/mm/net_buf.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/hci.h>
@@ -35,7 +37,7 @@ LOG_MODULE_REGISTER(bt_mesh_adv_legacy);
 #define ADV_INT_DEFAULT_MS 100
 #define ADV_INT_FAST_MS    20
 
-static struct k_thread adv_thread_data;
+static pid_t adv_thread_pid = INVALID_PROCESS_ID;
 static K_KERNEL_STACK_DEFINE(adv_thread_stack, CONFIG_BT_MESH_ADV_STACK_SIZE);
 static int32_t adv_timeout;
 
@@ -148,19 +150,39 @@ static inline void adv_send(struct bt_mesh_adv *adv)
 	bt_data_send(num_events, adv_int, &ad, 1, &adv->ctx);
 }
 
-static void adv_thread(void *p1, void *p2, void *p3)
+static void adv_pool_drain(void)
 {
+	struct bt_mesh_adv *adv;
+
+	/* Empty the advertising pool when advertising is disabled */
+	while ((adv = bt_mesh_adv_get(0))) {
+		bt_mesh_adv_send_start(0, -ENODEV, &adv->ctx);
+		bt_mesh_adv_unref(adv);
+	}
+}
+
+static int adv_thread(int argc, char *argv[])
+{
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
 	LOG_DBG("started");
 	struct bt_mesh_adv *adv;
 
-	while (!is_mesh_suspended()) {
+	while (true) {
+		if (is_mesh_suspended()) {
+			adv_pool_drain();
+			nxsched_msleep(10);
+			continue;
+		}
+
 		if (IS_ENABLED(CONFIG_BT_MESH_GATT_SERVER)) {
 			adv = bt_mesh_adv_get(0);
 			if (IS_ENABLED(CONFIG_BT_MESH_PROXY_SOLICITATION) && !adv) {
 				(void)bt_mesh_sol_send();
 			}
 
-			while (!adv) {
+			while (!adv && !is_mesh_suspended()) {
 
 				/* Adv timeout may be set by a call from proxy
 				 * to bt_mesh_adv_gatt_start:
@@ -175,6 +197,10 @@ static void adv_thread(void *p1, void *p2, void *p3)
 				if (IS_ENABLED(CONFIG_BT_MESH_PROXY_SOLICITATION) && !adv) {
 					(void)bt_mesh_sol_send();
 				}
+			}
+
+			if (is_mesh_suspended()) {
+				continue;
 			}
 		} else {
 			adv = bt_mesh_adv_get(((clock_t)-1));
@@ -200,11 +226,7 @@ static void adv_thread(void *p1, void *p2, void *p3)
 		sched_yield();
 	}
 
-	/* Empty the advertising pool when advertising is disabled */
-	while ((adv = bt_mesh_adv_get(0))) {
-		bt_mesh_adv_send_start(0, -ENODEV, &adv->ctx);
-		bt_mesh_adv_unref(adv);
-	}
+	return 0;
 }
 
 void bt_mesh_adv_local_ready(void)
@@ -231,11 +253,16 @@ int bt_mesh_adv_terminate(struct bt_mesh_adv *adv)
 
 void bt_mesh_adv_init(void)
 {
-	k_thread_create(&adv_thread_data, adv_thread_stack,
-			K_KERNEL_STACK_SIZEOF(adv_thread_stack), adv_thread,
-			NULL, NULL, NULL, K_PRIO_COOP(CONFIG_BT_MESH_ADV_PRIO),
-			0, ((clock_t)-1));
-	k_thread_name_set(&adv_thread_data, "BT Mesh adv");
+	if (adv_thread_pid != INVALID_PROCESS_ID) {
+		return;
+	}
+
+	adv_thread_pid = kthread_create_with_stack("BT Mesh adv",
+						K_PRIO_COOP(CONFIG_BT_MESH_ADV_PRIO),
+						adv_thread_stack,
+						K_KERNEL_STACK_SIZEOF(adv_thread_stack),
+						adv_thread, NULL);
+	DEBUGASSERT(adv_thread_pid > 0);
 }
 
 int bt_mesh_adv_enable(void)
@@ -247,29 +274,22 @@ int bt_mesh_adv_enable(void)
 		return -EINVAL;
 	}
 
-	k_thread_start(&adv_thread_data);
 	return 0;
 }
 
 int bt_mesh_adv_disable(void)
 {
-	int err;
-
-	/* k_thread_join will sleep forever if BT_MESH_SUSPENDED flag is not set. The advertiser
-	 * thread will exit once the flag is set. The flag is set by the higher layer function. Here
-	 * we need to check that the flag is dropped and ensure that the thread is stopped.
+	/* The advertiser thread is kept alive permanently. The flag is set by
+	 * the higher layer function, and the thread will observe it and drain
+	 * any pending advertising buffers without being joined or recreated.
 	 */
 	if (!is_mesh_suspended()) {
 		return -EINVAL;
 	}
 
-	err = k_thread_join(&adv_thread_data, ((clock_t)-1));
-	LOG_DBG("Advertising disabled: %d", err);
+	LOG_DBG("Advertising disabled");
 
-	/* Since the thread will immediately stop after this function call and won’t perform any
-	 * further operations, it’s safe to ignore the deadlock error (EDEADLK).
-	 */
-	return err == -EDEADLK ? 0 : err;
+	return 0;
 }
 
 int bt_mesh_adv_gatt_start(const struct bt_le_adv_param *param, int32_t duration,

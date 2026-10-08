@@ -182,7 +182,7 @@ static struct bt_att_req cancel;
  *
  *  The intended use of this value is to detect the above situation.
  */
-static k_tid_t att_handle_rsp_thread;
+static pid_t att_handle_rsp_thread;
 
 static struct bt_att_tx_meta_data tx_meta_data_storage[CONFIG_BT_ATT_TX_COUNT];
 
@@ -812,7 +812,7 @@ static struct net_buf *bt_att_chan_create_pdu(struct bt_att_chan *chan, uint8_t 
 		timeout = BT_ATT_TIMEOUT;
 		break;
 	default: {
-		k_tid_t current_thread = k_current_get();
+		pid_t current_thread = nxsched_gettid();
 
 		if (current_thread == k_work_queue_thread_get(&k_sys_work_q)) {
 			/* No blocking in the sysqueue. */
@@ -3578,7 +3578,7 @@ static int bt_att_accept(struct bt_conn *conn, struct bt_l2cap_chan **ch)
 		return -ENOMEM;
 	}
 
-	att_handle_rsp_thread = k_current_get();
+	att_handle_rsp_thread = nxsched_gettid();
 
 	(void)memset(att, 0, sizeof(*att));
 	att->conn = conn;
@@ -4060,7 +4060,7 @@ static void att_chan_mtu_updated(struct bt_att_chan *updated_chan)
 struct bt_att_req *bt_att_req_alloc(clock_t timeout)
 {
 	struct bt_att_req *req = NULL;
-	k_tid_t current_thread = k_current_get();
+	pid_t current_thread = nxsched_gettid();
 
 	if (current_thread == att_handle_rsp_thread ||
 	    current_thread == k_work_queue_thread_get(&k_sys_work_q)) {

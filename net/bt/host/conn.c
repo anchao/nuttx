@@ -292,7 +292,7 @@ static struct k_work_q *tx_notify_workqueue_get(void)
 static void tx_notify_process(struct bt_conn *conn)
 {
 	/* TX notify processing is done only from a single thread. */
-	DEBUGASSERT(k_current_get() == k_work_queue_thread_get(tx_notify_workqueue_get()));
+	DEBUGASSERT(nxsched_gettid() == k_work_queue_thread_get(tx_notify_workqueue_get()));
 
 	LOG_DBG("conn %p", (void *)conn);
 
@@ -341,7 +341,7 @@ void bt_conn_tx_notify(struct bt_conn *conn, bool wait_for_completion)
 {
 #if defined(CONFIG_BT_CONN_TX)
 	/* Ensure that function is called only from a single context. */
-	if (k_current_get() == k_work_queue_thread_get(tx_notify_workqueue_get())) {
+	if (nxsched_gettid() == k_work_queue_thread_get(tx_notify_workqueue_get())) {
 		tx_notify_process(conn);
 	} else {
 		struct k_work_sync sync;
@@ -1600,7 +1600,7 @@ struct net_buf *bt_conn_create_pdu_timeout(struct net_buf_pool *pool,
 	DEBUGASSERT(!k_is_in_isr());
 
 	if (!((timeout) == (0)) &&
-	    k_current_get() == k_work_queue_thread_get(&k_sys_work_q)) {
+	    nxsched_gettid() == k_work_queue_thread_get(&k_sys_work_q)) {
 		LOG_WRN("Timeout discarded. No blocking in syswq.");
 		timeout = 0;
 	}

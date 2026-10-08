@@ -151,7 +151,6 @@ static void bt_workq_start(void)
 	k_work_queue_init(&bt_workq);
 	k_work_queue_start(&bt_workq, rx_thread_stack, CONFIG_BT_RX_STACK_SIZE,
 			   K_PRIO_COOP(CONFIG_BT_RX_PRIO), NULL);
-	k_thread_name_set(bt_workq.thread_id, "BT RX WQ");
 
 	bt_workq_started = true;
 }
@@ -535,7 +534,7 @@ int bt_hci_cmd_send_sync(uint16_t opcode, struct net_buf *buf,
 	 * command from the current context.
 	 */
 	if (!IS_ENABLED(CONFIG_BT_TX_PROCESSOR_THREAD) &&
-	    k_current_get() == k_sys_work_q.thread_id) {
+	    nxsched_gettid() == k_sys_work_q.thread_id) {
 		/* drain the command queue until we get to send the command of interest. */
 		struct net_buf *cmd = NULL;
 
@@ -5045,7 +5044,7 @@ int bt_disable(void)
 		buf = net_buf_slist_get(&bt_dev.rx_queue);
 	}
 
-	if (k_current_get() == bt_workq.thread_id) {
+	if (nxsched_gettid() == bt_workq.thread_id) {
 		(void)k_work_cancel(&rx_work);
 	} else {
 		struct k_work_sync sync;

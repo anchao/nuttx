@@ -50,9 +50,6 @@ static inline bool k_is_preempt_thread(void)
     return false;
 }
 
-/* Current thread - declared in kernel.h, provide arch-level implementation */
-extern struct k_thread *k_current_get(void);
-
 /* Cycle counter - stub */
 static inline uint32_t arch_k_cycle_get_32(void)
 {

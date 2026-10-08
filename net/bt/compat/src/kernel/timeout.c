@@ -5,7 +5,11 @@
 #include <zephyr/kernel.h>
 
 /* Global system work queue - uses NuttX HP work queue */
-struct k_work_q k_sys_work_q = { .qid = HPWORK };
+struct k_work_q k_sys_work_q =
+{
+  .qid = HPWORK,
+  .thread_id = INVALID_PROCESS_ID,
+};
 
 static int k_work_queue_native(struct k_work_q *queue,
                                struct work_s *work,
@@ -50,6 +54,12 @@ static int k_work_cancel_native(struct k_work *work, bool sync)
 static void k_work_handler_wrapper(void *arg)
 {
     struct k_work *work = arg;
+    pid_t previous_thread_id = work->queue != NULL ? work->queue->thread_id : INVALID_PROCESS_ID;
+
+    if (work->queue != NULL)
+        {
+            work->queue->thread_id = nxsched_gettid();
+        }
 
     work->flags &= ~(K_WORK_QUEUED | K_WORK_DELAYED);
     work->flags |= K_WORK_RUNNING;
@@ -57,6 +67,11 @@ static void k_work_handler_wrapper(void *arg)
     work->handler(work);
 
     work->flags &= ~K_WORK_RUNNING;
+
+    if (work->queue != NULL)
+        {
+            work->queue->thread_id = previous_thread_id;
+        }
 }
 
 void k_work_init(struct k_work *work, k_work_handler_t handler)
@@ -229,9 +244,9 @@ clock_t k_work_delayable_remaining_get(const struct k_work_delayable *dwork)
     return remaining > 0 ? remaining : 0;
 }
 
-struct k_thread *k_work_queue_thread_get(struct k_work_q *queue)
+pid_t k_work_queue_thread_get(struct k_work_q *queue)
 {
-    return queue != NULL ? queue->thread_id : NULL;
+    return queue != NULL ? queue->thread_id : INVALID_PROCESS_ID;
 }
 
 void k_work_queue_init(struct k_work_q *queue)
@@ -240,6 +255,7 @@ void k_work_queue_init(struct k_work_q *queue)
         {
             memset(queue, 0, sizeof(*queue));
             queue->qid = HPWORK;
+            queue->thread_id = INVALID_PROCESS_ID;
         }
 }
 
