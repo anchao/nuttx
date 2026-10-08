@@ -12,8 +12,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <strings.h>
 
-#include <zephyr/arch/common/ffs.h>
 #include <zephyr/autoconf.h>
 #include <zephyr/bluetooth/buf.h>
 #include <zephyr/bluetooth/gap.h>
@@ -3470,7 +3470,7 @@ int bt_iso_big_sync(struct bt_le_per_adv_sync *sync, struct bt_iso_big_sync_para
 	bitfield_copy = param->bis_bitfield;
 	bis_channels = param->bis_channels;
 	for (uint8_t i = 0; i < param->num_bis; i++) {
-		const uint8_t bis_number = find_lsb_set(bitfield_copy);
+		const uint8_t bis_number = ffs(bitfield_copy);
 
 		/* pop the least significant bit from the bitfield */
 		bitfield_copy &= ~BIT(bis_number - 1U);
@@ -3478,7 +3478,7 @@ int bt_iso_big_sync(struct bt_le_per_adv_sync *sync, struct bt_iso_big_sync_para
 		/* The least significant bit will be the bis_number, so that if the bitfield is
 		 * 0b0101 then the first pop will be 1 and the bitfield_copy will be 0b0100 and
 		 * then the second pop will be 3 and the bitfield_copy will be 0b0000
-		 * Since find_lsb_set returns the index starting from 1 we can use the result
+		 * Since ffs returns the index starting from 1 we can use the result
 		 * directly as the bis_numbers also start from 1.
 		 */
 		err = big_init_bis(big, bis_channels[i], bis_number, false);

@@ -5,6 +5,7 @@
  */
 
 #include <stdio.h>
+#include <strings.h>
 #include <zephyr/kernel.h>
 #include <errno.h>
 #include <nuttx/atomic.h>
@@ -1617,7 +1618,7 @@ static void bt_hfp_ag_auto_select_codec(struct bt_hfp_ag *ag)
 		return;
 	}
 
-	ag->selected_codec_id = find_msb_set(supported_codec) - 1;
+	ag->selected_codec_id = fls(supported_codec) - 1;
 	LOG_DBG("Selected codec ID: %u", ag->selected_codec_id);
 }
 

@@ -8,6 +8,7 @@
 
 #include <zephyr/kernel.h>
 #include <errno.h>
+#include <strings.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/byteorder.h>
@@ -743,7 +744,7 @@ int bt_mesh_auth_method_set_input(bt_mesh_input_action_t action, uint8_t size)
 		return -EINVAL;
 	}
 
-	prov_set_method(AUTH_METHOD_INPUT, find_msb_set(action) - 1, size);
+	prov_set_method(AUTH_METHOD_INPUT, fls(action) - 1, size);
 	return 0;
 }
 
@@ -753,7 +754,7 @@ int bt_mesh_auth_method_set_output(bt_mesh_output_action_t action, uint8_t size)
 		return -EINVAL;
 	}
 
-	prov_set_method(AUTH_METHOD_OUTPUT, find_msb_set(action) - 1, size);
+	prov_set_method(AUTH_METHOD_OUTPUT, fls(action) - 1, size);
 	return 0;
 }
 

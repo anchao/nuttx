@@ -7,6 +7,7 @@
 #include <zephyr/kernel.h>
 #include <errno.h>
 #include <string.h>
+#include <strings.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <zephyr/sys/util.h>
@@ -894,12 +895,13 @@ static int trans_ack(struct bt_mesh_net_rx *rx, uint8_t hdr,
 		return 0;
 	}
 
-	if (find_msb_set(ack) - 1 > tx->seg_n) {
+	if (fls(ack) - 1 > tx->seg_n) {
 		LOG_ERR("Too large segment number in ack");
 		return -EINVAL;
 	}
 
-	while ((bit = find_lsb_set(ack))) {
+	while (ack) {
+		bit = ffs(ack);
 		if (tx->seg[bit - 1]) {
 			LOG_DBG("seg %u/%u acked", bit - 1, tx->seg_n);
 			seg_tx_done(tx, bit - 1);

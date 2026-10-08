@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <nuttx/compiler.h>
-#include <zephyr/arch/common/ffs.h>
 
 #ifdef __cplusplus
 extern "C" {

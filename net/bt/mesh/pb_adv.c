@@ -6,6 +6,7 @@
  */
 #include <stdint.h>
 #include <string.h>
+#include <strings.h>
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/mesh.h>
 #include <nuttx/mm/net_buf.h>
@@ -665,7 +666,7 @@ static void gen_prov_start(struct prov_rx *rx, struct net_buf_simple *buf)
 	 */
 	if ((pb_adv_link.rx.seg & BIT(0)) &&
 	    ((pb_adv_link.rx.seg & SEG_NVAL) != SEG_NVAL) &&
-	    (find_msb_set((~pb_adv_link.rx.seg) & SEG_NVAL) - 1 > pb_adv_link.rx.last_seg)) {
+	    (fls((~pb_adv_link.rx.seg) & SEG_NVAL) - 1 > pb_adv_link.rx.last_seg)) {
 		LOG_ERR("Invalid segment index %u", seg);
 		prov_failed(PROV_ERR_NVAL_FMT);
 		return;
