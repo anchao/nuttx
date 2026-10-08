@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr/autoconf.h>
+#include <nuttx/config.h>
 #include <zephyr/bluetooth/audio/audio.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/usb/usb_buf.h>

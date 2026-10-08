@@ -13,7 +13,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <zephyr/autoconf.h>
+#include <nuttx/config.h>
 #include <zephyr/bluetooth/audio/media_proxy.h>
 #include <zephyr/kernel.h>
 

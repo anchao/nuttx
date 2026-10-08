@@ -9,7 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <zephyr/autoconf.h>
+#include <nuttx/config.h>
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/audio/tbs.h>
 #include <zephyr/bluetooth/audio/csip.h>

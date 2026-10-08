@@ -23,7 +23,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <zephyr/autoconf.h>
+#include <nuttx/config.h>
 #include <zephyr/bluetooth/hci.h>
 #include <zephyr/bluetooth/hci_types.h>
 #include <nuttx/mm/net_buf.h>

@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr/autoconf.h>
+#include <nuttx/config.h>
 #include <zephyr/bluetooth/att.h>
 #include <zephyr/bluetooth/audio/aics.h>
 #include <zephyr/bluetooth/audio/micp.h>

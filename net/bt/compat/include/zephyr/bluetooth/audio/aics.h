@@ -35,7 +35,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <zephyr/autoconf.h>
+#include <nuttx/config.h>
 #include <zephyr/bluetooth/bluetooth.h>
 
 #ifdef __cplusplus

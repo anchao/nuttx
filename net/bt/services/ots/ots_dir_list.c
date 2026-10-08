@@ -10,7 +10,7 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include <zephyr/autoconf.h>
+#include <nuttx/config.h>
 #include <zephyr/bluetooth/services/ots.h>
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/logging/log.h>

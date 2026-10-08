@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr/autoconf.h>
+#include <nuttx/config.h>
 #include <zephyr/bluetooth/hci_types.h>
 #include <zephyr/kernel.h>
 #include <assert.h>

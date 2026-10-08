@@ -13,7 +13,7 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include <zephyr/autoconf.h>
+#include <nuttx/config.h>
 #include <zephyr/bluetooth/audio/ccid.h>
 #include <zephyr/bluetooth/audio/mcs.h>
 #include <zephyr/bluetooth/audio/media_proxy.h>

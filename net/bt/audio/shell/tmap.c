@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <stddef.h>
 
-#include <zephyr/autoconf.h>
+#include <nuttx/config.h>
 #include <zephyr/bluetooth/audio/tmap.h>
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/kernel.h>

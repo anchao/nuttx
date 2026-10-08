@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/autoconf.h>
+#include <nuttx/config.h>
 #include <zephyr/kernel.h>
 #include <zephyr/init.h>
 #include <nuttx/clock.h>

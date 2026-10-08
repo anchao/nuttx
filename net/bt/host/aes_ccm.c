@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr/autoconf.h>
+#include <nuttx/config.h>
 #include <zephyr/bluetooth/crypto.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>

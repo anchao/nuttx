@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr/autoconf.h>
+#include <nuttx/config.h>
 #include <zephyr/bluetooth/audio/mcc.h>
 #include <zephyr/bluetooth/audio/mcs.h>
 #include <zephyr/bluetooth/audio/media_proxy.h>

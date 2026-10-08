@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr/autoconf.h>
+#include <nuttx/config.h>
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/cs.h>
 #include <zephyr/bluetooth/hci.h>

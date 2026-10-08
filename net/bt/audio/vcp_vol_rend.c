@@ -14,7 +14,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-#include <zephyr/autoconf.h>
+#include <nuttx/config.h>
 #include <zephyr/bluetooth/att.h>
 #include <zephyr/bluetooth/audio/aics.h>
 #include <zephyr/bluetooth/audio/vcp.h>
