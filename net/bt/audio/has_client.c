@@ -21,9 +21,9 @@
 #include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_utf8.h>
 #include <zephyr/toolchain.h>
 
+#include "common/bt_str.h"
 #include "has_internal.h"
 
 LOG_MODULE_REGISTER(bt_has_client, CONFIG_BT_HAS_CLIENT_LOG_LEVEL);

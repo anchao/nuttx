@@ -25,10 +25,10 @@
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_utf8.h>
 #include <nuttx/clock.h>
 #include <zephyr/toolchain.h>
 
+#include "common/bt_str.h"
 #include "aics_internal.h"
 #include "audio_internal.h"
 

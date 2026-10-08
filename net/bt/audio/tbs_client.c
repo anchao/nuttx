@@ -28,7 +28,6 @@
 #include <nuttx/atomic.h>
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_utf8.h>
 #include <zephyr/toolchain.h>
 #include <sys/types.h>
 

@@ -32,10 +32,10 @@
 #include <zephyr/shell/shell_string_conv.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/sys/util_utf8.h>
 #include <zephyr/toolchain.h>
 #include <sys/types.h>
 
+#include "common/bt_str.h"
 #include "audio.h"
 #include "common/bt_shell_private.h"
 #include "host/hci_core.h"
