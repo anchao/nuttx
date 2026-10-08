@@ -30,7 +30,6 @@
 #include <nuttx/list.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/arch/structs.h>
-#include <zephyr/kernel/stats.h>
 #include <zephyr/kernel/obj_core.h>
 #endif
 
@@ -144,20 +143,6 @@ struct _cpu {
 	uint8_t swap_ok;
 #endif
 
-#ifdef CONFIG_SCHED_THREAD_USAGE
-	/*
-	 * [usage0] is used as a timestamp to mark the beginning of an
-	 * execution window. [0] is a special value indicating that it
-	 * has been stopped (but not disabled).
-	 */
-
-	uint32_t usage0;
-
-#ifdef CONFIG_SCHED_THREAD_USAGE_ALL
-	struct k_cycle_stats *usage;
-#endif
-#endif
-
 #ifdef CONFIG_OBJ_CORE_SYSTEM
 	struct k_obj_core  obj_core;
 #endif
@@ -200,10 +185,6 @@ struct z_kernel {
 #if defined(CONFIG_THREAD_MONITOR)
 	pid_t threads;
 #endif
-#ifdef CONFIG_SCHED_THREAD_USAGE_ALL
-	struct k_cycle_stats usage[CONFIG_MP_MAX_NUM_CPUS];
-#endif
-
 #ifdef CONFIG_OBJ_CORE_SYSTEM
 	struct k_obj_core  obj_core;
 #endif
