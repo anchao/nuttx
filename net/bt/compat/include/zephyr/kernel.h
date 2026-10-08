@@ -214,17 +214,6 @@ int k_condvar_init(struct k_condvar *condvar);
 int k_condvar_wait(struct k_condvar *condvar, rmutex_t *mutex, clock_t timeout);
 int k_condvar_broadcast(struct k_condvar *condvar);
 
-/* k_panic / k_oops - stubs */
-static inline void k_panic(void)
-{
-    PANIC();
-}
-
-static inline void k_oops(void)
-{
-    PANIC();
-}
-
 #ifdef __cplusplus
 }
 #endif

@@ -277,12 +277,6 @@ config BT_ASSERT_VERBOSE
 	  When CONFIG_BT_ASSERT is enabled, this option turns on printing the
 	  cause of the assert to the console using printk().
 
-config BT_ASSERT_PANIC
-	bool "Use k_panic() instead of k_oops()"
-	help
-	  When CONFIG_BT_ASSERT is enabled, this option makes the code call
-	  k_panic() instead of k_oops() when an assertion is triggered.
-
 endif # BT_ASSERT
 
 config BT_HCI_ERR_TO_STR

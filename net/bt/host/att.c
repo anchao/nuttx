@@ -310,7 +310,7 @@ static void att_tx_destroy_work_handler(struct k_work *work)
 
 		if (err < 0) {
 			LOG_ERR("Failed to re-submit %s: %d", __func__, err);
-			k_oops();
+			PANIC();
 		}
 	}
 }
@@ -343,7 +343,7 @@ static void att_tx_destroy(struct net_buf *buf)
 	err = k_work_submit(&att_tx_destroy_work);
 	if (err < 0) {
 		LOG_ERR("Failed to submit att_tx_destroy_work: %d", err);
-		k_oops();
+		PANIC();
 	}
 	/* Continues in att_tx_destroy_work_handler() */
 }
