@@ -42,7 +42,6 @@
 #include <assert.h>
 #include <nuttx/clock.h>
 #include <zephyr/toolchain.h>
-#include <soc.h>
 
 #include "addr_internal.h"
 #include "adv.h"

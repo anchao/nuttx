@@ -15,7 +15,6 @@
 #include <nuttx/list.h>
 #include <nuttx/mutex.h>
 
-#include "sys_clock.h"
 #include <nuttx/atomic.h>
 #include "sys/util.h"
 #include "toolchain.h"
