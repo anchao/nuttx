@@ -33,6 +33,7 @@
 #include <zephyr/drivers/bluetooth.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <nuttx/irq.h>
 #include <nuttx/mm/net_buf.h>
 #include <zephyr/settings/settings.h>
 #include <nuttx/atomic.h>
@@ -722,7 +723,7 @@ static void hci_num_completed_packets(struct net_buf *buf)
 
 		while (count--) {
 			struct list_node *node;
-			unsigned int key;
+			irqstate_t key;
 
 			/* move the next TX context from the `pending` list to
 			 * the `complete` list.
@@ -740,9 +741,9 @@ static void hci_num_completed_packets(struct net_buf *buf)
 			/* The `complete` list is consumed from another context,
 			 * which uses the same lock.
 			 */
-			key = irq_lock();
+			key = enter_critical_section();
 			list_add_tail(&conn->tx_complete, node);
-			irq_unlock(key);
+			leave_critical_section(key);
 
 			/* align the `pending` value */
 			DEBUGASSERT(atomic_read(&conn->in_ll));

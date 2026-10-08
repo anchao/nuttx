@@ -26,9 +26,9 @@
 #include <zephyr/bluetooth/hci_vs.h>
 #include <zephyr/bluetooth/iso.h>
 #include <zephyr/bluetooth/l2cap.h>
-#include <zephyr/irq.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <nuttx/irq.h>
 #include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>
 #include <zephyr/sys/byteorder.h>
@@ -297,17 +297,17 @@ static void tx_notify_process(struct bt_conn *conn)
 
 	while (1) {
 		struct bt_conn_tx *tx = NULL;
-		unsigned int key;
+		irqstate_t key;
 		bt_conn_tx_cb_t cb;
 		void *user_data;
 
-		key = irq_lock();
+		key = enter_critical_section();
 		if (!list_is_empty(&conn->tx_complete)) {
 			const struct list_node *node = list_remove_head(&conn->tx_complete);
 
 			tx = CONTAINER_OF(node, struct bt_conn_tx, node);
 		}
-		irq_unlock(key);
+		leave_critical_section(key);
 
 		if (!tx) {
 			return;
