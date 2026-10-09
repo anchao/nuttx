@@ -11,15 +11,15 @@
 #include <sys/types.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/services/ots.h>
-#include <zephyr/bluetooth/uuid.h>
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/services/ots.h>
+#include <nuttx/net/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 #include <nuttx/mm/net_buf.h>
 #include <assert.h>
 #include <nuttx/list.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #include "ots_internal.h"
 #include "ots_obj_manager_internal.h"

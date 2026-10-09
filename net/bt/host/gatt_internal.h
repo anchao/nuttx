@@ -11,8 +11,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <zephyr/bluetooth/addr.h>
-#include <zephyr/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/addr.h>
+#include <nuttx/net/bluetooth/conn.h>
 
 #define BT_GATT_PERM_READ_MASK			(BT_GATT_PERM_READ | \
 						BT_GATT_PERM_READ_ENCRYPT | \

@@ -7,8 +7,8 @@
 #ifndef ZEPHYR_SUBSYS_BLUETOOTH_MESH_APP_KEYS_H_
 #define ZEPHYR_SUBSYS_BLUETOOTH_MESH_APP_KEYS_H_
 
-#include <zephyr/sys/iterable_sections.h>
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/compat/sys/iterable_sections.h>
+#include <nuttx/net/bluetooth/mesh.h>
 #include "subnet.h"
 
 /** Mesh Application Key. */

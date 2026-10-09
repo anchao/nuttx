@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 #include <errno.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 
 void k_mem_slab_init(struct k_mem_slab *slab, void *buffer, size_t block_size,
                      uint32_t num_blocks)

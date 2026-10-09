@@ -8,12 +8,12 @@
 #include <errno.h>
 #include <stdint.h>
 
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 
-#include <zephyr/bluetooth/buf.h>
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/addr.h>
+#include <nuttx/net/bluetooth/buf.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/addr.h>
 
 #include <common/bt_str.h>
 
@@ -24,7 +24,7 @@
 #include "l2cap_br_internal.h"
 
 #define LOG_LEVEL CONFIG_BT_HCI_CORE_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_ssp);
 
 enum pairing_method {

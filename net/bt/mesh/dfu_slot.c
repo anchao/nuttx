@@ -4,16 +4,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/settings/settings.h>
+#include <nuttx/net/bluetooth/compat/settings/settings.h>
 #include "dfu_slot.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 #include <common/bt_str.h>
 
 #define LOG_LEVEL CONFIG_BT_MESH_DFU_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_dfu_slot);
 
 #define SLOT_ENTRY_BUFLEN 25

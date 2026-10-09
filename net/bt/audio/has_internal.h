@@ -11,9 +11,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/gatt.h>
-#include <zephyr/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/uuid.h>
 #include <nuttx/atomic.h>
 
 /* Control Point opcodes */

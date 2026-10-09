@@ -9,8 +9,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <zephyr/bluetooth/mesh/access.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/mesh/access.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/list.h>
 
 #include "net.h"

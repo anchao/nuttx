@@ -14,24 +14,24 @@
 #include <string.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/audio/ascs.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/gap.h>
-#include <zephyr/bluetooth/gatt.h>
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/hci_types.h>
-#include <zephyr/bluetooth/iso.h>
-#include <zephyr/bluetooth/audio/audio.h>
-#include <zephyr/bluetooth/audio/bap.h>
-#include <zephyr/kernel.h>
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/audio/ascs.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/gap.h>
+#include <nuttx/net/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/hci_types.h>
+#include <nuttx/net/bluetooth/iso.h>
+#include <nuttx/net/bluetooth/audio/audio.h>
+#include <nuttx/net/bluetooth/audio/bap.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 #include <nuttx/mm/net_buf.h>
 #include <assert.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 #include <nuttx/list.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #include "../host/iso_internal.h"
 

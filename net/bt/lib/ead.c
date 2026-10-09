@@ -2,15 +2,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/bluetooth/ead.h>
-#include <zephyr/bluetooth/crypto.h>
-#include <zephyr/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/ead.h>
+#include <nuttx/net/bluetooth/crypto.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
 
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 
 /** nonce size in bytes */
 #define BT_EAD_NONCE_SIZE 13

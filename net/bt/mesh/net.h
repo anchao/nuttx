@@ -8,9 +8,9 @@
 
 #include "adv.h"
 #include "subnet.h"
-#include <zephyr/bluetooth/mesh/keys.h>
-#include <zephyr/bluetooth/mesh/sar_cfg.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/mesh/keys.h>
+#include <nuttx/net/bluetooth/mesh/sar_cfg.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>
 #include <nuttx/list.h>

@@ -11,18 +11,18 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr/bluetooth/addr.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/buf.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/kernel.h>
-#include <zephyr/logging/log.h>
-#include <zephyr/settings/settings.h>
+#include <nuttx/net/bluetooth/addr.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/buf.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
+#include <nuttx/net/bluetooth/compat/settings/settings.h>
 #include <assert.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 
 #include "common/bt_str.h"
 #include "common/rpa.h"

@@ -7,19 +7,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <string.h>
 #include <errno.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/iterable_sections.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/sys/crc.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/iterable_sections.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/crc.h>
 
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/classic/l2cap_br.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/classic/l2cap_br.h>
 
 #include <host/buf_view.h>
 #include <host/hci_core.h>
@@ -32,7 +32,7 @@
 #include "rfcomm_internal.h"
 #include "sdp_internal.h"
 
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_l2cap_br, CONFIG_BT_L2CAP_LOG_LEVEL);
 
 #define BR_CHAN_RTX(_w) CONTAINER_OF(k_work_delayable_from_work(_w), \

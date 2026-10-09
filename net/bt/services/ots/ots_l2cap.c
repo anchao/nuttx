@@ -11,15 +11,15 @@
 #include <stddef.h>
 #include <string.h>
 #include <errno.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/kernel.h>
-#include <zephyr/init.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/init.h>
 
 #include <nuttx/mm/net_buf.h>
 
 #include "ots_l2cap_internal.h"
 
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 
 /* This l2cap is the only OTS-file in use for OTC.
  * If only OTC is used, the OTS log module must be registered here.

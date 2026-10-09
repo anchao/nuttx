@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include <string.h>
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/mesh.h>
 #include <common/bt_str.h>
 #include "mesh.h"
 #include "blob.h"
@@ -12,7 +12,7 @@
 #include "transport.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_MODEL_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_blob_cli);
 
 #define TARGETS_FOR_EACH(cli, target)                                          \

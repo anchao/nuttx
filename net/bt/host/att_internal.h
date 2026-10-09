@@ -3,13 +3,13 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include <zephyr/bluetooth/att.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/l2cap.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/att.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/mm/net_buf.h>
 #include <nuttx/list.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 #include <nuttx/clock.h>
 
 /*

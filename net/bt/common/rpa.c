@@ -10,17 +10,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <stddef.h>
 #include <errno.h>
 #include <string.h>
 
 #include "common/bt_str.h"
 
-#include <zephyr/bluetooth/crypto.h>
+#include <nuttx/net/bluetooth/crypto.h>
 
 #define LOG_LEVEL CONFIG_BT_RPA_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_rpa);
 
 #if defined(CONFIG_BT_CTLR_CRYPTO) && defined(CONFIG_BT_HOST_CRYPTO)

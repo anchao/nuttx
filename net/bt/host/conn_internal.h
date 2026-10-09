@@ -13,16 +13,16 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <zephyr/bluetooth/addr.h>
-#include <zephyr/bluetooth/buf.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/iso.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/addr.h>
+#include <nuttx/net/bluetooth/buf.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/iso.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>
 #include <nuttx/list.h>
 #include <nuttx/clock.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 typedef enum __packed {
 	BT_CONN_DISCONNECTED,         /* Disconnected, conn is completely down */

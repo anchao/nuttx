@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/bluetooth/addr.h>
-#include <zephyr/device.h>
-#include <zephyr/drivers/bluetooth.h>
+#include <nuttx/net/bluetooth/addr.h>
+#include <nuttx/net/bluetooth/compat/device.h>
+#include <nuttx/net/bluetooth/compat/drivers/bluetooth.h>
 
 /* "No address" is BT_ADDR_ANY, as in the setup() op's parameters and, as the
  * address part of BT_ADDR_LE_ANY, in the Host's identity table, and not

@@ -11,8 +11,8 @@
 #include <stdint.h>
 
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/bluetooth/buf.h>
-#include <zephyr/bluetooth/hci_types.h>
+#include <nuttx/net/bluetooth/buf.h>
+#include <nuttx/net/bluetooth/hci_types.h>
 
 #define BT_MONITOR_NEW_INDEX    0
 #define BT_MONITOR_DEL_INDEX    1

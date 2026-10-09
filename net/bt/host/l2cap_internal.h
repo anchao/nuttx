@@ -11,11 +11,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/l2cap.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/sys/iterable_sections.h>
+#include <nuttx/net/bluetooth/compat/sys/iterable_sections.h>
 #include <nuttx/clock.h>
 
 #include "host/classic/l2cap_br_interface.h"

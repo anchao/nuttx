@@ -6,11 +6,11 @@
 
 #include <errno.h>
 
-#include <zephyr/bluetooth/mesh.h>
-#include <zephyr/psa/key_ids.h>
+#include <nuttx/net/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/compat/psa/key_ids.h>
 
 #define LOG_LEVEL CONFIG_BT_MESH_CRYPTO_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_crypto_psa);
 
 #include "mesh.h"

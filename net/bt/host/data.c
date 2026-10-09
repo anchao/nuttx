@@ -10,8 +10,8 @@
 #include <string.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 #include <nuttx/mm/net_buf.h>
 
 #define LOG_LEVEL CONFIG_BT_HCI_CORE_LOG_LEVEL

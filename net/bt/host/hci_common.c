@@ -7,12 +7,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <zephyr/bluetooth/buf.h>
-#include <zephyr/bluetooth/hci_types.h>
-#include <zephyr/drivers/bluetooth.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/buf.h>
+#include <nuttx/net/bluetooth/hci_types.h>
+#include <nuttx/net/bluetooth/compat/drivers/bluetooth.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 
 #include "common/assert.h"
 

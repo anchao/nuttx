@@ -4,17 +4,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <errno.h>
 #include <stdint.h>
 #include <sys/types.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
-#include <zephyr/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/hci.h>
 
-#include <zephyr/settings/settings.h>
+#include <nuttx/net/bluetooth/compat/settings/settings.h>
 #include <common/bt_settings_commit.h>
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/mesh.h>
 
 #include "mesh.h"
 #include "subnet.h"
@@ -35,7 +35,7 @@
 #include "va.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_SETTINGS_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_settings);
 
 #ifdef CONFIG_BT_MESH_RPL_STORE_TIMEOUT

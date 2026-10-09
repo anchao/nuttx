@@ -12,8 +12,8 @@
 
 #include <stdint.h>
 
-#include <zephyr/bluetooth/mesh.h>
-#include <zephyr/bluetooth/mesh/access.h>
+#include <nuttx/net/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/mesh/access.h>
 #include <nuttx/list.h>
 
 /** @brief Bluetooth Testing callbacks structure.

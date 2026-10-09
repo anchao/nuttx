@@ -8,9 +8,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <zephyr/bluetooth/mesh.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/sys/iterable_sections.h>
+#include <nuttx/net/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/compat/sys/iterable_sections.h>
 
 #include "mesh.h"
 #include "net.h"
@@ -26,7 +26,7 @@
 #include "common/bt_str.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_KEYS_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_app_keys);
 
 /* Tracking of what storage changes are pending for App Keys. We track this in

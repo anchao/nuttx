@@ -13,14 +13,14 @@
 #include <string.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/audio/audio.h>
-#include <zephyr/bluetooth/audio/bap.h>
-#include <zephyr/bluetooth/hci_types.h>
-#include <zephyr/bluetooth/iso.h>
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/audio/audio.h>
+#include <nuttx/net/bluetooth/audio/bap.h>
+#include <nuttx/net/bluetooth/hci_types.h>
+#include <nuttx/net/bluetooth/iso.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 #include <assert.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
 #include "bap_iso.h"
 #include "audio_internal.h"

@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/classic/sdp.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/classic/sdp.h>
 
 #include "did_internal.h"
 
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_did);
 
 #define DID_VER_1_3 (0x0103u)

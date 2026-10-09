@@ -5,11 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/buf.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/buf.h>
 
 #include <common/bt_str.h>
 
@@ -20,7 +20,7 @@
 #include "sco_internal.h"
 
 #define LOG_LEVEL CONFIG_BT_HCI_CORE_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_br);
 
 #define RSSI_INVALID 127

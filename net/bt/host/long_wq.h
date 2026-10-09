@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/clock.h>
 
 int bt_long_wq_schedule(struct k_work_delayable *dwork, clock_t timeout);

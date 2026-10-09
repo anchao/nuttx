@@ -13,9 +13,9 @@
 #include <stdint.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/gatt.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/atomic.h>
 
 #if defined(CONFIG_BT_VOCS)

@@ -3,8 +3,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include <zephyr/bluetooth/mesh.h>
-#include <zephyr/sys/iterable_sections.h>
+#include <nuttx/net/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/compat/sys/iterable_sections.h>
 
 #include "net.h"
 #include "rpl.h"
@@ -17,7 +17,7 @@
 #include "foundation.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_TRANS_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_hb);
 
 /* Heartbeat Publication information for persistent storage. */

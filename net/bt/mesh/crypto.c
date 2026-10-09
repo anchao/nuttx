@@ -8,8 +8,8 @@
 #include <string.h>
 #include <stdbool.h>
 #include <errno.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/mesh.h>
 
 #include "common/bt_str.h"
 
@@ -17,7 +17,7 @@
 #include "crypto.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_CRYPTO_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_crypto);
 
 #define NET_MIC_LEN(pdu) (((pdu)[1] & 0x80) ? 8 : 4)

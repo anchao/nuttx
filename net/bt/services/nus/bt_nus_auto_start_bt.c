@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/kernel.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/services/nus.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/services/nus.h>
 
 #define DEVICE_NAME		CONFIG_BT_DEVICE_NAME
 #define DEVICE_NAME_LEN		(sizeof(DEVICE_NAME) - 1)

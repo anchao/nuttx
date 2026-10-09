@@ -6,15 +6,15 @@
 
 #include <stdlib.h>
 #include <ctype.h>
-#include <zephyr/kernel.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
-#include <zephyr/shell/shell.h>
-#include <zephyr/settings/settings.h>
+#include <nuttx/net/bluetooth/compat/shell/shell.h>
+#include <nuttx/net/bluetooth/compat/settings/settings.h>
 
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/mesh.h>
-#include <zephyr/bluetooth/mesh/shell.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/mesh/shell.h>
 
 /* Private includes for raw Network & Transport layer access */
 #include "mesh/mesh.h"

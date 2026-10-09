@@ -6,15 +6,15 @@
  */
 
 #include <stdio.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include <zephyr/settings/settings.h>
+#include <nuttx/net/bluetooth/compat/settings/settings.h>
 #include <nuttx/mm/net_buf.h>
 
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/mesh.h>
 
 #include "common/bt_str.h"
 
@@ -26,7 +26,7 @@
 #include "settings.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_TRANS_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_va);
 
 static struct bt_mesh_va virtual_addrs[CONFIG_BT_MESH_LABEL_COUNT];

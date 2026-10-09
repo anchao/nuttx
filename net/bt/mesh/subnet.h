@@ -10,10 +10,10 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-#include <zephyr/bluetooth/mesh/keys.h>
+#include <nuttx/net/bluetooth/mesh/keys.h>
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/kernel.h>
-#include <zephyr/sys/iterable_sections.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/sys/iterable_sections.h>
 
 #define BT_MESH_NET_FLAG_KR       BIT(0)
 #define BT_MESH_NET_FLAG_IVU      BIT(1)

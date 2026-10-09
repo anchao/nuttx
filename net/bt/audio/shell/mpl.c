@@ -14,12 +14,12 @@
 #include <stdint.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/audio/media_proxy.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/logging/log.h>
-#include <zephyr/shell/shell.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/audio/media_proxy.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
+#include <nuttx/net/bluetooth/compat/shell/shell.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #include "../mpl_internal.h"
 

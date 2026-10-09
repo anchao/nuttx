@@ -10,17 +10,17 @@
 
 #include <errno.h>
 #include <string.h>
-#include <zephyr/init.h>
+#include <nuttx/net/bluetooth/compat/init.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/gatt.h>
-#include <zephyr/bluetooth/uuid.h>
-#include <zephyr/bluetooth/services/ans.h>
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/services/ans.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 #include "common/bt_str.h"
 
 LOG_MODULE_REGISTER(bt_ans, CONFIG_BT_ANS_LOG_LEVEL);

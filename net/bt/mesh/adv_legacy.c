@@ -7,16 +7,16 @@
 
 #include <stdint.h>
 
-#include <zephyr/kernel.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
 #include <nuttx/kthread.h>
 
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/mesh.h>
 
 #include "common/bt_str.h"
 
@@ -29,7 +29,7 @@
 #include "solicitation.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_ADV_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_adv_legacy);
 
 /* Pre-5.0 controllers enforce a minimum interval of 100ms

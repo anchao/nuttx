@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 
 #include "psa/crypto.h"
 
@@ -13,7 +13,7 @@
 #include "bt_crypto.h"
 
 #define LOG_LEVEL CONFIG_BT_CRYPTO_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_DECLARE(bt_crypto);
 
 int bt_crypto_aes_cmac(const uint8_t *key, const uint8_t *in, size_t len, uint8_t *out)

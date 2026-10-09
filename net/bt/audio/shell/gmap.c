@@ -16,22 +16,22 @@
 #include <string.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/assigned_numbers.h>
-#include <zephyr/bluetooth/audio/audio.h>
-#include <zephyr/bluetooth/audio/gmap.h>
-#include <zephyr/bluetooth/audio/gmap_lc3_preset.h>
-#include <zephyr/bluetooth/audio/lc3.h>
-#include <zephyr/bluetooth/audio/pacs.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/data.h>
-#include <zephyr/bluetooth/gap.h>
-#include <zephyr/bluetooth/uuid.h>
-#include <zephyr/kernel.h>
-#include <zephyr/shell/shell.h>
+#include <nuttx/net/bluetooth/assigned_numbers.h>
+#include <nuttx/net/bluetooth/audio/audio.h>
+#include <nuttx/net/bluetooth/audio/gmap.h>
+#include <nuttx/net/bluetooth/audio/gmap_lc3_preset.h>
+#include <nuttx/net/bluetooth/audio/lc3.h>
+#include <nuttx/net/bluetooth/audio/pacs.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/data.h>
+#include <nuttx/net/bluetooth/gap.h>
+#include <nuttx/net/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/shell/shell.h>
 #include <assert.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #include "audio.h"
 #include "common/bt_shell_private.h"

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include <string.h>
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/mesh.h>
 #include <common/bt_str.h>
 #include "net.h"
 #include "access.h"
@@ -13,7 +13,7 @@
 #include "blob.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_MODEL_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_blob_srv);
 
 #define MTU_SIZE_MAX (BT_MESH_RX_SDU_MAX - BT_MESH_MIC_SHORT)

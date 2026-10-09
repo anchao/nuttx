@@ -7,11 +7,11 @@
 
 #include <string.h>
 #include <errno.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/bluetooth/buf.h>
-#include <zephyr/bluetooth/hci_driver_nuttx.h>
-#include <zephyr/drivers/bluetooth.h>
+#include <nuttx/net/bluetooth/buf.h>
+#include <nuttx/net/bluetooth/hci_driver_nuttx.h>
+#include <nuttx/net/bluetooth/compat/drivers/bluetooth.h>
 #include <syslog.h>
 
 static const struct bt_hci_driver_ops *g_hci_ops;

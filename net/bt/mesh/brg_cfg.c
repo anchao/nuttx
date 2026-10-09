@@ -8,7 +8,7 @@
  * specification
  */
 #include <errno.h>
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/mesh.h>
 
 #include "keys.h"
 #include "net.h"
@@ -17,7 +17,7 @@
 #include "foundation.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_BRG_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_brg_cfg);
 
 /* Bridging table state and counter */

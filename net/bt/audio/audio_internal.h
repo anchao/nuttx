@@ -12,9 +12,9 @@
 #include <sys/types.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/audio/audio.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/audio/audio.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/gatt.h>
 
 #define BT_AUDIO_NOTIFY_RETRY_DELAY_US ((CONFIG_BT_AUDIO_NOTIFY_RETRY_DELAY) * 1250U)
 

@@ -2,7 +2,7 @@
 #include <errno.h>
 #include <sched.h>
 #include <string.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 
 /* Global system work queue - uses NuttX HP work queue */
 struct k_work_q k_sys_work_q =

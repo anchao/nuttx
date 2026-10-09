@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <zephyr/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
 
 /**
  * @brief Cypher based Message Authentication Code (CMAC) with AES 128 bit

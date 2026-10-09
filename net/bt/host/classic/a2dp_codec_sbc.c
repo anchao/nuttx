@@ -4,16 +4,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <string.h>
 #include <errno.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
-#include <zephyr/bluetooth/classic/a2dp_codec_sbc.h>
-#include <zephyr/bluetooth/classic/a2dp.h>
-#include <zephyr/bluetooth/sbc.h>
+#include <nuttx/net/bluetooth/classic/a2dp_codec_sbc.h>
+#include <nuttx/net/bluetooth/classic/a2dp.h>
+#include <nuttx/net/bluetooth/sbc.h>
 
 uint8_t bt_a2dp_sbc_get_channel_num(struct bt_a2dp_codec_sbc_params *sbc_codec)
 {

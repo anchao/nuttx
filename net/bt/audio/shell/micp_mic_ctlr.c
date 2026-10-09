@@ -14,11 +14,11 @@
 #include <stdio.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/audio/aics.h>
-#include <zephyr/bluetooth/audio/micp.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/shell/shell.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/audio/aics.h>
+#include <nuttx/net/bluetooth/audio/micp.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/compat/shell/shell.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 #include <sys/types.h>
 
 #include "host/shell/bt.h"

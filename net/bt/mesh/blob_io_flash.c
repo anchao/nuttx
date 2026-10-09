@@ -6,7 +6,7 @@
 
 #include <errno.h>
 
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/mesh.h>
 
 static int io_open(const struct bt_mesh_blob_io *io,
 		   const struct bt_mesh_blob_xfer *xfer,

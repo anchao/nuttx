@@ -9,15 +9,15 @@
  */
 
 #include <errno.h>
-#include <zephyr/init.h>
+#include <nuttx/net/bluetooth/compat/init.h>
 #include <stdint.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/logging/log.h>
-#include <zephyr/bluetooth/gatt.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/services/ias.h>
-#include <zephyr/sys/iterable_sections.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
+#include <nuttx/net/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/services/ias.h>
+#include <nuttx/net/bluetooth/compat/sys/iterable_sections.h>
 
 #define LOG_LEVEL CONFIG_BT_IAS_LOG_LEVEL
 LOG_MODULE_REGISTER(ias);

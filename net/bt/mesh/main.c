@@ -4,17 +4,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <stdbool.h>
 #include <errno.h>
 
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/uuid.h>
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/mesh.h>
 
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 #include <common/bt_str.h>
 
 #include "test.h"

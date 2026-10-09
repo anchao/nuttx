@@ -22,8 +22,4 @@ DEPPATH += --dep-path bt/compat/src/sections
 DEPPATH += --dep-path bt/compat/src/subsys/fs
 DEPPATH += --dep-path bt/compat/src/drivers/bluetooth/hci
 
-# Compat include paths (Zephyr convention includes without zephyr/ prefix)
-CFLAGS += ${INCDIR_PREFIX}$(TOPDIR)/net/bt/compat/include
-CFLAGS += ${INCDIR_PREFIX}$(TOPDIR)/net/bt/compat/include/zephyr
-
 endif

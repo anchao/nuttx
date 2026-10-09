@@ -12,12 +12,12 @@
 #include <stdio.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/assigned_numbers.h>
-#include <zephyr/bluetooth/audio/tbs.h>
-#include <zephyr/bluetooth/audio/ccp.h>
-#include <zephyr/shell/shell.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/assigned_numbers.h>
+#include <nuttx/net/bluetooth/audio/tbs.h>
+#include <nuttx/net/bluetooth/audio/ccp.h>
+#include <nuttx/net/bluetooth/compat/shell/shell.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #include "audio/tbs_internal.h"
 

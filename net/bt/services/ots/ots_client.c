@@ -6,24 +6,24 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/bluetooth/uuid.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/mm/net_buf.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
 
-#include <zephyr/device.h>
-#include <zephyr/init.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/device.h>
+#include <nuttx/net/bluetooth/compat/init.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/gatt.h>
-#include <zephyr/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/l2cap.h>
 
-#include <zephyr/bluetooth/services/ots.h>
+#include <nuttx/net/bluetooth/services/ots.h>
 #include "ots_internal.h"
 #include "ots_client_internal.h"
 #include "ots_l2cap_internal.h"
@@ -32,7 +32,7 @@
 #include "ots_olcp_internal.h"
 
 #define LOG_LEVEL CONFIG_BT_OTS_CLIENT_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_otc);
 
 /* TODO: KConfig options */

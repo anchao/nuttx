@@ -12,17 +12,17 @@
 #include <string.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/assigned_numbers.h>
-#include <zephyr/bluetooth/audio/tbs.h>
-#include <zephyr/bluetooth/audio/ccp.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/hci_types.h>
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/assigned_numbers.h>
+#include <nuttx/net/bluetooth/audio/tbs.h>
+#include <nuttx/net/bluetooth/audio/ccp.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/hci_types.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 #include <assert.h>
 #include <nuttx/atomic.h>
 #include <nuttx/list.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 LOG_MODULE_REGISTER(bt_ccp_call_control_client, CONFIG_BT_CCP_CALL_CONTROL_CLIENT_LOG_LEVEL);
 

@@ -8,9 +8,9 @@
 
 #include <errno.h>
 
-#include <zephyr/bluetooth/gatt.h>
-#include <zephyr/bluetooth/uuid.h>
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 
 #define LOG_LEVEL CONFIG_BT_GATT_LOG_LEVEL
 LOG_MODULE_DECLARE(bt_gatt);

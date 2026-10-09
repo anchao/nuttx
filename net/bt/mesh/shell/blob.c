@@ -7,9 +7,9 @@
 #include "blob.h"
 
 #include <stdlib.h>
-#include <zephyr/shell/shell.h>
-#include <zephyr/bluetooth/mesh.h>
-#include <zephyr/bluetooth/mesh/shell.h>
+#include <nuttx/net/bluetooth/compat/shell/shell.h>
+#include <nuttx/net/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/mesh/shell.h>
 
 #include "common/bt_shell_private.h"
 #include "utils.h"

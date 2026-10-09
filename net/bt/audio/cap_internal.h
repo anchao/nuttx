@@ -11,19 +11,19 @@
 #include <stdint.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/audio/ascs.h>
-#include <zephyr/bluetooth/audio/audio.h>
-#include <zephyr/bluetooth/audio/bap.h>
-#include <zephyr/bluetooth/audio/cap.h>
-#include <zephyr/bluetooth/audio/csip.h>
-#include <zephyr/bluetooth/addr.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/gatt.h>
-#include <zephyr/bluetooth/iso.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/audio/ascs.h>
+#include <nuttx/net/bluetooth/audio/audio.h>
+#include <nuttx/net/bluetooth/audio/bap.h>
+#include <nuttx/net/bluetooth/audio/cap.h>
+#include <nuttx/net/bluetooth/audio/csip.h>
+#include <nuttx/net/bluetooth/addr.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/iso.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 #include <sys/types.h>
 
 bool bt_cap_acceptor_ccid_exist(const struct bt_conn *conn, uint8_t ccid);

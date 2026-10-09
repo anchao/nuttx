@@ -3,9 +3,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/mesh.h>
 #include "net.h"
-#include <zephyr/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/conn.h>
 #include "proxy.h"
 #include "foundation.h"
 #include "beacon.h"
@@ -13,7 +13,7 @@
 #include "settings.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_MODEL_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_priv_beacon_srv);
 
 static const struct bt_mesh_model *priv_beacon_srv;

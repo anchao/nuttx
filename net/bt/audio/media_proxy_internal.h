@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/audio/media_proxy.h>
+#include <nuttx/net/bluetooth/audio/media_proxy.h>
 
 #define MPL_NO_TRACK_ID 0U
 

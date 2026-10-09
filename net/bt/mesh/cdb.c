@@ -5,13 +5,13 @@
  */
 
 #include <stdio.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include <zephyr/settings/settings.h>
+#include <nuttx/net/bluetooth/compat/settings/settings.h>
 
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/mesh.h>
 
 #include "common/bt_str.h"
 
@@ -23,7 +23,7 @@
 #include "keys.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_CDB_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_cdb);
 
 /* Tracking of what storage changes are pending for App and Net Keys. We

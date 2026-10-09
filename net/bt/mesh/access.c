@@ -5,15 +5,15 @@
  */
 
 #include <stdio.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/mesh.h>
 
 #include "common/bt_str.h"
 
@@ -31,7 +31,7 @@
 #include "delayable_msg.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_ACCESS_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_access);
 
 /* 20 - 50ms */

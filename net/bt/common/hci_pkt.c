@@ -10,11 +10,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <zephyr/bluetooth/hci_pkt.h>
-#include <zephyr/bluetooth/hci_types.h>
+#include <nuttx/net/bluetooth/hci_pkt.h>
+#include <nuttx/net/bluetooth/hci_types.h>
 #include <nuttx/mm/net_buf.h>
 #include <assert.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 
 void bt_hci_pkt_reset_cmd(struct net_buf_simple *buf)
 {

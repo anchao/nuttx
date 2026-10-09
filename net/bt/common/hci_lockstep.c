@@ -13,13 +13,13 @@
 
 #include <nuttx/spinlock.h>
 
-#include <zephyr/bluetooth/hci_pkt.h>
-#include <zephyr/bluetooth/hci_types.h>
-#include <zephyr/device.h>
-#include <zephyr/drivers/bluetooth/hci_lockstep.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/hci_pkt.h>
+#include <nuttx/net/bluetooth/hci_types.h>
+#include <nuttx/net/bluetooth/compat/device.h>
+#include <nuttx/net/bluetooth/compat/drivers/bluetooth/hci_lockstep.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
 /* The log level symbol exists only in builds with the Bluetooth Kconfig
  * tree; the helper also builds without it (see tests/bluetooth/hci_pkt).
@@ -27,7 +27,7 @@
 #if defined(CONFIG_BT_HCI_DRIVER_LOG_LEVEL)
 #define LOG_LEVEL CONFIG_BT_HCI_DRIVER_LOG_LEVEL
 #endif
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_hci_lockstep);
 
 /* The Bluetooth Host's own command timeout */

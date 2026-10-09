@@ -13,11 +13,11 @@
 #include <stdint.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/addr.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/addr.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 struct bt_smp_hdr {
 	uint8_t  code;

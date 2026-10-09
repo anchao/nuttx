@@ -11,12 +11,12 @@
 #include <sys/types.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/audio/gmap.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/gatt.h>
-#include <zephyr/bluetooth/uuid.h>
-#include <zephyr/logging/log.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/audio/gmap.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
 #include "audio_internal.h"
 

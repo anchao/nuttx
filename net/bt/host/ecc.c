@@ -11,13 +11,13 @@
 #include <string.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/hci_types.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/hci_types.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <assert.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 #include <nuttx/list.h>
 #include <psa/crypto.h>
 #include <psa/crypto_struct.h>

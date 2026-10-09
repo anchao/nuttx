@@ -12,16 +12,16 @@
 #include <errno.h>
 #include <stddef.h>
 
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/buf.h>
-#include <zephyr/bluetooth/l2cap.h>
-#include <zephyr/kernel.h>
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/buf.h>
+#include <nuttx/net/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 #include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #include "conn_internal.h"
 #include "hci_core.h"

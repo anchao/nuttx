@@ -5,7 +5,7 @@
  */
 
 #include <string.h>
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/mesh.h>
 #include <common/bt_str.h>
 #include "dfu_slot.h"
 #include "dfd.h"
@@ -16,7 +16,7 @@
 #include "access.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_DFU_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_dfd_srv);
 
 #define DFD_UPLOAD_STATUS_MSG_MAXLEN (5 + CONFIG_BT_MESH_DFU_FWID_MAXLEN)

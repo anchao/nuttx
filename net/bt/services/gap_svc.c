@@ -11,10 +11,10 @@
 
 #include <string.h>
 
-#include <zephyr/kernel.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/gatt.h>
 
 #define BT_GATT_CENTRAL_ADDR_RES_NOT_SUPP	0
 #define BT_GATT_CENTRAL_ADDR_RES_SUPP		1

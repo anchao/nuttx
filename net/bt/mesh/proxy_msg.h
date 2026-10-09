@@ -10,7 +10,7 @@
 #ifndef ZEPHYR_SUBSYS_BLUETOOTH_MESH_PROXY_MSG_H_
 #define ZEPHYR_SUBSYS_BLUETOOTH_MESH_PROXY_MSG_H_
 
-#include <zephyr/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/gatt.h>
 
 #define PDU_TYPE(data)     (data[0] & BIT_MASK(6))
 #define CFG_FILTER_SET     0x00

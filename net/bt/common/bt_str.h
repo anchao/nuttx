@@ -9,8 +9,8 @@
 #include <string.h>
 #include <wchar.h>
 
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/uuid.h>
 
 /* NOTE: These helper functions always encodes into the same buffer storage.
  * It is the responsibility of the user of this function to copy the information

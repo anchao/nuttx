@@ -11,15 +11,15 @@
 #include <string.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/addr.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/settings/settings.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/addr.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/compat/settings/settings.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #include "common/bt_settings_commit.h"
 #include "common/bt_str.h"
@@ -29,7 +29,7 @@
 #include "sys/types.h"
 
 #define LOG_LEVEL CONFIG_BT_SETTINGS_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_settings);
 
 #if defined(CONFIG_BT_SETTINGS_USE_PRINTK)

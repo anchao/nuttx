@@ -9,9 +9,9 @@
 
 #include <stdint.h>
 
-#include <zephyr/bluetooth/audio/csip.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/audio/csip.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/gatt.h>
 
 #define BT_CSIP_SIRK_TYPE_ENCRYPTED             0x00U
 #define BT_CSIP_SIRK_TYPE_PLAIN                 0x01U

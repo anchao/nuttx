@@ -14,11 +14,11 @@
 
 #include <nuttx/spinlock.h>
 
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 #include <assert.h>
 
-#include <zephyr/bluetooth/buf.h>
-#include <zephyr/bluetooth/classic/sdp.h>
+#include <nuttx/net/bluetooth/buf.h>
+#include <nuttx/net/bluetooth/classic/sdp.h>
 
 #include <common/bt_str.h>
 #include <common/assert.h>
@@ -29,7 +29,7 @@
 #include "sdp_internal.h"
 
 #define LOG_LEVEL CONFIG_BT_SDP_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_sdp);
 
 #define SDP_PSM 0x0001

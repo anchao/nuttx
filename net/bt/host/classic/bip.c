@@ -4,19 +4,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <errno.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
-#include <zephyr/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/conn.h>
 
 #include <common/assert.h>
 
-#include <zephyr/bluetooth/classic/sdp.h>
-#include <zephyr/bluetooth/classic/goep.h>
-#include <zephyr/bluetooth/classic/bip.h>
+#include <nuttx/net/bluetooth/classic/sdp.h>
+#include <nuttx/net/bluetooth/classic/goep.h>
+#include <nuttx/net/bluetooth/classic/bip.h>
 
 #include <host/hci_core.h>
 #include <host/conn_internal.h>
@@ -24,7 +24,7 @@
 #include "obex_internal.h"
 
 #define LOG_LEVEL CONFIG_BT_BIP_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_bip);
 
 typedef void (*bt_bip_server_cb_t)(struct bt_bip_server *server, bool final, struct net_buf *buf);

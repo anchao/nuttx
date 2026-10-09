@@ -7,13 +7,13 @@
 #include "dfu.h"
 
 #include <stdlib.h>
-#include <zephyr/kernel.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/shell/shell.h>
-#include <zephyr/bluetooth/mesh.h>
-#include <zephyr/bluetooth/mesh/shell.h>
-#include <zephyr/dfu/mcuboot.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/shell/shell.h>
+#include <nuttx/net/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/mesh/shell.h>
+#include <nuttx/net/bluetooth/compat/dfu/mcuboot.h>
 
 #include "common/bt_shell_private.h"
 #include "utils.h"

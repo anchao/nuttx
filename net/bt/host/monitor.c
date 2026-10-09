@@ -17,16 +17,16 @@
 
 #include <nuttx/spinlock.h>
 
-#include <zephyr/bluetooth/addr.h>
-#include <zephyr/bluetooth/buf.h>
-#include <zephyr/device.h>
-#include <zephyr/init.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/addr.h>
+#include <nuttx/net/bluetooth/buf.h>
+#include <nuttx/net/bluetooth/compat/device.h>
+#include <nuttx/net/bluetooth/compat/init.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 #include <nuttx/clock.h>
-#include <zephyr/drivers/uart.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/drivers/uart.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
 #include "monitor.h"
 #include "monitor_buffer.h"

@@ -11,17 +11,17 @@
 #include <stddef.h>
 #include <string.h>
 #include <errno.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/kernel.h>
-#include <zephyr/sys/crc.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/sys/crc.h>
 
-#include <zephyr/bluetooth/gatt.h>
-#include <zephyr/bluetooth/services/ots.h>
+#include <nuttx/net/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/services/ots.h>
 #include "ots_internal.h"
 #include "ots_dir_list_internal.h"
 #include "ots_obj_manager_internal.h"
 
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 
 LOG_MODULE_DECLARE(bt_ots, CONFIG_BT_OTS_LOG_LEVEL);
 

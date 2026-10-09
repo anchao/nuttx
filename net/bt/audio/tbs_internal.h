@@ -14,10 +14,10 @@
 #include <stdint.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/assigned_numbers.h>
-#include <zephyr/bluetooth/att.h>
-#include <zephyr/bluetooth/audio/tbs.h>
-#include <zephyr/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/assigned_numbers.h>
+#include <nuttx/net/bluetooth/att.h>
+#include <nuttx/net/bluetooth/audio/tbs.h>
+#include <nuttx/net/bluetooth/gatt.h>
 #include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>
 #include <sys/types.h>

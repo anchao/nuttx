@@ -13,12 +13,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/audio/has.h>
-#include <zephyr/shell/shell.h>
-#include <zephyr/kernel.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/audio/has.h>
+#include <nuttx/net/bluetooth/compat/shell/shell.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #include "host/shell/bt.h"
 #include "common/bt_shell_private.h"

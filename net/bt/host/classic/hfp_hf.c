@@ -6,19 +6,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include <stdio.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <errno.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
-#include <zephyr/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/conn.h>
 
 #include <common/assert.h>
 
-#include <zephyr/bluetooth/classic/rfcomm.h>
-#include <zephyr/bluetooth/classic/hfp_hf.h>
-#include <zephyr/bluetooth/classic/sdp.h>
+#include <nuttx/net/bluetooth/classic/rfcomm.h>
+#include <nuttx/net/bluetooth/classic/hfp_hf.h>
+#include <nuttx/net/bluetooth/classic/sdp.h>
 
 #include <host/hci_core.h>
 #include <host/conn_internal.h>
@@ -29,7 +29,7 @@
 #include "hfp_hf_internal.h"
 
 #define LOG_LEVEL CONFIG_BT_HFP_HF_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_hfp_hf);
 
 #define MAX_IND_STR_LEN 17

@@ -9,7 +9,7 @@
  */
 
 #include <nuttx/atomic.h>
-#include <zephyr/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/l2cap.h>
 
 /** @brief HID header size (1 byte). */
 #define BT_HID_HDR_SIZE 1U

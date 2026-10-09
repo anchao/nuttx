@@ -8,9 +8,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/bluetooth/l2cap.h>
-#include <zephyr/sys/iterable_sections.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/compat/sys/iterable_sections.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 #include "l2cap_br_interface.h"
 
 #define BT_L2CAP_CID_BR_SIG             0x0001

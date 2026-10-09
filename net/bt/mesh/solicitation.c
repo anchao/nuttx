@@ -5,13 +5,13 @@
  */
 
 #include <stdio.h>
-#include <zephyr/bluetooth/mesh.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 #include <stdlib.h>
 
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/uuid.h>
 #include "access.h"
 #include "cfg.h"
 #include "crypto.h"
@@ -25,7 +25,7 @@
 #include "host/hci_core.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_MODEL_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_solicitation);
 
 #if CONFIG_BT_MESH_OD_PRIV_PROXY_SRV

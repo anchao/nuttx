@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/gatt.h>
-#include <zephyr/bluetooth/services/nus.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/services/nus.h>
 #include "nus_internal.h"
 
 ssize_t nus_bt_chr_write(struct bt_conn *conn, const struct bt_gatt_attr *attr,

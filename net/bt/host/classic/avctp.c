@@ -14,13 +14,13 @@
 #include <strings.h>
 #include <errno.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/l2cap.h>
-#include <zephyr/bluetooth/classic/sdp.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/classic/sdp.h>
 
 #include "avctp_internal.h"
 #include <host/hci_core.h>
@@ -28,7 +28,7 @@
 #include "l2cap_br_internal.h"
 
 #define LOG_LEVEL CONFIG_BT_AVCTP_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_avctp);
 
 /** @brief AVCTP Header Sizes for different packet types */

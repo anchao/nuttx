@@ -15,16 +15,16 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/hci_types.h>
-#include <zephyr/bluetooth/iso.h>
-#include <zephyr/bluetooth/cs.h>
-#include <zephyr/kernel.h>
-#include <zephyr/shell/shell.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/hci_types.h>
+#include <nuttx/net/bluetooth/iso.h>
+#include <nuttx/net/bluetooth/cs.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/shell/shell.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
 #include "common/bt_shell_private.h"
 #include "host/shell/bt.h"

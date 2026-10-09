@@ -7,9 +7,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <zephyr/bluetooth/addr.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/addr.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/clock.h>
 
 #include "keys.h"

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <errno.h>
 #include <stdlib.h>
 
@@ -13,14 +13,14 @@
 #include <nuttx/list.h>
 
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/mesh.h>
 
 #include "msg.h"
 #include "access.h"
 #include "net.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_ACCESS_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_delayable_msg);
 
 static void delayable_msg_handler(struct k_work *w);

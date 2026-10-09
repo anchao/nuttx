@@ -10,18 +10,18 @@
 #include <string.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/att.h>
-#include <zephyr/bluetooth/audio/has.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/gatt.h>
-#include <zephyr/bluetooth/uuid.h>
-#include <zephyr/kernel.h>
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/att.h>
+#include <nuttx/net/bluetooth/audio/has.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 #include <nuttx/mm/net_buf.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #include "common/bt_str.h"
 #include "has_internal.h"

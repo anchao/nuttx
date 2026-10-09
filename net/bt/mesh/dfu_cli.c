@@ -5,16 +5,16 @@
  */
 
 #include <string.h>
-#include <zephyr/bluetooth/mesh.h>
-#include <zephyr/bluetooth/crypto.h>
-#include <zephyr/settings/settings.h>
+#include <nuttx/net/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/crypto.h>
+#include <nuttx/net/bluetooth/compat/settings/settings.h>
 #include "access.h"
 #include "dfu.h"
 #include "blob.h"
 #include <common/bt_str.h>
 
 #define LOG_LEVEL CONFIG_BT_MESH_DFU_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_dfu_cli);
 
 #define TARGETS_FOR_EACH(cli, target)                                          \

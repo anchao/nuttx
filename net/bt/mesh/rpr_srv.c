@@ -6,13 +6,13 @@
 
 #include <stdlib.h>
 #include <nuttx/list.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/crypto.h>
-#include <zephyr/bluetooth/mesh/rpr_srv.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/crypto.h>
+#include <nuttx/net/bluetooth/mesh/rpr_srv.h>
 #include <common/bt_str.h>
-#include <zephyr/bluetooth/mesh/sar_cfg.h>
-#include <zephyr/bluetooth/mesh/keys.h>
+#include <nuttx/net/bluetooth/mesh/sar_cfg.h>
+#include <nuttx/net/bluetooth/mesh/keys.h>
 #include "access.h"
 #include "prov.h"
 #include "crypto.h"
@@ -20,7 +20,7 @@
 #include "net.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_MODEL_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_rpr_srv);
 
 #define LINK_OPEN_TIMEOUT_DEFAULT 10

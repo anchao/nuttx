@@ -15,9 +15,9 @@
 #include <string.h>
 #include <uuid.h>
 
-#include <zephyr/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/uuid.h>
 #include <assert.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 
 #define BT_UUID_STR_LEN_16  4U
 #define BT_UUID_STR_LEN_32  8U

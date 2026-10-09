@@ -18,7 +18,7 @@ extern "C" {
 #include <nuttx/list.h>
 #include <sys/types.h>
 
-#include <zephyr/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/l2cap.h>
 
 struct bt_gatt_ots_l2cap_tx {
 	uint8_t *data;

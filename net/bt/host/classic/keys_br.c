@@ -6,15 +6,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <string.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/settings/settings.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/compat/settings/settings.h>
 
 #include <common/bt_str.h>
 
@@ -23,7 +23,7 @@
 #include <host/keys.h>
 
 #define LOG_LEVEL CONFIG_BT_KEYS_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_keys_br);
 
 static struct bt_keys_link_key key_pool[CONFIG_BT_MAX_PAIRED];

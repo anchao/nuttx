@@ -8,8 +8,8 @@
 #ifndef ZEPHYR_SUBSYS_BLUETOOTH_HOST_AUDIO_MCS_INTERNAL_H_
 #define ZEPHYR_SUBSYS_BLUETOOTH_HOST_AUDIO_MCS_INTERNAL_H_
 
-#include <zephyr/bluetooth/services/ots.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/services/ots.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
 #ifdef __cplusplus
 extern "C" {

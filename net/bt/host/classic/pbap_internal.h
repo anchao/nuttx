@@ -6,8 +6,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/kernel.h>
-#include <zephyr/bluetooth/classic/pbap.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/classic/pbap.h>
 
 #define BT_PBAP_FLAG_RSP_ONGOING BIT(0)
 

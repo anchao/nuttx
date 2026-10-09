@@ -15,13 +15,13 @@
 #include <string.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/audio/aics.h>
-#include <zephyr/bluetooth/audio/vocs.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/audio/vcp.h>
-#include <zephyr/shell/shell.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/audio/aics.h>
+#include <nuttx/net/bluetooth/audio/vocs.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/audio/vcp.h>
+#include <nuttx/net/bluetooth/compat/shell/shell.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #include "host/shell/bt.h"
 #include "common/bt_shell_private.h"

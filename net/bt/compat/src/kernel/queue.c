@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <errno.h>
 #include <nuttx/sched.h>
 

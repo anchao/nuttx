@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include <zephyr/bluetooth/audio/csip.h>
+#include <nuttx/net/bluetooth/audio/csip.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <sys/types.h>

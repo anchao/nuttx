@@ -5,12 +5,12 @@
  */
 
 #include <stdint.h>
-#include <zephyr/kernel.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/iterable_sections.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/iterable_sections.h>
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/mesh.h>
 
 #include "crypto.h"
 #include "mesh.h"
@@ -23,7 +23,7 @@
 #include "va.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_FRIEND_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_friend);
 
 /**

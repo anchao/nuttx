@@ -14,8 +14,8 @@
 #include <stdint.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/audio/media_proxy.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/audio/media_proxy.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 
 #ifdef __cplusplus
 extern "C" {

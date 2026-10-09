@@ -13,17 +13,17 @@
 #include <string.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/assigned_numbers.h>
-#include <zephyr/bluetooth/audio/audio.h>
-#include <zephyr/bluetooth/audio/bap.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/data.h>
-#include <zephyr/bluetooth/gap.h>
-#include <zephyr/bluetooth/iso.h>
-#include <zephyr/bluetooth/uuid.h>
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/assigned_numbers.h>
+#include <nuttx/net/bluetooth/audio/audio.h>
+#include <nuttx/net/bluetooth/audio/bap.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/data.h>
+#include <nuttx/net/bluetooth/gap.h>
+#include <nuttx/net/bluetooth/iso.h>
+#include <nuttx/net/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
 LOG_MODULE_REGISTER(bt_bap_base, CONFIG_BT_BAP_BASE_LOG_LEVEL);
 

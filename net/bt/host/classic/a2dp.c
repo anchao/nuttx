@@ -9,18 +9,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <string.h>
 #include <errno.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/l2cap.h>
-#include <zephyr/bluetooth/classic/avdtp.h>
-#include <zephyr/bluetooth/classic/a2dp_codec_sbc.h>
-#include <zephyr/bluetooth/classic/a2dp.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/classic/avdtp.h>
+#include <nuttx/net/bluetooth/classic/a2dp_codec_sbc.h>
+#include <nuttx/net/bluetooth/classic/a2dp.h>
 
 #include <common/assert.h>
 
@@ -46,7 +46,7 @@
 #include "avdtp_internal.h"
 
 #define LOG_LEVEL CONFIG_BT_A2DP_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_a2dp);
 
 #define A2DP_NO_SPACE (-1)

@@ -7,7 +7,7 @@
 #ifndef __BT_SHELL_PRIVATE_H
 #define __BT_SHELL_PRIVATE_H
 
-#include <zephyr/shell/shell.h>
+#include <nuttx/net/bluetooth/compat/shell/shell.h>
 
 /**
  * @brief printf-like function which sends formatted data stream to the shell.

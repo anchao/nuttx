@@ -4,18 +4,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <string.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/mesh.h>
 
 #include "common/bt_str.h"
 
@@ -39,7 +39,7 @@
 #include "brg_cfg.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_NET_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_net);
 
 #define LOOPBACK_MAX_PDU_LEN (BT_MESH_NET_HDR_LEN + 16)

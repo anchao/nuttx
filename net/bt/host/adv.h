@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 
-#include <zephyr/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
 
 struct bt_le_ext_adv *bt_le_adv_lookup_legacy(void);
 

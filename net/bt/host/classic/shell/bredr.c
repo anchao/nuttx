@@ -18,22 +18,22 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 
-#include <zephyr/settings/settings.h>
+#include <nuttx/net/bluetooth/compat/settings/settings.h>
 
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/addr.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/l2cap.h>
-#include <zephyr/bluetooth/classic/rfcomm.h>
-#include <zephyr/bluetooth/classic/sdp.h>
-#include <zephyr/bluetooth/classic/classic.h>
-#include <zephyr/bluetooth/classic/l2cap_br.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/addr.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/classic/rfcomm.h>
+#include <nuttx/net/bluetooth/classic/sdp.h>
+#include <nuttx/net/bluetooth/classic/classic.h>
+#include <nuttx/net/bluetooth/classic/l2cap_br.h>
 
-#include <zephyr/shell/shell.h>
+#include <nuttx/net/bluetooth/compat/shell/shell.h>
 
 #include <host/shell/bt.h>
 #include <common/bt_shell_private.h>

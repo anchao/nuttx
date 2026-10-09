@@ -11,8 +11,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
 #include <nuttx/atomic.h>
 
 /**

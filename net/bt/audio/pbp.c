@@ -8,16 +8,16 @@
 #include <stdint.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/assigned_numbers.h>
-#include <zephyr/bluetooth/audio/audio.h>
-#include <zephyr/bluetooth/audio/pbp.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/data.h>
-#include <zephyr/bluetooth/gap.h>
-#include <zephyr/bluetooth/uuid.h>
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/assigned_numbers.h>
+#include <nuttx/net/bluetooth/audio/audio.h>
+#include <nuttx/net/bluetooth/audio/pbp.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/data.h>
+#include <nuttx/net/bluetooth/gap.h>
+#include <nuttx/net/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 #include <stdbool.h>
 #include <sys/types.h>
 

@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/bluetooth/mesh.h>
-#include <zephyr/bluetooth/mesh/access.h>
+#include <nuttx/net/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/mesh/access.h>
 
 #include <common/bt_str.h>
 
@@ -16,7 +16,7 @@
 #include "sar_cfg_internal.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_MODEL_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_sar_cfg_cli);
 
 static struct bt_mesh_sar_cfg_cli *cli;

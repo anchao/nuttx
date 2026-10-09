@@ -10,7 +10,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/bluetooth/classic/avrcp.h>
+#include <nuttx/net/bluetooth/classic/avrcp.h>
 
 #define AVCTP_VER_1_4 (0x0104u)
 #define AVRCP_VER_1_6 (0x0106u)

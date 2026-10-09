@@ -9,11 +9,11 @@
 
 #include <stddef.h>
 
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/uuid.h>
-#include <zephyr/kernel.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <sys/types.h>

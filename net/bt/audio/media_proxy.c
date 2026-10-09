@@ -12,13 +12,13 @@
 #include <stdint.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/audio/media_proxy.h>
-#include <zephyr/bluetooth/audio/mcc.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/services/ots.h>
-#include <zephyr/logging/log.h>
-#include <zephyr/sys/check.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/audio/media_proxy.h>
+#include <nuttx/net/bluetooth/audio/mcc.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/services/ots.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
+#include <nuttx/net/bluetooth/compat/sys/check.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #include "media_proxy_internal.h"
 #include "mcs_internal.h"

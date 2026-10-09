@@ -13,10 +13,10 @@
 #include <sys/types.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/uuid.h>
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #ifdef __cplusplus
 extern "C" {

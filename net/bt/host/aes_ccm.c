@@ -10,10 +10,10 @@
 #include <string.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/crypto.h>
-#include <zephyr/kernel.h>
-#include <zephyr/logging/log.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/crypto.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 
 #include "common/bt_str.h"
 

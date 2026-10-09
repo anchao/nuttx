@@ -9,18 +9,18 @@
 #include <string.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/direction.h>
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/hci_types.h>
-#include <zephyr/bluetooth/hci_vs.h>
-#include <zephyr/bluetooth/l2cap.h>
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/direction.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/hci_types.h>
+#include <nuttx/net/bluetooth/hci_vs.h>
+#include <nuttx/net/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 #include <nuttx/mm/net_buf.h>
 #include <assert.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 
 #include "hci_core.h"
 #include "conn_internal.h"

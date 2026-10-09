@@ -22,19 +22,19 @@
 #include <sys/types.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/assigned_numbers.h>
-#include <zephyr/bluetooth/audio/ascs.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/data.h>
-#include <zephyr/bluetooth/hci_types.h>
-#include <zephyr/bluetooth/iso.h>
-#include <zephyr/kernel.h>
-#include <zephyr/shell/shell.h>
+#include <nuttx/net/bluetooth/assigned_numbers.h>
+#include <nuttx/net/bluetooth/audio/ascs.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/data.h>
+#include <nuttx/net/bluetooth/hci_types.h>
+#include <nuttx/net/bluetooth/iso.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/shell/shell.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 #include <nuttx/clock.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #include "common/bt_shell_private.h"
 #include "host/shell/bt.h"
@@ -58,10 +58,10 @@ size_t cap_initiator_pa_data_add(struct bt_data *data_array, const size_t data_a
 /* Must guard before including audio.h as audio.h uses Kconfigs guarded by
  * CONFIG_BT_AUDIO
  */
-#include <zephyr/bluetooth/audio/audio.h>
-#include <zephyr/bluetooth/audio/bap.h>
-#include <zephyr/bluetooth/audio/bap_lc3_preset.h>
-#include <zephyr/bluetooth/audio/cap.h>
+#include <nuttx/net/bluetooth/audio/audio.h>
+#include <nuttx/net/bluetooth/audio/bap.h>
+#include <nuttx/net/bluetooth/audio/bap_lc3_preset.h>
+#include <nuttx/net/bluetooth/audio/cap.h>
 
 #if defined(CONFIG_LIBLC3)
 #include "lc3.h"

@@ -15,7 +15,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <zephyr/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/gatt.h>
 
 /* The types of OLCP procedures. */
 enum bt_gatt_ots_olcp_proc_type {

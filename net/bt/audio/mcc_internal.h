@@ -15,10 +15,10 @@
 #include <stdint.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/audio/mcs.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/gatt.h>
-#include <zephyr/bluetooth/services/ots.h>
+#include <nuttx/net/bluetooth/audio/mcs.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/services/ots.h>
 #include <nuttx/atomic.h>
 #include <stddef.h>
 #include <sys/types.h>

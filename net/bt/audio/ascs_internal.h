@@ -15,10 +15,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <zephyr/bluetooth/audio/ascs.h>
-#include <zephyr/bluetooth/audio/audio.h>
-#include <zephyr/bluetooth/audio/bap.h>
-#include <zephyr/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/audio/ascs.h>
+#include <nuttx/net/bluetooth/audio/audio.h>
+#include <nuttx/net/bluetooth/audio/bap.h>
+#include <nuttx/net/bluetooth/conn.h>
 
 #define BT_ASCS_ASE_ID_NONE              0x00U
 

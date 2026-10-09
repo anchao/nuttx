@@ -16,18 +16,18 @@
 #include <sys/types.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/addr.h>
-#include <zephyr/bluetooth/assigned_numbers.h>
-#include <zephyr/bluetooth/audio/csip.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/data.h>
-#include <zephyr/bluetooth/gap.h>
-#include <zephyr/bluetooth/gatt.h>
-#include <zephyr/kernel.h>
-#include <zephyr/shell/shell.h>
+#include <nuttx/net/bluetooth/addr.h>
+#include <nuttx/net/bluetooth/assigned_numbers.h>
+#include <nuttx/net/bluetooth/audio/csip.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/data.h>
+#include <nuttx/net/bluetooth/gap.h>
+#include <nuttx/net/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/shell/shell.h>
 #include <assert.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #include "common/bt_shell_private.h"
 #include "host/shell/bt.h"

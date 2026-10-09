@@ -16,7 +16,7 @@
 #include <stdint.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
 #include <nuttx/mm/net_buf.h>
 #include <sys/types.h>
 

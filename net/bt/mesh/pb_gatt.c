@@ -4,8 +4,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include <zephyr/bluetooth/mesh.h>
-#include <zephyr/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/conn.h>
 #include "net.h"
 #include "proxy.h"
 #include "prov.h"
@@ -14,12 +14,12 @@
 #include "pb_gatt_srv.h"
 #include "pb_gatt_cli.h"
 
-#include <zephyr/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/hci.h>
 
 #include "common/bt_str.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_PROV_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_pb_gatt);
 
 #define link pb_gatt_link

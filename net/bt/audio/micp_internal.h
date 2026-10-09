@@ -16,8 +16,8 @@
 #include <stdint.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/gatt.h>
 #include <nuttx/atomic.h>
 
 enum bt_micp_mic_ctlr_flag {

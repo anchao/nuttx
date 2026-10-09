@@ -13,27 +13,27 @@
 #include <sys/types.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/att.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/gatt.h>
-#include <zephyr/bluetooth/audio/aics.h>
-#include <zephyr/bluetooth/uuid.h>
-#include <zephyr/device.h>
-#include <zephyr/init.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/att.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/audio/aics.h>
+#include <nuttx/net/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/compat/device.h>
+#include <nuttx/net/bluetooth/compat/init.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 #include <nuttx/clock.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #include "common/bt_str.h"
 #include "aics_internal.h"
 #include "audio_internal.h"
 
 #define LOG_LEVEL CONFIG_BT_AICS_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_aics);
 
 #define VALID_AICS_OPCODE(opcode)                                              \

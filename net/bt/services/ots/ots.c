@@ -11,22 +11,22 @@
 #include <stddef.h>
 #include <string.h>
 #include <errno.h>
-#include <zephyr/init.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/init.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/l2cap.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/uuid.h>
-#include <zephyr/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/gatt.h>
 
-#include <zephyr/bluetooth/services/ots.h>
+#include <nuttx/net/bluetooth/services/ots.h>
 #include "ots_internal.h"
 #include "ots_obj_manager_internal.h"
 #include "ots_dir_list_internal.h"
 
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 
 LOG_MODULE_REGISTER(bt_ots, CONFIG_BT_OTS_LOG_LEVEL);
 

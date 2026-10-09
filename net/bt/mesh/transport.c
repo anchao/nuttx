@@ -4,19 +4,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <errno.h>
 #include <string.h>
 #include <strings.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 
 #include <nuttx/mm/net_buf.h>
 
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/mesh.h>
 
 #include "common/bt_str.h"
 
@@ -37,7 +37,7 @@
 #include "va.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_TRANS_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_transport);
 
 #define AID_MASK                    ((uint8_t)(BIT_MASK(6)))

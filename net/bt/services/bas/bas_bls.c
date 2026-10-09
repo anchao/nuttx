@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/bluetooth/services/bas.h>
-#include <zephyr/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/services/bas.h>
+#include <nuttx/net/bluetooth/gatt.h>
 #include "bas_internal.h"
 
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_DECLARE(bas, CONFIG_BT_BAS_LOG_LEVEL);
 
 /* The battery level status of a battery. */

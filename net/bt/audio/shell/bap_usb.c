@@ -16,21 +16,21 @@
 #include <string.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/audio/audio.h>
-#include <zephyr/device.h>
-#include <zephyr/drivers/usb/usb_buf.h>
-#include <zephyr/kernel.h>
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/audio/audio.h>
+#include <nuttx/net/bluetooth/compat/device.h>
+#include <nuttx/net/bluetooth/compat/drivers/usb/usb_buf.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/shell/shell.h>
+#include <nuttx/net/bluetooth/compat/shell/shell.h>
 #include <assert.h>
 #include <nuttx/clock.h>
 #include <nuttx/circbuf.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/toolchain.h>
-#include <zephyr/usb/usb_device.h>
-#include <zephyr/usb/class/usbd_uac2.h>
-#include <zephyr/usb/usbd.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
+#include <nuttx/net/bluetooth/compat/usb/usb_device.h>
+#include <nuttx/net/bluetooth/compat/usb/class/usbd_uac2.h>
+#include <nuttx/net/bluetooth/compat/usb/usbd.h>
 
 #if defined(CONFIG_SOC_NRF5340_CPUAPP)
 #if defined(CONFIG_CLOCK_CONTROL_NRF)

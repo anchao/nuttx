@@ -13,13 +13,13 @@
 #include <string.h>
 #include <errno.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/classic/avrcp.h>
-#include <zephyr/bluetooth/classic/sdp.h>
-#include <zephyr/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/classic/avrcp.h>
+#include <nuttx/net/bluetooth/classic/sdp.h>
+#include <nuttx/net/bluetooth/l2cap.h>
 
 #include <host/hci_core.h>
 #include <host/conn_internal.h>
@@ -28,7 +28,7 @@
 #include "avrcp_internal.h"
 
 #define LOG_LEVEL CONFIG_BT_AVRCP_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_avrcp);
 
 struct bt_avrcp {

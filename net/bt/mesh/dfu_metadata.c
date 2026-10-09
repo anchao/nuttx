@@ -5,10 +5,10 @@
  */
 
 #include <nuttx/mm/net_buf.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 #include <string.h>
 
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/mesh.h>
 #include "crypto.h"
 #include "access.h"
 

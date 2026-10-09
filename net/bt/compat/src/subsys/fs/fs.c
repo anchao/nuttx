@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-#include <zephyr/settings/settings.h>
+#include <nuttx/net/bluetooth/compat/settings/settings.h>
 #include <syslog.h>
 
 /* Simple filesystem-backed settings storage */

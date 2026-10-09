@@ -11,12 +11,12 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-#include <zephyr/bluetooth/att.h>
-#include <zephyr/bluetooth/audio/ccid.h>
-#include <zephyr/bluetooth/gatt.h>
-#include <zephyr/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/att.h>
+#include <nuttx/net/bluetooth/audio/ccid.h>
+#include <nuttx/net/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/uuid.h>
 #include <assert.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 struct ccid_search_param {
 	const struct bt_gatt_attr *attr;

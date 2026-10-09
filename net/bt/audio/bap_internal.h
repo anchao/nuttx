@@ -12,11 +12,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <zephyr/bluetooth/audio/audio.h>
-#include <zephyr/bluetooth/audio/bap.h>
-#include <zephyr/bluetooth/addr.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/iso.h>
+#include <nuttx/net/bluetooth/audio/audio.h>
+#include <nuttx/net/bluetooth/audio/bap.h>
+#include <nuttx/net/bluetooth/addr.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/iso.h>
 #include <stddef.h>
 #include <sys/types.h>
 

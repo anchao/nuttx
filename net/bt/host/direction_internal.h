@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/direction.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/direction.h>
 #include <nuttx/mm/net_buf.h>
 
 /* Performs initialization of Direction Finding in Host */

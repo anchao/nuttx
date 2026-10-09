@@ -12,24 +12,24 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr/bluetooth/buf.h>
-#include <zephyr/bluetooth/hci_types.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/buf.h>
+#include <nuttx/net/bluetooth/hci_types.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/l2cap.h>
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 #include <assert.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/iterable_sections.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/iterable_sections.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 #include <nuttx/list.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 #include <nuttx/mm/net_buf.h>
 #include <nuttx/clock.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #include "buf_view.h"
 #include "hci_core.h"

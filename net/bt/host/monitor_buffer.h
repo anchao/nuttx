@@ -14,7 +14,7 @@
 
 #include <nuttx/circbuf.h>
 #include <nuttx/arch.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
 struct bt_monitor_data {
 	const void *data;

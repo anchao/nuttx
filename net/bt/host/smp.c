@@ -17,23 +17,23 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr/bluetooth/addr.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/buf.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/crypto.h>
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/hci_types.h>
-#include <zephyr/bluetooth/l2cap.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/addr.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/buf.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/crypto.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/hci_types.h>
+#include <nuttx/net/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <nuttx/mm/net_buf.h>
 #include <assert.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 #include <nuttx/list.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 #include <nuttx/clock.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #include "conn_internal.h"
 #include "common/bt_str.h"
@@ -46,7 +46,7 @@
 #include "smp.h"
 
 #define LOG_LEVEL CONFIG_BT_SMP_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_smp);
 
 #define SMP_TIMEOUT SEC2TICK(30)

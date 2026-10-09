@@ -5,9 +5,9 @@
  */
 
 #include <stdlib.h>
-#include <zephyr/shell/shell.h>
-#include <zephyr/bluetooth/mesh.h>
-#include <zephyr/bluetooth/mesh/shell.h>
+#include <nuttx/net/bluetooth/compat/shell/shell.h>
+#include <nuttx/net/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/mesh/shell.h>
 
 #include "utils.h"
 #include "../sar_cfg_internal.h"

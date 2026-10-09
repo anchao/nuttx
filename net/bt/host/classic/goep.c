@@ -14,16 +14,16 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/l2cap.h>
-#include <zephyr/bluetooth/classic/rfcomm.h>
-#include <zephyr/bluetooth/classic/sdp.h>
-#include <zephyr/bluetooth/classic/goep.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/classic/rfcomm.h>
+#include <nuttx/net/bluetooth/classic/sdp.h>
+#include <nuttx/net/bluetooth/classic/goep.h>
 
 #include <host/conn_internal.h>
 #include "l2cap_br_internal.h"
@@ -31,7 +31,7 @@
 #include "obex_internal.h"
 
 #define LOG_LEVEL CONFIG_BT_GOEP_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_goep);
 
 #define GOEP_MIN_MTU BT_OBEX_MIN_MTU

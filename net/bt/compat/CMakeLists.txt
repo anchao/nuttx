@@ -38,9 +38,3 @@ target_sources(net PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/src/subsys/fs/fs.c
   ${CMAKE_CURRENT_LIST_DIR}/src/drivers/bluetooth/hci/hci_driver.c
 )
-
-# Include paths
-target_include_directories(net PRIVATE
-  ${CMAKE_CURRENT_LIST_DIR}/include
-  ${CMAKE_CURRENT_LIST_DIR}/include/zephyr
-)

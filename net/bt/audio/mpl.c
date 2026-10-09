@@ -14,22 +14,22 @@
 #include <sys/types.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/audio/ccid.h>
-#include <zephyr/bluetooth/audio/mcs.h>
-#include <zephyr/bluetooth/audio/media_proxy.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/data.h>
-#include <zephyr/bluetooth/services/ots.h>
-#include <zephyr/bluetooth/uuid.h>
-#include <zephyr/kernel.h>
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/audio/ccid.h>
+#include <nuttx/net/bluetooth/audio/mcs.h>
+#include <nuttx/net/bluetooth/audio/media_proxy.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/data.h>
+#include <nuttx/net/bluetooth/services/ots.h>
+#include <nuttx/net/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 #include <nuttx/mm/net_buf.h>
 #include <assert.h>
 #include <nuttx/atomic.h>
 #include <nuttx/clock.h>
-#include <zephyr/sys/util.h>
-#include <zephyr/toolchain.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
+#include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #include "mcs_internal.h"
 #include "media_proxy_internal.h"

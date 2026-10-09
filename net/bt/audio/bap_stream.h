@@ -10,11 +10,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <zephyr/bluetooth/audio/ascs.h>
-#include <zephyr/bluetooth/audio/audio.h>
-#include <zephyr/bluetooth/audio/bap.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/iso.h>
+#include <nuttx/net/bluetooth/audio/ascs.h>
+#include <nuttx/net/bluetooth/audio/audio.h>
+#include <nuttx/net/bluetooth/audio/bap.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/iso.h>
 
 void bt_bap_stream_init(struct bt_bap_stream *stream);
 

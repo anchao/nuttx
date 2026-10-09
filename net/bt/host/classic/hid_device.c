@@ -6,18 +6,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <string.h>
 #include <errno.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
 #include <common/assert.h>
 
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/classic/hid_device.h>
-#include <zephyr/bluetooth/classic/classic.h>
-#include <zephyr/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/classic/hid_device.h>
+#include <nuttx/net/bluetooth/classic/classic.h>
+#include <nuttx/net/bluetooth/l2cap.h>
 
 #include <host/hci_core.h>
 #include <host/conn_internal.h>
@@ -25,7 +25,7 @@
 
 #include "hid_internal.h"
 
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_hid_device);
 
 /* Get the HID device from CTRL L2CAP channel */

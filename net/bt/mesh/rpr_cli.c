@@ -4,15 +4,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include <string.h>
-#include <zephyr/bluetooth/mesh.h>
-#include <zephyr/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/conn.h>
 #include <common/bt_str.h>
 #include "access.h"
 #include "prov.h"
 #include "rpr.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_MODEL_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_rpr_cli);
 
 #define LINK_TIMEOUT_SECONDS_DEFAULT 10

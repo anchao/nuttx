@@ -7,8 +7,8 @@
  */
 
 #include <nuttx/config.h>
-#include <zephyr/kernel.h>
-#include <zephyr/init.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/init.h>
 #include <nuttx/clock.h>
 #include <stdint.h>
 

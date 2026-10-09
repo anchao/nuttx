@@ -7,25 +7,25 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/bluetooth/iso.h>
-#include <zephyr/kernel.h>
+#include <nuttx/net/bluetooth/iso.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
 #include <string.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <nuttx/atomic.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/iterable_sections.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/iterable_sections.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 #include <nuttx/list.h>
 #include <assert.h>
 
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/direction.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/hci_vs.h>
-#include <zephyr/bluetooth/att.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/direction.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/hci_vs.h>
+#include <nuttx/net/bluetooth/att.h>
 
 #include <common/assert.h>
 #include <common/bt_str.h>
@@ -39,7 +39,7 @@
 #include "sco_internal.h"
 
 #define LOG_LEVEL CONFIG_BT_CONN_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_conn_br);
 
 void bt_sco_cleanup(struct bt_conn *sco_conn)

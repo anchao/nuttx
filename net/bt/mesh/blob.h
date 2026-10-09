@@ -5,7 +5,7 @@
  */
 
 #include <string.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
 #define BT_MESH_BLOB_OP_XFER_GET BT_MESH_MODEL_OP_2(0x83, 0x00)
 #define BT_MESH_BLOB_OP_XFER_START BT_MESH_MODEL_OP_2(0x83, 0x01)

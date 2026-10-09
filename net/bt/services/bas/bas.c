@@ -11,23 +11,23 @@
  */
 
 #include <errno.h>
-#include <zephyr/init.h>
+#include <nuttx/net/bluetooth/compat/init.h>
 #include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/gatt.h>
-#include <zephyr/bluetooth/uuid.h>
-#include <zephyr/bluetooth/services/bas.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/gatt.h>
+#include <nuttx/net/bluetooth/uuid.h>
+#include <nuttx/net/bluetooth/services/bas.h>
 #include "bas_internal.h"
 
 #define LOG_LEVEL CONFIG_BT_BAS_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bas, CONFIG_BT_BAS_LOG_LEVEL);
 
 static uint8_t battery_level = 100U;

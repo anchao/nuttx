@@ -7,8 +7,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <strings.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/mesh.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/mesh.h>
 #include <nuttx/mm/net_buf.h>
 #include "testing.h"
 #include "net.h"
@@ -19,7 +19,7 @@
 #include "common/bt_str.h"
 
 #define LOG_LEVEL CONFIG_BT_MESH_PROV_LOG_LEVEL
-#include <zephyr/logging/log.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
 LOG_MODULE_REGISTER(bt_mesh_pb_adv);
 
 #define GPCF(gpc)           (gpc & 0x03)

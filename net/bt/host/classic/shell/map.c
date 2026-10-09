@@ -14,18 +14,18 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 #include <stdlib.h>
 
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/l2cap.h>
-#include <zephyr/bluetooth/classic/rfcomm.h>
-#include <zephyr/bluetooth/classic/sdp.h>
-#include <zephyr/bluetooth/classic/map.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/l2cap.h>
+#include <nuttx/net/bluetooth/classic/rfcomm.h>
+#include <nuttx/net/bluetooth/classic/sdp.h>
+#include <nuttx/net/bluetooth/classic/map.h>
 
-#include <zephyr/shell/shell.h>
+#include <nuttx/net/bluetooth/compat/shell/shell.h>
 
 #include <host/shell/bt.h>
 #include <common/bt_shell_private.h>

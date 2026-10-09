@@ -9,9 +9,9 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include <zephyr/bluetooth/addr.h>
-#include <zephyr/bluetooth/crypto.h>
-#include <zephyr/sys/util.h>
+#include <nuttx/net/bluetooth/addr.h>
+#include <nuttx/net/bluetooth/crypto.h>
+#include <nuttx/net/bluetooth/compat/sys/util.h>
 
 #include "keys.h"
 

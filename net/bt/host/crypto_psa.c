@@ -10,13 +10,13 @@
 #include <string.h>
 
 #include <nuttx/config.h>
-#include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/bluetooth/conn.h>
-#include <zephyr/bluetooth/crypto.h>
-#include <zephyr/bluetooth/hci.h>
-#include <zephyr/kernel.h>
-#include <zephyr/logging/log.h>
-#include <zephyr/sys/byteorder.h>
+#include <nuttx/net/bluetooth/bluetooth.h>
+#include <nuttx/net/bluetooth/conn.h>
+#include <nuttx/net/bluetooth/crypto.h>
+#include <nuttx/net/bluetooth/hci.h>
+#include <nuttx/net/bluetooth/compat/kernel.h>
+#include <nuttx/net/bluetooth/compat/logging/log.h>
+#include <nuttx/net/bluetooth/compat/sys/byteorder.h>
 #include <psa/crypto.h>
 #include <psa/crypto_struct.h>
 #include <psa/crypto_types.h>
