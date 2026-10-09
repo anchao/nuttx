@@ -1,0 +1,22 @@
+############################################################################
+# net/bt/lib/Make.defs
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+############################################################################
+
+ifeq ($(CONFIG_BT),y)
+
+ifeq ($(CONFIG_BT_EAD),y)
+BT_CSRCS += bt/lib/ead.c
+endif
+
+ifeq ($(CONFIG_LIBSBC),y)
+BT_CSRCS += bt/lib/sbc.c
+endif
+
+VPATH += bt/lib
+DEPPATH += --dep-path bt/lib
+CFLAGS += ${INCDIR_PREFIX}$(TOPDIR)/net/bt/lib
+
+endif

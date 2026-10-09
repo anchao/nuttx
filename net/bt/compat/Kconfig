@@ -1,0 +1,16 @@
+#
+# Bluetooth Host Stack Compatibility Layer
+#
+
+config BT_COMPAT
+	bool
+	default y
+	depends on BT
+
+config BT_COMPAT_LOG_LEVEL
+	int "BT Compat Log Level"
+	default 3
+	range 0 4
+	help
+	    Log level for Bluetooth compat layer.
+	    0 = none, 1 = error, 2 = warning, 3 = info, 4 = debug

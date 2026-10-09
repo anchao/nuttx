@@ -1,0 +1,18 @@
+############################################################################
+# net/bt/crypto/Make.defs
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+############################################################################
+
+ifeq ($(CONFIG_BT_CRYPTO),y)
+
+BT_CSRCS += bt/crypto/bt_crypto.c
+BT_CSRCS += bt/crypto/bt_crypto_psa.c
+
+VPATH += bt/crypto
+DEPPATH += --dep-path bt/crypto
+
+CFLAGS += ${INCDIR_PREFIX}$(TOPDIR)/net/bt/crypto
+
+endif
