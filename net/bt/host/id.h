@@ -24,8 +24,7 @@
  *
  ****************************************************************************/
 
-/*
- * Copyright (c) 2017-2021 Nordic Semiconductor ASA
+/* Copyright (c) 2017-2021 Nordic Semiconductor ASA
  * Copyright (c) 2015-2016 Intel Corporation
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -50,17 +49,19 @@
 static inline bool bt_id_rpa_is_new(void)
 {
 #if defined(CONFIG_BT_PRIVACY)
-	/* TODO: To get bt_dev we should include "hci_core.h" but that gives redefinitions
-	 * Should we have an API to get the rpa_update value?
-	 */
-	uint32_t remaining_ms = TICK2MSEC(
-		k_work_delayable_remaining_get(&bt_dev.rpa_update));
-	/* RPA is considered new if there is less than half a second since the
-	 * timeout was started.
-	 */
-	return remaining_ms > (RPA_TIMEOUT_MS(bt_dev.rpa_timeout) - 500);
+  /* TODO: To get bt_dev we should include "hci_core.h" but that gives
+   * redefinitions Should we have an API to get the rpa_update value?
+   */
+
+  uint32_t remaining_ms =
+      TICK2MSEC(k_work_delayable_remaining_get(&bt_dev.rpa_update));
+  /* RPA is considered new if there is less than half a second since the
+   * timeout was started.
+   */
+
+  return remaining_ms > (RPA_TIMEOUT_MS(bt_dev.rpa_timeout) - 500);
 #else
-	return false;
+  return false;
 #endif
 }
 
@@ -72,17 +73,19 @@ int bt_id_set_create_conn_own_addr(bool use_filter, uint8_t *own_addr_type);
 
 int bt_id_set_scan_own_addr(bool active_scan, uint8_t *own_addr_type);
 
-int bt_id_set_adv_own_addr(struct bt_le_ext_adv *adv, uint32_t options,
-			   bool dir_adv, uint8_t *own_addr_type);
+int bt_id_set_adv_own_addr(
+  struct bt_le_ext_adv *adv, uint32_t options, bool dir_adv,
+  uint8_t *own_addr_type);
 
 /* Set adv->adv_addr, the address the set advertises with, for the own
  * address types whose address is not programmed per-set through
  * bt_id_set_adv_random_addr(): identity addresses, and the device-wide
- * random address on controllers without the extended advertising feature.
- * In the advertising parameter setting path this must be called only after
- * the parameters have been accepted by the controller, so that a failed
+ * random address on controllers without the extended advertising feature. In
+ * the advertising parameter setting path this must be called only after the
+ * parameters have been accepted by the controller, so that a failed
  * parameter command does not change the reported address.
  */
+
 void bt_id_save_adv_addr(struct bt_le_ext_adv *adv, uint8_t own_addr_type);
 
 bool bt_id_adv_random_addr_check(const struct bt_le_adv_param *param);
@@ -90,7 +93,7 @@ bool bt_id_adv_random_addr_check(const struct bt_le_adv_param *param);
 bool bt_id_scan_random_addr_check(void);
 
 int bt_id_set_adv_random_addr(struct bt_le_ext_adv *adv,
-			      const bt_addr_t *addr);
+                              const bt_addr_t *addr);
 int bt_id_set_adv_private_addr(struct bt_le_ext_adv *adv);
 
 int bt_id_set_private_addr(uint8_t id);

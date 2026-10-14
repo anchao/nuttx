@@ -30,13 +30,13 @@
 
 /* NuttX HCI driver integration for NuttX Bluetooth Host Stack.
  *
- * This provides the bridge between the Zephyr BT host (which expects
- * the Zephyr driver model) and NuttX's hardware drivers.
+ * This provides the bridge between the Zephyr BT host (which expects the
+ * Zephyr driver model) and NuttX's hardware drivers.
  *
- * To use with a specific HCI transport:
- *   1. Register an HCI driver via bt_hci_driver_register()
- *   2. Driver calls bt_recv() when it receives data from the controller
- *   3. BT host calls the driver's send() when it has data for the controller
+ * To use with a specific HCI transport: 1. Register an HCI driver via
+ * bt_hci_driver_register() 2. Driver calls bt_recv() when it receives data
+ * from the controller 3. BT host calls the driver's send() when it has data
+ * for the controller
  */
 
 /****************************************************************************
@@ -49,34 +49,43 @@
 #include <nuttx/net/bluetooth/compat/kernel.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 struct net_buf;
 struct bt_driver_s;
 
 /* HCI driver operations */
-struct bt_hci_driver_ops {
-    int (*open)(void);
-    int (*send)(struct net_buf *buf);
-    int (*close)(void);
+
+struct bt_hci_driver_ops
+{
+  int (*open)(void);
+  int (*send)(struct net_buf *buf);
+  int (*close)(void);
 };
 
 /* Register an HCI driver. Returns 0 on success. */
+
 int bt_hci_driver_register(const struct bt_hci_driver_ops *ops);
 
 /* Register a NuttX Bluetooth lower-half driver for the Zephyr BT host. */
+
 int bt_hci_driver_register_btdev(struct bt_driver_s *driver);
 
 /* Called by the HCI driver when it receives data from the controller */
+
 int bt_recv(struct net_buf *buf);
 
 /* Called by the HCI driver when it receives an ISO packet */
+
 int bt_recv_iso(struct net_buf *buf);
 
 /* Get a buffer for HCI command/event/ACL data */
+
 struct net_buf *bt_buf_get_cmd_complete(clock_t timeout);
-struct net_buf *bt_buf_get_evt(uint8_t evt, bool discardable, clock_t timeout);
+struct net_buf *bt_buf_get_evt(uint8_t evt,
+                               bool discardable, clock_t timeout);
 struct net_buf *bt_buf_get_acl(clock_t timeout);
 struct net_buf *bt_buf_get_iso(clock_t timeout);
 

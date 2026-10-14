@@ -29,8 +29,7 @@
  */
 
 /** @brief Internal testing interfaces for Bluetooth
- *  @file
- *  @internal
+ *  @file @internal
  *
  *  The interfaces in this file are internal and not stable.
  */
@@ -46,12 +45,12 @@
 
 /** @brief Hook for `acl_in_pool.destroy`
  *
- *  Weak-function interface. The user can simply define this
- *  function, and it will automatically become the event
- *  listener.
+ *  Weak-function interface. The user can simply define this function, and it
+ *  will automatically become the event listener.
  *
  *  @kconfig_dep{CONFIG_BT_TESTING}
  */
+
 void bt_testing_trace_event_acl_pool_destroy(struct net_buf *buf);
 
 /** @brief Trace when extended advertising report reassembly timed out
@@ -61,15 +60,17 @@ void bt_testing_trace_event_acl_pool_destroy(struct net_buf *buf);
  *
  *  @kconfig_dep{CONFIG_BT_TESTING}
  */
+
 void bt_testing_trace_ext_adv_reassembly_timeout(void);
 
 /** @brief Trace when a fragmented extended advertising report is delivered
  *
- *  Weak-function interface called when a fragmented extended advertising report
- *  chain has been fully reassembled and delivered to the application.
+ *  Weak-function interface called when a fragmented extended advertising
+ *  report chain has been fully reassembled and delivered to the application.
  *
  *  @kconfig_dep{CONFIG_BT_TESTING}
  */
+
 void bt_testing_trace_ext_adv_reassembly_complete(void);
 
 #endif /* ZEPHYR_INCLUDE_BLUETOOTH_TESTING_H_ */

@@ -28,8 +28,7 @@
  *  @brief Bluetooth HCI lockstep command helper.
  */
 
-/*
- * Copyright (c) 2026 Silicon Laboratories Inc.
+/* Copyright (c) 2026 Silicon Laboratories Inc.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -53,13 +52,15 @@
 #include <nuttx/mm/net_buf.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-typedef int (*bt_hci_lockstep_send_t)(const struct device *dev,
-                                      const uint8_t *pkt, size_t len);
+typedef int (*bt_hci_lockstep_send_t)(
+  const struct device *dev, const uint8_t *pkt, size_t len);
 
-struct bt_hci_lockstep {
+struct bt_hci_lockstep
+{
   const struct device *dev;
   bt_hci_lockstep_send_t send;
   sem_t changed;
@@ -71,14 +72,15 @@ struct bt_hci_lockstep {
   clock_t timeout;
 };
 
-void bt_hci_lockstep_init(struct bt_hci_lockstep *ls, const struct device *dev,
-                          bt_hci_lockstep_send_t send);
+void bt_hci_lockstep_init(
+  struct bt_hci_lockstep *ls, const struct device *dev,
+  bt_hci_lockstep_send_t send);
 void bt_hci_lockstep_reset(struct bt_hci_lockstep *ls);
-bool bt_hci_lockstep_feed(struct bt_hci_lockstep *ls, const uint8_t *pkt,
-                          size_t len);
-int bt_hci_lockstep_cmd_send_sync(struct bt_hci_lockstep *ls, uint16_t opcode,
-                                  struct net_buf_simple *cmd,
-                                  struct net_buf_simple *rsp);
+bool bt_hci_lockstep_feed(struct bt_hci_lockstep *ls,
+                          const uint8_t *pkt, size_t len);
+int bt_hci_lockstep_cmd_send_sync(
+  struct bt_hci_lockstep *ls, uint16_t opcode, struct net_buf_simple *cmd,
+  struct net_buf_simple *rsp);
 
 #ifdef __cplusplus
 }

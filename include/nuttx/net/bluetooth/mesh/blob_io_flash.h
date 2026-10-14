@@ -24,8 +24,7 @@
  *
  ****************************************************************************/
 
-/*
- * Copyright (c) 2020 Nordic Semiconductor ASA
+/* Copyright (c) 2020 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -46,7 +45,8 @@
 #include <stdint.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /**
@@ -56,16 +56,24 @@ extern "C" {
  */
 
 /** BLOB flash stream. */
-struct bt_mesh_blob_io_flash {
-	/** Flash stream area ID. */
-	uint8_t area_id;
-	/** Active stream mode. */
-	enum bt_mesh_blob_io_mode mode;
-	/** Offset into the stream area, in bytes. */
-	off_t offset;
 
-	/* BLOB stream. */
-	struct bt_mesh_blob_io io;
+struct bt_mesh_blob_io_flash
+{
+  /** Flash stream area ID. */
+
+  uint8_t area_id;
+
+  /** Active stream mode. */
+
+  enum bt_mesh_blob_io_mode mode;
+
+  /** Offset into the stream area, in bytes. */
+
+  off_t offset;
+
+  /* BLOB stream. */
+
+  struct bt_mesh_blob_io io;
 };
 
 /** @brief Initialize a flash stream.
@@ -76,8 +84,10 @@ struct bt_mesh_blob_io_flash {
  *
  *  @return 0 on success or (negative) error code otherwise.
  */
+
 int bt_mesh_blob_io_flash_init(struct bt_mesh_blob_io_flash *flash,
-			       uint8_t area_id, off_t offset);
+                               uint8_t area_id,
+                               off_t offset);
 
 /** @} */
 

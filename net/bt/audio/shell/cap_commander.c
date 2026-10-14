@@ -62,56 +62,67 @@
 #include "host/shell/bt.h"
 #include "audio.h"
 
-static void cap_discover_cb(struct bt_conn *conn, int err,
-			    const struct bt_csip_set_coordinator_set_member *member,
-			    const struct bt_csip_set_coordinator_csis_inst *csis_inst)
+/****************************************************************************
+ * Private Functions
+ ****************************************************************************/
+
+static void cap_discover_cb(struct bt_conn *conn,
+  int err,
+  const struct bt_csip_set_coordinator_set_member *member,
+  const struct bt_csip_set_coordinator_csis_inst *csis_inst)
 {
-	ARG_UNUSED(conn);
-	ARG_UNUSED(member);
+  ARG_UNUSED(conn);
+  ARG_UNUSED(member);
 
-	if (err != 0) {
-		bt_shell_error("discover failed (%d)", err);
-		return;
-	}
+  if (err != 0)
+    {
+      bt_shell_error("discover failed (%d)", err);
+      return;
+    }
 
-	bt_shell_print("discovery completed%s", csis_inst == NULL ? "" : " with CSIS");
+  bt_shell_print("discovery completed%s",
+                 csis_inst == NULL ? "" : " with CSIS");
 }
 
 #if defined(CONFIG_BT_VCP_VOL_CTLR)
 static void cap_volume_changed_cb(struct bt_conn *conn, int err)
 {
-	ARG_UNUSED(conn);
+  ARG_UNUSED(conn);
 
-	if (err != 0) {
-		bt_shell_error("Volume change failed (%d)", err);
-		return;
-	}
+  if (err != 0)
+    {
+      bt_shell_error("Volume change failed (%d)", err);
+      return;
+    }
 
-	bt_shell_print("Volume change completed");
+  bt_shell_print("Volume change completed");
 }
 
 static void cap_volume_mute_changed_cb(struct bt_conn *conn, int err)
 {
-	ARG_UNUSED(conn);
+  ARG_UNUSED(conn);
 
-	if (err != 0) {
-		bt_shell_error("Volume mute change failed (%d)", err);
-		return;
-	}
+  if (err != 0)
+    {
+      bt_shell_error("Volume mute change failed (%d)", err);
+      return;
+    }
 
-	bt_shell_print("Volume mute change completed");
+  bt_shell_print("Volume mute change completed");
 }
 #if defined(CONFIG_BT_VCP_VOL_CTLR_VOCS)
+
 static void cap_volume_offset_changed_cb(struct bt_conn *conn, int err)
 {
-	ARG_UNUSED(conn);
+  ARG_UNUSED(conn);
 
-	if (err != 0) {
-		bt_shell_error("Volume offset change failed (%d)", err);
-		return;
-	}
+  if (err != 0)
+    {
+      bt_shell_error("Volume offset change failed (%d)", err);
+      return;
+    }
 
-	bt_shell_print("Volume offset change completed");
+  bt_shell_print("Volume offset change completed");
 }
 #endif /* CONFIG_BT_VCP_VOL_CTLR_VOCS */
 #endif /* CONFIG_BT_VCP_VOL_CTLR */
@@ -119,27 +130,29 @@ static void cap_volume_offset_changed_cb(struct bt_conn *conn, int err)
 #if defined(CONFIG_BT_MICP_MIC_CTLR)
 static void cap_microphone_mute_changed_cb(struct bt_conn *conn, int err)
 {
-	ARG_UNUSED(conn);
+  ARG_UNUSED(conn);
 
-	if (err != 0) {
-		bt_shell_error("Microphone mute change failed (%d)", err);
-		return;
-	}
+  if (err != 0)
+    {
+      bt_shell_error("Microphone mute change failed (%d)", err);
+      return;
+    }
 
-	bt_shell_print("Microphone mute change completed");
+  bt_shell_print("Microphone mute change completed");
 }
 
 #if defined(CONFIG_BT_MICP_MIC_CTLR_AICS)
 static void cap_microphone_gain_changed_cb(struct bt_conn *conn, int err)
 {
-	ARG_UNUSED(conn);
+  ARG_UNUSED(conn);
 
-	if (err != 0) {
-		bt_shell_error("Microphone gain change failed (%d)", err);
-		return;
-	}
+  if (err != 0)
+    {
+      bt_shell_error("Microphone gain change failed (%d)", err);
+      return;
+    }
 
-	bt_shell_print("Microphone gain change completed");
+  bt_shell_print("Microphone gain change completed");
 }
 #endif /* CONFIG_BT_MICP_MIC_CTLR_AICS */
 #endif /* CONFIG_BT_MICP_MIC_CTLR */
@@ -147,838 +160,1069 @@ static void cap_microphone_gain_changed_cb(struct bt_conn *conn, int err)
 #if defined(CONFIG_BT_BAP_BROADCAST_ASSISTANT)
 static void cap_broadcast_reception_start_cb(struct bt_conn *conn, int err)
 {
-	ARG_UNUSED(conn);
+  ARG_UNUSED(conn);
 
-	if (err != 0) {
-		bt_shell_error("Broadcast reception start failed (%d)", err);
-		return;
-	}
+  if (err != 0)
+    {
+      bt_shell_error("Broadcast reception start failed (%d)", err);
+      return;
+    }
 
-	bt_shell_print("Broadcast reception start completed");
+  bt_shell_print("Broadcast reception start completed");
 }
 
 static void cap_broadcast_reception_stop_cb(struct bt_conn *conn, int err)
 {
-	if (err != 0) {
-		bt_shell_error("Broadcast reception stop failed (%d) for conn %p", err,
-			       (void *)conn);
-		return;
-	}
+  if (err != 0)
+    {
+      bt_shell_error("Broadcast reception stop failed (%d) for conn %p", err,
+                     (void *)conn);
+      return;
+    }
 
-	bt_shell_print("Broadcast reception stop completed");
+  bt_shell_print("Broadcast reception stop completed");
 }
 
 static void cap_distribute_broadcast_code_cb(struct bt_conn *conn, int err)
 {
-	if (err != 0) {
-		bt_shell_error("Distribute broadcast code failed (%d) for conn %p", err,
-			       (void *)conn);
-		return;
-	}
+  if (err != 0)
+    {
+      bt_shell_error("Distribute broadcast code failed (%d) for conn "
+                     "%p", err,
+                     (void *)conn);
+      return;
+    }
 
-	bt_shell_error("Distribute broadcast code completed");
+  bt_shell_error("Distribute broadcast code completed");
 }
 #endif
 
-static struct bt_cap_commander_cb cbs = {
-	.discovery_complete = cap_discover_cb,
+static struct bt_cap_commander_cb cbs =
+{
+        .discovery_complete = cap_discover_cb,
 #if defined(CONFIG_BT_VCP_VOL_CTLR)
-	.volume_changed = cap_volume_changed_cb,
-	.volume_mute_changed = cap_volume_mute_changed_cb,
+        .volume_changed = cap_volume_changed_cb,
+        .volume_mute_changed = cap_volume_mute_changed_cb,
 #if defined(CONFIG_BT_VCP_VOL_CTLR_VOCS)
-	.volume_offset_changed = cap_volume_offset_changed_cb,
+        .volume_offset_changed = cap_volume_offset_changed_cb,
 #endif /* CONFIG_BT_VCP_VOL_CTLR_VOCS */
 #endif /* CONFIG_BT_VCP_VOL_CTLR */
 #if defined(CONFIG_BT_MICP_MIC_CTLR)
-	.microphone_mute_changed = cap_microphone_mute_changed_cb,
+        .microphone_mute_changed = cap_microphone_mute_changed_cb,
 #if defined(CONFIG_BT_MICP_MIC_CTLR_AICS)
-	.microphone_gain_changed = cap_microphone_gain_changed_cb,
+        .microphone_gain_changed = cap_microphone_gain_changed_cb,
 #endif /* CONFIG_BT_MICP_MIC_CTLR_AICS */
 #endif /* CONFIG_BT_MICP_MIC_CTLR */
 #if defined(CONFIG_BT_BAP_BROADCAST_ASSISTANT)
-	.broadcast_reception_start = cap_broadcast_reception_start_cb,
-	.broadcast_reception_stop = cap_broadcast_reception_stop_cb,
-	.distribute_broadcast_code = cap_distribute_broadcast_code_cb,
+        .broadcast_reception_start = cap_broadcast_reception_start_cb,
+        .broadcast_reception_stop = cap_broadcast_reception_stop_cb,
+        .distribute_broadcast_code = cap_distribute_broadcast_code_cb,
 #endif /* CONFIG_BT_BAP_BROADCAST_ASSISTANT */
 };
 
-static int cmd_cap_commander_cancel(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_cap_commander_cancel(const struct shell *sh,
+                                    size_t argc, char *argv[])
 {
-	int err;
+  int err;
 
-	ARG_UNUSED(argc);
-	ARG_UNUSED(argv);
+  ARG_UNUSED(argc);
+  ARG_UNUSED(argv);
 
-	err = bt_cap_commander_cancel();
-	if (err != 0) {
-		shell_print(sh, "Failed to cancel CAP commander procedure: %d", err);
-		return -ENOEXEC;
-	}
+  err = bt_cap_commander_cancel();
+  if (err != 0)
+    {
+      shell_print(sh, "Failed to cancel CAP commander procedure: %d", err);
+      return -ENOEXEC;
+    }
 
-	return 0;
+  return 0;
 }
 
-static int cmd_cap_commander_discover(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_cap_commander_discover(const struct shell *sh,
+                                      size_t argc, char *argv[])
 {
-	static bool cbs_registered;
-	int err;
+  static bool cbs_registered;
+  int err;
 
-	ARG_UNUSED(argc);
-	ARG_UNUSED(argv);
+  ARG_UNUSED(argc);
+  ARG_UNUSED(argv);
 
-	if (default_conn == NULL) {
-		shell_error(sh, "Not connected");
-		return -ENOEXEC;
-	}
+  if (default_conn == NULL)
+    {
+      shell_error(sh, "Not connected");
+      return -ENOEXEC;
+    }
 
-	if (!cbs_registered) {
-		err = bt_cap_commander_register_cb(&cbs);
-		if (err != 0) {
-			shell_error(sh, "Failed to register CAP commander callbacks: %d", err);
-			return -ENOEXEC;
-		}
+  if (!cbs_registered)
+    {
+      err = bt_cap_commander_register_cb(&cbs);
+      if (err != 0)
+        {
+          shell_error(sh, "Failed to register CAP commander callbacks: %d",
+                      err);
+          return -ENOEXEC;
+        }
 
-		cbs_registered = true;
-	}
+      cbs_registered = true;
+    }
 
-	err = bt_cap_commander_discover(default_conn);
-	if (err != 0) {
-		shell_error(sh, "Fail: %d", err);
-	}
+  err = bt_cap_commander_discover(default_conn);
+  if (err != 0)
+    {
+      shell_error(sh, "Fail: %d", err);
+    }
 
-	return err;
+  return err;
 }
 
 #if defined(CONFIG_BT_VCP_VOL_CTLR) || defined(CONFIG_BT_MICP_MIC_CTLR_AICS)
 static void populate_connected_conns(struct bt_conn *conn, void *data)
 {
-	struct bt_conn **connected_conns = (struct bt_conn **)data;
+  struct bt_conn **connected_conns = (struct bt_conn **)data;
 
-	for (int i = 0; i < CONFIG_BT_MAX_CONN; i++) {
-		if (connected_conns[i] == NULL) {
-			connected_conns[i] = conn;
-			return;
-		}
-	}
+  for (int i = 0; i < CONFIG_BT_MAX_CONN; i++)
+    {
+      if (connected_conns[i] == NULL)
+        {
+          connected_conns[i] = conn;
+          return;
+        }
+    }
 }
 #endif /* CONFIG_BT_VCP_VOL_CTLR || CONFIG_BT_MICP_MIC_CTLR_AICS */
 
 #if defined(CONFIG_BT_VCP_VOL_CTLR)
-static int cmd_cap_commander_change_volume(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_cap_commander_change_volume(const struct shell *sh,
+                                           size_t argc, char *argv[])
 {
-	struct bt_conn *connected_conns[CONFIG_BT_MAX_CONN] = {0};
-	union bt_cap_set_member members[CONFIG_BT_MAX_CONN] = {0};
-	struct bt_cap_commander_change_volume_param param = {
-		.members = members,
-	};
-	unsigned long volume;
-	int err = 0;
+  struct bt_conn *connected_conns[CONFIG_BT_MAX_CONN] =
+    {
+        0
+    };
 
-	ARG_UNUSED(argc);
+  union bt_cap_set_member members[CONFIG_BT_MAX_CONN] =
+    {
+        0
+    };
 
-	if (default_conn == NULL) {
-		shell_error(sh, "Not connected");
-		return -ENOEXEC;
-	}
+  struct bt_cap_commander_change_volume_param param =
+    {
+          .members = members,
+    };
 
-	volume = shell_strtoul(argv[1], 10, &err);
-	if (err != 0) {
-		shell_error(sh, "Failed to parse volume from %s", argv[1]);
+  unsigned long volume;
+  int err = 0;
 
-		return -ENOEXEC;
-	}
+  ARG_UNUSED(argc);
 
-	if (volume > UINT8_MAX) {
-		shell_error(sh, "Invalid volume %lu", volume);
+  if (default_conn == NULL)
+    {
+      shell_error(sh, "Not connected");
+      return -ENOEXEC;
+    }
 
-		return -ENOEXEC;
-	}
-	param.volume = (uint8_t)volume;
+  volume = shell_strtoul(argv[1], 10, &err);
+  if (err != 0)
+    {
+      shell_error(sh, "Failed to parse volume from %s", argv[1]);
 
-	param.type = BT_CAP_SET_TYPE_AD_HOC;
-	/* TODO: Add support for coordinated sets */
+      return -ENOEXEC;
+    }
 
-	/* Populate the array of connected connections */
-	bt_conn_foreach(BT_CONN_TYPE_LE, populate_connected_conns, (void *)connected_conns);
+  if (volume > UINT8_MAX)
+    {
+      shell_error(sh, "Invalid volume %lu", volume);
 
-	param.count = 0U;
-	param.members = members;
-	for (size_t i = 0U; i < ARRAY_SIZE(connected_conns); i++) {
-		struct bt_conn *conn = connected_conns[i];
+      return -ENOEXEC;
+    }
 
-		if (conn == NULL) {
-			break;
-		}
+  param.volume = (uint8_t)volume;
 
-		param.members[i].member = conn;
-		param.count++;
-	}
+  param.type = BT_CAP_SET_TYPE_AD_HOC;
 
-	shell_print(sh, "Setting volume to %u on %zu connections", param.volume, param.count);
+  /* TODO: Add support for coordinated sets */
 
-	err = bt_cap_commander_change_volume(&param);
-	if (err != 0) {
-		shell_print(sh, "Failed to change volume: %d", err);
+  /* Populate the array of connected connections */
 
-		return -ENOEXEC;
-	}
+  bt_conn_foreach(BT_CONN_TYPE_LE, populate_connected_conns,
+                  (void *)connected_conns);
 
-	return 0;
+  param.count = 0U;
+  param.members = members;
+  for (size_t i = 0U; i < ARRAY_SIZE(connected_conns); i++)
+    {
+      struct bt_conn *conn = connected_conns[i];
+
+      if (conn == NULL)
+        {
+          break;
+        }
+
+      param.members[i].member = conn;
+      param.count++;
+    }
+
+  shell_print(sh, "Setting volume to %u on %zu connections", param.volume,
+              param.count);
+
+  err = bt_cap_commander_change_volume(&param);
+  if (err != 0)
+    {
+      shell_print(sh, "Failed to change volume: %d", err);
+
+      return -ENOEXEC;
+    }
+
+  return 0;
 }
 
-static int cmd_cap_commander_change_volume_mute(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_cap_commander_change_volume_mute(const struct shell *sh,
+                                                size_t argc, char *argv[])
 {
-	struct bt_conn *connected_conns[CONFIG_BT_MAX_CONN] = {0};
-	union bt_cap_set_member members[CONFIG_BT_MAX_CONN] = {0};
-	struct bt_cap_commander_change_volume_mute_state_param param = {
-		.members = members,
-		.type = BT_CAP_SET_TYPE_AD_HOC, /* TODO: Add support for coordinated sets */
-	};
-	int err = 0;
+  struct bt_conn *connected_conns[CONFIG_BT_MAX_CONN] =
+    {
+        0
+    };
 
-	ARG_UNUSED(argc);
+  union bt_cap_set_member members[CONFIG_BT_MAX_CONN] =
+    {
+        0
+    };
 
-	if (default_conn == NULL) {
-		shell_error(sh, "Not connected");
-		return -ENOEXEC;
-	}
+  struct bt_cap_commander_change_volume_mute_state_param param =
+    {
+          .members = members,
+          .type =
 
-	param.mute = shell_strtobool(argv[1], 10, &err);
-	if (err != 0) {
-		shell_error(sh, "Failed to parse volume mute from %s", argv[1]);
+                  /* TODO: Add support for coordinated sets */
 
-		return -ENOEXEC;
-	}
+                  BT_CAP_SET_TYPE_AD_HOC,
+    };
 
-	/* Populate the array of connected connections */
-	bt_conn_foreach(BT_CONN_TYPE_LE, populate_connected_conns, (void *)connected_conns);
+  int err = 0;
 
-	param.count = 0U;
-	param.members = members;
-	for (size_t i = 0U; i < ARRAY_SIZE(connected_conns); i++) {
-		struct bt_conn *conn = connected_conns[i];
+  ARG_UNUSED(argc);
 
-		if (conn == NULL) {
-			break;
-		}
+  if (default_conn == NULL)
+    {
+      shell_error(sh, "Not connected");
+      return -ENOEXEC;
+    }
 
-		param.members[i].member = conn;
-		param.count++;
-	}
+  param.mute = shell_strtobool(argv[1], 10, &err);
+  if (err != 0)
+    {
+      shell_error(sh, "Failed to parse volume mute from %s", argv[1]);
 
-	shell_print(sh, "Setting volume mute to %d on %zu connections", param.mute, param.count);
+      return -ENOEXEC;
+    }
 
-	err = bt_cap_commander_change_volume_mute_state(&param);
-	if (err != 0) {
-		shell_print(sh, "Failed to change volume mute: %d", err);
+  /* Populate the array of connected connections */
 
-		return -ENOEXEC;
-	}
+  bt_conn_foreach(BT_CONN_TYPE_LE, populate_connected_conns,
+                  (void *)connected_conns);
 
-	return 0;
+  param.count = 0U;
+  param.members = members;
+  for (size_t i = 0U; i < ARRAY_SIZE(connected_conns); i++)
+    {
+      struct bt_conn *conn = connected_conns[i];
+
+      if (conn == NULL)
+        {
+          break;
+        }
+
+      param.members[i].member = conn;
+      param.count++;
+    }
+
+  shell_print(sh, "Setting volume mute to %d on %zu connections", param.mute,
+              param.count);
+
+  err = bt_cap_commander_change_volume_mute_state(&param);
+  if (err != 0)
+    {
+      shell_print(sh, "Failed to change volume mute: %d", err);
+
+      return -ENOEXEC;
+    }
+
+  return 0;
 }
 
 #if defined(CONFIG_BT_VCP_VOL_CTLR_VOCS)
-static int cmd_cap_commander_change_volume_offset(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_cap_commander_change_volume_offset(const struct shell *sh,
+                                                  size_t argc, char *argv[])
 {
-	struct bt_cap_commander_change_volume_offset_member_param member_params[CONFIG_BT_MAX_CONN];
-	const size_t cap_argc = argc - 1; /* First argument is the command itself */
-	struct bt_cap_commander_change_volume_offset_param param = {
-		.type = BT_CAP_SET_TYPE_AD_HOC,
-		.param = member_params,
-	};
-	struct bt_conn *connected_conns[CONFIG_BT_MAX_CONN] = {0};
-	size_t conn_cnt = 0U;
-	int err = 0;
+  struct bt_cap_commander_change_volume_offset_member_param
+          member_params[CONFIG_BT_MAX_CONN];
 
-	if (default_conn == NULL) {
-		shell_error(sh, "Not connected");
-		return -ENOEXEC;
-	}
+  /* First argument is the command itself */
 
-	/* Populate the array of connected connections */
-	bt_conn_foreach(BT_CONN_TYPE_LE, populate_connected_conns, (void *)connected_conns);
-	for (size_t i = 0U; i < ARRAY_SIZE(connected_conns); i++) {
-		struct bt_conn *conn = connected_conns[i];
+  const size_t cap_argc = argc - 1;
+  struct bt_cap_commander_change_volume_offset_param param =
+    {
+          .type = BT_CAP_SET_TYPE_AD_HOC,
+          .param = member_params,
+    };
 
-		if (conn == NULL) {
-			break;
-		}
+  struct bt_conn *connected_conns[CONFIG_BT_MAX_CONN] =
+    {
+        0
+    };
 
-		conn_cnt++;
-	}
+  size_t conn_cnt = 0U;
+  int err = 0;
 
-	if (cap_argc > conn_cnt) {
-		shell_error(sh, "Cannot use %zu arguments for %zu connections", argc, conn_cnt);
+  if (default_conn == NULL)
+    {
+      shell_error(sh, "Not connected");
+      return -ENOEXEC;
+    }
 
-		return -ENOEXEC;
-	}
+  /* Populate the array of connected connections */
 
-	/* TODO: Add support for coordinated sets */
+  bt_conn_foreach(BT_CONN_TYPE_LE, populate_connected_conns,
+                  (void *)connected_conns);
+  for (size_t i = 0U; i < ARRAY_SIZE(connected_conns); i++)
+    {
+      struct bt_conn *conn = connected_conns[i];
 
-	for (size_t i = 0U; i < cap_argc; i++) {
-		const char *arg = argv[i + 1U];
-		long volume_offset;
+      if (conn == NULL)
+        {
+          break;
+        }
 
-		volume_offset = shell_strtol(arg, 10, &err);
-		if (err != 0) {
-			shell_error(sh, "Failed to parse volume offset from %s", arg);
+      conn_cnt++;
+    }
 
-			return -ENOEXEC;
-		}
+  if (cap_argc > conn_cnt)
+    {
+      shell_error(sh, "Cannot use %zu arguments for %zu connections", argc,
+                  conn_cnt);
 
-		if (!IN_RANGE(volume_offset, BT_VOCS_MIN_OFFSET, BT_VOCS_MAX_OFFSET)) {
-			shell_error(sh, "Invalid volume_offset %lu", volume_offset);
+      return -ENOEXEC;
+    }
 
-			return -ENOEXEC;
-		}
+  /* TODO: Add support for coordinated sets */
 
-		member_params[i].offset = (int16_t)volume_offset;
-		member_params[i].member.member = connected_conns[i];
-		param.count++;
-	}
+  for (size_t i = 0U; i < cap_argc; i++)
+    {
+      const char *arg = argv[i + 1U];
+      long volume_offset;
 
-	shell_print(sh, "Setting volume offset on %zu connections", param.count);
+      volume_offset = shell_strtol(arg, 10, &err);
+      if (err != 0)
+        {
+          shell_error(sh, "Failed to parse volume offset from %s", arg);
 
-	err = bt_cap_commander_change_volume_offset(&param);
-	if (err != 0) {
-		shell_print(sh, "Failed to change volume offset: %d", err);
+          return -ENOEXEC;
+        }
 
-		return -ENOEXEC;
-	}
+      if (!IN_RANGE(volume_offset, BT_VOCS_MIN_OFFSET, BT_VOCS_MAX_OFFSET))
+        {
+          shell_error(sh, "Invalid volume_offset %lu", volume_offset);
 
-	return 0;
+          return -ENOEXEC;
+        }
+
+      member_params[i].offset = (int16_t)volume_offset;
+      member_params[i].member.member = connected_conns[i];
+      param.count++;
+    }
+
+  shell_print(sh, "Setting volume offset on %zu connections", param.count);
+
+  err = bt_cap_commander_change_volume_offset(&param);
+  if (err != 0)
+    {
+      shell_print(sh, "Failed to change volume offset: %d", err);
+
+      return -ENOEXEC;
+    }
+
+  return 0;
 }
 #endif /* CONFIG_BT_VCP_VOL_CTLR_VOCS */
 #endif /* CONFIG_BT_VCP_VOL_CTLR */
 
 #if defined(CONFIG_BT_MICP_MIC_CTLR)
-static int cmd_cap_commander_change_microphone_mute(const struct shell *sh, size_t argc,
-						    char *argv[])
+static int cmd_cap_commander_change_microphone_mute(
+  const struct shell *sh, size_t argc, char *argv[])
 {
-	struct bt_conn *connected_conns[CONFIG_BT_MAX_CONN] = {0};
-	union bt_cap_set_member members[CONFIG_BT_MAX_CONN] = {0};
-	struct bt_cap_commander_change_microphone_mute_state_param param = {
-		.members = members,
-		.type = BT_CAP_SET_TYPE_AD_HOC, /* TODO: Add support for coordinated sets */
-	};
-	int err = 0;
+  struct bt_conn *connected_conns[CONFIG_BT_MAX_CONN] =
+    {
+        0
+    };
 
-	ARG_UNUSED(argc);
+  union bt_cap_set_member members[CONFIG_BT_MAX_CONN] =
+    {
+        0
+    };
 
-	if (default_conn == NULL) {
-		shell_error(sh, "Not connected");
-		return -ENOEXEC;
-	}
+  struct bt_cap_commander_change_microphone_mute_state_param param =
+    {
+          .members = members,
+          .type =
+                  BT_CAP_SET_TYPE_AD_HOC, /* TODO: Add support for coordinated sets */
+    };
 
-	param.mute = shell_strtobool(argv[1], 10, &err);
-	if (err != 0) {
-		shell_error(sh, "Failed to parse microphone mute from %s", argv[1]);
+  int err = 0;
 
-		return -ENOEXEC;
-	}
+  ARG_UNUSED(argc);
 
-	/* Populate the array of connected connections */
-	bt_conn_foreach(BT_CONN_TYPE_LE, populate_connected_conns, (void *)connected_conns);
+  if (default_conn == NULL)
+    {
+      shell_error(sh, "Not connected");
+      return -ENOEXEC;
+    }
 
-	param.count = 0U;
-	param.members = members;
-	for (size_t i = 0U; i < ARRAY_SIZE(connected_conns); i++) {
-		struct bt_conn *conn = connected_conns[i];
+  param.mute = shell_strtobool(argv[1], 10, &err);
+  if (err != 0)
+    {
+      shell_error(sh, "Failed to parse microphone mute from %s", argv[1]);
 
-		if (conn == NULL) {
-			break;
-		}
+      return -ENOEXEC;
+    }
 
-		param.members[i].member = conn;
-		param.count++;
-	}
+  /* Populate the array of connected connections */
 
-	shell_print(sh, "Setting microphone mute to %d on %zu connections", param.mute,
-		    param.count);
+  bt_conn_foreach(BT_CONN_TYPE_LE, populate_connected_conns,
+                  (void *)connected_conns);
 
-	err = bt_cap_commander_change_microphone_mute_state(&param);
-	if (err != 0) {
-		shell_print(sh, "Failed to change microphone mute: %d", err);
+  param.count = 0U;
+  param.members = members;
+  for (size_t i = 0U; i < ARRAY_SIZE(connected_conns); i++)
+    {
+      struct bt_conn *conn = connected_conns[i];
 
-		return -ENOEXEC;
-	}
+      if (conn == NULL)
+        {
+          break;
+        }
 
-	return 0;
+      param.members[i].member = conn;
+      param.count++;
+    }
+
+  shell_print(sh, "Setting microphone mute to %d on %zu connections",
+              param.mute, param.count);
+
+  err = bt_cap_commander_change_microphone_mute_state(&param);
+  if (err != 0)
+    {
+      shell_print(sh, "Failed to change microphone mute: %d", err);
+
+      return -ENOEXEC;
+    }
+
+  return 0;
 }
 
 #if defined(CONFIG_BT_MICP_MIC_CTLR_AICS)
-static int cmd_cap_commander_change_microphone_gain(const struct shell *sh, size_t argc,
-						    char *argv[])
+static int cmd_cap_commander_change_microphone_gain(
+  const struct shell *sh, size_t argc, char *argv[])
 {
-	struct bt_cap_commander_change_microphone_gain_setting_member_param
-		member_params[CONFIG_BT_MAX_CONN];
-	const size_t cap_argc = argc - 1; /* First argument is the command itself */
-	struct bt_cap_commander_change_microphone_gain_setting_param param = {
-		.type = BT_CAP_SET_TYPE_AD_HOC,
-		.param = member_params,
-	};
-	struct bt_conn *connected_conns[CONFIG_BT_MAX_CONN] = {0};
-	size_t conn_cnt = 0U;
-	int err = 0;
+  struct bt_cap_commander_change_microphone_gain_setting_member_param
+          member_params[CONFIG_BT_MAX_CONN];
+  const size_t cap_argc = argc - 1; /* First argument is the command itself */
+  struct bt_cap_commander_change_microphone_gain_setting_param param =
+    {
+          .type = BT_CAP_SET_TYPE_AD_HOC,
+          .param = member_params,
+    };
 
-	if (default_conn == NULL) {
-		shell_error(sh, "Not connected");
-		return -ENOEXEC;
-	}
+  struct bt_conn *connected_conns[CONFIG_BT_MAX_CONN] =
+    {
+        0
+    };
 
-	/* Populate the array of connected connections */
-	bt_conn_foreach(BT_CONN_TYPE_LE, populate_connected_conns, (void *)connected_conns);
-	for (size_t i = 0U; i < ARRAY_SIZE(connected_conns); i++) {
-		struct bt_conn *conn = connected_conns[i];
+  size_t conn_cnt = 0U;
+  int err = 0;
 
-		if (conn == NULL) {
-			break;
-		}
+  if (default_conn == NULL)
+    {
+      shell_error(sh, "Not connected");
+      return -ENOEXEC;
+    }
 
-		conn_cnt++;
-	}
+  /* Populate the array of connected connections */
 
-	if (cap_argc > conn_cnt) {
-		shell_error(sh, "Cannot use %zu arguments for %zu connections", argc, conn_cnt);
+  bt_conn_foreach(BT_CONN_TYPE_LE, populate_connected_conns,
+                  (void *)connected_conns);
+  for (size_t i = 0U; i < ARRAY_SIZE(connected_conns); i++)
+    {
+      struct bt_conn *conn = connected_conns[i];
 
-		return -ENOEXEC;
-	}
+      if (conn == NULL)
+        {
+          break;
+        }
 
-	/* TODO: Add support for coordinated sets */
+      conn_cnt++;
+    }
 
-	for (size_t i = 0U; i < cap_argc; i++) {
-		const char *arg = argv[i + 1U];
-		long gain;
+  if (cap_argc > conn_cnt)
+    {
+      shell_error(sh, "Cannot use %zu arguments for %zu connections", argc,
+                  conn_cnt);
 
-		gain = shell_strtol(arg, 10, &err);
-		if (err != 0) {
-			shell_error(sh, "Failed to parse volume offset from %s", arg);
+      return -ENOEXEC;
+    }
 
-			return -ENOEXEC;
-		}
+  /* TODO: Add support for coordinated sets */
 
-		if (!IN_RANGE(gain, INT8_MIN, INT8_MAX)) {
-			shell_error(sh, "Invalid gain %lu", gain);
+  for (size_t i = 0U; i < cap_argc; i++)
+    {
+      const char *arg = argv[i + 1U];
+      long gain;
 
-			return -ENOEXEC;
-		}
+      gain = shell_strtol(arg, 10, &err);
+      if (err != 0)
+        {
+          shell_error(sh, "Failed to parse volume offset from %s", arg);
 
-		member_params[i].gain = (int8_t)gain;
-		member_params[i].member.member = connected_conns[i];
-		param.count++;
-	}
+          return -ENOEXEC;
+        }
 
-	shell_print(sh, "Setting microphone gain on %zu connections", param.count);
+      if (!IN_RANGE(gain, INT8_MIN, INT8_MAX))
+        {
+          shell_error(sh, "Invalid gain %lu", gain);
 
-	err = bt_cap_commander_change_microphone_gain_setting(&param);
-	if (err != 0) {
-		shell_print(sh, "Failed to change microphone gain: %d", err);
+          return -ENOEXEC;
+        }
 
-		return -ENOEXEC;
-	}
+      member_params[i].gain = (int8_t)gain;
+      member_params[i].member.member = connected_conns[i];
+      param.count++;
+    }
 
-	return 0;
+  shell_print(sh, "Setting microphone gain on %zu connections", param.count);
+
+  err = bt_cap_commander_change_microphone_gain_setting(&param);
+  if (err != 0)
+    {
+      shell_print(sh, "Failed to change microphone gain: %d", err);
+
+      return -ENOEXEC;
+    }
+
+  return 0;
 }
 #endif /* CONFIG_BT_MICP_MIC_CTLR_AICS */
 #endif /* CONFIG_BT_MICP_MIC_CTLR */
 
 #if defined(CONFIG_BT_BAP_BROADCAST_ASSISTANT)
-struct bt_cap_commander_broadcast_reception_stop_param cap_commander_reception_stop_param;
+struct bt_cap_commander_broadcast_reception_stop_param
+  cap_commander_reception_stop_param;
 struct bt_cap_commander_broadcast_reception_stop_member_param
-	cap_commander_reception_stop_member_params[CONFIG_BT_MAX_CONN];
+        cap_commander_reception_stop_member_params[CONFIG_BT_MAX_CONN];
 
-static int cmd_cap_commander_broadcast_reception_start(const struct shell *sh, size_t argc,
-						       char *argv[])
+static int cmd_cap_commander_broadcast_reception_start(
+  const struct shell *sh, size_t argc, char *argv[])
 {
-	static struct bt_cap_commander_broadcast_reception_start_member_param
-		member_params[CONFIG_BT_MAX_CONN];
+  static struct bt_cap_commander_broadcast_reception_start_member_param
+          member_params[CONFIG_BT_MAX_CONN];
 
-	struct bt_cap_commander_broadcast_reception_start_param param = {
-		.type = BT_CAP_SET_TYPE_AD_HOC,
-		.param = member_params,
-	};
+  struct bt_cap_commander_broadcast_reception_start_param param =
+    {
+          .type = BT_CAP_SET_TYPE_AD_HOC,
+          .param = member_params,
+    };
 
-	struct bt_cap_commander_broadcast_reception_start_member_param *member_param =
-		&member_params[0];
-	struct bt_bap_bass_subgroup subgroup = {0};
+  struct
+    bt_cap_commander_broadcast_reception_start_member_param *member_param =
+          &member_params[0];
+  struct bt_bap_bass_subgroup subgroup =
+    {
+        0
+    };
 
-	struct bt_conn *connected_conns[CONFIG_BT_MAX_CONN] = {0};
-	size_t conn_cnt = 0U;
-	unsigned long broadcast_id;
-	unsigned long adv_sid;
+  struct bt_conn *connected_conns[CONFIG_BT_MAX_CONN] =
+    {
+        0
+    };
 
-	int err = 0;
+  size_t conn_cnt = 0U;
+  unsigned long broadcast_id;
+  unsigned long adv_sid;
 
-	if (default_conn == NULL) {
-		shell_error(sh, "Not connected");
-		return -ENOEXEC;
-	}
+  int err = 0;
 
-	(void)memset(&member_params, 0, sizeof(member_params));
+  if (default_conn == NULL)
+    {
+      shell_error(sh, "Not connected");
+      return -ENOEXEC;
+    }
 
-	/* TODO: Add support for coordinated sets */
+  (void)memset(&member_params, 0, sizeof(member_params));
 
-	/* Populate the array of connected connections */
-	bt_conn_foreach(BT_CONN_TYPE_LE, populate_connected_conns, (void *)connected_conns);
-	for (size_t i = 0U; i < ARRAY_SIZE(connected_conns); i++) {
-		struct bt_conn *conn = connected_conns[i];
+  /* TODO: Add support for coordinated sets */
 
-		if (conn == NULL) {
-			break;
-		}
+  /* Populate the array of connected connections */
 
-		conn_cnt++;
-	}
+  bt_conn_foreach(BT_CONN_TYPE_LE, populate_connected_conns,
+                  (void *)connected_conns);
+  for (size_t i = 0U; i < ARRAY_SIZE(connected_conns); i++)
+    {
+      struct bt_conn *conn = connected_conns[i];
 
-	err = bt_addr_le_from_str(argv[1], &member_param->addr);
-	if (err != 0) {
-		shell_error(sh, "Invalid peer address (err %d)", err);
+      if (conn == NULL)
+        {
+          break;
+        }
 
-		return -ENOEXEC;
-	}
+      conn_cnt++;
+    }
 
-	adv_sid = shell_strtoul(argv[2], 0, &err);
-	if (err != 0) {
-		shell_error(sh, "Could not parse adv_sid: %d", err);
+  err = bt_addr_le_from_str(argv[1], &member_param->addr);
+  if (err != 0)
+    {
+      shell_error(sh, "Invalid peer address (err %d)", err);
 
-		return -ENOEXEC;
-	}
+      return -ENOEXEC;
+    }
 
-	if (adv_sid > BT_GAP_SID_MAX) {
-		shell_error(sh, "Invalid adv_sid: %lu", adv_sid);
+  adv_sid = shell_strtoul(argv[2], 0, &err);
+  if (err != 0)
+    {
+      shell_error(sh, "Could not parse adv_sid: %d", err);
 
-		return -ENOEXEC;
-	}
+      return -ENOEXEC;
+    }
 
-	member_param->adv_sid = adv_sid;
+  if (adv_sid > BT_GAP_SID_MAX)
+    {
+      shell_error(sh, "Invalid adv_sid: %lu", adv_sid);
 
-	broadcast_id = shell_strtoul(argv[3], 0, &err);
-	if (err != 0) {
-		shell_error(sh, "Could not parse broadcast_id: %d", err);
+      return -ENOEXEC;
+    }
 
-		return -ENOEXEC;
-	}
+  member_param->adv_sid = adv_sid;
 
-	if (broadcast_id > BT_AUDIO_BROADCAST_ID_MAX) {
-		shell_error(sh, "Invalid broadcast_id: %lu", broadcast_id);
+  broadcast_id = shell_strtoul(argv[3], 0, &err);
+  if (err != 0)
+    {
+      shell_error(sh, "Could not parse broadcast_id: %d", err);
 
-		return -ENOEXEC;
-	}
+      return -ENOEXEC;
+    }
 
-	member_param->broadcast_id = broadcast_id;
+  if (broadcast_id > BT_AUDIO_BROADCAST_ID_MAX)
+    {
+      shell_error(sh, "Invalid broadcast_id: %lu", broadcast_id);
 
-	if (argc > 4) {
-		unsigned long pa_interval;
+      return -ENOEXEC;
+    }
 
-		pa_interval = shell_strtoul(argv[4], 0, &err);
-		if (err != 0) {
-			shell_error(sh, "Could not parse pa_interval: %d", err);
+  member_param->broadcast_id = broadcast_id;
 
-			return -ENOEXEC;
-		}
+  if (argc > 4)
+    {
+      unsigned long pa_interval;
 
-		if (!IN_RANGE(pa_interval, BT_GAP_PER_ADV_MIN_INTERVAL,
-			      BT_GAP_PER_ADV_MAX_INTERVAL)) {
-			shell_error(sh, "Invalid pa_interval: %lu", pa_interval);
+      pa_interval = shell_strtoul(argv[4], 0, &err);
+      if (err != 0)
+        {
+          shell_error(sh, "Could not parse pa_interval: %d", err);
 
-			return -ENOEXEC;
-		}
+          return -ENOEXEC;
+        }
 
-		member_param->pa_interval = pa_interval;
-	} else {
-		member_param->pa_interval = BT_BAP_PA_INTERVAL_UNKNOWN;
-	}
+      if (!IN_RANGE(pa_interval, BT_GAP_PER_ADV_MIN_INTERVAL,
+              BT_GAP_PER_ADV_MAX_INTERVAL))
+        {
+          shell_error(sh, "Invalid pa_interval: %lu", pa_interval);
 
-	/* TODO: Support multiple subgroups */
-	if (argc > 5) {
-		unsigned long bis_sync;
+          return -ENOEXEC;
+        }
 
-		bis_sync = shell_strtoul(argv[5], 0, &err);
-		if (err != 0) {
-			shell_error(sh, "Could not parse bis_sync: %d", err);
+      member_param->pa_interval = pa_interval;
+    }
+  else
+    {
+      member_param->pa_interval = BT_BAP_PA_INTERVAL_UNKNOWN;
+    }
 
-			return -ENOEXEC;
-		}
+  /* TODO: Support multiple subgroups */
 
-		if (!BT_BAP_BASS_VALID_BIT_BITFIELD(bis_sync)) {
-			shell_error(sh, "Invalid bis_sync: %lu", bis_sync);
+  if (argc > 5)
+    {
+      unsigned long bis_sync;
 
-			return -ENOEXEC;
-		}
+      bis_sync = shell_strtoul(argv[5], 0, &err);
+      if (err != 0)
+        {
+          shell_error(sh, "Could not parse bis_sync: %d", err);
 
-		subgroup.bis_sync = bis_sync;
-	} else {
-		subgroup.bis_sync = BT_BAP_BIS_SYNC_NO_PREF;
-	}
+          return -ENOEXEC;
+        }
 
-	if (argc > 6) {
-		size_t metadata_len;
+      if (!BT_BAP_BASS_VALID_BIT_BITFIELD(bis_sync))
+        {
+          shell_error(sh, "Invalid bis_sync: %lu", bis_sync);
 
-		metadata_len = hex2bin(argv[6], strlen(argv[6]), subgroup.metadata,
-				       sizeof(subgroup.metadata));
+          return -ENOEXEC;
+        }
 
-		if (metadata_len == 0U) {
-			shell_error(sh, "Could not parse metadata");
+      subgroup.bis_sync = bis_sync;
+    }
+  else
+    {
+      subgroup.bis_sync = BT_BAP_BIS_SYNC_NO_PREF;
+    }
 
-			return -ENOEXEC;
-		}
+  if (argc > 6)
+    {
+      size_t metadata_len;
 
-		/* sizeof(subgroup.metadata) can always fit in uint8_t */
+      metadata_len =
+              hex2bin(argv[6], strlen(argv[6]), subgroup.metadata,
+                      sizeof(subgroup.metadata));
 
-		subgroup.metadata_len = metadata_len;
-	}
+      if (metadata_len == 0U)
+        {
+          shell_error(sh, "Could not parse metadata");
 
-	member_param->num_subgroups = 1U;
-	memcpy(member_param->subgroups, &subgroup, sizeof(struct bt_bap_bass_subgroup));
+          return -ENOEXEC;
+        }
 
-	member_param->member.member = connected_conns[0];
+      /* sizeof(subgroup.metadata) can always fit in uint8_t */
 
-	/* each connection has its own member_params field
-	 * here we use the same values for all connections, so we copy
-	 * the parameters
-	 */
-	for (size_t i = 1U; i < conn_cnt; i++) {
-		memcpy(&member_params[i], member_param, sizeof(*member_param));
+      subgroup.metadata_len = metadata_len;
+    }
 
-		/* the member value is different for each, so we can not just copy this value */
-		member_params[i].member.member = connected_conns[i];
-	}
+  member_param->num_subgroups = 1U;
+  memcpy(member_param->subgroups, &subgroup,
+          sizeof(struct bt_bap_bass_subgroup));
 
-	param.count = conn_cnt;
+  member_param->member.member = connected_conns[0];
 
-	shell_print(sh, "Starting broadcast reception on %zu connection(s)", param.count);
+  /* each connection has its own member_params field
+   * here we use the same values for all connections, so we copy the
+   * parameters
+   */
 
-	err = bt_cap_commander_broadcast_reception_start(&param);
-	if (err != 0) {
-		shell_print(sh, "Failed to start broadcast reception: %d", err);
+  for (size_t i = 1U; i < conn_cnt; i++)
+    {
+      memcpy(&member_params[i], member_param, sizeof(*member_param));
 
-		return -ENOEXEC;
-	}
+      /* the member value is different for each, so we can not just copy this
+       * value
+       */
 
-	return 0;
+      member_params[i].member.member = connected_conns[i];
+    }
+
+  param.count = conn_cnt;
+
+  shell_print(sh, "Starting broadcast reception on %zu connection(s)",
+              param.count);
+
+  err = bt_cap_commander_broadcast_reception_start(&param);
+  if (err != 0)
+    {
+      shell_print(sh, "Failed to start broadcast reception: %d", err);
+
+      return -ENOEXEC;
+    }
+
+  return 0;
 }
 
-static int cmd_cap_commander_broadcast_reception_stop(const struct shell *sh, size_t argc,
-						      char *argv[])
+static int cmd_cap_commander_broadcast_reception_stop(
+  const struct shell *sh, size_t argc, char *argv[])
 {
-	const size_t cap_argc = argc - 1; /* First argument is the command itself */
-	struct bt_conn *connected_conns[CONFIG_BT_MAX_CONN] = {0};
-	size_t conn_cnt = 0U;
-	int err = 0;
+  const size_t cap_argc = argc - 1; /* First argument is the command itself */
+  struct bt_conn *connected_conns[CONFIG_BT_MAX_CONN] =
+    {
+        0
+    };
 
-	if (default_conn == NULL) {
-		shell_error(sh, "Not connected");
-		return -ENOEXEC;
-	}
+  size_t conn_cnt = 0U;
+  int err = 0;
+
+  if (default_conn == NULL)
+    {
+      shell_error(sh, "Not connected");
+      return -ENOEXEC;
+    }
 
 #if defined(CONFIG_BT_BAP_BROADCAST_SOURCE)
-	if (default_source.handover_in_progress) {
-		shell_error(sh, "Handover already in progress");
+  if (default_source.handover_in_progress)
+    {
+      shell_error(sh, "Handover already in progress");
 
-		return -ENOEXEC;
-	}
+      return -ENOEXEC;
+    }
 #endif /* CONFIG_BT_BAP_BROADCAST_SOURCE */
 
-	(void)memset(&cap_commander_reception_stop_param, 0,
-		     sizeof(cap_commander_reception_stop_param));
-	(void)memset(&cap_commander_reception_stop_member_params, 0,
-		     sizeof(cap_commander_reception_stop_member_params));
+  (void)memset(&cap_commander_reception_stop_param, 0,
+          sizeof(cap_commander_reception_stop_param));
+  (void)memset(&cap_commander_reception_stop_member_params, 0,
+               sizeof(cap_commander_reception_stop_member_params));
 
-	/* TODO: Add support for coordinated sets */
+  /* TODO: Add support for coordinated sets */
 
-	/* Populate the array of connected connections */
-	bt_conn_foreach(BT_CONN_TYPE_LE, populate_connected_conns, (void *)connected_conns);
-	for (size_t i = 0U; i < ARRAY_SIZE(connected_conns); i++) {
-		struct bt_conn *conn = connected_conns[i];
+  /* Populate the array of connected connections */
 
-		if (conn == NULL) {
-			break;
-		}
+  bt_conn_foreach(BT_CONN_TYPE_LE, populate_connected_conns,
+                  (void *)connected_conns);
+  for (size_t i = 0U; i < ARRAY_SIZE(connected_conns); i++)
+    {
+      struct bt_conn *conn = connected_conns[i];
 
-		conn_cnt++;
-	}
+      if (conn == NULL)
+        {
+          break;
+        }
 
-	if (cap_argc > conn_cnt) {
-		shell_error(sh, "Cannot use %zu arguments for %zu connections", argc, conn_cnt);
+      conn_cnt++;
+    }
 
-		return -ENOEXEC;
-	}
+  if (cap_argc > conn_cnt)
+    {
+      shell_error(sh, "Cannot use %zu arguments for %zu connections", argc,
+                  conn_cnt);
 
-	for (size_t i = 0U; i < cap_argc; i++) {
-		const char *arg = argv[i + 1U];
-		unsigned long src_id;
+      return -ENOEXEC;
+    }
 
-		src_id = shell_strtoul(arg, 0, &err);
-		if (err != 0) {
-			shell_error(sh, "Could not parse src_id: %d", err);
+  for (size_t i = 0U; i < cap_argc; i++)
+    {
+      const char *arg = argv[i + 1U];
+      unsigned long src_id;
 
-			return -ENOEXEC;
-		}
+      src_id = shell_strtoul(arg, 0, &err);
+      if (err != 0)
+        {
+          shell_error(sh, "Could not parse src_id: %d", err);
 
-		if (src_id > UINT8_MAX) {
-			shell_error(sh, "Invalid src_id: %lu", src_id);
+          return -ENOEXEC;
+        }
 
-			return -ENOEXEC;
-		}
+      if (src_id > UINT8_MAX)
+        {
+          shell_error(sh, "Invalid src_id: %lu", src_id);
 
-		/* TODO: Allow for multiple subgroups */
-		cap_commander_reception_stop_member_params[i].num_subgroups = 1U;
-		cap_commander_reception_stop_member_params[i].src_id = src_id;
-		cap_commander_reception_stop_member_params[i].member.member = connected_conns[i];
-		cap_commander_reception_stop_param.count++;
-	}
+          return -ENOEXEC;
+        }
 
-	cap_commander_reception_stop_param.type = BT_CAP_SET_TYPE_AD_HOC;
-	cap_commander_reception_stop_param.param = cap_commander_reception_stop_member_params;
+      /* TODO: Allow for multiple subgroups */
 
-	shell_print(sh, "Stopping broadcast reception on %zu connection(s)",
-		    cap_commander_reception_stop_param.count);
+      cap_commander_reception_stop_member_params[i].num_subgroups = 1U;
+      cap_commander_reception_stop_member_params[i].src_id = src_id;
+      cap_commander_reception_stop_member_params[i].member.member =
+              connected_conns[i];
+      cap_commander_reception_stop_param.count++;
+    }
 
-	err = bt_cap_commander_broadcast_reception_stop(&cap_commander_reception_stop_param);
-	if (err != 0) {
-		shell_print(sh, "Failed to initiate broadcast reception stop: %d", err);
+  cap_commander_reception_stop_param.type = BT_CAP_SET_TYPE_AD_HOC;
+  cap_commander_reception_stop_param.param =
+          cap_commander_reception_stop_member_params;
 
-		return -ENOEXEC;
-	}
+  shell_print(sh, "Stopping broadcast reception on %zu connection(s)",
+              cap_commander_reception_stop_param.count);
 
-	return 0;
+  err =
+          bt_cap_commander_broadcast_reception_stop(
+            &cap_commander_reception_stop_param);
+  if (err != 0)
+    {
+      shell_print(sh,
+                  "Failed to initiate broadcast reception stop: %d",
+                  err);
+
+      return -ENOEXEC;
+    }
+
+  return 0;
 }
 
-static int cmd_cap_commander_distribute_broadcast_code(const struct shell *sh, size_t argc,
-						       char *argv[])
+static int cmd_cap_commander_distribute_broadcast_code(
+  const struct shell *sh, size_t argc, char *argv[])
 {
-	struct bt_cap_commander_distribute_broadcast_code_member_param
-		member_params[CONFIG_BT_MAX_CONN] = {0};
-	const size_t cap_argc = argc - 1; /* First argument is the command itself */
-	struct bt_cap_commander_distribute_broadcast_code_param param = {
-		.type = BT_CAP_SET_TYPE_AD_HOC,
-		.param = member_params,
-	};
-	struct bt_conn *connected_conns[CONFIG_BT_MAX_CONN] = {0};
-	size_t conn_cnt = 0U;
-	int err = 0;
+  struct bt_cap_commander_distribute_broadcast_code_member_param
+    member_params[CONFIG_BT_MAX_CONN] =
+          {
+            0
+          };
 
-	if (default_conn == NULL) {
-		shell_error(sh, "Not connected");
-		return -ENOEXEC;
-	}
+  const size_t cap_argc = argc - 1; /* First argument is the command itself */
+  struct bt_cap_commander_distribute_broadcast_code_param param =
+    {
+          .type = BT_CAP_SET_TYPE_AD_HOC,
+          .param = member_params,
+    };
 
-	/* TODO Add support for coordinated sets */
+  struct bt_conn *connected_conns[CONFIG_BT_MAX_CONN] =
+    {
+        0
+    };
 
-	/* Populate the array of connected connections */
-	bt_conn_foreach(BT_CONN_TYPE_LE, populate_connected_conns, (void *)connected_conns);
-	for (size_t i = 0U; i < ARRAY_SIZE(connected_conns); i++) {
-		struct bt_conn *conn = connected_conns[i];
+  size_t conn_cnt = 0U;
+  int err = 0;
 
-		if (conn == NULL) {
-			break;
-		}
-		conn_cnt++;
-	}
+  if (default_conn == NULL)
+    {
+      shell_error(sh, "Not connected");
+      return -ENOEXEC;
+    }
 
-	/* The number of cap_argc needs to be the number of connections + 1 since the last argument
-	 * is the broadcast code
-	 */
-	if (cap_argc != conn_cnt + 1) {
-		shell_error(sh, "Cannot use %zu arguments for %zu connections", argc, conn_cnt);
-		return -ENOEXEC;
-	}
+  /* TODO Add support for coordinated sets */
 
-	/* the last argument is the broadcast code */
-	if (strlen(argv[cap_argc]) > BT_ISO_BROADCAST_CODE_SIZE) {
-		shell_error(sh, "Broadcast code can be maximum %d characters",
-			    BT_ISO_BROADCAST_CODE_SIZE);
-		return -ENOEXEC;
-	}
+  /* Populate the array of connected connections */
 
-	for (size_t i = 0U; i < cap_argc - 1U; i++) {
-		const char *arg = argv[i + 1U];
-		unsigned long src_id;
+  bt_conn_foreach(BT_CONN_TYPE_LE, populate_connected_conns,
+                  (void *)connected_conns);
+  for (size_t i = 0U; i < ARRAY_SIZE(connected_conns); i++)
+    {
+      struct bt_conn *conn = connected_conns[i];
 
-		src_id = shell_strtoul(arg, 0, &err);
-		if (err != 0) {
-			shell_error(sh, "Could not parse src_id: %d", err);
-			return -ENOEXEC;
-		}
-		if (src_id > UINT8_MAX) {
-			shell_error(sh, "Invalid src_id: %lu", src_id);
-			return -ENOEXEC;
-		}
+      if (conn == NULL)
+        {
+          break;
+        }
 
-		member_params[i].src_id = src_id;
-		member_params[i].member.member = connected_conns[i];
-		param.count++;
-	}
+      conn_cnt++;
+    }
 
-	memcpy(param.broadcast_code, argv[cap_argc], strlen(argv[cap_argc]));
-	shell_print(sh, "Distributing broadcast code on %zu connection(s)", param.count);
-	err = bt_cap_commander_distribute_broadcast_code(&param);
-	if (err != 0) {
-		shell_print(sh, "Failed to initiate distribute broadcast code: %d", err);
-		return -ENOEXEC;
-	}
+  /* The number of cap_argc needs to be the number of connections + 1 since
+   * the last argument is the broadcast code
+   */
 
-	return 0;
+  if (cap_argc != conn_cnt + 1)
+    {
+      shell_error(sh, "Cannot use %zu arguments for %zu connections", argc,
+                  conn_cnt);
+      return -ENOEXEC;
+    }
+
+  /* the last argument is the broadcast code */
+
+  if (strlen(argv[cap_argc]) > BT_ISO_BROADCAST_CODE_SIZE)
+    {
+      shell_error(sh, "Broadcast code can be maximum %d characters",
+                  BT_ISO_BROADCAST_CODE_SIZE);
+      return -ENOEXEC;
+    }
+
+  for (size_t i = 0U; i < cap_argc - 1U; i++)
+    {
+      const char *arg = argv[i + 1U];
+      unsigned long src_id;
+
+      src_id = shell_strtoul(arg, 0, &err);
+      if (err != 0)
+        {
+          shell_error(sh, "Could not parse src_id: %d", err);
+          return -ENOEXEC;
+        }
+
+      if (src_id > UINT8_MAX)
+        {
+          shell_error(sh, "Invalid src_id: %lu", src_id);
+          return -ENOEXEC;
+        }
+
+      member_params[i].src_id = src_id;
+      member_params[i].member.member = connected_conns[i];
+      param.count++;
+    }
+
+  memcpy(param.broadcast_code, argv[cap_argc], strlen(argv[cap_argc]));
+  shell_print(sh, "Distributing broadcast code on %zu connection(s)",
+              param.count);
+  err = bt_cap_commander_distribute_broadcast_code(&param);
+  if (err != 0)
+    {
+      shell_print(sh, "Failed to initiate distribute broadcast code: %d",
+                  err);
+      return -ENOEXEC;
+    }
+
+  return 0;
 }
 
 #endif /* CONFIG_BT_BAP_BROADCAST_ASSISTANT */
 
-static int cmd_cap_commander(const struct shell *sh, size_t argc, char **argv)
+static int cmd_cap_commander(const struct shell *sh,
+                             size_t argc, char **argv)
 {
-	if (argc > 1) {
-		shell_error(sh, "%s unknown parameter: %s", argv[0], argv[1]);
-	} else {
-		shell_error(sh, "%s Missing subcommand", argv[0]);
-	}
+  if (argc > 1)
+    {
+      shell_error(sh, "%s unknown parameter: %s", argv[0], argv[1]);
+    }
+  else
+    {
+      shell_error(sh, "%s Missing subcommand", argv[0]);
+    }
 
-	return -ENOEXEC;
+  return -ENOEXEC;
 }
 
 SHELL_STATIC_SUBCMD_SET_CREATE(
-	cap_commander_cmds,
-	SHELL_CMD_ARG(discover, NULL, "Discover CAS", cmd_cap_commander_discover, 1, 0),
-	SHELL_CMD_ARG(cancel, NULL, "CAP commander cancel current procedure",
-		      cmd_cap_commander_cancel, 1, 0),
+        cap_commander_cmds,
+        SHELL_CMD_ARG(discover,
+                      NULL,
+                      "Discover CAS",
+                      cmd_cap_commander_discover,
+                      1,
+                      0),
+        SHELL_CMD_ARG(cancel, NULL, "CAP commander cancel current procedure",
+                      cmd_cap_commander_cancel, 1, 0),
 #if defined(CONFIG_BT_VCP_VOL_CTLR)
-	SHELL_CMD_ARG(change_volume, NULL, "Change volume on all connections <volume>",
-		      cmd_cap_commander_change_volume, 2, 0),
-	SHELL_CMD_ARG(change_volume_mute, NULL,
-		      "Change volume mute state on all connections <mute>",
-		      cmd_cap_commander_change_volume_mute, 2, 0),
+        SHELL_CMD_ARG(change_volume,
+            NULL,
+            "Change volume on all connections "
+                                           "<volume>",
+                      cmd_cap_commander_change_volume, 2, 0),
+        SHELL_CMD_ARG(change_volume_mute, NULL,
+                      "Change volume mute state on all connections <mute>",
+                      cmd_cap_commander_change_volume_mute, 2, 0),
 #if defined(CONFIG_BT_VCP_VOL_CTLR_VOCS)
-	SHELL_CMD_ARG(change_volume_offset, NULL,
-		      "Change volume offset per connection <volume_offset [volume_offset [...]]>",
-		      cmd_cap_commander_change_volume_offset, 2, CONFIG_BT_MAX_CONN - 1),
+        SHELL_CMD_ARG(change_volume_offset, NULL,
+                      "Change volume offset per connection <volume_offset "
+                      "[volume_offset [...]]>",
+                      cmd_cap_commander_change_volume_offset, 2,
+                          CONFIG_BT_MAX_CONN - 1),
 #endif /* CONFIG_BT_VCP_VOL_CTLR_VOCS */
 #endif /* CONFIG_BT_VCP_VOL_CTLR */
 #if defined(CONFIG_BT_MICP_MIC_CTLR)
-	SHELL_CMD_ARG(change_microphone_mute, NULL,
-		      "Change microphone mute state on all connections <mute>",
-		      cmd_cap_commander_change_microphone_mute, 2, 0),
+        SHELL_CMD_ARG(change_microphone_mute, NULL,
+                      "Change microphone mute state on all connections "
+                      "<mute>",
+                      cmd_cap_commander_change_microphone_mute, 2, 0),
 #if defined(CONFIG_BT_MICP_MIC_CTLR_AICS)
-	SHELL_CMD_ARG(change_microphone_gain, NULL,
-		      "Change microphone gain per connection <gain [gain [...]]>",
-		      cmd_cap_commander_change_microphone_gain, 2, CONFIG_BT_MAX_CONN - 1),
+        SHELL_CMD_ARG(change_microphone_gain, NULL,
+                      "Change microphone gain per connection <gain [gain "
+                      "[...]]>",
+                      cmd_cap_commander_change_microphone_gain, 2,
+                          CONFIG_BT_MAX_CONN - 1),
 #endif /* CONFIG_BT_MICP_MIC_CTLR_AICS */
 #endif /* CONFIG_BT_MICP_MIC_CTLR */
 #if defined(CONFIG_BT_BAP_BROADCAST_ASSISTANT)
-	SHELL_CMD_ARG(broadcast_reception_start, NULL,
-		      "Start broadcast reception "
-		      "with source <address: P:XX:XX:XX:XX:XX:XX or "
-		      "R:XX:XX:XX:XX:XX:XX> <adv_sid> "
-		      "<broadcast_id> [<pa_interval>] [<sync_bis>] "
-		      "[<metadata>]",
-		      cmd_cap_commander_broadcast_reception_start, 4, 3),
-	SHELL_CMD_ARG(broadcast_reception_stop, NULL,
-		      "Stop broadcast reception "
-		      "<src_id [...]>",
-		      cmd_cap_commander_broadcast_reception_stop, 2, 0),
-	SHELL_CMD_ARG(distribute_broadcast_code, NULL,
-		      "Distribute broadcast code <src_id [...]> <broadcast_code>",
-		      cmd_cap_commander_distribute_broadcast_code, 2, CONFIG_BT_MAX_CONN - 1),
+        SHELL_CMD_ARG(broadcast_reception_start, NULL,
+                      "Start broadcast reception "
+                      "with source <address: P:XX:XX:XX:XX:XX:XX or "
+                      "R:XX:XX:XX:XX:XX:XX> <adv_sid> "
+                      "<broadcast_id> [<pa_interval>] [<sync_bis>] "
+                      "[<metadata>]",
+                      cmd_cap_commander_broadcast_reception_start, 4, 3),
+        SHELL_CMD_ARG(broadcast_reception_stop, NULL,
+                      "Stop broadcast reception "
+                      "<src_id [...]>",
+                      cmd_cap_commander_broadcast_reception_stop, 2, 0),
+        SHELL_CMD_ARG(distribute_broadcast_code, NULL,
+                      "Distribute broadcast code <src_id [...]> "
+                      "<broadcast_code>",
+                      cmd_cap_commander_distribute_broadcast_code, 2,
+                          CONFIG_BT_MAX_CONN - 1),
 #endif /* CONFIG_BT_BAP_BROADCAST_ASSISTANT */
-	SHELL_SUBCMD_SET_END);
+        SHELL_SUBCMD_SET_END);
 
-SHELL_CMD_ARG_REGISTER(cap_commander, &cap_commander_cmds, "Bluetooth CAP commander shell commands",
-		       cmd_cap_commander, 1, 1);
+SHELL_CMD_ARG_REGISTER(cap_commander, &cap_commander_cmds, "Bluetooth CAP "
+                                                           "commander shell "
+                                                           "commands",
+                       cmd_cap_commander, 1, 1);

@@ -28,8 +28,7 @@
  *  @brief Bluetooth Assigned Numbers, codes and identifiers.
  */
 
-/*
- * Copyright (c) 2015-2025 Intel Corporation
+/* Copyright (c) 2015-2025 Intel Corporation
  * Copyright (c) 2017-2026 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -55,7 +54,8 @@
 #include <nuttx/net/bluetooth/compat/toolchain.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /**
@@ -68,612 +68,611 @@ extern "C" {
 /**
  * @name Appearance Numbers
  *
- * Last Modified on 2023-01-05
- * @{
+ * Last Modified on 2023-01-05 @{
  */
 
 /** Generic Unknown */
-#define BT_APPEARANCE_UNKNOWN                               0x0000
+#define BT_APPEARANCE_UNKNOWN 0x0000
 /** Generic Phone */
-#define BT_APPEARANCE_GENERIC_PHONE                         0x0040
+#define BT_APPEARANCE_GENERIC_PHONE 0x0040
 /** Generic Computer */
-#define BT_APPEARANCE_GENERIC_COMPUTER                      0x0080
+#define BT_APPEARANCE_GENERIC_COMPUTER 0x0080
 /** Desktop Workstation */
-#define BT_APPEARANCE_COMPUTER_DESKTOP_WORKSTATION          0x0081
+#define BT_APPEARANCE_COMPUTER_DESKTOP_WORKSTATION 0x0081
 /** Server-class Computer */
-#define BT_APPEARANCE_COMPUTER_SERVER_CLASS                 0x0082
+#define BT_APPEARANCE_COMPUTER_SERVER_CLASS 0x0082
 /** Laptop */
-#define BT_APPEARANCE_COMPUTER_LAPTOP                       0x0083
+#define BT_APPEARANCE_COMPUTER_LAPTOP 0x0083
 /** Handheld PC/PDA (clamshell) */
-#define BT_APPEARANCE_COMPUTER_HANDHELD_PCPDA               0x0084
+#define BT_APPEARANCE_COMPUTER_HANDHELD_PCPDA 0x0084
 /** Palm­size PC/PDA */
-#define BT_APPEARANCE_COMPUTER_PALMSIZE_PCPDA               0x0085
+#define BT_APPEARANCE_COMPUTER_PALMSIZE_PCPDA 0x0085
 /** Wearable computer (watch size) */
-#define BT_APPEARANCE_COMPUTER_WEARABLE_COMPUTER            0x0086
+#define BT_APPEARANCE_COMPUTER_WEARABLE_COMPUTER 0x0086
 /** Tablet */
-#define BT_APPEARANCE_COMPUTER_TABLET                       0x0087
+#define BT_APPEARANCE_COMPUTER_TABLET 0x0087
 /** Docking Station */
-#define BT_APPEARANCE_COMPUTER_DOCKING_STATION              0x0088
+#define BT_APPEARANCE_COMPUTER_DOCKING_STATION 0x0088
 /** All in One */
-#define BT_APPEARANCE_COMPUTER_ALL_IN_ONE                   0x0089
+#define BT_APPEARANCE_COMPUTER_ALL_IN_ONE 0x0089
 /** Blade Server */
-#define BT_APPEARANCE_COMPUTER_BLADE_SERVER                 0x008A
+#define BT_APPEARANCE_COMPUTER_BLADE_SERVER 0x008a
 /** Convertible */
-#define BT_APPEARANCE_COMPUTER_CONVERTIBLE                  0x008B
+#define BT_APPEARANCE_COMPUTER_CONVERTIBLE 0x008b
 /** Detachable */
-#define BT_APPEARANCE_COMPUTER_DETACHABLE                   0x008C
+#define BT_APPEARANCE_COMPUTER_DETACHABLE 0x008c
 /** IoT Gateway */
-#define BT_APPEARANCE_COMPUTER_IOT_GATEWAY                  0x008D
+#define BT_APPEARANCE_COMPUTER_IOT_GATEWAY 0x008d
 /** Mini PC */
-#define BT_APPEARANCE_COMPUTER_MINI_PC                      0x008E
+#define BT_APPEARANCE_COMPUTER_MINI_PC 0x008e
 /** Stick PC */
-#define BT_APPEARANCE_COMPUTER_STICK_PC                     0x008F
+#define BT_APPEARANCE_COMPUTER_STICK_PC 0x008f
 /** Generic Watch */
-#define BT_APPEARANCE_GENERIC_WATCH                         0x00C0
+#define BT_APPEARANCE_GENERIC_WATCH 0x00c0
 /** Sports Watch */
-#define BT_APPEARANCE_SPORTS_WATCH                          0x00C1
+#define BT_APPEARANCE_SPORTS_WATCH 0x00c1
 /** Smartwatch */
-#define BT_APPEARANCE_SMARTWATCH                            0x00C2
+#define BT_APPEARANCE_SMARTWATCH 0x00c2
 /** Generic Clock */
-#define BT_APPEARANCE_GENERIC_CLOCK                         0x0100
+#define BT_APPEARANCE_GENERIC_CLOCK 0x0100
 /** Generic Display */
-#define BT_APPEARANCE_GENERIC_DISPLAY                       0x0140
+#define BT_APPEARANCE_GENERIC_DISPLAY 0x0140
 /** Generic Remote Control */
-#define BT_APPEARANCE_GENERIC_REMOTE                        0x0180
+#define BT_APPEARANCE_GENERIC_REMOTE 0x0180
 /** Generic Eye-glasses */
-#define BT_APPEARANCE_GENERIC_EYEGLASSES                    0x01C0
+#define BT_APPEARANCE_GENERIC_EYEGLASSES 0x01c0
 /** Generic Tag */
-#define BT_APPEARANCE_GENERIC_TAG                           0x0200
+#define BT_APPEARANCE_GENERIC_TAG 0x0200
 /** Generic Keyring */
-#define BT_APPEARANCE_GENERIC_KEYRING                       0x0240
+#define BT_APPEARANCE_GENERIC_KEYRING 0x0240
 /** Generic Media Player */
-#define BT_APPEARANCE_GENERIC_MEDIA_PLAYER                  0x0280
+#define BT_APPEARANCE_GENERIC_MEDIA_PLAYER 0x0280
 /** Generic Barcode Scanner */
-#define BT_APPEARANCE_GENERIC_BARCODE_SCANNER               0x02C0
+#define BT_APPEARANCE_GENERIC_BARCODE_SCANNER 0x02c0
 /** Generic Thermometer */
-#define BT_APPEARANCE_GENERIC_THERMOMETER                   0x0300
+#define BT_APPEARANCE_GENERIC_THERMOMETER 0x0300
 /** Ear Thermometer */
-#define BT_APPEARANCE_THERMOMETER_EAR                       0x0301
+#define BT_APPEARANCE_THERMOMETER_EAR 0x0301
 /** Generic Heart Rate Sensor */
-#define BT_APPEARANCE_GENERIC_HEART_RATE                    0x0340
+#define BT_APPEARANCE_GENERIC_HEART_RATE 0x0340
 /** Heart Rate Belt */
-#define BT_APPEARANCE_HEART_RATE_BELT                       0x0341
+#define BT_APPEARANCE_HEART_RATE_BELT 0x0341
 /** Generic Blood Pressure */
-#define BT_APPEARANCE_GENERIC_BLOOD_PRESSURE                0x0380
+#define BT_APPEARANCE_GENERIC_BLOOD_PRESSURE 0x0380
 /** Arm Blood Pressure */
-#define BT_APPEARANCE_BLOOD_PRESSURE_ARM                    0x0381
+#define BT_APPEARANCE_BLOOD_PRESSURE_ARM 0x0381
 /** Wrist Blood Pressure */
-#define BT_APPEARANCE_BLOOD_PRESSURE_WRIST                  0x0382
+#define BT_APPEARANCE_BLOOD_PRESSURE_WRIST 0x0382
 /** Generic Human Interface Device */
-#define BT_APPEARANCE_GENERIC_HID                           0x03C0
+#define BT_APPEARANCE_GENERIC_HID 0x03c0
 /** Keyboard */
-#define BT_APPEARANCE_HID_KEYBOARD                          0x03C1
+#define BT_APPEARANCE_HID_KEYBOARD 0x03c1
 /** Mouse */
-#define BT_APPEARANCE_HID_MOUSE                             0x03C2
+#define BT_APPEARANCE_HID_MOUSE 0x03c2
 /** Joystick */
-#define BT_APPEARANCE_HID_JOYSTICK                          0x03C3
+#define BT_APPEARANCE_HID_JOYSTICK 0x03c3
 /** Gamepad */
-#define BT_APPEARANCE_HID_GAMEPAD                           0x03C4
+#define BT_APPEARANCE_HID_GAMEPAD 0x03c4
 /** Digitizer Tablet */
-#define BT_APPEARANCE_HID_DIGITIZER_TABLET                  0x03C5
+#define BT_APPEARANCE_HID_DIGITIZER_TABLET 0x03c5
 /** Card Reader */
-#define BT_APPEARANCE_HID_CARD_READER                       0x03C6
+#define BT_APPEARANCE_HID_CARD_READER 0x03c6
 /** Digital Pen */
-#define BT_APPEARANCE_HID_DIGITAL_PEN                       0x03C7
+#define BT_APPEARANCE_HID_DIGITAL_PEN 0x03c7
 /** Barcode Scanner */
-#define BT_APPEARANCE_HID_BARCODE_SCANNER                   0x03C8
+#define BT_APPEARANCE_HID_BARCODE_SCANNER 0x03c8
 /** Touchpad */
-#define BT_APPEARANCE_HID_TOUCHPAD                          0x03C9
+#define BT_APPEARANCE_HID_TOUCHPAD 0x03c9
 /** Presentation Remote */
-#define BT_APPEARANCE_HID_PRESENTATION_REMOTE               0x03CA
+#define BT_APPEARANCE_HID_PRESENTATION_REMOTE 0x03ca
 /** Generic Glucose Meter */
-#define BT_APPEARANCE_GENERIC_GLUCOSE                       0x0400
+#define BT_APPEARANCE_GENERIC_GLUCOSE 0x0400
 /** Generic Running Walking Sensor */
-#define BT_APPEARANCE_GENERIC_WALKING                       0x0440
+#define BT_APPEARANCE_GENERIC_WALKING 0x0440
 /** In-Shoe Running Walking Sensor */
-#define BT_APPEARANCE_WALKING_IN_SHOE                       0x0441
+#define BT_APPEARANCE_WALKING_IN_SHOE 0x0441
 /** On-Shoe Running Walking Sensor */
-#define BT_APPEARANCE_WALKING_ON_SHOE                       0x0442
+#define BT_APPEARANCE_WALKING_ON_SHOE 0x0442
 /** On-Hip Running Walking Sensor */
-#define BT_APPEARANCE_WALKING_ON_HIP                        0x0443
+#define BT_APPEARANCE_WALKING_ON_HIP 0x0443
 /** Generic Cycling */
-#define BT_APPEARANCE_GENERIC_CYCLING                       0x0480
+#define BT_APPEARANCE_GENERIC_CYCLING 0x0480
 /** Cycling Computer */
-#define BT_APPEARANCE_CYCLING_COMPUTER                      0x0481
+#define BT_APPEARANCE_CYCLING_COMPUTER 0x0481
 /** Speed Sensor */
-#define BT_APPEARANCE_CYCLING_SPEED                         0x0482
+#define BT_APPEARANCE_CYCLING_SPEED 0x0482
 /** Cadence Sensor */
-#define BT_APPEARANCE_CYCLING_CADENCE                       0x0483
+#define BT_APPEARANCE_CYCLING_CADENCE 0x0483
 /** Power Sensor */
-#define BT_APPEARANCE_CYCLING_POWER                         0x0484
+#define BT_APPEARANCE_CYCLING_POWER 0x0484
 /** Speed and Cadence Sensor */
-#define BT_APPEARANCE_CYCLING_SPEED_CADENCE                 0x0485
+#define BT_APPEARANCE_CYCLING_SPEED_CADENCE 0x0485
 /** Generic Control Device */
-#define BT_APPEARANCE_GENERIC_CONTROL_DEVICE                0x04C0
+#define BT_APPEARANCE_GENERIC_CONTROL_DEVICE 0x04c0
 /** Switch */
-#define BT_APPEARANCE_CONTROL_SWITCH                        0x04C1
+#define BT_APPEARANCE_CONTROL_SWITCH 0x04c1
 /** Multi-switch */
-#define BT_APPEARANCE_CONTROL_MULTI_SWITCH                  0x04C2
+#define BT_APPEARANCE_CONTROL_MULTI_SWITCH 0x04c2
 /** Button */
-#define BT_APPEARANCE_CONTROL_BUTTON                        0x04C3
+#define BT_APPEARANCE_CONTROL_BUTTON 0x04c3
 /** Slider */
-#define BT_APPEARANCE_CONTROL_SLIDER                        0x04C4
+#define BT_APPEARANCE_CONTROL_SLIDER 0x04c4
 /** Rotary Switch */
-#define BT_APPEARANCE_CONTROL_ROTARY_SWITCH                 0x04C5
+#define BT_APPEARANCE_CONTROL_ROTARY_SWITCH 0x04c5
 /** Touch Panel */
-#define BT_APPEARANCE_CONTROL_TOUCH_PANEL                   0x04C6
+#define BT_APPEARANCE_CONTROL_TOUCH_PANEL 0x04c6
 /** Single Switch */
-#define BT_APPEARANCE_CONTROL_SINGLE_SWITCH                 0x04C7
+#define BT_APPEARANCE_CONTROL_SINGLE_SWITCH 0x04c7
 /** Double Switch */
-#define BT_APPEARANCE_CONTROL_DOUBLE_SWITCH                 0x04C8
+#define BT_APPEARANCE_CONTROL_DOUBLE_SWITCH 0x04c8
 /** Triple Switch */
-#define BT_APPEARANCE_CONTROL_TRIPLE_SWITCH                 0x04C9
+#define BT_APPEARANCE_CONTROL_TRIPLE_SWITCH 0x04c9
 /** Battery Switch */
-#define BT_APPEARANCE_CONTROL_BATTERY_SWITCH                0x04CA
+#define BT_APPEARANCE_CONTROL_BATTERY_SWITCH 0x04ca
 /** Energy Harvesting Switch */
-#define BT_APPEARANCE_CONTROL_ENERGY_HARVESTING_SWITCH      0x04CB
+#define BT_APPEARANCE_CONTROL_ENERGY_HARVESTING_SWITCH 0x04cb
 /** Push Button */
-#define BT_APPEARANCE_CONTROL_PUSH_BUTTON                   0x04CC
+#define BT_APPEARANCE_CONTROL_PUSH_BUTTON 0x04cc
 /** Generic Network Device */
-#define BT_APPEARANCE_GENERIC_NETWORK_DEVICE                0x0500
+#define BT_APPEARANCE_GENERIC_NETWORK_DEVICE 0x0500
 /** Access Point */
-#define BT_APPEARANCE_NETWORK_ACCESS_POINT                  0x0501
+#define BT_APPEARANCE_NETWORK_ACCESS_POINT 0x0501
 /** Mesh Device */
-#define BT_APPEARANCE_NETWORK_MESH_DEVICE                   0x0502
+#define BT_APPEARANCE_NETWORK_MESH_DEVICE 0x0502
 /** Mesh Network Proxy */
-#define BT_APPEARANCE_NETWORK_MESH_PROXY                    0x0503
+#define BT_APPEARANCE_NETWORK_MESH_PROXY 0x0503
 /** Generic Sensor */
-#define BT_APPEARANCE_GENERIC_SENSOR                        0x0540
+#define BT_APPEARANCE_GENERIC_SENSOR 0x0540
 /** Motion Sensor */
-#define BT_APPEARANCE_SENSOR_MOTION                         0x0541
+#define BT_APPEARANCE_SENSOR_MOTION 0x0541
 /** Air quality Sensor */
-#define BT_APPEARANCE_SENSOR_AIR_QUALITY                    0x0542
+#define BT_APPEARANCE_SENSOR_AIR_QUALITY 0x0542
 /** Temperature Sensor */
-#define BT_APPEARANCE_SENSOR_TEMPERATURE                    0x0543
+#define BT_APPEARANCE_SENSOR_TEMPERATURE 0x0543
 /** Humidity Sensor */
-#define BT_APPEARANCE_SENSOR_HUMIDITY                       0x0544
+#define BT_APPEARANCE_SENSOR_HUMIDITY 0x0544
 /** Leak Sensor */
-#define BT_APPEARANCE_SENSOR_LEAK                           0x0545
+#define BT_APPEARANCE_SENSOR_LEAK 0x0545
 /** Smoke Sensor */
-#define BT_APPEARANCE_SENSOR_SMOKE                          0x0546
+#define BT_APPEARANCE_SENSOR_SMOKE 0x0546
 /** Occupancy Sensor */
-#define BT_APPEARANCE_SENSOR_OCCUPANCY                      0x0547
+#define BT_APPEARANCE_SENSOR_OCCUPANCY 0x0547
 /** Contact Sensor */
-#define BT_APPEARANCE_SENSOR_CONTACT                        0x0548
+#define BT_APPEARANCE_SENSOR_CONTACT 0x0548
 /** Carbon Monoxide Sensor */
-#define BT_APPEARANCE_SENSOR_CARBON_MONOXIDE                0x0549
+#define BT_APPEARANCE_SENSOR_CARBON_MONOXIDE 0x0549
 /** Carbon Dioxide Sensor */
-#define BT_APPEARANCE_SENSOR_CARBON_DIOXIDE                 0x054A
+#define BT_APPEARANCE_SENSOR_CARBON_DIOXIDE 0x054a
 /** Ambient Light Sensor */
-#define BT_APPEARANCE_SENSOR_AMBIENT_LIGHT                  0x054B
+#define BT_APPEARANCE_SENSOR_AMBIENT_LIGHT 0x054b
 /** Energy Sensor */
-#define BT_APPEARANCE_SENSOR_ENERGY                         0x054C
+#define BT_APPEARANCE_SENSOR_ENERGY 0x054c
 /** Color Light Sensor */
-#define BT_APPEARANCE_SENSOR_COLOR_LIGHT                    0x054D
+#define BT_APPEARANCE_SENSOR_COLOR_LIGHT 0x054d
 /** Rain Sensor */
-#define BT_APPEARANCE_SENSOR_RAIN                           0x054E
+#define BT_APPEARANCE_SENSOR_RAIN 0x054e
 /** Fire Sensor */
-#define BT_APPEARANCE_SENSOR_FIRE                           0x054F
+#define BT_APPEARANCE_SENSOR_FIRE 0x054f
 /** Wind Sensor */
-#define BT_APPEARANCE_SENSOR_WIND                           0x0550
+#define BT_APPEARANCE_SENSOR_WIND 0x0550
 /** Proximity Sensor */
-#define BT_APPEARANCE_SENSOR_PROXIMITY                      0x0551
+#define BT_APPEARANCE_SENSOR_PROXIMITY 0x0551
 /** Multi-Sensor */
-#define BT_APPEARANCE_SENSOR_MULTI                          0x0552
+#define BT_APPEARANCE_SENSOR_MULTI 0x0552
 /** Flush Mounted Sensor */
-#define BT_APPEARANCE_SENSOR_FLUSH_MOUNTED                  0x0553
+#define BT_APPEARANCE_SENSOR_FLUSH_MOUNTED 0x0553
 /** Ceiling Mounted Sensor */
-#define BT_APPEARANCE_SENSOR_CEILING_MOUNTED                0x0554
+#define BT_APPEARANCE_SENSOR_CEILING_MOUNTED 0x0554
 /** Wall Mounted Sensor */
-#define BT_APPEARANCE_SENSOR_WALL_MOUNTED                   0x0555
+#define BT_APPEARANCE_SENSOR_WALL_MOUNTED 0x0555
 /** Multisensor */
-#define BT_APPEARANCE_MULTISENSOR                           0x0556
+#define BT_APPEARANCE_MULTISENSOR 0x0556
 /** Energy Meter */
-#define BT_APPEARANCE_SENSOR_ENERGY_METER                   0x0557
+#define BT_APPEARANCE_SENSOR_ENERGY_METER 0x0557
 /** Flame Detector */
-#define BT_APPEARANCE_SENSOR_FLAME_DETECTOR                 0x0558
+#define BT_APPEARANCE_SENSOR_FLAME_DETECTOR 0x0558
 /** Vehicle Tire Pressure Sensor */
-#define BT_APPEARANCE_SENSOR_VEHICLE_TIRE_PRESSURE          0x0559
+#define BT_APPEARANCE_SENSOR_VEHICLE_TIRE_PRESSURE 0x0559
 /** Generic Light Fixtures */
-#define BT_APPEARANCE_GENERIC_LIGHT_FIXTURES                0x0580
+#define BT_APPEARANCE_GENERIC_LIGHT_FIXTURES 0x0580
 /** Wall Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_WALL                   0x0581
+#define BT_APPEARANCE_LIGHT_FIXTURES_WALL 0x0581
 /** Ceiling Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_CEILING                0x0582
+#define BT_APPEARANCE_LIGHT_FIXTURES_CEILING 0x0582
 /** Floor Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_FLOOR                  0x0583
+#define BT_APPEARANCE_LIGHT_FIXTURES_FLOOR 0x0583
 /** Cabinet Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_CABINET                0x0584
+#define BT_APPEARANCE_LIGHT_FIXTURES_CABINET 0x0584
 /** Desk Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_DESK                   0x0585
+#define BT_APPEARANCE_LIGHT_FIXTURES_DESK 0x0585
 /** Troffer Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_TROFFER                0x0586
+#define BT_APPEARANCE_LIGHT_FIXTURES_TROFFER 0x0586
 /** Pendant Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_PENDANT                0x0587
+#define BT_APPEARANCE_LIGHT_FIXTURES_PENDANT 0x0587
 /** In-ground Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_IN_GROUND              0x0588
+#define BT_APPEARANCE_LIGHT_FIXTURES_IN_GROUND 0x0588
 /** Flood Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_FLOOD                  0x0589
+#define BT_APPEARANCE_LIGHT_FIXTURES_FLOOD 0x0589
 /** Underwater Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_UNDERWATER             0x058A
+#define BT_APPEARANCE_LIGHT_FIXTURES_UNDERWATER 0x058a
 /** Bollard with Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_BOLLARD_WITH           0x058B
+#define BT_APPEARANCE_LIGHT_FIXTURES_BOLLARD_WITH 0x058b
 /** Pathway Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_PATHWAY                0x058C
+#define BT_APPEARANCE_LIGHT_FIXTURES_PATHWAY 0x058c
 /** Garden Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_GARDEN                 0x058D
+#define BT_APPEARANCE_LIGHT_FIXTURES_GARDEN 0x058d
 /** Pole-top Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_POLE_TOP               0x058E
+#define BT_APPEARANCE_LIGHT_FIXTURES_POLE_TOP 0x058e
 /** Spotlight */
-#define BT_APPEARANCE_SPOT_LIGHT                            0x058F
+#define BT_APPEARANCE_SPOT_LIGHT 0x058f
 /** Linear Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_LINEAR                 0x0590
+#define BT_APPEARANCE_LIGHT_FIXTURES_LINEAR 0x0590
 /** Street Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_STREET                 0x0591
+#define BT_APPEARANCE_LIGHT_FIXTURES_STREET 0x0591
 /** Shelves Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_SHELVES                0x0592
+#define BT_APPEARANCE_LIGHT_FIXTURES_SHELVES 0x0592
 /** Bay Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_BAY                    0x0593
+#define BT_APPEARANCE_LIGHT_FIXTURES_BAY 0x0593
 /** Emergency Exit Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_EMERGENCY_EXIT         0x0594
+#define BT_APPEARANCE_LIGHT_FIXTURES_EMERGENCY_EXIT 0x0594
 /** Light Controller */
-#define BT_APPEARANCE_LIGHT_FIXTURES_CONTROLLER             0x0595
+#define BT_APPEARANCE_LIGHT_FIXTURES_CONTROLLER 0x0595
 /** Light Driver */
-#define BT_APPEARANCE_LIGHT_FIXTURES_DRIVER                 0x0596
+#define BT_APPEARANCE_LIGHT_FIXTURES_DRIVER 0x0596
 /** Bulb */
-#define BT_APPEARANCE_LIGHT_FIXTURES_BULB                   0x0597
+#define BT_APPEARANCE_LIGHT_FIXTURES_BULB 0x0597
 /** Low-bay Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_LOW_BAY                0x0598
+#define BT_APPEARANCE_LIGHT_FIXTURES_LOW_BAY 0x0598
 /** High-bay Light */
-#define BT_APPEARANCE_LIGHT_FIXTURES_HIGH_BAY               0x0599
+#define BT_APPEARANCE_LIGHT_FIXTURES_HIGH_BAY 0x0599
 /** Generic Fan */
-#define BT_APPEARANCE_GENERIC_FAN                           0x05C0
+#define BT_APPEARANCE_GENERIC_FAN 0x05c0
 /** Ceiling Fan */
-#define BT_APPEARANCE_FAN_CEILING                           0x05C1
+#define BT_APPEARANCE_FAN_CEILING 0x05c1
 /** Axial Fan */
-#define BT_APPEARANCE_FAN_AXIAL                             0x05C2
+#define BT_APPEARANCE_FAN_AXIAL 0x05c2
 /** Exhaust Fan */
-#define BT_APPEARANCE_FAN_EXHAUST                           0x05C3
+#define BT_APPEARANCE_FAN_EXHAUST 0x05c3
 /** Pedestal Fan */
-#define BT_APPEARANCE_FAN_PEDESTAL                          0x05C4
+#define BT_APPEARANCE_FAN_PEDESTAL 0x05c4
 /** Desk Fan */
-#define BT_APPEARANCE_FAN_DESK                              0x05C5
+#define BT_APPEARANCE_FAN_DESK 0x05c5
 /** Wall Fan */
-#define BT_APPEARANCE_FAN_WALL                              0x05C6
+#define BT_APPEARANCE_FAN_WALL 0x05c6
 /** Generic HVAC */
-#define BT_APPEARANCE_GENERIC_HVAC                          0x0600
+#define BT_APPEARANCE_GENERIC_HVAC 0x0600
 /** Thermostat */
-#define BT_APPEARANCE_HVAC_THERMOSTAT                       0x0601
+#define BT_APPEARANCE_HVAC_THERMOSTAT 0x0601
 /** Humidifier */
-#define BT_APPEARANCE_HVAC_HUMIDIFIER                       0x0602
+#define BT_APPEARANCE_HVAC_HUMIDIFIER 0x0602
 /** De-humidifier */
-#define BT_APPEARANCE_HVAC_DEHUMIDIFIER                     0x0603
+#define BT_APPEARANCE_HVAC_DEHUMIDIFIER 0x0603
 /** Heater */
-#define BT_APPEARANCE_HVAC_HEATER                           0x0604
+#define BT_APPEARANCE_HVAC_HEATER 0x0604
 /** Radiator */
-#define BT_APPEARANCE_HVAC_RADIATOR                         0x0605
+#define BT_APPEARANCE_HVAC_RADIATOR 0x0605
 /** Boiler */
-#define BT_APPEARANCE_HVAC_BOILER                           0x0606
+#define BT_APPEARANCE_HVAC_BOILER 0x0606
 /** Heat Pump */
-#define BT_APPEARANCE_HVAC_HEAT_PUMP                        0x0607
+#define BT_APPEARANCE_HVAC_HEAT_PUMP 0x0607
 /** Infrared Heater */
-#define BT_APPEARANCE_HVAC_INFRARED_HEATER                  0x0608
+#define BT_APPEARANCE_HVAC_INFRARED_HEATER 0x0608
 /** Radiant Panel Heater */
-#define BT_APPEARANCE_HVAC_RADIANT_PANEL_HEATER             0x0609
+#define BT_APPEARANCE_HVAC_RADIANT_PANEL_HEATER 0x0609
 /** Fan Heater */
-#define BT_APPEARANCE_HVAC_FAN_HEATER                       0x060A
+#define BT_APPEARANCE_HVAC_FAN_HEATER 0x060a
 /** Air Curtain */
-#define BT_APPEARANCE_HVAC_AIR_CURTAIN                      0x060B
+#define BT_APPEARANCE_HVAC_AIR_CURTAIN 0x060b
 /** Generic Air Conditioning */
-#define BT_APPEARANCE_GENERIC_AIR_CONDITIONING              0x0640
+#define BT_APPEARANCE_GENERIC_AIR_CONDITIONING 0x0640
 /** Generic Humidifier */
-#define BT_APPEARANCE_GENERIC_HUMIDIFIER                    0x0680
+#define BT_APPEARANCE_GENERIC_HUMIDIFIER 0x0680
 /** Generic Heating */
-#define BT_APPEARANCE_GENERIC_HEATING                       0x06C0
+#define BT_APPEARANCE_GENERIC_HEATING 0x06c0
 /** Radiator */
-#define BT_APPEARANCE_HEATING_RADIATOR                      0x06C1
+#define BT_APPEARANCE_HEATING_RADIATOR 0x06c1
 /** Boiler */
-#define BT_APPEARANCE_HEATING_BOILER                        0x06C2
+#define BT_APPEARANCE_HEATING_BOILER 0x06c2
 /** Heat Pump */
-#define BT_APPEARANCE_HEATING_HEAT_PUMP                     0x06C3
+#define BT_APPEARANCE_HEATING_HEAT_PUMP 0x06c3
 /** Infrared Heater */
-#define BT_APPEARANCE_HEATING_INFRARED_HEATER               0x06C4
+#define BT_APPEARANCE_HEATING_INFRARED_HEATER 0x06c4
 /** Radiant Panel Heater */
-#define BT_APPEARANCE_HEATING_RADIANT_PANEL_HEATER          0x06C5
+#define BT_APPEARANCE_HEATING_RADIANT_PANEL_HEATER 0x06c5
 /** Fan Heater */
-#define BT_APPEARANCE_HEATING_FAN_HEATER                    0x06C6
+#define BT_APPEARANCE_HEATING_FAN_HEATER 0x06c6
 /** Air Curtain */
-#define BT_APPEARANCE_HEATING_AIR_CURTAIN                   0x06C7
+#define BT_APPEARANCE_HEATING_AIR_CURTAIN 0x06c7
 /** Generic Access Control */
-#define BT_APPEARANCE_GENERIC_ACCESS_CONTROL                0x0700
+#define BT_APPEARANCE_GENERIC_ACCESS_CONTROL 0x0700
 /** Access Door */
-#define BT_APPEARANCE_CONTROL_ACCESS_DOOR                   0x0701
+#define BT_APPEARANCE_CONTROL_ACCESS_DOOR 0x0701
 /** Garage Door */
-#define BT_APPEARANCE_CONTROL_GARAGE_DOOR                   0x0702
+#define BT_APPEARANCE_CONTROL_GARAGE_DOOR 0x0702
 /** Emergency Exit Door */
-#define BT_APPEARANCE_CONTROL_EMERGENCY_EXIT_DOOR           0x0703
+#define BT_APPEARANCE_CONTROL_EMERGENCY_EXIT_DOOR 0x0703
 /** Access Lock */
-#define BT_APPEARANCE_CONTROL_ACCESS_LOCK                   0x0704
+#define BT_APPEARANCE_CONTROL_ACCESS_LOCK 0x0704
 /** Elevator */
-#define BT_APPEARANCE_CONTROL_ELEVATOR                      0x0705
+#define BT_APPEARANCE_CONTROL_ELEVATOR 0x0705
 /** Window */
-#define BT_APPEARANCE_CONTROL_WINDOW                        0x0706
+#define BT_APPEARANCE_CONTROL_WINDOW 0x0706
 /** Entrance Gate */
-#define BT_APPEARANCE_CONTROL_ENTRANCE_GATE                 0x0707
+#define BT_APPEARANCE_CONTROL_ENTRANCE_GATE 0x0707
 /** Door Lock */
-#define BT_APPEARANCE_CONTROL_DOOR_LOCK                     0x0708
+#define BT_APPEARANCE_CONTROL_DOOR_LOCK 0x0708
 /** Locker */
-#define BT_APPEARANCE_CONTROL_LOCKER                        0x0709
+#define BT_APPEARANCE_CONTROL_LOCKER 0x0709
 /** Generic Motorized Device */
-#define BT_APPEARANCE_GENERIC_MOTORIZED_DEVICE              0x0740
+#define BT_APPEARANCE_GENERIC_MOTORIZED_DEVICE 0x0740
 /** Motorized Gate */
-#define BT_APPEARANCE_MOTORIZED_GATE                        0x0741
+#define BT_APPEARANCE_MOTORIZED_GATE 0x0741
 /** Awning */
-#define BT_APPEARANCE_MOTORIZED_AWNING                      0x0742
+#define BT_APPEARANCE_MOTORIZED_AWNING 0x0742
 /** Blinds or Shades */
-#define BT_APPEARANCE_MOTORIZED_BLINDS_OR_SHADES            0x0743
+#define BT_APPEARANCE_MOTORIZED_BLINDS_OR_SHADES 0x0743
 /** Curtains */
-#define BT_APPEARANCE_MOTORIZED_CURTAINS                    0x0744
+#define BT_APPEARANCE_MOTORIZED_CURTAINS 0x0744
 /** Screen */
-#define BT_APPEARANCE_MOTORIZED_SCREEN                      0x0745
+#define BT_APPEARANCE_MOTORIZED_SCREEN 0x0745
 /** Generic Power Device */
-#define BT_APPEARANCE_GENERIC_POWER_DEVICE                  0x0780
+#define BT_APPEARANCE_GENERIC_POWER_DEVICE 0x0780
 /** Power Outlet */
-#define BT_APPEARANCE_POWER_OUTLET                          0x0781
+#define BT_APPEARANCE_POWER_OUTLET 0x0781
 /** Power Strip */
-#define BT_APPEARANCE_POWER_STRIP                           0x0782
+#define BT_APPEARANCE_POWER_STRIP 0x0782
 /** Plug */
-#define BT_APPEARANCE_POWER_PLUG                            0x0783
+#define BT_APPEARANCE_POWER_PLUG 0x0783
 /** Power Supply */
-#define BT_APPEARANCE_POWER_SUPPLY                          0x0784
+#define BT_APPEARANCE_POWER_SUPPLY 0x0784
 /** LED Driver */
-#define BT_APPEARANCE_POWER_LED_DRIVER                      0x0785
+#define BT_APPEARANCE_POWER_LED_DRIVER 0x0785
 /** Fluorescent Lamp Gear */
-#define BT_APPEARANCE_POWER_FLUORESCENT_LAMP_GEAR           0x0786
+#define BT_APPEARANCE_POWER_FLUORESCENT_LAMP_GEAR 0x0786
 /** HID Lamp Gear */
-#define BT_APPEARANCE_POWER_HID_LAMP_GEAR                   0x0787
+#define BT_APPEARANCE_POWER_HID_LAMP_GEAR 0x0787
 /** Charge Case */
-#define BT_APPEARANCE_POWER_CHARGE_CASE                     0x0788
+#define BT_APPEARANCE_POWER_CHARGE_CASE 0x0788
 /** Power Bank */
-#define BT_APPEARANCE_POWER_POWER_BANK                      0x0789
+#define BT_APPEARANCE_POWER_POWER_BANK 0x0789
 /** Generic Light Source */
-#define BT_APPEARANCE_GENERIC_LIGHT_SOURCE                  0x07C0
+#define BT_APPEARANCE_GENERIC_LIGHT_SOURCE 0x07c0
 /** Incandescent Light Bulb */
-#define BT_APPEARANCE_LIGHT_SOURCE_INCANDESCENT_BULB        0x07C1
+#define BT_APPEARANCE_LIGHT_SOURCE_INCANDESCENT_BULB 0x07c1
 /** LED Lamp */
-#define BT_APPEARANCE_LIGHT_SOURCE_LED_LAMP                 0x07C2
+#define BT_APPEARANCE_LIGHT_SOURCE_LED_LAMP 0x07c2
 /** HID Lamp */
-#define BT_APPEARANCE_LIGHT_SOURCE_HID_LAMP                 0x07C3
+#define BT_APPEARANCE_LIGHT_SOURCE_HID_LAMP 0x07c3
 /** Fluorescent Lamp */
-#define BT_APPEARANCE_LIGHT_SOURCE_FLUORESCENT_LAMP         0x07C4
+#define BT_APPEARANCE_LIGHT_SOURCE_FLUORESCENT_LAMP 0x07c4
 /** LED Array */
-#define BT_APPEARANCE_LIGHT_SOURCE_LED_ARRAY                0x07C5
+#define BT_APPEARANCE_LIGHT_SOURCE_LED_ARRAY 0x07c5
 /** Multi-Color LED Array */
-#define BT_APPEARANCE_LIGHT_SOURCE_MULTICOLOR_LED_ARRAY     0x07C6
+#define BT_APPEARANCE_LIGHT_SOURCE_MULTICOLOR_LED_ARRAY 0x07c6
 /** Low voltage halogen */
-#define BT_APPEARANCE_LIGHT_SOURCE_LOW_VOLTAGE_HALOGEN      0x07C7
+#define BT_APPEARANCE_LIGHT_SOURCE_LOW_VOLTAGE_HALOGEN 0x07c7
 /** Organic light emitting diode */
-#define BT_APPEARANCE_LIGHT_SOURCE_OLED                     0x07C8
+#define BT_APPEARANCE_LIGHT_SOURCE_OLED 0x07c8
 /** Generic Window Covering */
-#define BT_APPEARANCE_GENERIC_WINDOW_COVERING               0x0800
+#define BT_APPEARANCE_GENERIC_WINDOW_COVERING 0x0800
 /** Window Shades */
-#define BT_APPEARANCE_WINDOW_SHADES                         0x0801
+#define BT_APPEARANCE_WINDOW_SHADES 0x0801
 /** Window Blinds */
-#define BT_APPEARANCE_WINDOW_BLINDS                         0x0802
+#define BT_APPEARANCE_WINDOW_BLINDS 0x0802
 /** Window Awning */
-#define BT_APPEARANCE_WINDOW_AWNING                         0x0803
+#define BT_APPEARANCE_WINDOW_AWNING 0x0803
 /** Window Curtain */
-#define BT_APPEARANCE_WINDOW_CURTAIN                        0x0804
+#define BT_APPEARANCE_WINDOW_CURTAIN 0x0804
 /** Exterior Shutter */
-#define BT_APPEARANCE_WINDOW_EXTERIOR_SHUTTER               0x0805
+#define BT_APPEARANCE_WINDOW_EXTERIOR_SHUTTER 0x0805
 /** Exterior Screen */
-#define BT_APPEARANCE_WINDOW_EXTERIOR_SCREEN                0x0806
+#define BT_APPEARANCE_WINDOW_EXTERIOR_SCREEN 0x0806
 /** Generic Audio Sink */
-#define BT_APPEARANCE_GENERIC_AUDIO_SINK                    0x0840
+#define BT_APPEARANCE_GENERIC_AUDIO_SINK 0x0840
 /** Standalone Speaker */
-#define BT_APPEARANCE_AUDIO_SINK_STANDALONE_SPEAKER         0x0841
+#define BT_APPEARANCE_AUDIO_SINK_STANDALONE_SPEAKER 0x0841
 /** Soundbar */
-#define BT_APPEARANCE_AUDIO_SINK_SOUNDBAR                   0x0842
+#define BT_APPEARANCE_AUDIO_SINK_SOUNDBAR 0x0842
 /** Bookshelf Speaker */
-#define BT_APPEARANCE_AUDIO_SINK_BOOKSHELF_SPEAKER          0x0843
+#define BT_APPEARANCE_AUDIO_SINK_BOOKSHELF_SPEAKER 0x0843
 /** Standmounted Speaker */
-#define BT_APPEARANCE_AUDIO_SINK_STANDMOUNTED_SPEAKER       0x0844
+#define BT_APPEARANCE_AUDIO_SINK_STANDMOUNTED_SPEAKER 0x0844
 /** Speakerphone */
-#define BT_APPEARANCE_AUDIO_SINK_SPEAKERPHONE               0x0845
+#define BT_APPEARANCE_AUDIO_SINK_SPEAKERPHONE 0x0845
 /** Generic Audio Source */
-#define BT_APPEARANCE_GENERIC_AUDIO_SOURCE                  0x0880
+#define BT_APPEARANCE_GENERIC_AUDIO_SOURCE 0x0880
 /** Microphone */
-#define BT_APPEARANCE_AUDIO_SOURCE_MICROPHONE               0x0881
+#define BT_APPEARANCE_AUDIO_SOURCE_MICROPHONE 0x0881
 /** Alarm */
-#define BT_APPEARANCE_AUDIO_SOURCE_ALARM                    0x0882
+#define BT_APPEARANCE_AUDIO_SOURCE_ALARM 0x0882
 /** Bell */
-#define BT_APPEARANCE_AUDIO_SOURCE_BELL                     0x0883
+#define BT_APPEARANCE_AUDIO_SOURCE_BELL 0x0883
 /** Horn */
-#define BT_APPEARANCE_AUDIO_SOURCE_HORN                     0x0884
+#define BT_APPEARANCE_AUDIO_SOURCE_HORN 0x0884
 /** Broadcasting Device */
-#define BT_APPEARANCE_AUDIO_SOURCE_BROADCASTING_DEVICE      0x0885
+#define BT_APPEARANCE_AUDIO_SOURCE_BROADCASTING_DEVICE 0x0885
 /** Service Desk */
-#define BT_APPEARANCE_AUDIO_SOURCE_SERVICE_DESK             0x0886
+#define BT_APPEARANCE_AUDIO_SOURCE_SERVICE_DESK 0x0886
 /** Kiosk */
-#define BT_APPEARANCE_AUDIO_SOURCE_KIOSK                    0x0887
+#define BT_APPEARANCE_AUDIO_SOURCE_KIOSK 0x0887
 /** Broadcasting Room */
-#define BT_APPEARANCE_AUDIO_SOURCE_BROADCASTING_ROOM        0x0888
+#define BT_APPEARANCE_AUDIO_SOURCE_BROADCASTING_ROOM 0x0888
 /** Auditorium */
-#define BT_APPEARANCE_AUDIO_SOURCE_AUDITORIUM               0x0889
+#define BT_APPEARANCE_AUDIO_SOURCE_AUDITORIUM 0x0889
 /** Generic Motorized Vehicle */
-#define BT_APPEARANCE_GENERIC_MOTORIZED_VEHICLE             0x08C0
+#define BT_APPEARANCE_GENERIC_MOTORIZED_VEHICLE 0x08c0
 /** Car */
-#define BT_APPEARANCE_VEHICLE_CAR                           0x08C1
+#define BT_APPEARANCE_VEHICLE_CAR 0x08c1
 /** Large Goods Vehicle */
-#define BT_APPEARANCE_VEHICLE_LARGE_GOODS                   0x08C2
+#define BT_APPEARANCE_VEHICLE_LARGE_GOODS 0x08c2
 /** 2-Wheeled Vehicle */
-#define BT_APPEARANCE_VEHICLE_TWO_WHEELED                   0x08C3
+#define BT_APPEARANCE_VEHICLE_TWO_WHEELED 0x08c3
 /** Motorbike */
-#define BT_APPEARANCE_VEHICLE_MOTORBIKE                     0x08C4
+#define BT_APPEARANCE_VEHICLE_MOTORBIKE 0x08c4
 /** Scooter */
-#define BT_APPEARANCE_VEHICLE_SCOOTER                       0x08C5
+#define BT_APPEARANCE_VEHICLE_SCOOTER 0x08c5
 /** Moped */
-#define BT_APPEARANCE_VEHICLE_MOPED                         0x08C6
+#define BT_APPEARANCE_VEHICLE_MOPED 0x08c6
 /** 3-Wheeled Vehicle */
-#define BT_APPEARANCE_VEHICLE_THREE_WHEELED                 0x08C7
+#define BT_APPEARANCE_VEHICLE_THREE_WHEELED 0x08c7
 /** Light Vehicle */
-#define BT_APPEARANCE_VEHICLE_LIGHT                         0x08C8
+#define BT_APPEARANCE_VEHICLE_LIGHT 0x08c8
 /** Quad Bike */
-#define BT_APPEARANCE_VEHICLE_QUAD_BIKE                     0x08C9
+#define BT_APPEARANCE_VEHICLE_QUAD_BIKE 0x08c9
 /** Minibus */
-#define BT_APPEARANCE_VEHICLE_MINIBUS                       0x08CA
+#define BT_APPEARANCE_VEHICLE_MINIBUS 0x08ca
 /** Bus */
-#define BT_APPEARANCE_VEHICLE_BUS                           0x08CB
+#define BT_APPEARANCE_VEHICLE_BUS 0x08cb
 /** Trolley */
-#define BT_APPEARANCE_VEHICLE_TROLLEY                       0x08CC
+#define BT_APPEARANCE_VEHICLE_TROLLEY 0x08cc
 /** Agricultural Vehicle */
-#define BT_APPEARANCE_VEHICLE_AGRICULTURAL                  0x08CD
+#define BT_APPEARANCE_VEHICLE_AGRICULTURAL 0x08cd
 /** Camper/Caravan */
-#define BT_APPEARANCE_VEHICLE_CAMPER_OR_CARAVAN             0x08CE
+#define BT_APPEARANCE_VEHICLE_CAMPER_OR_CARAVAN 0x08ce
 /** Recreational Vehicle/Motor Home */
-#define BT_APPEARANCE_VEHICLE_RECREATIONAL                  0x08CF
+#define BT_APPEARANCE_VEHICLE_RECREATIONAL 0x08cf
 /** Generic Domestic Appliance */
-#define BT_APPEARANCE_GENERIC_DOMESTIC_APPLIANCE            0x0900
+#define BT_APPEARANCE_GENERIC_DOMESTIC_APPLIANCE 0x0900
 /** Refrigerator */
-#define BT_APPEARANCE_APPLIANCE_REFRIGERATOR                0x0901
+#define BT_APPEARANCE_APPLIANCE_REFRIGERATOR 0x0901
 /** Freezer */
-#define BT_APPEARANCE_APPLIANCE_FREEZER                     0x0902
+#define BT_APPEARANCE_APPLIANCE_FREEZER 0x0902
 /** Oven */
-#define BT_APPEARANCE_APPLIANCE_OVEN                        0x0903
+#define BT_APPEARANCE_APPLIANCE_OVEN 0x0903
 /** Microwave */
-#define BT_APPEARANCE_APPLIANCE_MICROWAVE                   0x0904
+#define BT_APPEARANCE_APPLIANCE_MICROWAVE 0x0904
 /** Toaster */
-#define BT_APPEARANCE_APPLIANCE_TOASTER                     0x0905
+#define BT_APPEARANCE_APPLIANCE_TOASTER 0x0905
 /** Washing Machine */
-#define BT_APPEARANCE_APPLIANCE_WASHING_MACHINE             0x0906
+#define BT_APPEARANCE_APPLIANCE_WASHING_MACHINE 0x0906
 /** Dryer */
-#define BT_APPEARANCE_APPLIANCE_DRYER                       0x0907
+#define BT_APPEARANCE_APPLIANCE_DRYER 0x0907
 /** Coffee maker */
-#define BT_APPEARANCE_APPLIANCE_COFFEE_MAKER                0x0908
+#define BT_APPEARANCE_APPLIANCE_COFFEE_MAKER 0x0908
 /** Clothes iron */
-#define BT_APPEARANCE_APPLIANCE_CLOTHES_IRON                0x0909
+#define BT_APPEARANCE_APPLIANCE_CLOTHES_IRON 0x0909
 /** Curling iron */
-#define BT_APPEARANCE_APPLIANCE_CURLING_IRON                0x090A
+#define BT_APPEARANCE_APPLIANCE_CURLING_IRON 0x090a
 /** Hair dryer */
-#define BT_APPEARANCE_APPLIANCE_HAIR_DRYER                  0x090B
+#define BT_APPEARANCE_APPLIANCE_HAIR_DRYER 0x090b
 /** Vacuum cleaner */
-#define BT_APPEARANCE_APPLIANCE_VACUUM_CLEANER              0x090C
+#define BT_APPEARANCE_APPLIANCE_VACUUM_CLEANER 0x090c
 /** Robotic vacuum cleaner */
-#define BT_APPEARANCE_APPLIANCE_ROBOTIC_VACUUM_CLEANER      0x090D
+#define BT_APPEARANCE_APPLIANCE_ROBOTIC_VACUUM_CLEANER 0x090d
 /** Rice cooker */
-#define BT_APPEARANCE_APPLIANCE_RICE_COOKER                 0x090E
+#define BT_APPEARANCE_APPLIANCE_RICE_COOKER 0x090e
 /** Clothes steamer */
-#define BT_APPEARANCE_APPLIANCE_CLOTHES_STEAMER             0x090F
+#define BT_APPEARANCE_APPLIANCE_CLOTHES_STEAMER 0x090f
 /** Generic Wearable Audio Device */
-#define BT_APPEARANCE_GENERIC_WEARABLE_AUDIO_DEVICE         0x0940
+#define BT_APPEARANCE_GENERIC_WEARABLE_AUDIO_DEVICE 0x0940
 /** Earbud */
-#define BT_APPEARANCE_WEARABLE_AUDIO_DEVICE_EARBUD          0x0941
+#define BT_APPEARANCE_WEARABLE_AUDIO_DEVICE_EARBUD 0x0941
 /** Headset */
-#define BT_APPEARANCE_WEARABLE_AUDIO_DEVICE_HEADSET         0x0942
+#define BT_APPEARANCE_WEARABLE_AUDIO_DEVICE_HEADSET 0x0942
 /** Headphones */
-#define BT_APPEARANCE_WEARABLE_AUDIO_DEVICE_HEADPHONES      0x0943
+#define BT_APPEARANCE_WEARABLE_AUDIO_DEVICE_HEADPHONES 0x0943
 /** Neck Band */
-#define BT_APPEARANCE_WEARABLE_AUDIO_DEVICE_NECK_BAND       0x0944
+#define BT_APPEARANCE_WEARABLE_AUDIO_DEVICE_NECK_BAND 0x0944
 /** Generic Aircraft */
-#define BT_APPEARANCE_GENERIC_AIRCRAFT                      0x0980
+#define BT_APPEARANCE_GENERIC_AIRCRAFT 0x0980
 /** Light Aircraft */
-#define BT_APPEARANCE_AIRCRAFT_LIGHT                        0x0981
+#define BT_APPEARANCE_AIRCRAFT_LIGHT 0x0981
 /** Microlight */
-#define BT_APPEARANCE_AIRCRAFT_MICROLIGHT                   0x0982
+#define BT_APPEARANCE_AIRCRAFT_MICROLIGHT 0x0982
 /** Paraglider */
-#define BT_APPEARANCE_AIRCRAFT_PARAGLIDER                   0x0983
+#define BT_APPEARANCE_AIRCRAFT_PARAGLIDER 0x0983
 /** Large Passenger Aircraft */
-#define BT_APPEARANCE_AIRCRAFT_LARGE_PASSENGER              0x0984
+#define BT_APPEARANCE_AIRCRAFT_LARGE_PASSENGER 0x0984
 /** Generic AV Equipment */
-#define BT_APPEARANCE_GENERIC_AV_EQUIPMENT                  0x09C0
+#define BT_APPEARANCE_GENERIC_AV_EQUIPMENT 0x09c0
 /** Amplifier */
-#define BT_APPEARANCE_AV_EQUIPMENT_AMPLIFIER                0x09C1
+#define BT_APPEARANCE_AV_EQUIPMENT_AMPLIFIER 0x09c1
 /** Receiver */
-#define BT_APPEARANCE_AV_EQUIPMENT_RECEIVER                 0x09C2
+#define BT_APPEARANCE_AV_EQUIPMENT_RECEIVER 0x09c2
 /** Radio */
-#define BT_APPEARANCE_AV_EQUIPMENT_RADIO                    0x09C3
+#define BT_APPEARANCE_AV_EQUIPMENT_RADIO 0x09c3
 /** Tuner */
-#define BT_APPEARANCE_AV_EQUIPMENT_TUNER                    0x09C4
+#define BT_APPEARANCE_AV_EQUIPMENT_TUNER 0x09c4
 /** Turntable */
-#define BT_APPEARANCE_AV_EQUIPMENT_TURNTABLE                0x09C5
+#define BT_APPEARANCE_AV_EQUIPMENT_TURNTABLE 0x09c5
 /** CD Player */
-#define BT_APPEARANCE_AV_EQUIPMENT_CD_PLAYER                0x09C6
+#define BT_APPEARANCE_AV_EQUIPMENT_CD_PLAYER 0x09c6
 /** DVD Player */
-#define BT_APPEARANCE_AV_EQUIPMENT_DVD_PLAYER               0x09C7
+#define BT_APPEARANCE_AV_EQUIPMENT_DVD_PLAYER 0x09c7
 /** Bluray Player */
-#define BT_APPEARANCE_AV_EQUIPMENT_BLURAY_PLAYER            0x09C8
+#define BT_APPEARANCE_AV_EQUIPMENT_BLURAY_PLAYER 0x09c8
 /** Optical Disc Player */
-#define BT_APPEARANCE_AV_EQUIPMENT_OPTICAL_DISC_PLAYER      0x09C9
+#define BT_APPEARANCE_AV_EQUIPMENT_OPTICAL_DISC_PLAYER 0x09c9
 /** Set-Top Box */
-#define BT_APPEARANCE_AV_EQUIPMENT_SET_TOP_BOX              0x09CA
+#define BT_APPEARANCE_AV_EQUIPMENT_SET_TOP_BOX 0x09ca
 /** Generic Display Equipment */
-#define BT_APPEARANCE_GENERIC_DISPLAY_EQUIPMENT             0x0A00
+#define BT_APPEARANCE_GENERIC_DISPLAY_EQUIPMENT 0x0a00
 /** Television */
-#define BT_APPEARANCE_DISPLAY_EQUIPMENT_TELEVISION          0x0A01
+#define BT_APPEARANCE_DISPLAY_EQUIPMENT_TELEVISION 0x0a01
 /** Monitor */
-#define BT_APPEARANCE_DISPLAY_EQUIPMENT_MONITOR             0x0A02
+#define BT_APPEARANCE_DISPLAY_EQUIPMENT_MONITOR 0x0a02
 /** Projector */
-#define BT_APPEARANCE_DISPLAY_EQUIPMENT_PROJECTOR           0x0A03
+#define BT_APPEARANCE_DISPLAY_EQUIPMENT_PROJECTOR 0x0a03
 /** Generic Hearing aid */
-#define BT_APPEARANCE_GENERIC_HEARING_AID                   0x0A40
+#define BT_APPEARANCE_GENERIC_HEARING_AID 0x0a40
 /** In-ear hearing aid */
-#define BT_APPEARANCE_HEARING_AID_IN_EAR                    0x0A41
+#define BT_APPEARANCE_HEARING_AID_IN_EAR 0x0a41
 /** Behind-ear hearing aid */
-#define BT_APPEARANCE_HEARING_AID_BEHIND_EAR                0x0A42
+#define BT_APPEARANCE_HEARING_AID_BEHIND_EAR 0x0a42
 /** Cochlear Implant */
-#define BT_APPEARANCE_HEARING_AID_COCHLEAR_IMPLANT          0x0A43
+#define BT_APPEARANCE_HEARING_AID_COCHLEAR_IMPLANT 0x0a43
 /** Generic Gaming */
-#define BT_APPEARANCE_GENERIC_GAMING                        0x0A80
+#define BT_APPEARANCE_GENERIC_GAMING 0x0a80
 /** Home Video Game Console */
-#define BT_APPEARANCE_HOME_VIDEO_GAME_CONSOLE               0x0A81
+#define BT_APPEARANCE_HOME_VIDEO_GAME_CONSOLE 0x0a81
 /** Portable handheld console */
-#define BT_APPEARANCE_PORTABLE_HANDHELD_CONSOLE             0x0A82
+#define BT_APPEARANCE_PORTABLE_HANDHELD_CONSOLE 0x0a82
 /** Generic Signage */
-#define BT_APPEARANCE_GENERIC_SIGNAGE                       0x0AC0
+#define BT_APPEARANCE_GENERIC_SIGNAGE 0x0ac0
 /** Digital Signage */
-#define BT_APPEARANCE_SIGNAGE_DIGITAL                       0x0AC1
+#define BT_APPEARANCE_SIGNAGE_DIGITAL 0x0ac1
 /** Electronic Label */
-#define BT_APPEARANCE_SIGNAGE_ELECTRONIC_LABEL              0x0AC2
+#define BT_APPEARANCE_SIGNAGE_ELECTRONIC_LABEL 0x0ac2
 /** Generic Pulse Oximeter */
-#define BT_APPEARANCE_GENERIC_PULSE_OXIMETER                0x0C40
+#define BT_APPEARANCE_GENERIC_PULSE_OXIMETER 0x0c40
 /** Fingertip Pulse Oximeter */
-#define BT_APPEARANCE_PULSE_OXIMETER_FINGERTIP              0x0C41
+#define BT_APPEARANCE_PULSE_OXIMETER_FINGERTIP 0x0c41
 /** Wrist Worn Pulse Oximeter */
-#define BT_APPEARANCE_PULSE_OXIMETER_WRIST                  0x0C42
+#define BT_APPEARANCE_PULSE_OXIMETER_WRIST 0x0c42
 /** Generic Weight Scale */
-#define BT_APPEARANCE_GENERIC_WEIGHT_SCALE                  0x0C80
+#define BT_APPEARANCE_GENERIC_WEIGHT_SCALE 0x0c80
 /** Generic Personal Mobility Device */
-#define BT_APPEARANCE_GENERIC_PERSONAL_MOBILITY_DEVICE      0x0CC0
+#define BT_APPEARANCE_GENERIC_PERSONAL_MOBILITY_DEVICE 0x0cc0
 /** Powered Wheelchair */
-#define BT_APPEARANCE_MOBILITY_POWERED_WHEELCHAIR           0x0CC1
+#define BT_APPEARANCE_MOBILITY_POWERED_WHEELCHAIR 0x0cc1
 /** Mobility Scooter */
-#define BT_APPEARANCE_MOBILITY_SCOOTER                      0x0CC2
+#define BT_APPEARANCE_MOBILITY_SCOOTER 0x0cc2
 /** Continuous Glucose Monitor */
-#define BT_APPEARANCE_CONTINUOUS_GLUCOSE_MONITOR            0x0D00
+#define BT_APPEARANCE_CONTINUOUS_GLUCOSE_MONITOR 0x0d00
 /** Generic Insulin Pump */
-#define BT_APPEARANCE_GENERIC_INSULIN_PUMP                  0x0D40
+#define BT_APPEARANCE_GENERIC_INSULIN_PUMP 0x0d40
 /** Insulin Pump, durable pump */
-#define BT_APPEARANCE_INSULIN_PUMP_DURABLE                  0x0D41
+#define BT_APPEARANCE_INSULIN_PUMP_DURABLE 0x0d41
 /** Insulin Pump, patch pump */
-#define BT_APPEARANCE_INSULIN_PUMP_PATCH                    0x0D44
+#define BT_APPEARANCE_INSULIN_PUMP_PATCH 0x0d44
 /** Insulin Pen */
-#define BT_APPEARANCE_INSULIN_PEN                           0x0D48
+#define BT_APPEARANCE_INSULIN_PEN 0x0d48
 /** Generic Medication Delivery */
-#define BT_APPEARANCE_GENERIC_MEDICATION_DELIVERY           0x0D80
+#define BT_APPEARANCE_GENERIC_MEDICATION_DELIVERY 0x0d80
 /** Generic Spirometer */
-#define BT_APPEARANCE_GENERIC_SPIROMETER                    0x0DC0
+#define BT_APPEARANCE_GENERIC_SPIROMETER 0x0dc0
 /** Handheld Spirometer */
-#define BT_APPEARANCE_SPIROMETER_HANDHELD                   0x0DC1
+#define BT_APPEARANCE_SPIROMETER_HANDHELD 0x0dc1
 /** Generic Outdoor Sports Activity */
-#define BT_APPEARANCE_GENERIC_OUTDOOR_SPORTS                0x1440
+#define BT_APPEARANCE_GENERIC_OUTDOOR_SPORTS 0x1440
 /** Location Display */
-#define BT_APPEARANCE_OUTDOOR_SPORTS_LOCATION               0x1441
+#define BT_APPEARANCE_OUTDOOR_SPORTS_LOCATION 0x1441
 /** Location and Navigation Display */
-#define BT_APPEARANCE_OUTDOOR_SPORTS_LOCATION_AND_NAV       0x1442
+#define BT_APPEARANCE_OUTDOOR_SPORTS_LOCATION_AND_NAV 0x1442
 /** Location Pod */
-#define BT_APPEARANCE_OUTDOOR_SPORTS_LOCATION_POD           0x1443
+#define BT_APPEARANCE_OUTDOOR_SPORTS_LOCATION_POD 0x1443
 /** Location and Navigation Pod */
-#define BT_APPEARANCE_OUTDOOR_SPORTS_LOCATION_POD_AND_NAV   0x1444
+#define BT_APPEARANCE_OUTDOOR_SPORTS_LOCATION_POD_AND_NAV 0x1444
 
 /** @} */ /* end of @name Appearance Numbers */
 
@@ -681,58 +680,58 @@ extern "C" {
  * @name Common Data Types
  * @{
  */
-#define BT_DATA_FLAGS                    0x01 /**< AD flags */
-#define BT_DATA_UUID16_SOME              0x02 /**< 16-bit UUID, more available */
-#define BT_DATA_UUID16_ALL               0x03 /**< 16-bit UUID, all listed */
-#define BT_DATA_UUID32_SOME              0x04 /**< 32-bit UUID, more available */
-#define BT_DATA_UUID32_ALL               0x05 /**< 32-bit UUID, all listed */
-#define BT_DATA_UUID128_SOME             0x06 /**< 128-bit UUID, more available */
-#define BT_DATA_UUID128_ALL              0x07 /**< 128-bit UUID, all listed */
-#define BT_DATA_NAME_SHORTENED           0x08 /**< Shortened name */
-#define BT_DATA_NAME_COMPLETE            0x09 /**< Complete name */
-#define BT_DATA_TX_POWER                 0x0a /**< Tx Power */
-#define BT_DATA_DEVICE_CLASS             0x0d /**< Class of Device */
+#define BT_DATA_FLAGS 0x01                    /**< AD flags */
+#define BT_DATA_UUID16_SOME 0x02              /**< 16-bit UUID, more available */
+#define BT_DATA_UUID16_ALL 0x03               /**< 16-bit UUID, all listed */
+#define BT_DATA_UUID32_SOME 0x04              /**< 32-bit UUID, more available */
+#define BT_DATA_UUID32_ALL 0x05               /**< 32-bit UUID, all listed */
+#define BT_DATA_UUID128_SOME 0x06             /**< 128-bit UUID, more available */
+#define BT_DATA_UUID128_ALL 0x07              /**< 128-bit UUID, all listed */
+#define BT_DATA_NAME_SHORTENED 0x08           /**< Shortened name */
+#define BT_DATA_NAME_COMPLETE 0x09            /**< Complete name */
+#define BT_DATA_TX_POWER 0x0a                 /**< Tx Power */
+#define BT_DATA_DEVICE_CLASS 0x0d             /**< Class of Device */
 #define BT_DATA_SIMPLE_PAIRING_HASH_C192 0x0e /**< Simple Pairing Hash C-192 */
 #define BT_DATA_SIMPLE_PAIRING_RAND_C192 0x0f /**< Simple Pairing Randomizer R-192 */
-#define BT_DATA_DEVICE_ID                0x10 /**< Device ID (Profile) */
-#define BT_DATA_SM_TK_VALUE              0x10 /**< Security Manager TK Value */
-#define BT_DATA_SM_OOB_FLAGS             0x11 /**< Security Manager OOB Flags */
-#define BT_DATA_PERIPHERAL_INT_RANGE     0x12 /**< Peripheral Connection Interval Range */
-#define BT_DATA_SOLICIT16                0x14 /**< Solicit UUIDs, 16-bit */
-#define BT_DATA_SOLICIT128               0x15 /**< Solicit UUIDs, 128-bit */
-#define BT_DATA_SVC_DATA16               0x16 /**< Service data, 16-bit UUID */
-#define BT_DATA_PUB_TARGET_ADDR          0x17 /**< Public Target Address */
-#define BT_DATA_RAND_TARGET_ADDR         0x18 /**< Random Target Address */
-#define BT_DATA_GAP_APPEARANCE           0x19 /**< GAP appearance */
-#define BT_DATA_ADV_INT                  0x1a /**< Advertising Interval */
-#define BT_DATA_LE_BT_DEVICE_ADDRESS     0x1b /**< LE Bluetooth Device Address */
-#define BT_DATA_LE_ROLE                  0x1c /**< LE Role */
-#define BT_DATA_SIMPLE_PAIRING_HASH      0x1d /**< Simple Pairing Hash C256 */
-#define BT_DATA_SIMPLE_PAIRING_RAND      0x1e /**< Simple Pairing Randomizer R256 */
-#define BT_DATA_SOLICIT32                0x1f /**< Solicit UUIDs, 32-bit */
-#define BT_DATA_SVC_DATA32               0x20 /**< Service data, 32-bit UUID */
-#define BT_DATA_SVC_DATA128              0x21 /**< Service data, 128-bit UUID */
-#define BT_DATA_LE_SC_CONFIRM_VALUE      0x22 /**< LE SC Confirmation Value */
-#define BT_DATA_LE_SC_RANDOM_VALUE       0x23 /**< LE SC Random Value */
-#define BT_DATA_URI                      0x24 /**< URI */
-#define BT_DATA_INDOOR_POS               0x25 /**< Indoor Positioning */
-#define BT_DATA_TRANS_DISCOVER_DATA      0x26 /**< Transport Discovery Data */
-#define BT_DATA_LE_SUPPORTED_FEATURES    0x27 /**< LE Supported Features */
-#define BT_DATA_CHANNEL_MAP_UPDATE_IND   0x28 /**< Channel Map Update Indication */
-#define BT_DATA_MESH_PROV                0x29 /**< Mesh Provisioning PDU */
-#define BT_DATA_MESH_MESSAGE             0x2a /**< Mesh Networking PDU */
-#define BT_DATA_MESH_BEACON              0x2b /**< Mesh Beacon */
-#define BT_DATA_BIG_INFO                 0x2c /**< BIGInfo */
-#define BT_DATA_BROADCAST_CODE           0x2d /**< Broadcast Code */
-#define BT_DATA_CSIS_RSI                 0x2e /**< CSIS Random Set ID type */
-#define BT_DATA_ADV_INT_LONG             0x2f /**< Advertising Interval long */
-#define BT_DATA_BROADCAST_NAME           0x30 /**< Broadcast Name */
-#define BT_DATA_ENCRYPTED_AD_DATA        0x31 /**< Encrypted Advertising Data */
-#define BT_DATA_PAWR_TIMING_INFO         0x32 /**< Periodic Advertising Response Timing Info */
-#define BT_DATA_ESL                      0x34 /**< Electronic Shelf Label Profile */
-#define BT_DATA_3D_INFO                  0x3D /**< 3D Information Data */
+#define BT_DATA_DEVICE_ID 0x10                /**< Device ID (Profile) */
+#define BT_DATA_SM_TK_VALUE 0x10              /**< Security Manager TK Value */
+#define BT_DATA_SM_OOB_FLAGS 0x11             /**< Security Manager OOB Flags */
+#define BT_DATA_PERIPHERAL_INT_RANGE 0x12     /**< Peripheral Connection Interval Range */
+#define BT_DATA_SOLICIT16 0x14                /**< Solicit UUIDs, 16-bit */
+#define BT_DATA_SOLICIT128 0x15               /**< Solicit UUIDs, 128-bit */
+#define BT_DATA_SVC_DATA16 0x16               /**< Service data, 16-bit UUID */
+#define BT_DATA_PUB_TARGET_ADDR 0x17          /**< Public Target Address */
+#define BT_DATA_RAND_TARGET_ADDR 0x18         /**< Random Target Address */
+#define BT_DATA_GAP_APPEARANCE 0x19           /**< GAP appearance */
+#define BT_DATA_ADV_INT 0x1a                  /**< Advertising Interval */
+#define BT_DATA_LE_BT_DEVICE_ADDRESS 0x1b     /**< LE Bluetooth Device Address */
+#define BT_DATA_LE_ROLE 0x1c                  /**< LE Role */
+#define BT_DATA_SIMPLE_PAIRING_HASH 0x1d      /**< Simple Pairing Hash C256 */
+#define BT_DATA_SIMPLE_PAIRING_RAND 0x1e      /**< Simple Pairing Randomizer R256 */
+#define BT_DATA_SOLICIT32 0x1f                /**< Solicit UUIDs, 32-bit */
+#define BT_DATA_SVC_DATA32 0x20               /**< Service data, 32-bit UUID */
+#define BT_DATA_SVC_DATA128 0x21              /**< Service data, 128-bit UUID */
+#define BT_DATA_LE_SC_CONFIRM_VALUE 0x22      /**< LE SC Confirmation Value */
+#define BT_DATA_LE_SC_RANDOM_VALUE 0x23       /**< LE SC Random Value */
+#define BT_DATA_URI 0x24                      /**< URI */
+#define BT_DATA_INDOOR_POS 0x25               /**< Indoor Positioning */
+#define BT_DATA_TRANS_DISCOVER_DATA 0x26      /**< Transport Discovery Data */
+#define BT_DATA_LE_SUPPORTED_FEATURES 0x27    /**< LE Supported Features */
+#define BT_DATA_CHANNEL_MAP_UPDATE_IND 0x28   /**< Channel Map Update Indication */
+#define BT_DATA_MESH_PROV 0x29                /**< Mesh Provisioning PDU */
+#define BT_DATA_MESH_MESSAGE 0x2a             /**< Mesh Networking PDU */
+#define BT_DATA_MESH_BEACON 0x2b              /**< Mesh Beacon */
+#define BT_DATA_BIG_INFO 0x2c                 /**< BIGInfo */
+#define BT_DATA_BROADCAST_CODE 0x2d           /**< Broadcast Code */
+#define BT_DATA_CSIS_RSI 0x2e                 /**< CSIS Random Set ID type */
+#define BT_DATA_ADV_INT_LONG 0x2f             /**< Advertising Interval long */
+#define BT_DATA_BROADCAST_NAME 0x30           /**< Broadcast Name */
+#define BT_DATA_ENCRYPTED_AD_DATA 0x31        /**< Encrypted Advertising Data */
+#define BT_DATA_PAWR_TIMING_INFO 0x32         /**< Periodic Advertising Response Timing Info */
+#define BT_DATA_ESL 0x34                      /**< Electronic Shelf Label Profile */
+#define BT_DATA_3D_INFO 0x3d                  /**< 3D Information Data */
 
-#define BT_DATA_MANUFACTURER_DATA        0xff /**< Manufacturer Specific Data */
+#define BT_DATA_MANUFACTURER_DATA 0xff /**< Manufacturer Specific Data */
 
 /** @} */ /* end of @name Common Data Types */
 
@@ -741,11 +740,12 @@ extern "C" {
  * @{
  */
 
-#define BT_LE_AD_LIMITED                 0x01 /**< Limited Discoverable */
-#define BT_LE_AD_GENERAL                 0x02 /**< General Discoverable */
-#define BT_LE_AD_NO_BREDR                0x04 /**< BR/EDR not supported */
+#define BT_LE_AD_LIMITED 0x01  /**< Limited Discoverable */
+#define BT_LE_AD_GENERAL 0x02  /**< General Discoverable */
+#define BT_LE_AD_NO_BREDR 0x04 /**< BR/EDR not supported */
 
 /** @} */ /* end of @name Flags data type values */
+
 /** @} */ /* end of bt_assigned_numbers_core */
 
 /**
@@ -759,46 +759,47 @@ extern "C" {
  * @name Foundation Models
  * @{
  */
+
 /** Configuration Server */
-#define BT_MESH_MODEL_ID_CFG_SRV                   0x0000
+#define BT_MESH_MODEL_ID_CFG_SRV 0x0000
 /** Configuration Client */
-#define BT_MESH_MODEL_ID_CFG_CLI                   0x0001
+#define BT_MESH_MODEL_ID_CFG_CLI 0x0001
 /** Health Server */
-#define BT_MESH_MODEL_ID_HEALTH_SRV                0x0002
+#define BT_MESH_MODEL_ID_HEALTH_SRV 0x0002
 /** Health Client */
-#define BT_MESH_MODEL_ID_HEALTH_CLI                0x0003
+#define BT_MESH_MODEL_ID_HEALTH_CLI 0x0003
 /** Remote Provisioning Server */
-#define BT_MESH_MODEL_ID_REMOTE_PROV_SRV           0x0004
+#define BT_MESH_MODEL_ID_REMOTE_PROV_SRV 0x0004
 /** Remote Provisioning Client */
-#define BT_MESH_MODEL_ID_REMOTE_PROV_CLI           0x0005
+#define BT_MESH_MODEL_ID_REMOTE_PROV_CLI 0x0005
 /** Bridge Configuration Sever */
-#define BT_MESH_MODEL_ID_BRG_CFG_SRV               0x0008
+#define BT_MESH_MODEL_ID_BRG_CFG_SRV 0x0008
 /** Bridge Configuration Client */
-#define BT_MESH_MODEL_ID_BRG_CFG_CLI               0x0009
+#define BT_MESH_MODEL_ID_BRG_CFG_CLI 0x0009
 /** Private Beacon Server */
-#define BT_MESH_MODEL_ID_PRIV_BEACON_SRV           0x000a
+#define BT_MESH_MODEL_ID_PRIV_BEACON_SRV 0x000a
 /** Private Beacon Client */
-#define BT_MESH_MODEL_ID_PRIV_BEACON_CLI           0x000b
+#define BT_MESH_MODEL_ID_PRIV_BEACON_CLI 0x000b
 /** SAR Configuration Server */
-#define BT_MESH_MODEL_ID_SAR_CFG_SRV               0x000e
+#define BT_MESH_MODEL_ID_SAR_CFG_SRV 0x000e
 /** SAR Configuration Client */
-#define BT_MESH_MODEL_ID_SAR_CFG_CLI               0x000f
+#define BT_MESH_MODEL_ID_SAR_CFG_CLI 0x000f
 /** Opcodes Aggregator Server */
-#define BT_MESH_MODEL_ID_OP_AGG_SRV                0x0010
+#define BT_MESH_MODEL_ID_OP_AGG_SRV 0x0010
 /** Opcodes Aggregator Client */
-#define BT_MESH_MODEL_ID_OP_AGG_CLI                0x0011
+#define BT_MESH_MODEL_ID_OP_AGG_CLI 0x0011
 /** Large Composition Data Server */
-#define BT_MESH_MODEL_ID_LARGE_COMP_DATA_SRV       0x0012
+#define BT_MESH_MODEL_ID_LARGE_COMP_DATA_SRV 0x0012
 /** Large Composition Data Client */
-#define BT_MESH_MODEL_ID_LARGE_COMP_DATA_CLI       0x0013
+#define BT_MESH_MODEL_ID_LARGE_COMP_DATA_CLI 0x0013
 /** Solicitation PDU RPL Configuration Server */
-#define BT_MESH_MODEL_ID_SOL_PDU_RPL_SRV	   0x0014
+#define BT_MESH_MODEL_ID_SOL_PDU_RPL_SRV 0x0014
 /** Solicitation PDU RPL Configuration Client */
-#define BT_MESH_MODEL_ID_SOL_PDU_RPL_CLI	   0x0015
+#define BT_MESH_MODEL_ID_SOL_PDU_RPL_CLI 0x0015
 /** Private Proxy Server */
-#define BT_MESH_MODEL_ID_ON_DEMAND_PROXY_SRV	   0x000c
+#define BT_MESH_MODEL_ID_ON_DEMAND_PROXY_SRV 0x000c
 /** Private Proxy Client */
-#define BT_MESH_MODEL_ID_ON_DEMAND_PROXY_CLI	   0x000d
+#define BT_MESH_MODEL_ID_ON_DEMAND_PROXY_CLI 0x000d
 /**
  * @}
  */
@@ -807,122 +808,124 @@ extern "C" {
  * @name Models from the Mesh Model Specification
  * @{
  */
+
 /** Generic OnOff Server */
-#define BT_MESH_MODEL_ID_GEN_ONOFF_SRV             0x1000
+#define BT_MESH_MODEL_ID_GEN_ONOFF_SRV 0x1000
 /** Generic OnOff Client */
-#define BT_MESH_MODEL_ID_GEN_ONOFF_CLI             0x1001
+#define BT_MESH_MODEL_ID_GEN_ONOFF_CLI 0x1001
 /** Generic Level Server */
-#define BT_MESH_MODEL_ID_GEN_LEVEL_SRV             0x1002
+#define BT_MESH_MODEL_ID_GEN_LEVEL_SRV 0x1002
 /** Generic Level Client */
-#define BT_MESH_MODEL_ID_GEN_LEVEL_CLI             0x1003
+#define BT_MESH_MODEL_ID_GEN_LEVEL_CLI 0x1003
 /** Generic Default Transition Time Server */
-#define BT_MESH_MODEL_ID_GEN_DEF_TRANS_TIME_SRV    0x1004
+#define BT_MESH_MODEL_ID_GEN_DEF_TRANS_TIME_SRV 0x1004
 /** Generic Default Transition Time Client */
-#define BT_MESH_MODEL_ID_GEN_DEF_TRANS_TIME_CLI    0x1005
+#define BT_MESH_MODEL_ID_GEN_DEF_TRANS_TIME_CLI 0x1005
 /** Generic Power OnOff Server */
-#define BT_MESH_MODEL_ID_GEN_POWER_ONOFF_SRV       0x1006
+#define BT_MESH_MODEL_ID_GEN_POWER_ONOFF_SRV 0x1006
 /** Generic Power OnOff Setup Server */
 #define BT_MESH_MODEL_ID_GEN_POWER_ONOFF_SETUP_SRV 0x1007
 /** Generic Power OnOff Client */
-#define BT_MESH_MODEL_ID_GEN_POWER_ONOFF_CLI       0x1008
+#define BT_MESH_MODEL_ID_GEN_POWER_ONOFF_CLI 0x1008
 /** Generic Power Level Server */
-#define BT_MESH_MODEL_ID_GEN_POWER_LEVEL_SRV       0x1009
+#define BT_MESH_MODEL_ID_GEN_POWER_LEVEL_SRV 0x1009
 /** Generic Power Level Setup Server */
 #define BT_MESH_MODEL_ID_GEN_POWER_LEVEL_SETUP_SRV 0x100a
 /** Generic Power Level Client */
-#define BT_MESH_MODEL_ID_GEN_POWER_LEVEL_CLI       0x100b
+#define BT_MESH_MODEL_ID_GEN_POWER_LEVEL_CLI 0x100b
 /** Generic Battery Server */
-#define BT_MESH_MODEL_ID_GEN_BATTERY_SRV           0x100c
+#define BT_MESH_MODEL_ID_GEN_BATTERY_SRV 0x100c
 /** Generic Battery Client */
-#define BT_MESH_MODEL_ID_GEN_BATTERY_CLI           0x100d
+#define BT_MESH_MODEL_ID_GEN_BATTERY_CLI 0x100d
 /** Generic Location Server */
-#define BT_MESH_MODEL_ID_GEN_LOCATION_SRV          0x100e
+#define BT_MESH_MODEL_ID_GEN_LOCATION_SRV 0x100e
 /** Generic Location Setup Server */
-#define BT_MESH_MODEL_ID_GEN_LOCATION_SETUPSRV     0x100f
+#define BT_MESH_MODEL_ID_GEN_LOCATION_SETUPSRV 0x100f
 /** Generic Location Client */
-#define BT_MESH_MODEL_ID_GEN_LOCATION_CLI          0x1010
+#define BT_MESH_MODEL_ID_GEN_LOCATION_CLI 0x1010
 /** Generic Admin Property Server */
-#define BT_MESH_MODEL_ID_GEN_ADMIN_PROP_SRV        0x1011
+#define BT_MESH_MODEL_ID_GEN_ADMIN_PROP_SRV 0x1011
 /** Generic Manufacturer Property Server */
 #define BT_MESH_MODEL_ID_GEN_MANUFACTURER_PROP_SRV 0x1012
 /** Generic User Property Server */
-#define BT_MESH_MODEL_ID_GEN_USER_PROP_SRV         0x1013
+#define BT_MESH_MODEL_ID_GEN_USER_PROP_SRV 0x1013
 /** Generic Client Property Server */
-#define BT_MESH_MODEL_ID_GEN_CLIENT_PROP_SRV       0x1014
+#define BT_MESH_MODEL_ID_GEN_CLIENT_PROP_SRV 0x1014
 /** Generic Property Client */
-#define BT_MESH_MODEL_ID_GEN_PROP_CLI              0x1015
+#define BT_MESH_MODEL_ID_GEN_PROP_CLI 0x1015
 /** Sensor Server */
-#define BT_MESH_MODEL_ID_SENSOR_SRV                0x1100
+#define BT_MESH_MODEL_ID_SENSOR_SRV 0x1100
 /** Sensor Setup Server */
-#define BT_MESH_MODEL_ID_SENSOR_SETUP_SRV          0x1101
+#define BT_MESH_MODEL_ID_SENSOR_SETUP_SRV 0x1101
 /** Sensor Client */
-#define BT_MESH_MODEL_ID_SENSOR_CLI                0x1102
+#define BT_MESH_MODEL_ID_SENSOR_CLI 0x1102
 /** Time Server */
-#define BT_MESH_MODEL_ID_TIME_SRV                  0x1200
+#define BT_MESH_MODEL_ID_TIME_SRV 0x1200
 /** Time Setup Server */
-#define BT_MESH_MODEL_ID_TIME_SETUP_SRV            0x1201
+#define BT_MESH_MODEL_ID_TIME_SETUP_SRV 0x1201
 /** Time Client */
-#define BT_MESH_MODEL_ID_TIME_CLI                  0x1202
+#define BT_MESH_MODEL_ID_TIME_CLI 0x1202
 /** Scene Server */
-#define BT_MESH_MODEL_ID_SCENE_SRV                 0x1203
+#define BT_MESH_MODEL_ID_SCENE_SRV 0x1203
 /** Scene Setup Server */
-#define BT_MESH_MODEL_ID_SCENE_SETUP_SRV           0x1204
+#define BT_MESH_MODEL_ID_SCENE_SETUP_SRV 0x1204
 /** Scene Client */
-#define BT_MESH_MODEL_ID_SCENE_CLI                 0x1205
+#define BT_MESH_MODEL_ID_SCENE_CLI 0x1205
 /** Scheduler Server */
-#define BT_MESH_MODEL_ID_SCHEDULER_SRV             0x1206
+#define BT_MESH_MODEL_ID_SCHEDULER_SRV 0x1206
 /** Scheduler Setup Server */
-#define BT_MESH_MODEL_ID_SCHEDULER_SETUP_SRV       0x1207
+#define BT_MESH_MODEL_ID_SCHEDULER_SETUP_SRV 0x1207
 /** Scheduler Client */
-#define BT_MESH_MODEL_ID_SCHEDULER_CLI             0x1208
+#define BT_MESH_MODEL_ID_SCHEDULER_CLI 0x1208
 /** Light Lightness Server */
-#define BT_MESH_MODEL_ID_LIGHT_LIGHTNESS_SRV       0x1300
+#define BT_MESH_MODEL_ID_LIGHT_LIGHTNESS_SRV 0x1300
 /** Light Lightness Setup Server */
 #define BT_MESH_MODEL_ID_LIGHT_LIGHTNESS_SETUP_SRV 0x1301
 /** Light Lightness Client */
-#define BT_MESH_MODEL_ID_LIGHT_LIGHTNESS_CLI       0x1302
+#define BT_MESH_MODEL_ID_LIGHT_LIGHTNESS_CLI 0x1302
 /** Light CTL Server */
-#define BT_MESH_MODEL_ID_LIGHT_CTL_SRV             0x1303
+#define BT_MESH_MODEL_ID_LIGHT_CTL_SRV 0x1303
 /** Light CTL Setup Server */
-#define BT_MESH_MODEL_ID_LIGHT_CTL_SETUP_SRV       0x1304
+#define BT_MESH_MODEL_ID_LIGHT_CTL_SETUP_SRV 0x1304
 /** Light CTL Client */
-#define BT_MESH_MODEL_ID_LIGHT_CTL_CLI             0x1305
+#define BT_MESH_MODEL_ID_LIGHT_CTL_CLI 0x1305
 /** Light CTL Temperature Server */
-#define BT_MESH_MODEL_ID_LIGHT_CTL_TEMP_SRV        0x1306
+#define BT_MESH_MODEL_ID_LIGHT_CTL_TEMP_SRV 0x1306
 /** Light HSL Server */
-#define BT_MESH_MODEL_ID_LIGHT_HSL_SRV             0x1307
+#define BT_MESH_MODEL_ID_LIGHT_HSL_SRV 0x1307
 /** Light HSL Setup Server */
-#define BT_MESH_MODEL_ID_LIGHT_HSL_SETUP_SRV       0x1308
+#define BT_MESH_MODEL_ID_LIGHT_HSL_SETUP_SRV 0x1308
 /** Light HSL Client */
-#define BT_MESH_MODEL_ID_LIGHT_HSL_CLI             0x1309
+#define BT_MESH_MODEL_ID_LIGHT_HSL_CLI 0x1309
 /** Light HSL Hue Server */
-#define BT_MESH_MODEL_ID_LIGHT_HSL_HUE_SRV         0x130a
+#define BT_MESH_MODEL_ID_LIGHT_HSL_HUE_SRV 0x130a
 /** Light HSL Saturation Server */
-#define BT_MESH_MODEL_ID_LIGHT_HSL_SAT_SRV         0x130b
+#define BT_MESH_MODEL_ID_LIGHT_HSL_SAT_SRV 0x130b
 /** Light xyL Server */
-#define BT_MESH_MODEL_ID_LIGHT_XYL_SRV             0x130c
+#define BT_MESH_MODEL_ID_LIGHT_XYL_SRV 0x130c
 /** Light xyL Setup Server */
-#define BT_MESH_MODEL_ID_LIGHT_XYL_SETUP_SRV       0x130d
+#define BT_MESH_MODEL_ID_LIGHT_XYL_SETUP_SRV 0x130d
 /** Light xyL Client */
-#define BT_MESH_MODEL_ID_LIGHT_XYL_CLI             0x130e
+#define BT_MESH_MODEL_ID_LIGHT_XYL_CLI 0x130e
 /** Light LC Server */
-#define BT_MESH_MODEL_ID_LIGHT_LC_SRV              0x130f
+#define BT_MESH_MODEL_ID_LIGHT_LC_SRV 0x130f
 /** Light LC Setup Server */
-#define BT_MESH_MODEL_ID_LIGHT_LC_SETUPSRV         0x1310
+#define BT_MESH_MODEL_ID_LIGHT_LC_SETUPSRV 0x1310
 /** Light LC Client */
-#define BT_MESH_MODEL_ID_LIGHT_LC_CLI              0x1311
+#define BT_MESH_MODEL_ID_LIGHT_LC_CLI 0x1311
 /**
  * @}
  */
 
 /**
- * @name Models from the Mesh Binary Large Object Transfer Model Specification
- * @{
+ * @name Models from the Mesh Binary Large Object Transfer Model
+ * Specification @{
  */
+
 /** BLOB Transfer Server */
-#define BT_MESH_MODEL_ID_BLOB_SRV                  0x1400
+#define BT_MESH_MODEL_ID_BLOB_SRV 0x1400
 /** BLOB Transfer Client */
-#define BT_MESH_MODEL_ID_BLOB_CLI                  0x1401
+#define BT_MESH_MODEL_ID_BLOB_CLI 0x1401
 /**
  * @}
  */
@@ -931,14 +934,15 @@ extern "C" {
  *  @name Models from the Mesh Device Firmware Update Model Specification
  * @{
  */
+
 /** Firmware Update Server */
-#define BT_MESH_MODEL_ID_DFU_SRV                   0x1402
+#define BT_MESH_MODEL_ID_DFU_SRV 0x1402
 /** Firmware Update Client */
-#define BT_MESH_MODEL_ID_DFU_CLI                   0x1403
+#define BT_MESH_MODEL_ID_DFU_CLI 0x1403
 /** Firmware Distribution Server */
-#define BT_MESH_MODEL_ID_DFD_SRV                   0x1404
+#define BT_MESH_MODEL_ID_DFD_SRV 0x1404
 /** Firmware Distribution Client */
-#define BT_MESH_MODEL_ID_DFD_CLI                   0x1405
+#define BT_MESH_MODEL_ID_DFD_CLI 0x1405
 /**
  * @}
  */
@@ -953,164 +957,235 @@ extern "C" {
  */
 
 /** Enum for valid bearer technology values */
-enum __packed bt_bearer_tech {
-	/** 3G */
-	BT_BEARER_TECH_3G = 0x01,
-	/** 4G */
-	BT_BEARER_TECH_4G = 0x02,
-	/** Long-term evolution (LTE) */
-	BT_BEARER_TECH_LTE = 0x03,
-	/** Wifi */
-	BT_BEARER_TECH_WIFI = 0x04,
-	/** 5G */
-	BT_BEARER_TECH_5G = 0x05,
-	/** Global System for Mobile Communications (GSM) */
-	BT_BEARER_TECH_GSM = 0x06,
-	/** Code-Division Multiple Access (CDMA) */
-	BT_BEARER_TECH_CDMA = 0x07,
-	/** 2G */
-	BT_BEARER_TECH_2G = 0x08,
-	/** Wideband Code-Division Multiple Access (WCDMA) */
-	BT_BEARER_TECH_WCDMA = 0x09,
-	/* Values 0x0A to 0xFF are reserved for future use */
+
+enum __packed bt_bearer_tech
+{
+  /** 3G */
+
+  BT_BEARER_TECH_3G = 0x01,
+
+  /** 4G */
+
+  BT_BEARER_TECH_4G = 0x02,
+
+  /** Long-term evolution (LTE) */
+
+  BT_BEARER_TECH_LTE = 0x03,
+
+  /** Wifi */
+
+  BT_BEARER_TECH_WIFI = 0x04,
+
+  /** 5G */
+
+  BT_BEARER_TECH_5G = 0x05,
+
+  /** Global System for Mobile Communications (GSM) */
+
+  BT_BEARER_TECH_GSM = 0x06,
+
+  /** Code-Division Multiple Access (CDMA) */
+
+  BT_BEARER_TECH_CDMA = 0x07,
+
+  /** 2G */
+
+  BT_BEARER_TECH_2G = 0x08,
+
+  /** Wideband Code-Division Multiple Access (WCDMA) */
+
+  BT_BEARER_TECH_WCDMA = 0x09,
+
+  /* Values 0x0a to 0xff are reserved for future use */
 };
 
 /**
  * @brief Codec capability types
  *
- * Used to build and parse codec capabilities as specified in the PAC specification.
- * Source is assigned numbers for Generic Audio, bluetooth.com.
+ * Used to build and parse codec capabilities as specified in the PAC
+ * specification. Source is assigned numbers for Generic Audio,
+ * bluetooth.com.
  */
-enum bt_audio_codec_cap_type {
-	/** Supported sampling frequencies */
-	BT_AUDIO_CODEC_CAP_TYPE_FREQ = 0x01,
 
-	/** Supported frame durations */
-	BT_AUDIO_CODEC_CAP_TYPE_DURATION = 0x02,
+enum bt_audio_codec_cap_type
+{
+  /** Supported sampling frequencies */
 
-	/** Supported audio channel counts */
-	BT_AUDIO_CODEC_CAP_TYPE_CHAN_COUNT = 0x03,
+  BT_AUDIO_CODEC_CAP_TYPE_FREQ = 0x01,
 
-	/** Supported octets per codec frame */
-	BT_AUDIO_CODEC_CAP_TYPE_FRAME_LEN = 0x04,
+  /** Supported frame durations */
 
-	/** Supported maximum codec frames per SDU  */
-	BT_AUDIO_CODEC_CAP_TYPE_FRAME_COUNT = 0x05,
+  BT_AUDIO_CODEC_CAP_TYPE_DURATION = 0x02,
+
+  /** Supported audio channel counts */
+
+  BT_AUDIO_CODEC_CAP_TYPE_CHAN_COUNT = 0x03,
+
+  /** Supported octets per codec frame */
+
+  BT_AUDIO_CODEC_CAP_TYPE_FRAME_LEN = 0x04,
+
+  /** Supported maximum codec frames per SDU  */
+
+  BT_AUDIO_CODEC_CAP_TYPE_FRAME_COUNT = 0x05,
 };
 
 /** @brief Supported frequencies bitfield */
-enum bt_audio_codec_cap_freq {
-	/** 8 Khz sampling frequency */
-	BT_AUDIO_CODEC_CAP_FREQ_8KHZ = BIT(0),
 
-	/** 11.025 Khz sampling frequency */
-	BT_AUDIO_CODEC_CAP_FREQ_11KHZ = BIT(1),
+enum bt_audio_codec_cap_freq
+{
+  /** 8 Khz sampling frequency */
 
-	/** 16 Khz sampling frequency */
-	BT_AUDIO_CODEC_CAP_FREQ_16KHZ = BIT(2),
+  BT_AUDIO_CODEC_CAP_FREQ_8KHZ = BIT(0),
 
-	/** 22.05 Khz sampling frequency */
-	BT_AUDIO_CODEC_CAP_FREQ_22KHZ = BIT(3),
+  /** 11.025 Khz sampling frequency */
 
-	/** 24 Khz sampling frequency */
-	BT_AUDIO_CODEC_CAP_FREQ_24KHZ = BIT(4),
+  BT_AUDIO_CODEC_CAP_FREQ_11KHZ = BIT(1),
 
-	/** 32 Khz sampling frequency */
-	BT_AUDIO_CODEC_CAP_FREQ_32KHZ = BIT(5),
+  /** 16 Khz sampling frequency */
 
-	/** 44.1 Khz sampling frequency */
-	BT_AUDIO_CODEC_CAP_FREQ_44KHZ = BIT(6),
+  BT_AUDIO_CODEC_CAP_FREQ_16KHZ = BIT(2),
 
-	/** 48 Khz sampling frequency */
-	BT_AUDIO_CODEC_CAP_FREQ_48KHZ = BIT(7),
+  /** 22.05 Khz sampling frequency */
 
-	/** 88.2 Khz sampling frequency */
-	BT_AUDIO_CODEC_CAP_FREQ_88KHZ = BIT(8),
+  BT_AUDIO_CODEC_CAP_FREQ_22KHZ = BIT(3),
 
-	/** 96 Khz sampling frequency */
-	BT_AUDIO_CODEC_CAP_FREQ_96KHZ = BIT(9),
+  /** 24 Khz sampling frequency */
 
-	/** 176.4 Khz sampling frequency */
-	BT_AUDIO_CODEC_CAP_FREQ_176KHZ = BIT(10),
+  BT_AUDIO_CODEC_CAP_FREQ_24KHZ = BIT(4),
 
-	/** 192 Khz sampling frequency */
-	BT_AUDIO_CODEC_CAP_FREQ_192KHZ = BIT(11),
+  /** 32 Khz sampling frequency */
 
-	/** 384 Khz sampling frequency */
-	BT_AUDIO_CODEC_CAP_FREQ_384KHZ = BIT(12),
+  BT_AUDIO_CODEC_CAP_FREQ_32KHZ = BIT(5),
 
-	/** Any frequency capability */
-	BT_AUDIO_CODEC_CAP_FREQ_ANY =
-		(BT_AUDIO_CODEC_CAP_FREQ_8KHZ | BT_AUDIO_CODEC_CAP_FREQ_11KHZ |
-		 BT_AUDIO_CODEC_CAP_FREQ_16KHZ | BT_AUDIO_CODEC_CAP_FREQ_22KHZ |
-		 BT_AUDIO_CODEC_CAP_FREQ_24KHZ | BT_AUDIO_CODEC_CAP_FREQ_32KHZ |
-		 BT_AUDIO_CODEC_CAP_FREQ_44KHZ | BT_AUDIO_CODEC_CAP_FREQ_48KHZ |
-		 BT_AUDIO_CODEC_CAP_FREQ_88KHZ | BT_AUDIO_CODEC_CAP_FREQ_96KHZ |
-		 BT_AUDIO_CODEC_CAP_FREQ_176KHZ | BT_AUDIO_CODEC_CAP_FREQ_192KHZ |
-		 BT_AUDIO_CODEC_CAP_FREQ_384KHZ),
+  /** 44.1 Khz sampling frequency */
+
+  BT_AUDIO_CODEC_CAP_FREQ_44KHZ = BIT(6),
+
+  /** 48 Khz sampling frequency */
+
+  BT_AUDIO_CODEC_CAP_FREQ_48KHZ = BIT(7),
+
+  /** 88.2 Khz sampling frequency */
+
+  BT_AUDIO_CODEC_CAP_FREQ_88KHZ = BIT(8),
+
+  /** 96 Khz sampling frequency */
+
+  BT_AUDIO_CODEC_CAP_FREQ_96KHZ = BIT(9),
+
+  /** 176.4 Khz sampling frequency */
+
+  BT_AUDIO_CODEC_CAP_FREQ_176KHZ = BIT(10),
+
+  /** 192 Khz sampling frequency */
+
+  BT_AUDIO_CODEC_CAP_FREQ_192KHZ = BIT(11),
+
+  /** 384 Khz sampling frequency */
+
+  BT_AUDIO_CODEC_CAP_FREQ_384KHZ = BIT(12),
+
+  /** Any frequency capability */
+
+  BT_AUDIO_CODEC_CAP_FREQ_ANY = (BT_AUDIO_CODEC_CAP_FREQ_8KHZ |
+                                 BT_AUDIO_CODEC_CAP_FREQ_11KHZ |
+                                 BT_AUDIO_CODEC_CAP_FREQ_16KHZ |
+                                 BT_AUDIO_CODEC_CAP_FREQ_22KHZ |
+                                 BT_AUDIO_CODEC_CAP_FREQ_24KHZ |
+                                 BT_AUDIO_CODEC_CAP_FREQ_32KHZ |
+                                 BT_AUDIO_CODEC_CAP_FREQ_44KHZ |
+                                 BT_AUDIO_CODEC_CAP_FREQ_48KHZ |
+                                 BT_AUDIO_CODEC_CAP_FREQ_88KHZ |
+                                 BT_AUDIO_CODEC_CAP_FREQ_96KHZ |
+                                 BT_AUDIO_CODEC_CAP_FREQ_176KHZ |
+                                 BT_AUDIO_CODEC_CAP_FREQ_192KHZ |
+                                 BT_AUDIO_CODEC_CAP_FREQ_384KHZ),
 };
 
 /** @brief Supported frame durations bitfield */
-enum bt_audio_codec_cap_frame_dur {
-	/** 7.5 msec frame duration capability */
-	BT_AUDIO_CODEC_CAP_DURATION_7_5 = BIT(0),
 
-	/** 10 msec frame duration capability */
-	BT_AUDIO_CODEC_CAP_DURATION_10 = BIT(1),
+enum bt_audio_codec_cap_frame_dur
+{
+  /** 7.5 msec frame duration capability */
 
-	/** Any frame duration capability */
-	BT_AUDIO_CODEC_CAP_DURATION_ANY =
-		(BT_AUDIO_CODEC_CAP_DURATION_7_5 | BT_AUDIO_CODEC_CAP_DURATION_10),
+  BT_AUDIO_CODEC_CAP_DURATION_7_5 = BIT(0),
 
-	/**
-	 * @brief 7.5 msec preferred frame duration capability.
-	 *
-	 * This shall only be set if @ref BT_AUDIO_CODEC_CAP_DURATION_7_5 is also set, and if @ref
-	 * BT_AUDIO_CODEC_CAP_DURATION_PREFER_10 is not set.
-	 */
-	BT_AUDIO_CODEC_CAP_DURATION_PREFER_7_5 = BIT(4),
+  /** 10 msec frame duration capability */
 
-	/**
-	 * @brief 10 msec preferred frame duration capability
-	 *
-	 * This shall only be set if @ref BT_AUDIO_CODEC_CAP_DURATION_10 is also set, and if @ref
-	 * BT_AUDIO_CODEC_CAP_DURATION_PREFER_7_5 is not set.
-	 */
-	BT_AUDIO_CODEC_CAP_DURATION_PREFER_10 = BIT(5),
+  BT_AUDIO_CODEC_CAP_DURATION_10 = BIT(1),
+
+  /** Any frame duration capability */
+
+  BT_AUDIO_CODEC_CAP_DURATION_ANY =
+          (BT_AUDIO_CODEC_CAP_DURATION_7_5 | BT_AUDIO_CODEC_CAP_DURATION_10),
+
+  /**
+   * @brief 7.5 msec preferred frame duration capability.
+   *
+   * This shall only be set if @ref BT_AUDIO_CODEC_CAP_DURATION_7_5 is also
+   * set, and if @ref BT_AUDIO_CODEC_CAP_DURATION_PREFER_10 is not set.
+   */
+
+  BT_AUDIO_CODEC_CAP_DURATION_PREFER_7_5 = BIT(4),
+
+  /**
+   * @brief 10 msec preferred frame duration capability
+   *
+   * This shall only be set if @ref BT_AUDIO_CODEC_CAP_DURATION_10 is also
+   * set, and if @ref BT_AUDIO_CODEC_CAP_DURATION_PREFER_7_5 is not set.
+   */
+
+  BT_AUDIO_CODEC_CAP_DURATION_PREFER_10 = BIT(5),
 };
 
 /** Supported audio capabilities channel count bitfield */
-enum bt_audio_codec_cap_chan_count {
-	/** Supporting 1 channel */
-	BT_AUDIO_CODEC_CAP_CHAN_COUNT_1 = BIT(0),
 
-	/** Supporting 2 channel */
-	BT_AUDIO_CODEC_CAP_CHAN_COUNT_2 = BIT(1),
+enum bt_audio_codec_cap_chan_count
+{
+  /** Supporting 1 channel */
 
-	/** Supporting 3 channel */
-	BT_AUDIO_CODEC_CAP_CHAN_COUNT_3 = BIT(2),
+  BT_AUDIO_CODEC_CAP_CHAN_COUNT_1 = BIT(0),
 
-	/** Supporting 4 channel */
-	BT_AUDIO_CODEC_CAP_CHAN_COUNT_4 = BIT(3),
+  /** Supporting 2 channel */
 
-	/** Supporting 5 channel */
-	BT_AUDIO_CODEC_CAP_CHAN_COUNT_5 = BIT(4),
+  BT_AUDIO_CODEC_CAP_CHAN_COUNT_2 = BIT(1),
 
-	/** Supporting 6 channel */
-	BT_AUDIO_CODEC_CAP_CHAN_COUNT_6 = BIT(5),
+  /** Supporting 3 channel */
 
-	/** Supporting 7 channel */
-	BT_AUDIO_CODEC_CAP_CHAN_COUNT_7 = BIT(6),
+  BT_AUDIO_CODEC_CAP_CHAN_COUNT_3 = BIT(2),
 
-	/** Supporting 8 channel */
-	BT_AUDIO_CODEC_CAP_CHAN_COUNT_8 = BIT(7),
+  /** Supporting 4 channel */
 
-	/** Supporting all channels */
-	BT_AUDIO_CODEC_CAP_CHAN_COUNT_ANY =
-		(BT_AUDIO_CODEC_CAP_CHAN_COUNT_1 | BT_AUDIO_CODEC_CAP_CHAN_COUNT_2 |
-		 BT_AUDIO_CODEC_CAP_CHAN_COUNT_3 | BT_AUDIO_CODEC_CAP_CHAN_COUNT_4 |
-		 BT_AUDIO_CODEC_CAP_CHAN_COUNT_5 | BT_AUDIO_CODEC_CAP_CHAN_COUNT_6 |
-		 BT_AUDIO_CODEC_CAP_CHAN_COUNT_7 | BT_AUDIO_CODEC_CAP_CHAN_COUNT_8),
+  BT_AUDIO_CODEC_CAP_CHAN_COUNT_4 = BIT(3),
+
+  /** Supporting 5 channel */
+
+  BT_AUDIO_CODEC_CAP_CHAN_COUNT_5 = BIT(4),
+
+  /** Supporting 6 channel */
+
+  BT_AUDIO_CODEC_CAP_CHAN_COUNT_6 = BIT(5),
+
+  /** Supporting 7 channel */
+
+  BT_AUDIO_CODEC_CAP_CHAN_COUNT_7 = BIT(6),
+
+  /** Supporting 8 channel */
+
+  BT_AUDIO_CODEC_CAP_CHAN_COUNT_8 = BIT(7),
+
+  /** Supporting all channels */
+
+  BT_AUDIO_CODEC_CAP_CHAN_COUNT_ANY =
+          (BT_AUDIO_CODEC_CAP_CHAN_COUNT_1 |
+           BT_AUDIO_CODEC_CAP_CHAN_COUNT_2 |
+           BT_AUDIO_CODEC_CAP_CHAN_COUNT_3 |
+           BT_AUDIO_CODEC_CAP_CHAN_COUNT_4 |
+           BT_AUDIO_CODEC_CAP_CHAN_COUNT_5 |
+           BT_AUDIO_CODEC_CAP_CHAN_COUNT_6 |
+           BT_AUDIO_CODEC_CAP_CHAN_COUNT_7 |
+           BT_AUDIO_CODEC_CAP_CHAN_COUNT_8),
 };
 
 /** Minimum supported channel counts */
@@ -1119,9 +1194,9 @@ enum bt_audio_codec_cap_chan_count {
 #define BT_AUDIO_CODEC_CAP_CHAN_COUNT_MAX 8
 
 /** The minimum size in octets of a Broadcast Name */
-#define BT_AUDIO_BROADCAST_NAME_LEN_MIN  4U
+#define BT_AUDIO_BROADCAST_NAME_LEN_MIN 4U
 /** The maximum size in octets of a Broadcast Name */
-#define BT_AUDIO_BROADCAST_NAME_LEN_MAX  128U
+#define BT_AUDIO_BROADCAST_NAME_LEN_MAX 128U
 /** The minimum amount of characters of a Broadcast Name */
 #define BT_AUDIO_BROADCAST_NAME_CHAR_MIN 4U
 /** The maximum amount of characters of a Broadcast Name */
@@ -1130,384 +1205,547 @@ enum bt_audio_codec_cap_chan_count {
 /**
  * @brief Codec configuration types
  *
- * Used to build and parse codec configurations as specified in the ASCS and BAP specifications.
- * Source is assigned numbers for Generic Audio, bluetooth.com.
+ * Used to build and parse codec configurations as specified in the ASCS and
+ * BAP specifications. Source is assigned numbers for Generic Audio,
+ * bluetooth.com.
  */
-enum bt_audio_codec_cfg_type {
-	/** Sampling frequency */
-	BT_AUDIO_CODEC_CFG_FREQ = 0x01,
 
-	/** Frame duration */
-	BT_AUDIO_CODEC_CFG_DURATION = 0x02,
+enum bt_audio_codec_cfg_type
+{
+  /** Sampling frequency */
 
-	/** Audio channel allocation */
-	BT_AUDIO_CODEC_CFG_CHAN_ALLOC = 0x03,
+  BT_AUDIO_CODEC_CFG_FREQ = 0x01,
 
-	/** Octets per codec frame */
-	BT_AUDIO_CODEC_CFG_FRAME_LEN = 0x04,
+  /** Frame duration */
 
-	/** Codec frame blocks per SDU */
-	BT_AUDIO_CODEC_CFG_FRAME_BLKS_PER_SDU = 0x05,
+  BT_AUDIO_CODEC_CFG_DURATION = 0x02,
+
+  /** Audio channel allocation */
+
+  BT_AUDIO_CODEC_CFG_CHAN_ALLOC = 0x03,
+
+  /** Octets per codec frame */
+
+  BT_AUDIO_CODEC_CFG_FRAME_LEN = 0x04,
+
+  /** Codec frame blocks per SDU */
+
+  BT_AUDIO_CODEC_CFG_FRAME_BLKS_PER_SDU = 0x05,
 };
 
 /** Codec configuration sampling frequency */
-enum bt_audio_codec_cfg_freq {
-	/** 8 Khz codec sampling frequency */
-	BT_AUDIO_CODEC_CFG_FREQ_8KHZ = 0x01,
 
-	/** 11.025 Khz codec sampling frequency */
-	BT_AUDIO_CODEC_CFG_FREQ_11KHZ = 0x02,
+enum bt_audio_codec_cfg_freq
+{
+  /** 8 Khz codec sampling frequency */
 
-	/** 16 Khz codec sampling frequency */
-	BT_AUDIO_CODEC_CFG_FREQ_16KHZ = 0x03,
+  BT_AUDIO_CODEC_CFG_FREQ_8KHZ = 0x01,
 
-	/** 22.05 Khz codec sampling frequency */
-	BT_AUDIO_CODEC_CFG_FREQ_22KHZ = 0x04,
+  /** 11.025 Khz codec sampling frequency */
 
-	/** 24 Khz codec sampling frequency */
-	BT_AUDIO_CODEC_CFG_FREQ_24KHZ = 0x05,
+  BT_AUDIO_CODEC_CFG_FREQ_11KHZ = 0x02,
 
-	/** 32 Khz codec sampling frequency */
-	BT_AUDIO_CODEC_CFG_FREQ_32KHZ = 0x06,
+  /** 16 Khz codec sampling frequency */
 
-	/** 44.1 Khz codec sampling frequency */
-	BT_AUDIO_CODEC_CFG_FREQ_44KHZ = 0x07,
+  BT_AUDIO_CODEC_CFG_FREQ_16KHZ = 0x03,
 
-	/** 48 Khz codec sampling frequency */
-	BT_AUDIO_CODEC_CFG_FREQ_48KHZ = 0x08,
+  /** 22.05 Khz codec sampling frequency */
 
-	/** 88.2 Khz codec sampling frequency */
-	BT_AUDIO_CODEC_CFG_FREQ_88KHZ = 0x09,
+  BT_AUDIO_CODEC_CFG_FREQ_22KHZ = 0x04,
 
-	/** 96 Khz codec sampling frequency */
-	BT_AUDIO_CODEC_CFG_FREQ_96KHZ = 0x0a,
+  /** 24 Khz codec sampling frequency */
 
-	/** 176.4 Khz codec sampling frequency */
-	BT_AUDIO_CODEC_CFG_FREQ_176KHZ = 0x0b,
+  BT_AUDIO_CODEC_CFG_FREQ_24KHZ = 0x05,
 
-	/** 192 Khz codec sampling frequency */
-	BT_AUDIO_CODEC_CFG_FREQ_192KHZ = 0x0c,
+  /** 32 Khz codec sampling frequency */
 
-	/** 384 Khz codec sampling frequency */
-	BT_AUDIO_CODEC_CFG_FREQ_384KHZ = 0x0d,
+  BT_AUDIO_CODEC_CFG_FREQ_32KHZ = 0x06,
+
+  /** 44.1 Khz codec sampling frequency */
+
+  BT_AUDIO_CODEC_CFG_FREQ_44KHZ = 0x07,
+
+  /** 48 Khz codec sampling frequency */
+
+  BT_AUDIO_CODEC_CFG_FREQ_48KHZ = 0x08,
+
+  /** 88.2 Khz codec sampling frequency */
+
+  BT_AUDIO_CODEC_CFG_FREQ_88KHZ = 0x09,
+
+  /** 96 Khz codec sampling frequency */
+
+  BT_AUDIO_CODEC_CFG_FREQ_96KHZ = 0x0a,
+
+  /** 176.4 Khz codec sampling frequency */
+
+  BT_AUDIO_CODEC_CFG_FREQ_176KHZ = 0x0b,
+
+  /** 192 Khz codec sampling frequency */
+
+  BT_AUDIO_CODEC_CFG_FREQ_192KHZ = 0x0c,
+
+  /** 384 Khz codec sampling frequency */
+
+  BT_AUDIO_CODEC_CFG_FREQ_384KHZ = 0x0d,
 };
 
 /** Codec configuration frame duration */
-enum bt_audio_codec_cfg_frame_dur {
-	/** 7.5 msec Frame Duration configuration */
-	BT_AUDIO_CODEC_CFG_DURATION_7_5 = 0x00,
 
-	/** 10 msec Frame Duration configuration */
-	BT_AUDIO_CODEC_CFG_DURATION_10 = 0x01,
+enum bt_audio_codec_cfg_frame_dur
+{
+  /** 7.5 msec Frame Duration configuration */
+
+  BT_AUDIO_CODEC_CFG_DURATION_7_5 = 0x00,
+
+  /** 10 msec Frame Duration configuration */
+
+  BT_AUDIO_CODEC_CFG_DURATION_10 = 0x01,
 };
 
 /**
  * @brief Audio Context Type for Generic Audio
  *
- * These values are defined by the Generic Audio Assigned Numbers, bluetooth.com
+ * These values are defined by the Generic Audio Assigned Numbers,
+ * bluetooth.com
  */
-enum bt_audio_context {
-	/** No context type */
-	BT_AUDIO_CONTEXT_TYPE_NONE = 0,
-	/**
-	 * Identifies audio where the use case context does not match any other defined value,
-	 * or where the context is unknown or cannot be determined.
-	 */
-	BT_AUDIO_CONTEXT_TYPE_UNSPECIFIED = BIT(0),
-	/**
-	 * Conversation between humans, for example, in telephony or video calls, including
-	 * traditional cellular as well as VoIP and Push-to-Talk
-	 */
-	BT_AUDIO_CONTEXT_TYPE_CONVERSATIONAL = BIT(1),
-	/** Media, for example, music playback, radio, podcast or movie soundtrack, or tv audio */
-	BT_AUDIO_CONTEXT_TYPE_MEDIA = BIT(2),
-	/**
-	 * Audio associated with video gaming, for example gaming media; gaming effects; music
-	 * and in-game voice chat between participants; or a mix of all the above
-	 */
-	BT_AUDIO_CONTEXT_TYPE_GAME = BIT(3),
-	/** Instructional audio, for example, in navigation, announcements, or user guidance */
-	BT_AUDIO_CONTEXT_TYPE_INSTRUCTIONAL = BIT(4),
-	/** Man-machine communication, for example, with voice recognition or virtual assistants */
-	BT_AUDIO_CONTEXT_TYPE_VOICE_ASSISTANTS = BIT(5),
-	/**
-	 * Live audio, for example, from a microphone where audio is perceived both through a
-	 * direct acoustic path and through an LE Audio Stream
-	 */
-	BT_AUDIO_CONTEXT_TYPE_LIVE = BIT(6),
-	/**
-	 * Sound effects including keyboard and touch feedback; menu and user interface sounds;
-	 * and other system sounds
-	 */
-	BT_AUDIO_CONTEXT_TYPE_SOUND_EFFECTS = BIT(7),
-	/**
-	 * Notification and reminder sounds; attention-seeking audio, for example,
-	 * in beeps signaling the arrival of a message
-	 */
-	BT_AUDIO_CONTEXT_TYPE_NOTIFICATIONS = BIT(8),
-	/**
-	 * Alerts the user to an incoming call, for example, an incoming telephony or video call,
-	 * including traditional cellular as well as VoIP and Push-to-Talk
-	 */
-	BT_AUDIO_CONTEXT_TYPE_RINGTONE = BIT(9),
-	/**
-	 * Alarms and timers; immediate alerts, for example, in a critical battery alarm,
-	 * timer expiry or alarm clock, toaster, cooker, kettle, microwave, etc.
-	 */
-	BT_AUDIO_CONTEXT_TYPE_ALERTS = BIT(10),
-	/** Emergency alarm Emergency sounds, for example, fire alarms or other urgent alerts */
-	BT_AUDIO_CONTEXT_TYPE_EMERGENCY_ALARM = BIT(11),
+
+enum bt_audio_context
+{
+  /** No context type */
+
+  BT_AUDIO_CONTEXT_TYPE_NONE = 0,
+  /**
+   * Identifies audio where the use case context does not match any other
+   * defined value, or where the context is unknown or cannot be determined.
+   */
+
+  BT_AUDIO_CONTEXT_TYPE_UNSPECIFIED = BIT(0),
+  /**
+   * Conversation between humans, for example, in telephony or video calls,
+   * including traditional cellular as well as VoIP and Push-to-Talk
+   */
+
+  BT_AUDIO_CONTEXT_TYPE_CONVERSATIONAL = BIT(1),
+
+  /** Media, for example, music playback, radio, podcast or movie soundtrack,
+   *  or tv audio
+   */
+
+  BT_AUDIO_CONTEXT_TYPE_MEDIA = BIT(2),
+  /**
+   * Audio associated with video gaming, for example gaming media; gaming
+   * effects; music and in-game voice chat between participants; or a mix of
+   * all the above
+   */
+
+  BT_AUDIO_CONTEXT_TYPE_GAME = BIT(3),
+
+  /** Instructional audio, for example, in navigation, announcements, or user
+   *  guidance
+   */
+
+  BT_AUDIO_CONTEXT_TYPE_INSTRUCTIONAL = BIT(4),
+
+  /** Man-machine communication, for example, with voice recognition or
+   *  virtual assistants
+   */
+
+  BT_AUDIO_CONTEXT_TYPE_VOICE_ASSISTANTS = BIT(5),
+  /**
+   * Live audio, for example, from a microphone where audio is perceived both
+   * through a direct acoustic path and through an LE Audio Stream
+   */
+
+  BT_AUDIO_CONTEXT_TYPE_LIVE = BIT(6),
+  /**
+   * Sound effects including keyboard and touch feedback; menu and user
+   * interface sounds; and other system sounds
+   */
+
+  BT_AUDIO_CONTEXT_TYPE_SOUND_EFFECTS = BIT(7),
+  /**
+   * Notification and reminder sounds; attention-seeking audio, for example,
+   * in beeps signaling the arrival of a message
+   */
+
+  BT_AUDIO_CONTEXT_TYPE_NOTIFICATIONS = BIT(8),
+  /**
+   * Alerts the user to an incoming call, for example, an incoming telephony
+   * or video call, including traditional cellular as well as VoIP and
+   * Push-to-Talk
+   */
+
+  BT_AUDIO_CONTEXT_TYPE_RINGTONE = BIT(9),
+  /**
+   * Alarms and timers; immediate alerts, for example, in a critical battery
+   * alarm, timer expiry or alarm clock, toaster, cooker, kettle, microwave,
+   * etc.
+   */
+
+  BT_AUDIO_CONTEXT_TYPE_ALERTS = BIT(10),
+
+  /** Emergency alarm Emergency sounds, for example, fire alarms or other
+   *  urgent alerts
+   */
+
+  BT_AUDIO_CONTEXT_TYPE_EMERGENCY_ALARM = BIT(11),
 };
 
 /**
  * Any known context.
  */
-#define BT_AUDIO_CONTEXT_TYPE_ANY	 (BT_AUDIO_CONTEXT_TYPE_UNSPECIFIED | \
-					  BT_AUDIO_CONTEXT_TYPE_CONVERSATIONAL | \
-					  BT_AUDIO_CONTEXT_TYPE_MEDIA | \
-					  BT_AUDIO_CONTEXT_TYPE_GAME | \
-					  BT_AUDIO_CONTEXT_TYPE_INSTRUCTIONAL | \
-					  BT_AUDIO_CONTEXT_TYPE_VOICE_ASSISTANTS | \
-					  BT_AUDIO_CONTEXT_TYPE_LIVE | \
-					  BT_AUDIO_CONTEXT_TYPE_SOUND_EFFECTS | \
-					  BT_AUDIO_CONTEXT_TYPE_NOTIFICATIONS | \
-					  BT_AUDIO_CONTEXT_TYPE_RINGTONE | \
-					  BT_AUDIO_CONTEXT_TYPE_ALERTS | \
-					  BT_AUDIO_CONTEXT_TYPE_EMERGENCY_ALARM)
+#define BT_AUDIO_CONTEXT_TYPE_ANY                                                                  \
+(BT_AUDIO_CONTEXT_TYPE_UNSPECIFIED | BT_AUDIO_CONTEXT_TYPE_CONVERSATIONAL |                      \
+ BT_AUDIO_CONTEXT_TYPE_MEDIA | BT_AUDIO_CONTEXT_TYPE_GAME |                                      \
+ BT_AUDIO_CONTEXT_TYPE_INSTRUCTIONAL | BT_AUDIO_CONTEXT_TYPE_VOICE_ASSISTANTS |                  \
+ BT_AUDIO_CONTEXT_TYPE_LIVE | BT_AUDIO_CONTEXT_TYPE_SOUND_EFFECTS |                              \
+ BT_AUDIO_CONTEXT_TYPE_NOTIFICATIONS | BT_AUDIO_CONTEXT_TYPE_RINGTONE |                          \
+ BT_AUDIO_CONTEXT_TYPE_ALERTS | BT_AUDIO_CONTEXT_TYPE_EMERGENCY_ALARM)
 
 /**
- * @brief Parental rating defined by the Generic Audio assigned numbers (bluetooth.com).
+ * @brief Parental rating defined by the Generic Audio assigned numbers
+ * (bluetooth.com).
  *
  * The numbering scheme is aligned with Annex F of EN 300 707 v1.2.1 which
  * defined parental rating for viewing.
  */
-enum bt_audio_parental_rating {
-	/** No rating */
-	BT_AUDIO_PARENTAL_RATING_NO_RATING        = 0x00,
-	/** For all ages */
-	BT_AUDIO_PARENTAL_RATING_AGE_ANY          = 0x01,
-	/** Recommended for listeners of age 5 and above */
-	BT_AUDIO_PARENTAL_RATING_AGE_5_OR_ABOVE   = 0x02,
-	/** Recommended for listeners of age 6 and above */
-	BT_AUDIO_PARENTAL_RATING_AGE_6_OR_ABOVE   = 0x03,
-	/** Recommended for listeners of age 7 and above */
-	BT_AUDIO_PARENTAL_RATING_AGE_7_OR_ABOVE   = 0x04,
-	/** Recommended for listeners of age 8 and above */
-	BT_AUDIO_PARENTAL_RATING_AGE_8_OR_ABOVE   = 0x05,
-	/** Recommended for listeners of age 9 and above */
-	BT_AUDIO_PARENTAL_RATING_AGE_9_OR_ABOVE   = 0x06,
-	/** Recommended for listeners of age 10 and above */
-	BT_AUDIO_PARENTAL_RATING_AGE_10_OR_ABOVE  = 0x07,
-	/** Recommended for listeners of age 11 and above */
-	BT_AUDIO_PARENTAL_RATING_AGE_11_OR_ABOVE  = 0x08,
-	/** Recommended for listeners of age 12 and above */
-	BT_AUDIO_PARENTAL_RATING_AGE_12_OR_ABOVE  = 0x09,
-	/** Recommended for listeners of age 13 and above */
-	BT_AUDIO_PARENTAL_RATING_AGE_13_OR_ABOVE  = 0x0A,
-	/** Recommended for listeners of age 14 and above */
-	BT_AUDIO_PARENTAL_RATING_AGE_14_OR_ABOVE  = 0x0B,
-	/** Recommended for listeners of age 15 and above */
-	BT_AUDIO_PARENTAL_RATING_AGE_15_OR_ABOVE  = 0x0C,
-	/** Recommended for listeners of age 16 and above */
-	BT_AUDIO_PARENTAL_RATING_AGE_16_OR_ABOVE  = 0x0D,
-	/** Recommended for listeners of age 17 and above */
-	BT_AUDIO_PARENTAL_RATING_AGE_17_OR_ABOVE  = 0x0E,
-	/** Recommended for listeners of age 18 and above */
-	BT_AUDIO_PARENTAL_RATING_AGE_18_OR_ABOVE  = 0x0F
+
+enum bt_audio_parental_rating
+{
+  /** No rating */
+
+  BT_AUDIO_PARENTAL_RATING_NO_RATING = 0x00,
+
+  /** For all ages */
+
+  BT_AUDIO_PARENTAL_RATING_AGE_ANY = 0x01,
+
+  /** Recommended for listeners of age 5 and above */
+
+  BT_AUDIO_PARENTAL_RATING_AGE_5_OR_ABOVE = 0x02,
+
+  /** Recommended for listeners of age 6 and above */
+
+  BT_AUDIO_PARENTAL_RATING_AGE_6_OR_ABOVE = 0x03,
+
+  /** Recommended for listeners of age 7 and above */
+
+  BT_AUDIO_PARENTAL_RATING_AGE_7_OR_ABOVE = 0x04,
+
+  /** Recommended for listeners of age 8 and above */
+
+  BT_AUDIO_PARENTAL_RATING_AGE_8_OR_ABOVE = 0x05,
+
+  /** Recommended for listeners of age 9 and above */
+
+  BT_AUDIO_PARENTAL_RATING_AGE_9_OR_ABOVE = 0x06,
+
+  /** Recommended for listeners of age 10 and above */
+
+  BT_AUDIO_PARENTAL_RATING_AGE_10_OR_ABOVE = 0x07,
+
+  /** Recommended for listeners of age 11 and above */
+
+  BT_AUDIO_PARENTAL_RATING_AGE_11_OR_ABOVE = 0x08,
+
+  /** Recommended for listeners of age 12 and above */
+
+  BT_AUDIO_PARENTAL_RATING_AGE_12_OR_ABOVE = 0x09,
+
+  /** Recommended for listeners of age 13 and above */
+
+  BT_AUDIO_PARENTAL_RATING_AGE_13_OR_ABOVE = 0x0a,
+
+  /** Recommended for listeners of age 14 and above */
+
+  BT_AUDIO_PARENTAL_RATING_AGE_14_OR_ABOVE = 0x0b,
+
+  /** Recommended for listeners of age 15 and above */
+
+  BT_AUDIO_PARENTAL_RATING_AGE_15_OR_ABOVE = 0x0c,
+
+  /** Recommended for listeners of age 16 and above */
+
+  BT_AUDIO_PARENTAL_RATING_AGE_16_OR_ABOVE = 0x0d,
+
+  /** Recommended for listeners of age 17 and above */
+
+  BT_AUDIO_PARENTAL_RATING_AGE_17_OR_ABOVE = 0x0e,
+
+  /** Recommended for listeners of age 18 and above */
+
+  BT_AUDIO_PARENTAL_RATING_AGE_18_OR_ABOVE = 0x0f
 };
 
-/** @brief Audio Active State defined by the Generic Audio assigned numbers (bluetooth.com). */
-enum bt_audio_active_state {
-	/** No audio data is being transmitted */
-	BT_AUDIO_ACTIVE_STATE_DISABLED       = 0x00,
-	/** Audio data is being transmitted */
-	BT_AUDIO_ACTIVE_STATE_ENABLED        = 0x01,
+/** @brief Audio Active State defined by the Generic Audio assigned numbers
+ *         (bluetooth.com).
+ */
+
+enum bt_audio_active_state
+{
+  /** No audio data is being transmitted */
+
+  BT_AUDIO_ACTIVE_STATE_DISABLED = 0x00,
+
+  /** Audio data is being transmitted */
+
+  BT_AUDIO_ACTIVE_STATE_ENABLED = 0x01,
 };
 
-/** Assisted Listening Stream defined by the Generic Audio assigned numbers (bluetooth.com). */
-enum bt_audio_assisted_listening_stream {
-	/** Unspecified audio enhancement */
-	BT_AUDIO_ASSISTED_LISTENING_STREAM_UNSPECIFIED = 0x00,
+/** Assisted Listening Stream defined by the Generic Audio assigned numbers
+ *  (bluetooth.com).
+ */
+
+enum bt_audio_assisted_listening_stream
+{
+  /** Unspecified audio enhancement */
+
+  BT_AUDIO_ASSISTED_LISTENING_STREAM_UNSPECIFIED = 0x00,
 };
 
 /**
  * @brief Codec metadata type IDs
  *
- * Metadata types defined by the Generic Audio assigned numbers (bluetooth.com).
+ * Metadata types defined by the Generic Audio assigned numbers
+ * (bluetooth.com).
  */
-enum bt_audio_metadata_type {
-	/**
-	 * @brief Preferred audio context.
-	 *
-	 * Bitfield of preferred audio contexts.
-	 *
-	 * If 0, the context type is not a preferred use case for this codec
-	 * configuration.
-	 *
-	 * See the BT_AUDIO_CONTEXT_* for valid values.
-	 */
-	BT_AUDIO_METADATA_TYPE_PREF_CONTEXT = 0x01,
 
-	/**
-	 * @brief Streaming audio context.
-	 *
-	 * Bitfield of streaming audio contexts.
-	 *
-	 * If 0, the context type is not a preferred use case for this codec
-	 * configuration.
-	 *
-	 * See the BT_AUDIO_CONTEXT_* for valid values.
-	 */
-	BT_AUDIO_METADATA_TYPE_STREAM_CONTEXT = 0x02,
+enum bt_audio_metadata_type
+{
+  /**
+   * @brief Preferred audio context.
+   *
+   * Bitfield of preferred audio contexts.
+   *
+   * If 0, the context type is not a preferred use case for this codec
+   * configuration.
+   *
+   * See the BT_AUDIO_CONTEXT_* for valid values.
+   */
 
-	/** UTF-8 encoded title or summary of stream content */
-	BT_AUDIO_METADATA_TYPE_PROGRAM_INFO = 0x03,
+  BT_AUDIO_METADATA_TYPE_PREF_CONTEXT = 0x01,
 
-	/**
-	 * @brief Language
-	 *
-	 * 3 octet lower case language code defined by ISO 639-3
-	 * Possible values can be found at https://iso639-3.sil.org/code_tables/639/data
-	 */
-	BT_AUDIO_METADATA_TYPE_LANG = 0x04,
+  /**
+   * @brief Streaming audio context.
+   *
+   * Bitfield of streaming audio contexts.
+   *
+   * If 0, the context type is not a preferred use case for this codec
+   * configuration.
+   *
+   * See the BT_AUDIO_CONTEXT_* for valid values.
+   */
 
-	/** Array of 8-bit CCID values */
-	BT_AUDIO_METADATA_TYPE_CCID_LIST = 0x05,
+  BT_AUDIO_METADATA_TYPE_STREAM_CONTEXT = 0x02,
 
-	/**
-	 * @brief Parental rating
-	 *
-	 * See @ref bt_audio_parental_rating for valid values.
-	 */
-	BT_AUDIO_METADATA_TYPE_PARENTAL_RATING = 0x06,
+  /** UTF-8 encoded title or summary of stream content */
 
-	/** UTF-8 encoded URI for additional Program information */
-	BT_AUDIO_METADATA_TYPE_PROGRAM_INFO_URI = 0x07,
+  BT_AUDIO_METADATA_TYPE_PROGRAM_INFO = 0x03,
 
-	/**
-	 * @brief Audio active state
-	 *
-	 * See @ref bt_audio_active_state for valid values.
-	 */
-	BT_AUDIO_METADATA_TYPE_AUDIO_STATE = 0x08,
+  /**
+   * @brief Language
+   *
+   * 3 octet lower case language code defined by ISO 639-3
+   * Possible values can be found at
+   * https://iso639-3.sil.org/code_tables/639/data
+   */
 
-	/** Broadcast Audio Immediate Rendering flag  */
-	BT_AUDIO_METADATA_TYPE_BROADCAST_IMMEDIATE = 0x09,
+  BT_AUDIO_METADATA_TYPE_LANG = 0x04,
 
-	/**
-	 * @brief Assisted listening stream
-	 *
-	 * See @ref bt_audio_assisted_listening_stream for valid values.
-	 */
-	BT_AUDIO_METADATA_TYPE_ASSISTED_LISTENING_STREAM = 0x0A,
+  /** Array of 8-bit CCID values */
 
-	/** UTF-8 encoded Broadcast name */
-	BT_AUDIO_METADATA_TYPE_BROADCAST_NAME = 0x0B,
+  BT_AUDIO_METADATA_TYPE_CCID_LIST = 0x05,
 
-	/** Extended metadata */
-	BT_AUDIO_METADATA_TYPE_EXTENDED = 0xFE,
+  /**
+   * @brief Parental rating
+   *
+   * See @ref bt_audio_parental_rating for valid values.
+   */
 
-	/** Vendor specific metadata */
-	BT_AUDIO_METADATA_TYPE_VENDOR = 0xFF,
+  BT_AUDIO_METADATA_TYPE_PARENTAL_RATING = 0x06,
+
+  /** UTF-8 encoded URI for additional Program information */
+
+  BT_AUDIO_METADATA_TYPE_PROGRAM_INFO_URI = 0x07,
+
+  /**
+   * @brief Audio active state
+   *
+   * See @ref bt_audio_active_state for valid values.
+   */
+
+  BT_AUDIO_METADATA_TYPE_AUDIO_STATE = 0x08,
+
+  /** Broadcast Audio Immediate Rendering flag  */
+
+  BT_AUDIO_METADATA_TYPE_BROADCAST_IMMEDIATE = 0x09,
+
+  /**
+   * @brief Assisted listening stream
+   *
+   * See @ref bt_audio_assisted_listening_stream for valid values.
+   */
+
+  BT_AUDIO_METADATA_TYPE_ASSISTED_LISTENING_STREAM = 0x0a,
+
+  /** UTF-8 encoded Broadcast name */
+
+  BT_AUDIO_METADATA_TYPE_BROADCAST_NAME = 0x0b,
+
+  /** Extended metadata */
+
+  BT_AUDIO_METADATA_TYPE_EXTENDED = 0xfe,
+
+  /** Vendor specific metadata */
+
+  BT_AUDIO_METADATA_TYPE_VENDOR = 0xff,
 };
 
 /**
  * @brief Location values for BT Audio.
  *
- * These values are defined by the Generic Audio Assigned Numbers, bluetooth.com
+ * These values are defined by the Generic Audio Assigned Numbers,
+ * bluetooth.com
  */
-enum bt_audio_location {
-	/** Mono Audio (no specified Audio Location) */
-	BT_AUDIO_LOCATION_MONO_AUDIO = 0,
-	/** Front Left */
-	BT_AUDIO_LOCATION_FRONT_LEFT = BIT(0),
-	/** Front Right */
-	BT_AUDIO_LOCATION_FRONT_RIGHT = BIT(1),
-	/** Front Center */
-	BT_AUDIO_LOCATION_FRONT_CENTER = BIT(2),
-	/** Low Frequency Effects 1 */
-	BT_AUDIO_LOCATION_LOW_FREQ_EFFECTS_1 = BIT(3),
-	/** Back Left */
-	BT_AUDIO_LOCATION_BACK_LEFT = BIT(4),
-	/** Back Right */
-	BT_AUDIO_LOCATION_BACK_RIGHT = BIT(5),
-	/** Front Left of Center */
-	BT_AUDIO_LOCATION_FRONT_LEFT_OF_CENTER = BIT(6),
-	/** Front Right of Center */
-	BT_AUDIO_LOCATION_FRONT_RIGHT_OF_CENTER = BIT(7),
-	/** Back Center */
-	BT_AUDIO_LOCATION_BACK_CENTER = BIT(8),
-	/** Low Frequency Effects 2 */
-	BT_AUDIO_LOCATION_LOW_FREQ_EFFECTS_2 = BIT(9),
-	/** Side Left */
-	BT_AUDIO_LOCATION_SIDE_LEFT = BIT(10),
-	/** Side Right */
-	BT_AUDIO_LOCATION_SIDE_RIGHT = BIT(11),
-	/** Top Front Left */
-	BT_AUDIO_LOCATION_TOP_FRONT_LEFT = BIT(12),
-	/** Top Front Right */
-	BT_AUDIO_LOCATION_TOP_FRONT_RIGHT = BIT(13),
-	/** Top Front Center */
-	BT_AUDIO_LOCATION_TOP_FRONT_CENTER = BIT(14),
-	/** Top Center */
-	BT_AUDIO_LOCATION_TOP_CENTER = BIT(15),
-	/** Top Back Left */
-	BT_AUDIO_LOCATION_TOP_BACK_LEFT = BIT(16),
-	/** Top Back Right */
-	BT_AUDIO_LOCATION_TOP_BACK_RIGHT = BIT(17),
-	/** Top Side Left */
-	BT_AUDIO_LOCATION_TOP_SIDE_LEFT = BIT(18),
-	/** Top Side Right */
-	BT_AUDIO_LOCATION_TOP_SIDE_RIGHT = BIT(19),
-	/** Top Back Center */
-	BT_AUDIO_LOCATION_TOP_BACK_CENTER = BIT(20),
-	/** Bottom Front Center */
-	BT_AUDIO_LOCATION_BOTTOM_FRONT_CENTER = BIT(21),
-	/** Bottom Front Left */
-	BT_AUDIO_LOCATION_BOTTOM_FRONT_LEFT = BIT(22),
-	/** Bottom Front Right */
-	BT_AUDIO_LOCATION_BOTTOM_FRONT_RIGHT = BIT(23),
-	/** Front Left Wide */
-	BT_AUDIO_LOCATION_FRONT_LEFT_WIDE = BIT(24),
-	/** Front Right Wide */
-	BT_AUDIO_LOCATION_FRONT_RIGHT_WIDE = BIT(25),
-	/** Left Surround */
-	BT_AUDIO_LOCATION_LEFT_SURROUND = BIT(26),
-	/** Right Surround */
-	BT_AUDIO_LOCATION_RIGHT_SURROUND = BIT(27),
+
+enum bt_audio_location
+{
+  /** Mono Audio (no specified Audio Location) */
+
+  BT_AUDIO_LOCATION_MONO_AUDIO = 0,
+
+  /** Front Left */
+
+  BT_AUDIO_LOCATION_FRONT_LEFT = BIT(0),
+
+  /** Front Right */
+
+  BT_AUDIO_LOCATION_FRONT_RIGHT = BIT(1),
+
+  /** Front Center */
+
+  BT_AUDIO_LOCATION_FRONT_CENTER = BIT(2),
+
+  /** Low Frequency Effects 1 */
+
+  BT_AUDIO_LOCATION_LOW_FREQ_EFFECTS_1 = BIT(3),
+
+  /** Back Left */
+
+  BT_AUDIO_LOCATION_BACK_LEFT = BIT(4),
+
+  /** Back Right */
+
+  BT_AUDIO_LOCATION_BACK_RIGHT = BIT(5),
+
+  /** Front Left of Center */
+
+  BT_AUDIO_LOCATION_FRONT_LEFT_OF_CENTER = BIT(6),
+
+  /** Front Right of Center */
+
+  BT_AUDIO_LOCATION_FRONT_RIGHT_OF_CENTER = BIT(7),
+
+  /** Back Center */
+
+  BT_AUDIO_LOCATION_BACK_CENTER = BIT(8),
+
+  /** Low Frequency Effects 2 */
+
+  BT_AUDIO_LOCATION_LOW_FREQ_EFFECTS_2 = BIT(9),
+
+  /** Side Left */
+
+  BT_AUDIO_LOCATION_SIDE_LEFT = BIT(10),
+
+  /** Side Right */
+
+  BT_AUDIO_LOCATION_SIDE_RIGHT = BIT(11),
+
+  /** Top Front Left */
+
+  BT_AUDIO_LOCATION_TOP_FRONT_LEFT = BIT(12),
+
+  /** Top Front Right */
+
+  BT_AUDIO_LOCATION_TOP_FRONT_RIGHT = BIT(13),
+
+  /** Top Front Center */
+
+  BT_AUDIO_LOCATION_TOP_FRONT_CENTER = BIT(14),
+
+  /** Top Center */
+
+  BT_AUDIO_LOCATION_TOP_CENTER = BIT(15),
+
+  /** Top Back Left */
+
+  BT_AUDIO_LOCATION_TOP_BACK_LEFT = BIT(16),
+
+  /** Top Back Right */
+
+  BT_AUDIO_LOCATION_TOP_BACK_RIGHT = BIT(17),
+
+  /** Top Side Left */
+
+  BT_AUDIO_LOCATION_TOP_SIDE_LEFT = BIT(18),
+
+  /** Top Side Right */
+
+  BT_AUDIO_LOCATION_TOP_SIDE_RIGHT = BIT(19),
+
+  /** Top Back Center */
+
+  BT_AUDIO_LOCATION_TOP_BACK_CENTER = BIT(20),
+
+  /** Bottom Front Center */
+
+  BT_AUDIO_LOCATION_BOTTOM_FRONT_CENTER = BIT(21),
+
+  /** Bottom Front Left */
+
+  BT_AUDIO_LOCATION_BOTTOM_FRONT_LEFT = BIT(22),
+
+  /** Bottom Front Right */
+
+  BT_AUDIO_LOCATION_BOTTOM_FRONT_RIGHT = BIT(23),
+
+  /** Front Left Wide */
+
+  BT_AUDIO_LOCATION_FRONT_LEFT_WIDE = BIT(24),
+
+  /** Front Right Wide */
+
+  BT_AUDIO_LOCATION_FRONT_RIGHT_WIDE = BIT(25),
+
+  /** Left Surround */
+
+  BT_AUDIO_LOCATION_LEFT_SURROUND = BIT(26),
+
+  /** Right Surround */
+
+  BT_AUDIO_LOCATION_RIGHT_SURROUND = BIT(27),
 };
 
 /**
  * Any known location.
  */
-#define BT_AUDIO_LOCATION_ANY (BT_AUDIO_LOCATION_FRONT_LEFT | \
-			       BT_AUDIO_LOCATION_FRONT_RIGHT | \
-			       BT_AUDIO_LOCATION_FRONT_CENTER | \
-			       BT_AUDIO_LOCATION_LOW_FREQ_EFFECTS_1 | \
-			       BT_AUDIO_LOCATION_BACK_LEFT | \
-			       BT_AUDIO_LOCATION_BACK_RIGHT | \
-			       BT_AUDIO_LOCATION_FRONT_LEFT_OF_CENTER | \
-			       BT_AUDIO_LOCATION_FRONT_RIGHT_OF_CENTER | \
-			       BT_AUDIO_LOCATION_BACK_CENTER | \
-			       BT_AUDIO_LOCATION_LOW_FREQ_EFFECTS_2 | \
-			       BT_AUDIO_LOCATION_SIDE_LEFT | \
-			       BT_AUDIO_LOCATION_SIDE_RIGHT | \
-			       BT_AUDIO_LOCATION_TOP_FRONT_LEFT | \
-			       BT_AUDIO_LOCATION_TOP_FRONT_RIGHT | \
-			       BT_AUDIO_LOCATION_TOP_FRONT_CENTER | \
-			       BT_AUDIO_LOCATION_TOP_CENTER | \
-			       BT_AUDIO_LOCATION_TOP_BACK_LEFT | \
-			       BT_AUDIO_LOCATION_TOP_BACK_RIGHT | \
-			       BT_AUDIO_LOCATION_TOP_SIDE_LEFT | \
-			       BT_AUDIO_LOCATION_TOP_SIDE_RIGHT | \
-			       BT_AUDIO_LOCATION_TOP_BACK_CENTER | \
-			       BT_AUDIO_LOCATION_BOTTOM_FRONT_CENTER | \
-			       BT_AUDIO_LOCATION_BOTTOM_FRONT_LEFT | \
-			       BT_AUDIO_LOCATION_BOTTOM_FRONT_RIGHT | \
-			       BT_AUDIO_LOCATION_FRONT_LEFT_WIDE | \
-			       BT_AUDIO_LOCATION_FRONT_RIGHT_WIDE | \
-			       BT_AUDIO_LOCATION_LEFT_SURROUND | \
-			       BT_AUDIO_LOCATION_RIGHT_SURROUND)
+#define BT_AUDIO_LOCATION_ANY                                                                      \
+(BT_AUDIO_LOCATION_FRONT_LEFT | BT_AUDIO_LOCATION_FRONT_RIGHT | BT_AUDIO_LOCATION_FRONT_CENTER | \
+ BT_AUDIO_LOCATION_LOW_FREQ_EFFECTS_1 | BT_AUDIO_LOCATION_BACK_LEFT |                            \
+ BT_AUDIO_LOCATION_BACK_RIGHT | BT_AUDIO_LOCATION_FRONT_LEFT_OF_CENTER |                         \
+ BT_AUDIO_LOCATION_FRONT_RIGHT_OF_CENTER | BT_AUDIO_LOCATION_BACK_CENTER |                       \
+ BT_AUDIO_LOCATION_LOW_FREQ_EFFECTS_2 | BT_AUDIO_LOCATION_SIDE_LEFT |                            \
+ BT_AUDIO_LOCATION_SIDE_RIGHT | BT_AUDIO_LOCATION_TOP_FRONT_LEFT |                               \
+ BT_AUDIO_LOCATION_TOP_FRONT_RIGHT | BT_AUDIO_LOCATION_TOP_FRONT_CENTER |                        \
+ BT_AUDIO_LOCATION_TOP_CENTER | BT_AUDIO_LOCATION_TOP_BACK_LEFT |                                \
+ BT_AUDIO_LOCATION_TOP_BACK_RIGHT | BT_AUDIO_LOCATION_TOP_SIDE_LEFT |                            \
+ BT_AUDIO_LOCATION_TOP_SIDE_RIGHT | BT_AUDIO_LOCATION_TOP_BACK_CENTER |                          \
+ BT_AUDIO_LOCATION_BOTTOM_FRONT_CENTER | BT_AUDIO_LOCATION_BOTTOM_FRONT_LEFT |                   \
+ BT_AUDIO_LOCATION_BOTTOM_FRONT_RIGHT | BT_AUDIO_LOCATION_FRONT_LEFT_WIDE |                      \
+ BT_AUDIO_LOCATION_FRONT_RIGHT_WIDE | BT_AUDIO_LOCATION_LEFT_SURROUND |                          \
+ BT_AUDIO_LOCATION_RIGHT_SURROUND)
 
 /** @} */ /* end of bt_assigned_numbers_audio */
 
@@ -1516,7 +1754,7 @@ enum bt_audio_location {
  * @{
  */
 
-#define BT_COMP_ID_LF           0x05f1 /**< The Linux Foundation */
+#define BT_COMP_ID_LF 0x05f1 /**< The Linux Foundation */
 
 /** @} */ /* end of @name Company Identifiers */
 
@@ -1526,13 +1764,12 @@ enum bt_audio_location {
  */
 
 #define BT_COD(major_service, major_device, minor_device)                                          \
-	(((uint32_t)major_service << 13) | ((uint32_t)major_device << 8) |                         \
-	 ((uint32_t)minor_device << 2))
+(((uint32_t)major_service << 13) | ((uint32_t)major_device << 8) | ((uint32_t)minor_device << 2))
 #define BT_COD_VALID(cod) ((0 == (cod[0] & (BIT(0) | BIT(1)))) ? true : false)
 #define BT_COD_MAJOR_SERVICE_CLASSES(cod)                                                          \
-	((((uint32_t)cod[2] & 0xFF) >> 5) | (((uint32_t)cod[1] & 0xD0) >> 5))
-#define BT_COD_MAJOR_DEVICE_CLASS(cod) ((((uint32_t)cod[1]) & 0x1FUL))
-#define BT_COD_MINOR_DEVICE_CLASS(cod) (((((uint32_t)cod[0]) & 0xFF) >> 2))
+((((uint32_t)cod[2] & 0xff) >> 5) | (((uint32_t)cod[1] & 0xd0) >> 5))
+#define BT_COD_MAJOR_DEVICE_CLASS(cod) ((((uint32_t)cod[1]) & 0x1ful))
+#define BT_COD_MINOR_DEVICE_CLASS(cod) (((((uint32_t)cod[0]) & 0xff) >> 2))
 
 /**
  * @name Major Service Classes
@@ -1542,25 +1779,25 @@ enum bt_audio_location {
 /** Limited Discoverable Mode service class */
 #define BT_COD_MAJOR_SVC_CLASS_LIMITED_DISCOVER BIT(13)
 /** LE Audio service class */
-#define BT_COD_MAJOR_SVC_CLASS_LE_AUDIO         BIT(14)
+#define BT_COD_MAJOR_SVC_CLASS_LE_AUDIO BIT(14)
 /** Reserved service class */
-#define BT_COD_MAJOR_SVC_CLASS_RESERVED         BIT(15)
+#define BT_COD_MAJOR_SVC_CLASS_RESERVED BIT(15)
 /** Positioning service class */
-#define BT_COD_MAJOR_SVC_CLASS_POSITIONING      BIT(16)
+#define BT_COD_MAJOR_SVC_CLASS_POSITIONING BIT(16)
 /** Networking service class */
-#define BT_COD_MAJOR_SVC_CLASS_NETWORKING       BIT(17)
+#define BT_COD_MAJOR_SVC_CLASS_NETWORKING BIT(17)
 /** Rendering service class */
-#define BT_COD_MAJOR_SVC_CLASS_RENDERING        BIT(18)
+#define BT_COD_MAJOR_SVC_CLASS_RENDERING BIT(18)
 /** Capturing service class */
-#define BT_COD_MAJOR_SVC_CLASS_CAPTURING        BIT(19)
+#define BT_COD_MAJOR_SVC_CLASS_CAPTURING BIT(19)
 /** Object Transfer service class */
-#define BT_COD_MAJOR_SVC_CLASS_OBJECT_TRANSFER  BIT(20)
+#define BT_COD_MAJOR_SVC_CLASS_OBJECT_TRANSFER BIT(20)
 /** Audio service class */
-#define BT_COD_MAJOR_SVC_CLASS_AUDIO            BIT(21)
+#define BT_COD_MAJOR_SVC_CLASS_AUDIO BIT(21)
 /** Telephony service class */
-#define BT_COD_MAJOR_SVC_CLASS_TELEPHONY        BIT(22)
+#define BT_COD_MAJOR_SVC_CLASS_TELEPHONY BIT(22)
 /** Information service class */
-#define BT_COD_MAJOR_SVC_CLASS_INFORMATION      BIT(23)
+#define BT_COD_MAJOR_SVC_CLASS_INFORMATION BIT(23)
 
 /** @} */ /* end of Major Service Classes */
 
@@ -1572,25 +1809,25 @@ enum bt_audio_location {
 /** Miscellaneous major device class */
 #define BT_COD_MAJOR_DEVICE_CLASS_MISCELLANEOUS 0x00
 /** Computer major device class */
-#define BT_COD_MAJOR_DEVICE_CLASS_COMPUTER      0x01
+#define BT_COD_MAJOR_DEVICE_CLASS_COMPUTER 0x01
 /** Phone major device class */
-#define BT_COD_MAJOR_DEVICE_CLASS_PHONE         0x02
+#define BT_COD_MAJOR_DEVICE_CLASS_PHONE 0x02
 /** LAN/Network Access Point major device class */
-#define BT_COD_MAJOR_DEVICE_CLASS_LAN_NETWORK   0x03
+#define BT_COD_MAJOR_DEVICE_CLASS_LAN_NETWORK 0x03
 /** Audio/Video major device class */
-#define BT_COD_MAJOR_DEVICE_CLASS_AUDIO_VIDEO   0x04
+#define BT_COD_MAJOR_DEVICE_CLASS_AUDIO_VIDEO 0x04
 /** Peripheral major device class */
-#define BT_COD_MAJOR_DEVICE_CLASS_PERIPHERAL    0x05
+#define BT_COD_MAJOR_DEVICE_CLASS_PERIPHERAL 0x05
 /** Imaging major device class */
-#define BT_COD_MAJOR_DEVICE_CLASS_IMAGING       0x06
+#define BT_COD_MAJOR_DEVICE_CLASS_IMAGING 0x06
 /** Wearable major device class */
-#define BT_COD_MAJOR_DEVICE_CLASS_WEARABLE      0x07
+#define BT_COD_MAJOR_DEVICE_CLASS_WEARABLE 0x07
 /** Toy major device class */
-#define BT_COD_MAJOR_DEVICE_CLASS_TOY           0x08
+#define BT_COD_MAJOR_DEVICE_CLASS_TOY 0x08
 /** Health major device class */
-#define BT_COD_MAJOR_DEVICE_CLASS_HEALTH        0x09
+#define BT_COD_MAJOR_DEVICE_CLASS_HEALTH 0x09
 /** Uncategorized major device class */
-#define BT_COD_MAJOR_DEVICE_CLASS_UNCATEGORIZED 0x1F
+#define BT_COD_MAJOR_DEVICE_CLASS_UNCATEGORIZED 0x1f
 
 /** @} */ /* end of Major Device Class */
 
@@ -1600,21 +1837,21 @@ enum bt_audio_location {
  */
 
 /** Uncategorized computer minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_COMPUTER_UNCATEGORIZED       0x00
+#define BT_COD_MINOR_DEVICE_CLASS_COMPUTER_UNCATEGORIZED 0x00
 /** Desktop workstation computer minor device class */
 #define BT_COD_MINOR_DEVICE_CLASS_COMPUTER_DESKTOP_WORKSTATION 0x01
 /** Server-class computer minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_COMPUTER_SERVER              0x02
+#define BT_COD_MINOR_DEVICE_CLASS_COMPUTER_SERVER 0x02
 /** Laptop computer minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_COMPUTER_LAPTOP              0x03
+#define BT_COD_MINOR_DEVICE_CLASS_COMPUTER_LAPTOP 0x03
 /** Handheld PC/PDA computer minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_COMPUTER_HANDHELD_PC_PDA     0x04
+#define BT_COD_MINOR_DEVICE_CLASS_COMPUTER_HANDHELD_PC_PDA 0x04
 /** Palm-sized PC/PDA computer minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_COMPUTER_PALM_SIZED_PC_PDA   0x05
+#define BT_COD_MINOR_DEVICE_CLASS_COMPUTER_PALM_SIZED_PC_PDA 0x05
 /** Wearable computer minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_COMPUTER_WEARABLE_COMPUTER   0x06
+#define BT_COD_MINOR_DEVICE_CLASS_COMPUTER_WEARABLE_COMPUTER 0x06
 /** Tablet computer minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_COMPUTER_TABLET              0x07
+#define BT_COD_MINOR_DEVICE_CLASS_COMPUTER_TABLET 0x07
 
 /** @} */ /* end of Minor Device Class - Computer Major Class */
 
@@ -1624,15 +1861,15 @@ enum bt_audio_location {
  */
 
 /** Uncategorized phone minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_PHONE_UNCATEGORIZED      0x00
+#define BT_COD_MINOR_DEVICE_CLASS_PHONE_UNCATEGORIZED 0x00
 /** Cellular phone minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_PHONE_CELLULAR           0x01
+#define BT_COD_MINOR_DEVICE_CLASS_PHONE_CELLULAR 0x01
 /** Cordless phone minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_PHONE_CORDLESS           0x02
+#define BT_COD_MINOR_DEVICE_CLASS_PHONE_CORDLESS 0x02
 /** Smartphone minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_PHONE_SMARTPHONE         0x03
+#define BT_COD_MINOR_DEVICE_CLASS_PHONE_SMARTPHONE 0x03
 /** Wired modem or voice gateway phone minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_PHONE_WIRED_MODEM        0x04
+#define BT_COD_MINOR_DEVICE_CLASS_PHONE_WIRED_MODEM 0x04
 /** Common ISDN access phone minor device class */
 #define BT_COD_MINOR_DEVICE_CLASS_PHONE_COMMON_ISDN_ACCESS 0x05
 
@@ -1644,19 +1881,19 @@ enum bt_audio_location {
  */
 
 /** LAN service utilization: fully available */
-#define BT_COD_MINOR_DEVICE_CLASS_LAN_NETWORK_SERVICE_FULLY_AVAILABLE      0x00
+#define BT_COD_MINOR_DEVICE_CLASS_LAN_NETWORK_SERVICE_FULLY_AVAILABLE 0x00
 /** LAN service utilization: 1-17% utilized */
-#define BT_COD_MINOR_DEVICE_CLASS_LAN_NETWORK_SERVICE_1_17_UTILIZED        0x01
+#define BT_COD_MINOR_DEVICE_CLASS_LAN_NETWORK_SERVICE_1_17_UTILIZED 0x01
 /** LAN service utilization: 17-33% utilized */
-#define BT_COD_MINOR_DEVICE_CLASS_LAN_NETWORK_SERVICE_17_33_UTILIZED       0x02
+#define BT_COD_MINOR_DEVICE_CLASS_LAN_NETWORK_SERVICE_17_33_UTILIZED 0x02
 /** LAN service utilization: 33-50% utilized */
-#define BT_COD_MINOR_DEVICE_CLASS_LAN_NETWORK_SERVICE_33_50_UTILIZED       0x03
+#define BT_COD_MINOR_DEVICE_CLASS_LAN_NETWORK_SERVICE_33_50_UTILIZED 0x03
 /** LAN service utilization: 50-67% utilized */
-#define BT_COD_MINOR_DEVICE_CLASS_LAN_NETWORK_SERVICE_50_67_UTILIZED       0x04
+#define BT_COD_MINOR_DEVICE_CLASS_LAN_NETWORK_SERVICE_50_67_UTILIZED 0x04
 /** LAN service utilization: 67-83% utilized */
-#define BT_COD_MINOR_DEVICE_CLASS_LAN_NETWORK_SERVICE_67_83_UTILIZED       0x05
+#define BT_COD_MINOR_DEVICE_CLASS_LAN_NETWORK_SERVICE_67_83_UTILIZED 0x05
 /** LAN service utilization: 83-99% utilized */
-#define BT_COD_MINOR_DEVICE_CLASS_LAN_NETWORK_SERVICE_83_99_UTILIZED       0x06
+#define BT_COD_MINOR_DEVICE_CLASS_LAN_NETWORK_SERVICE_83_99_UTILIZED 0x06
 /** LAN service utilization: no service available */
 #define BT_COD_MINOR_DEVICE_CLASS_LAN_NETWORK_SERVICE_NO_SERVICE_AVAILABLE 0x07
 
@@ -1671,40 +1908,41 @@ enum bt_audio_location {
 #define BT_COD_MINOR_DEVICE_CLASS_LAN_NETWORK_DEVICE_TYPE_UNCATEGORIZED 0x00
 
 /** Minor Device Class - Audio/Video Major Class */
+
 /** Uncategorized audio/video minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_UNCATEGORIZED             0x00
+#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_UNCATEGORIZED 0x00
 /** Wearable headset audio/video minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_WEARABLE_HEADSET          0x01
+#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_WEARABLE_HEADSET 0x01
 /** Handsfree audio/video minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_HANDSFREE                 0x02
+#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_HANDSFREE 0x02
 /** Microphone audio/video minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_MICROPHONE                0x04
+#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_MICROPHONE 0x04
 /** Loudspeaker audio/video minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_LOUDSPEAKER               0x05
+#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_LOUDSPEAKER 0x05
 /** Headphones audio/video minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_HEADPHONES                0x06
+#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_HEADPHONES 0x06
 /** Portable audio audio/video minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_PORTABLE_AUDIO            0x07
+#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_PORTABLE_AUDIO 0x07
 /** Car audio audio/video minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_CAR_AUDIO                 0x08
+#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_CAR_AUDIO 0x08
 /** Set-top box audio/video minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_SETTOP_BOX                0x09
+#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_SETTOP_BOX 0x09
 /** HiFi audio audio/video minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_HIFI_AUDIO                0x0A
+#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_HIFI_AUDIO 0x0a
 /** VCR audio/video minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_VCR                       0x0B
+#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_VCR 0x0b
 /** Video camera audio/video minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_VIDEO_CAMERA              0x0C
+#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_VIDEO_CAMERA 0x0c
 /** Camcorder audio/video minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_CAMCORDER                 0x0D
+#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_CAMCORDER 0x0d
 /** Video monitor audio/video minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_VIDEO_MONITOR             0x0E
+#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_VIDEO_MONITOR 0x0e
 /** Video display and loudspeaker audio/video minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_VIDEO_DISPLAY_LOUDSPEAKER 0x0F
+#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_VIDEO_DISPLAY_LOUDSPEAKER 0x0f
 /** Video conferencing audio/video minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_VIDEO_CONFERENCING        0x10
+#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_VIDEO_CONFERENCING 0x10
 /** Gaming toy audio/video minor device class */
-#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_GAMING_TOY                0x12
+#define BT_COD_MINOR_DEVICE_CLASS_AUDIO_VIDEO_GAMING_TOY 0x12
 
 /** @} */ /* end of Minor Device Class - Audio/Video Major Class */
 
@@ -1716,9 +1954,9 @@ enum bt_audio_location {
 /** Peripheral input: no keyboard, no pointing device */
 #define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_INPUT_DEVICE_TYPE_NO_KEYBOARD_NO_POINTING 0x00
 /** Peripheral input: keyboard */
-#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_INPUT_DEVICE_TYPE_KEYBOARD                0x01
+#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_INPUT_DEVICE_TYPE_KEYBOARD 0x01
 /** Peripheral input: pointing device */
-#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_INPUT_DEVICE_TYPE_POINTING_DEVICE         0x02
+#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_INPUT_DEVICE_TYPE_POINTING_DEVICE 0x02
 /** Peripheral input: combo keyboard and pointing device */
 #define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_INPUT_DEVICE_TYPE_COMBO_KEYBOARD_POINTING 0x03
 
@@ -1730,23 +1968,23 @@ enum bt_audio_location {
  */
 
 /** Uncategorized peripheral device type */
-#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_UNCATEGORIZED           0x00
+#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_UNCATEGORIZED 0x00
 /** Joystick peripheral device type */
-#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_JOYSTICK                0x01
+#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_JOYSTICK 0x01
 /** Gamepad peripheral device type */
-#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_GAMEPAD                 0x02
+#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_GAMEPAD 0x02
 /** Remote control peripheral device type */
-#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_REMOTE_CONTROL          0x03
+#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_REMOTE_CONTROL 0x03
 /** Sensing device peripheral device type */
-#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_SENSING_DEVICE          0x04
+#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_SENSING_DEVICE 0x04
 /** Digitizer tablet peripheral device type */
-#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_DIGITIZER_TABLET        0x05
+#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_DIGITIZER_TABLET 0x05
 /** Card reader peripheral device type */
-#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_CARD_READER             0x06
+#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_CARD_READER 0x06
 /** Digital pen peripheral device type */
-#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_DIGITAL_PEN             0x07
+#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_DIGITAL_PEN 0x07
 /** Handheld scanner peripheral device type */
-#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_HANDHELD_SCANNER        0x08
+#define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_HANDHELD_SCANNER 0x08
 /** Handheld gestural input peripheral device type */
 #define BT_COD_MINOR_DEVICE_CLASS_PERIPHERAL_DEVICE_TYPE_HANDHELD_GESTURAL_INPUT 0x09
 
@@ -1760,7 +1998,7 @@ enum bt_audio_location {
 /** Minor Device Class - Imaging Major Class */
 #define BT_COD_MINOR_DEVICE_CLASS_IMAGING_DISPLAY 0x01
 /** Imaging camera device */
-#define BT_COD_MINOR_DEVICE_CLASS_IMAGING_CAMERA  0x02
+#define BT_COD_MINOR_DEVICE_CLASS_IMAGING_CAMERA 0x02
 /** Imaging scanner device */
 #define BT_COD_MINOR_DEVICE_CLASS_IMAGING_SCANNER 0x04
 /** Imaging printer device */
@@ -1779,11 +2017,11 @@ enum bt_audio_location {
 /** Wearable headset device */
 #define BT_COD_MINOR_DEVICE_CLASS_WEARABLE_HEADSET 0x01
 /** Wearable pager device */
-#define BT_COD_MINOR_DEVICE_CLASS_WEARABLE_PAGER   0x02
+#define BT_COD_MINOR_DEVICE_CLASS_WEARABLE_PAGER 0x02
 /** Wearable jacket device */
-#define BT_COD_MINOR_DEVICE_CLASS_WEARABLE_JACKET  0x03
+#define BT_COD_MINOR_DEVICE_CLASS_WEARABLE_JACKET 0x03
 /** Wearable helmet device */
-#define BT_COD_MINOR_DEVICE_CLASS_WEARABLE_HELMET  0x04
+#define BT_COD_MINOR_DEVICE_CLASS_WEARABLE_HELMET 0x04
 /** Wearable glasses device */
 #define BT_COD_MINOR_DEVICE_CLASS_WEARABLE_GLASSES 0x05
 
@@ -1795,15 +2033,15 @@ enum bt_audio_location {
  */
 
 /** Toy robot device */
-#define BT_COD_MINOR_DEVICE_CLASS_TOY_ROBOT      0x01
+#define BT_COD_MINOR_DEVICE_CLASS_TOY_ROBOT 0x01
 /** Toy vehicle device */
-#define BT_COD_MINOR_DEVICE_CLASS_TOY_VEHICLE    0x02
+#define BT_COD_MINOR_DEVICE_CLASS_TOY_VEHICLE 0x02
 /** Toy doll device */
-#define BT_COD_MINOR_DEVICE_CLASS_TOY_DOLL       0x03
+#define BT_COD_MINOR_DEVICE_CLASS_TOY_DOLL 0x03
 /** Toy controller device */
 #define BT_COD_MINOR_DEVICE_CLASS_TOY_CONTROLLER 0x04
 /** Toy game device */
-#define BT_COD_MINOR_DEVICE_CLASS_TOY_GAME       0x05
+#define BT_COD_MINOR_DEVICE_CLASS_TOY_GAME 0x05
 
 /** @} */ /* end of Minor Device Class - Toy Major Class */
 
@@ -1813,37 +2051,37 @@ enum bt_audio_location {
  */
 
 /** Undefined health device */
-#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_UNDEFINED                 0x00
+#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_UNDEFINED 0x00
 /** Blood pressure monitor health device */
-#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_BLOOD_PRESSURE_MONITOR    0x01
+#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_BLOOD_PRESSURE_MONITOR 0x01
 /** Thermometer health device */
-#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_THERMOMETER               0x02
+#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_THERMOMETER 0x02
 /** Weighing scale health device */
-#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_WEIGHING_SCALE            0x03
+#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_WEIGHING_SCALE 0x03
 /** Glucose meter health device */
-#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_GLUCOSE_METER             0x04
+#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_GLUCOSE_METER 0x04
 /** Pulse oximeter health device */
-#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_PULSE_OXIMETER            0x05
+#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_PULSE_OXIMETER 0x05
 /** Heart/pulse monitor health device */
-#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_HEART_PULSE_MONITOR       0x06
+#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_HEART_PULSE_MONITOR 0x06
 /** Health data display device */
-#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_HEALTH_DATA_DISPLAY       0x07
+#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_HEALTH_DATA_DISPLAY 0x07
 /** Step counter health device */
-#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_STEP_COUNTER              0x08
+#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_STEP_COUNTER 0x08
 /** Body composition analyzer health device */
 #define BT_COD_MINOR_DEVICE_CLASS_HEALTH_BODY_COMPOSITION_ANALYZER 0x09
 /** Peak flow monitor health device */
-#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_PEAK_FLOW_MONITOR         0x0A
+#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_PEAK_FLOW_MONITOR 0x0a
 /** Medication monitor health device */
-#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_MEDICATION_MONITOR        0x0B
+#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_MEDICATION_MONITOR 0x0b
 /** Knee prosthesis health device */
-#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_KNEE_PROSTHESIS           0x0C
+#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_KNEE_PROSTHESIS 0x0c
 /** Ankle prosthesis health device */
-#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_ANKLE_PROSTHESIS          0x0D
+#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_ANKLE_PROSTHESIS 0x0d
 /** Generic health manager device */
-#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_GENERIC_HEALTH_MANAGER    0x0E
+#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_GENERIC_HEALTH_MANAGER 0x0e
 /** Personal mobility health device */
-#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_PERSONAL_MOBILITY_DEVICE  0x0F
+#define BT_COD_MINOR_DEVICE_CLASS_HEALTH_PERSONAL_MOBILITY_DEVICE 0x0f
 
 /** @} */ /* end of Minor Device Class - Health Major Class */
 

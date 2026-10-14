@@ -41,7 +41,7 @@
 #define Z_STRINGIFY(x) #x
 #define STRINGIFY(s) Z_STRINGIFY(s)
 
-#define _DO_CONCAT(x, y) x ## y
+#define _DO_CONCAT(x, y) x##y
 #define _CONCAT(x, y) _DO_CONCAT(x, y)
 
 #if defined(__cplusplus) && (__cplusplus >= 201103L)
@@ -58,13 +58,14 @@
 
 #define CODE_UNREACHABLE compiler_assume(false)
 
-#define UNALIGNED_GET(g) \
-__extension__ ({ \
-	struct __packed { \
-		__typeof__(*(g)) __v; \
-	} *__g = (__typeof__(__g))(g); \
-	__g->__v; \
-})
+#define UNALIGNED_GET(g)                                                                           \
+  __extension__({                                                                                  \
+    struct __packed                                                                                \
+    {                                                                                              \
+      __typeof__(*(g)) __v;                                                                        \
+    } *__g = (__typeof__(__g))(g);                                                                 \
+    __g->__v;                                                                                      \
+  })
 #define ___in_section(a, b, c)
 #define __in_section(a, b, c) ___in_section(a, b, c)
 

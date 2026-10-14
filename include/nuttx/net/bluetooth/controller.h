@@ -28,8 +28,7 @@
  *  @brief Bluetooth subsystem controller APIs.
  */
 
-/*
- * Copyright (c) 2018 Codecoup
+/* Copyright (c) 2018 Codecoup
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -50,7 +49,8 @@
 #include <stdint.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /** @brief Set public address for controller
@@ -59,6 +59,7 @@ extern "C" {
  *
  *  @param addr Public address
  */
+
 void bt_ctlr_set_public_addr(const uint8_t *addr);
 
 #ifdef __cplusplus

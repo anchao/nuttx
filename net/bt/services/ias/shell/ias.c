@@ -52,53 +52,67 @@
 #include "host/shell/bt.h"
 #include "common/bt_shell_private.h"
 
+/****************************************************************************
+ * Private Functions
+ ****************************************************************************/
+
 static void alert_stop(void)
 {
-	bt_shell_print("Alert stopped\n");
+  bt_shell_print("Alert stopped\n");
 }
 
 static void alert_start(void)
 {
-	bt_shell_print("Mild alert started\n");
+  bt_shell_print("Mild alert started\n");
 }
 
 static void alert_high_start(void)
 {
-	bt_shell_print("High alert started\n");
+  bt_shell_print("High alert started\n");
 }
 
-BT_IAS_CB_DEFINE(ias_callbacks) = {
-	.no_alert = alert_stop,
-	.mild_alert = alert_start,
-	.high_alert = alert_high_start,
+BT_IAS_CB_DEFINE(ias_callbacks) =
+{
+        .no_alert = alert_stop,
+        .mild_alert = alert_start,
+        .high_alert = alert_high_start,
 };
 
-static int cmd_ias_local_alert_stop(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ias_local_alert_stop(const struct shell *sh,
+                                    size_t argc, char **argv)
 {
-	const int result = bt_ias_local_alert_stop();
+  const int result = bt_ias_local_alert_stop();
 
-	if (result) {
-		shell_print(sh, "Local alert stop failed: %d", result);
-	} else {
-		shell_print(sh, "Local alert stopped");
-	}
+  if (result)
+    {
+      shell_print(sh, "Local alert stop failed: %d", result);
+    }
+  else
+    {
+      shell_print(sh, "Local alert stopped");
+    }
 
-	return result;
+  return result;
 }
 
 static int cmd_ias(const struct shell *sh, size_t argc, char **argv)
 {
-	shell_error(sh, "%s unknown parameter: %s", argv[0], argv[1]);
+  shell_error(sh, "%s unknown parameter: %s", argv[0], argv[1]);
 
-	return -ENOEXEC;
+  return -ENOEXEC;
 }
 
 SHELL_STATIC_SUBCMD_SET_CREATE(ias_cmds,
-	SHELL_CMD_ARG(local_alert_stop, NULL,
-		      "Stop alert locally",
-		      cmd_ias_local_alert_stop, 1, 0),
-	SHELL_SUBCMD_SET_END
-);
+                               SHELL_CMD_ARG(local_alert_stop,
+                                   NULL,
+                                   "Stop alert locally",
 
-SHELL_CMD_ARG_REGISTER(ias, &ias_cmds, "Bluetooth IAS shell commands",
-		       cmd_ias, 1, 1);
+                                             cmd_ias_local_alert_stop, 1, 0),
+                               SHELL_SUBCMD_SET_END);
+
+SHELL_CMD_ARG_REGISTER(ias,
+                    &ias_cmds,
+                    "Bluetooth IAS shell commands",
+                    cmd_ias,
+                    1,
+                    1);

@@ -30,8 +30,7 @@
  *  This is not to be included by the application.
  */
 
-/*
- * Copyright (c) 2017 Intel Corporation
+/* Copyright (c) 2017 Intel Corporation
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -53,7 +52,8 @@
 
 extern struct bt_conn *default_conn;
 
-bool passes_scan_filter(const struct bt_le_scan_recv_info *info, const struct net_buf_simple *buf);
+bool passes_scan_filter(const struct bt_le_scan_recv_info *info,
+                        const struct net_buf_simple *buf);
 
 #if defined(CONFIG_BT_ISO_UNICAST)
 extern struct bt_iso_chan iso_chan;
@@ -72,10 +72,11 @@ extern struct bt_le_per_adv_sync *per_adv_syncs[CONFIG_BT_PER_ADV_SYNC_MAX];
  * @brief Compares two strings without case sensitivity
  *
  * @param substr The substring
- * @param str The string to find the substring in
+ * @param str    The string to find the substring in
  *
  * @return true if @substr is a substring of @p, else false
  */
+
 bool is_substring(const char *substr, const char *str);
 
 #endif /* __BT_H */

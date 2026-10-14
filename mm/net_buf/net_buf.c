@@ -572,6 +572,7 @@ void net_buf_unref(struct net_buf *buf)
       else
         {
           /* Return to pool free list (LIFO) */
+
           flags = spin_lock_irqsave(&pool->lock);
           list_add_head(&pool->free_list, &buf->node);
           spin_unlock_irqrestore(&pool->lock, flags);
@@ -620,6 +621,7 @@ struct net_buf *net_buf_clone(struct net_buf *buf, int32_t timeout)
   /* If the pool supports data referencing use that. Otherwise
    * we need to allocate new data and make a copy.
    */
+
   if (buf->__buf != NULL &&
       !(buf->flags & NET_BUF_EXTERNAL_DATA))
     {
@@ -635,6 +637,7 @@ struct net_buf *net_buf_clone(struct net_buf *buf, int32_t timeout)
       else
         {
           /* Fall back to full copy */
+
           size_t data_size = buf->size;
 
           clone->__buf = data_alloc(clone, &data_size);
@@ -757,6 +760,7 @@ void net_buf_frag_insert(struct net_buf *parent, struct net_buf *frag)
     }
 
   /* Take ownership of the fragment reference */
+
   parent->frags = frag;
 }
 
@@ -832,6 +836,7 @@ size_t net_buf_linearize(void *dst, size_t dst_len,
   frag = src;
 
   /* Find the right fragment to start copying from */
+
   while (frag != NULL && offset >= frag->len)
     {
       offset -= frag->len;
@@ -839,6 +844,7 @@ size_t net_buf_linearize(void *dst, size_t dst_len,
     }
 
   /* Traverse the fragment chain until len bytes are copied */
+
   copied = 0;
   while (frag != NULL && len > 0)
     {
@@ -856,10 +862,12 @@ size_t net_buf_linearize(void *dst, size_t dst_len,
       copied += to_copy;
 
       /* to_copy is always <= len */
+
       len -= to_copy;
       frag = frag->frags;
 
       /* After the first iteration, this value will be 0 */
+
       offset = 0;
     }
 
@@ -914,6 +922,7 @@ size_t net_buf_append_bytes(struct net_buf *buf, size_t len,
       else
         {
           /* Allocate from the same pool */
+
           struct net_buf_pool *pool = buf->pool;
           size_t max_size = pool->alloc->max_alloc_size;
 
@@ -933,6 +942,7 @@ size_t net_buf_append_bytes(struct net_buf *buf, size_t len,
   while (1);
 
   /* Unreachable */
+
   return 0;
 }
 
@@ -958,6 +968,7 @@ size_t net_buf_data_match(const struct net_buf *buf, size_t offset,
     }
 
   /* Find the right fragment to start comparison */
+
   while (buf != NULL && offset >= buf->len)
     {
       offset -= buf->len;

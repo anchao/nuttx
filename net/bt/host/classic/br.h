@@ -24,10 +24,8 @@
  *
  ****************************************************************************/
 
-/*
- * Copyright (c) 2025 Xiaomi Corporation
- * Copyright (c) 2017-2021 Nordic Semiconductor ASA
- * Copyright (c) 2015-2016 Intel Corporation
+/* Copyright (c) 2025 Xiaomi Corporation Copyright (c) 2017-2021 Nordic
+ * Semiconductor ASA Copyright (c) 2015-2016 Intel Corporation
  *
  * SPDX-License-Identifier: Apache-2.0
  */

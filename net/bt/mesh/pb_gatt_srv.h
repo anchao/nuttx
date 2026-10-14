@@ -24,9 +24,7 @@
  *
  ****************************************************************************/
 
-/*
- * Copyright (c) 2017 Intel Corporation
- * Copyright (c) 2021 Lingao Meng
+/* Copyright (c) 2017 Intel Corporation Copyright (c) 2021 Lingao Meng
  *
  * SPDX-License-Identifier: Apache-2.0
  */

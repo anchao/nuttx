@@ -24,15 +24,15 @@
  *
  ****************************************************************************/
 
-/*
- * Copyright (c) 2022 Nordic Semiconductor ASA
+/* Copyright (c) 2022 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
  * @file
- * @brief Header file for the Bluetooth Mesh Opcodes Aggregator Server model API.
+ * @brief Header file for the Bluetooth Mesh Opcodes Aggregator Server model
+ * API.
  * @ingroup bt_mesh_op_agg_srv
  */
 
@@ -46,7 +46,8 @@
 #include <nuttx/net/bluetooth/mesh.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /**
@@ -60,18 +61,20 @@ extern "C" {
  *  @brief Opcodes Aggretator Server model composition data entry.
  *
  *  @note The Opcodes Aggregator Server handles aggregated messages
- *        and dispatches them to the respective models and their message
- *        handlers. Current implementation assumes that responses are sent
- *        from the same execution context as the received message and
- *        doesn't allow to send a postponed response, e.g. from workqueue.
+ *  and dispatches them to the respective models and their message handlers.
+ *  Current implementation assumes that responses are sent from the same
+ *  execution context as the received message and doesn't allow to send a
+ *  postponed response, e.g. from workqueue.
  */
-#define BT_MESH_MODEL_OP_AGG_SRV                                               \
-	BT_MESH_MODEL_CB(BT_MESH_MODEL_ID_OP_AGG_SRV, _bt_mesh_op_agg_srv_op,  \
-			 NULL, NULL, &_bt_mesh_op_agg_srv_cb)
+#define BT_MESH_MODEL_OP_AGG_SRV                                                                   \
+BT_MESH_MODEL_CB(BT_MESH_MODEL_ID_OP_AGG_SRV, _bt_mesh_op_agg_srv_op, NULL, NULL,                \
+                 &_bt_mesh_op_agg_srv_cb)
 
 /** @cond INTERNAL_HIDDEN */
+
 extern const struct bt_mesh_model_op _bt_mesh_op_agg_srv_op[];
 extern const struct bt_mesh_model_cb _bt_mesh_op_agg_srv_cb;
+
 /** @endcond */
 
 /**

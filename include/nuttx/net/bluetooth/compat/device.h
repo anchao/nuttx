@@ -38,43 +38,49 @@
 #include <nuttx/compiler.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /* Minimal device model for BT HCI driver binding */
 
-struct device_state {
-    bool initialized;
-    int init_res;
+struct device_state
+{
+  bool initialized;
+  int init_res;
 };
 
-struct device {
-    const char *name;
-    const void *config;
-    const void *api;
-    void *data;
-    struct device_state *state;
+struct device
+{
+  const char *name;
+  const void *config;
+  const void *api;
+  void *data;
+  struct device_state *state;
 };
 
 static inline bool device_is_ready(const struct device *dev)
 {
-    if (dev == NULL) {
-        return true;
+  if (dev == NULL)
+    {
+      return true;
     }
 
-    return dev->state && dev->state->initialized && dev->state->init_res == 0;
+  return dev->state && dev->state->initialized && dev->state->init_res == 0;
 }
 
 #define DEVICE_DECLARE(name) extern const struct device name
 #define DEVICE_NAME_GET(dev) ((dev)->name)
 
 /* NuttX-compatible HCI driver interface */
-struct bt_hci_driver {
-    const struct device dev;
-    int (*open)(void);
-    int (*send)(const uint8_t *data, size_t len);
-    int (*close)(void);
-    void *priv;
+
+struct bt_hci_driver
+{
+  const struct device dev;
+  int (*open)(void);
+  int (*send)(const uint8_t *data, size_t len);
+  int (*close)(void);
+  void *priv;
 };
 
 #ifdef __cplusplus

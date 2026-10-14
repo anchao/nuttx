@@ -49,7 +49,8 @@
  * @ingroup bluetooth
  * @{
  *
- * The Published Audio Capabilities Service (PACS) is used to expose capabilities to remote devices.
+ * The Published Audio Capabilities Service (PACS) is used to expose
+ * capabilities to remote devices.
  */
 
 /****************************************************************************
@@ -64,54 +65,68 @@
 #include <nuttx/list.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /** @brief Published Audio Capability structure. */
-struct bt_pacs_cap {
-	/** Codec capability reference */
-	const struct bt_audio_codec_cap *codec_cap;
 
-	/** @cond INTERNAL_HIDDEN */
-	/** Internally used field for list handling */
-	struct list_node _node;
-	/** @endcond */
+struct bt_pacs_cap
+{
+  /** Codec capability reference */
+
+  const struct bt_audio_codec_cap *codec_cap;
+
+  /** @cond INTERNAL_HIDDEN */
+
+  /** Internally used field for list handling */
+
+  struct list_node _node;
+
+  /** @endcond */
 };
 
 /** Structure for registering PACS */
-struct bt_pacs_register_param {
+
+struct bt_pacs_register_param
+{
 #if defined(CONFIG_BT_PAC_SNK) || defined(__DOXYGEN__)
-	/**
-	 * @brief Enables or disables registration of Sink PAC Characteristic.
-	 */
-	bool snk_pac;
+  /**
+   * @brief Enables or disables registration of Sink PAC Characteristic.
+   */
+
+  bool snk_pac;
 #endif /* CONFIG_BT_PAC_SNK */
 
 #if defined(CONFIG_BT_PAC_SNK_LOC) || defined(__DOXYGEN__)
-	/**
-	 * @brief Enables or disables registration of Sink Location Characteristic.
-	 *
-	 * Registration of Sink Location is dependent on @ref bt_pacs_register_param.snk_pac
-	 * also being set.
-	 */
-	bool snk_loc;
+  /**
+   * @brief Enables or disables registration of Sink Location Characteristic.
+   *
+   * Registration of Sink Location is dependent on @ref
+   * bt_pacs_register_param.snk_pac also being set.
+   */
+
+  bool snk_loc;
 #endif /* CONFIG_BT_PAC_SNK_LOC */
 
 #if defined(CONFIG_BT_PAC_SRC) || defined(__DOXYGEN__)
-	/**
-	 * @brief Enables or disables registration of Source PAC Characteristic.
-	 */
-	bool src_pac;
+  /**
+   * @brief Enables or disables registration of Source PAC Characteristic.
+   */
+
+  bool src_pac;
 #endif /* CONFIG_BT_PAC_SRC */
 
 #if defined(CONFIG_BT_PAC_SRC_LOC) || defined(__DOXYGEN__)
-	/**
-	 * @brief Enables or disables registration of Source Location Characteristic.
-	 *
-	 * Registration of Source Location is dependent on @ref bt_pacs_register_param.src_pac
-	 * also being set.
-	 */
-	bool src_loc;
+  /**
+   * @brief Enables or disables registration of Source Location
+   * Characteristic.
+   *
+   * Registration of Source Location is dependent on @ref
+   * bt_pacs_register_param.src_pac also being set.
+   */
+
+  bool src_loc;
 #endif /* CONFIG_BT_PAC_SRC_LOC */
 };
 
@@ -119,27 +134,28 @@ struct bt_pacs_register_param {
  * @typedef bt_pacs_cap_foreach_func_t
  * @brief Published Audio Capability iterator callback.
  *
- * @param cap Capability found.
+ * @param cap       Capability found.
  * @param user_data Data given.
  *
  * @return true to continue to the next capability
  * @return false to stop the iteration
  */
-typedef bool (*bt_pacs_cap_foreach_func_t)(const struct bt_pacs_cap *cap,
-					   void *user_data);
+
+typedef bool (*bt_pacs_cap_foreach_func_t)(
+  const struct bt_pacs_cap *cap, void *user_data);
 
 /**
  * @brief Published Audio Capability iterator.
  *
  * Iterate capabilities with endpoint direction specified.
  *
- * @param dir Direction of the endpoint to look capability for.
- * @param func Callback function.
+ * @param dir       Direction of the endpoint to look capability for.
+ * @param func      Callback function.
  * @param user_data Data to pass to the callback.
  */
+
 void bt_pacs_cap_foreach(enum bt_audio_dir dir,
-			 bt_pacs_cap_foreach_func_t func,
-			 void *user_data);
+                         bt_pacs_cap_foreach_func_t func, void *user_data);
 
 /**
  * @brief Register the Published Audio Capability Service instance.
@@ -151,6 +167,7 @@ void bt_pacs_cap_foreach(enum bt_audio_dir dir,
  * @retval -EALREADY Already registered
  * @retval -ENOEXEC Request was rejected by GATT
  */
+
 int bt_pacs_register(const struct bt_pacs_register_param *param);
 
 /**
@@ -158,6 +175,7 @@ int bt_pacs_register(const struct bt_pacs_register_param *param);
  *
  * @return 0 in case of success or negative value in case of error.
  */
+
 int bt_pacs_unregister(void);
 
 /**
@@ -170,6 +188,7 @@ int bt_pacs_unregister(void);
  *
  * @return 0 in case of success or negative value in case of error.
  */
+
 int bt_pacs_cap_register(enum bt_audio_dir dir, struct bt_pacs_cap *cap);
 
 /**
@@ -182,6 +201,7 @@ int bt_pacs_cap_register(enum bt_audio_dir dir, struct bt_pacs_cap *cap);
  *
  * @return 0 in case of success or negative value in case of error.
  */
+
 int bt_pacs_cap_unregister(enum bt_audio_dir dir, struct bt_pacs_cap *cap);
 
 /**
@@ -192,19 +212,22 @@ int bt_pacs_cap_unregister(enum bt_audio_dir dir, struct bt_pacs_cap *cap);
  *
  * @return 0 in case of success or negative value in case of error.
  */
+
 int bt_pacs_set_location(enum bt_audio_dir dir,
-			 enum bt_audio_location location);
+                         enum bt_audio_location location);
 
 /**
  * @brief Set the available contexts for an endpoint type
  *
- * @param dir      Direction of the endpoints to change available contexts for.
+ * @param dir      Direction of the endpoints to change available contexts
+ *                 for.
  * @param contexts The contexts to be set.
  *
  * @return 0 in case of success or negative value in case of error.
  */
+
 int bt_pacs_set_available_contexts(enum bt_audio_dir dir,
-				   enum bt_audio_context contexts);
+                                   enum bt_audio_context contexts);
 
 /**
  * @brief Get the available contexts for an endpoint type
@@ -213,32 +236,37 @@ int bt_pacs_set_available_contexts(enum bt_audio_dir dir,
  *
  * @return Bitmask of available contexts.
  */
+
 enum bt_audio_context bt_pacs_get_available_contexts(enum bt_audio_dir dir);
 
 /**
  * @brief Set the available contexts for a given connection
  *
- * This function sets the available contexts value for a given @p conn connection object.
- * If the @p contexts parameter is NULL the available contexts value is reset to default.
- * The default value of the available contexts is set using @ref bt_pacs_set_available_contexts
- * function.
- * The Available Context Value is reset to default on ACL disconnection.
+ * This function sets the available contexts value for a given @p conn
+ * connection object. If the @p contexts parameter is NULL the available
+ * contexts value is reset to default. The default value of the available
+ * contexts is set using @ref bt_pacs_set_available_contexts function. The
+ * Available Context Value is reset to default on ACL disconnection.
  *
  * @param conn     Connection object.
- * @param dir      Direction of the endpoints to change available contexts for.
+ * @param dir      Direction of the endpoints to change available contexts
+ *                 for.
  * @param contexts The contexts to be set or NULL to reset to default.
  *
  * @return 0 in case of success or negative value in case of error.
  */
-int bt_pacs_conn_set_available_contexts_for_conn(struct bt_conn *conn, enum bt_audio_dir dir,
-						 enum bt_audio_context *contexts);
+
+int bt_pacs_conn_set_available_contexts_for_conn(
+  struct bt_conn *conn, enum bt_audio_dir dir,
+  enum bt_audio_context *contexts);
 
 /**
  * @brief Get the available contexts for a given connection
  *
- * This server function returns the available contexts value for a given @p conn connection object.
- * The value returned is the one set with @ref bt_pacs_conn_set_available_contexts_for_conn function
- * or the default value set with @ref bt_pacs_set_available_contexts function.
+ * This server function returns the available contexts value for a given @p
+ * conn connection object. The value returned is the one set with @ref
+ * bt_pacs_conn_set_available_contexts_for_conn function or the default value
+ * set with @ref bt_pacs_set_available_contexts function.
  *
  * @param conn     Connection object.
  * @param dir      Direction of the endpoints to get contexts for.
@@ -246,19 +274,22 @@ int bt_pacs_conn_set_available_contexts_for_conn(struct bt_conn *conn, enum bt_a
  * @return Bitmask of available contexts.
  * @retval BT_AUDIO_CONTEXT_TYPE_NONE if @p conn or @p dir are invalid
  */
-enum bt_audio_context bt_pacs_get_available_contexts_for_conn(struct bt_conn *conn,
-							      enum bt_audio_dir dir);
+
+enum bt_audio_context bt_pacs_get_available_contexts_for_conn(
+  struct bt_conn *conn, enum bt_audio_dir dir);
 
 /**
  * @brief Set the supported contexts for an endpoint type
  *
- * @param dir      Direction of the endpoints to change available contexts for.
+ * @param dir      Direction of the endpoints to change available contexts
+ *                 for.
  * @param contexts The contexts to be set.
  *
  * @return 0 in case of success or negative value in case of error.
  */
+
 int bt_pacs_set_supported_contexts(enum bt_audio_dir dir,
-				   enum bt_audio_context contexts);
+                                   enum bt_audio_context contexts);
 
 #ifdef __cplusplus
 }

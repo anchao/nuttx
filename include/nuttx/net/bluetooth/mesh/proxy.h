@@ -28,8 +28,7 @@
  *  @brief Proxy APIs.
  */
 
-/*
- * Copyright (c) 2017 Intel Corporation
+/* Copyright (c) 2017 Intel Corporation
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -53,26 +52,29 @@
  */
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /** Callbacks for the Proxy feature.
  *
  *  Should be instantiated with @ref BT_MESH_PROXY_CB_DEFINE.
  */
-struct bt_mesh_proxy_cb {
-	/** @brief Started sending Node Identity beacons on the given subnet.
-	 *
-	 *  @param net_idx Network index the Node Identity beacons are running
-	 *                 on.
-	 */
-	void (*identity_enabled)(uint16_t net_idx);
-	/** @brief Stopped sending Node Identity beacons on the given subnet.
-	 *
-	 *  @param net_idx Network index the Node Identity beacons were running
-	 *                 on.
-	 */
-	void (*identity_disabled)(uint16_t net_idx);
+
+struct bt_mesh_proxy_cb
+{
+  /** @brief Started sending Node Identity beacons on the given subnet.
+   *
+   *  @param net_idx Network index the Node Identity beacons are running on.
+   */
+
+  void (*identity_enabled)(uint16_t net_idx);
+  /** @brief Stopped sending Node Identity beacons on the given subnet.
+   *
+   *  @param net_idx Network index the Node Identity beacons were running on.
+   */
+
+  void (*identity_disabled)(uint16_t net_idx);
 };
 
 /**
@@ -83,28 +85,29 @@ struct bt_mesh_proxy_cb {
  *
  *  @param _name Name of callback structure.
  */
-#define BT_MESH_PROXY_CB_DEFINE(_name)                                         \
-	static const STRUCT_SECTION_ITERABLE(                                  \
-		bt_mesh_proxy_cb, _CONCAT(bt_mesh_proxy_cb_, _name))
+#define BT_MESH_PROXY_CB_DEFINE(_name)                                                             \
+static const STRUCT_SECTION_ITERABLE(bt_mesh_proxy_cb, _CONCAT(bt_mesh_proxy_cb_, _name))
 
 /** @brief Enable advertising with Node Identity.
  *
  *  This API requires that GATT Proxy support has been enabled. Once called
- *  each subnet will start advertising using Node Identity for the next
- *  60 seconds.
+ *  each subnet will start advertising using Node Identity for the next 60
+ *  seconds.
  *
  *  @return 0 on success, or (negative) error code on failure.
  */
+
 int bt_mesh_proxy_identity_enable(void);
 
 /** @brief Enable advertising with Private Node Identity.
  *
  *  This API requires that GATT Proxy support has been enabled. Once called
- *  each subnet will start advertising using Private Node Identity for the next
- *  60 seconds.
+ *  each subnet will start advertising using Private Node Identity for the
+ *  next 60 seconds.
  *
  *  @return 0 on success, or (negative) error code on failure.
  */
+
 int bt_mesh_proxy_private_identity_enable(void);
 
 /** @brief Allow Proxy Client to auto connect to a network.
@@ -115,6 +118,7 @@ int bt_mesh_proxy_private_identity_enable(void);
  *
  *  @return 0 on success, or (negative) error code on failure.
  */
+
 int bt_mesh_proxy_connect(uint16_t net_idx);
 
 /** @brief Disallow Proxy Client to auto connect to a network.
@@ -125,21 +129,24 @@ int bt_mesh_proxy_connect(uint16_t net_idx);
  *
  *  @return 0 on success, or (negative) error code on failure.
  */
+
 int bt_mesh_proxy_disconnect(uint16_t net_idx);
 
 /** @brief Schedule advertising of Solicitation PDUs.
  *
- *  Once called, the device will schedule advertising Solicitation PDUs for the amount of time
- *  defined by @c adv_int * (@c CONFIG_BT_MESH_SOL_ADV_XMIT + 1), where @c adv_int is 20ms
- *  for Bluetooth v5.0 or higher, or 100ms otherwise.
+ *  Once called, the device will schedule advertising Solicitation PDUs for
+ *  the amount of time defined by @c adv_int * (@c
+ *     CONFIG_BT_MESH_SOL_ADV_XMIT + 1), where @c adv_int is 20ms for
+ *     Bluetooth v5.0 or higher, or 100ms otherwise.
  *
- *  If the number of advertised Solicitation PDUs reached 0xFFFFFF, the advertisements will
- *  no longer be started until the node is reprovisioned.
+ *  If the number of advertised Solicitation PDUs reached 0xFFFFFF, the
+ *  advertisements will no longer be started until the node is reprovisioned.
  *
  *  @param net_idx  Network Key Index
  *
  *  @return 0 on success, or (negative) error code on failure.
  */
+
 int bt_mesh_proxy_solicit(uint16_t net_idx);
 
 #ifdef __cplusplus

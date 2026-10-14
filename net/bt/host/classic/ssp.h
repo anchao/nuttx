@@ -24,9 +24,8 @@
  *
  ****************************************************************************/
 
-/*
- * Copyright (c) 2020 Nordic Semiconductor ASA
- * Copyright (c) 2017 Intel Corporation
+/* Copyright (c) 2020 Nordic Semiconductor ASA Copyright (c) 2017 Intel
+ * Corporation
  *
  * SPDX-License-Identifier: Apache-2.0
  */

@@ -28,8 +28,7 @@
  *  @brief Bluetooth HID protocol values shared by the Device and Host roles.
  */
 
-/*
- * Copyright 2026 Xiaomi Corporation
+/* Copyright 2026 Xiaomi Corporation
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -45,17 +44,18 @@
  */
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /**
  * @name HID protocol mode values
  *
  * Defined in HID spec v1.1.2 Section 2.1.2, which makes Report Protocol Mode
- * the default. The same values are carried by GET_PROTOCOL and SET_PROTOCOL in
- * both directions, so they are shared by the Device and the Host role.
- * @{
+ * the default. The same values are carried by GET_PROTOCOL and SET_PROTOCOL
+ * in both directions, so they are shared by the Device and the Host role. @{
  */
+
 /** Boot Protocol Mode (legacy). */
 #define BT_HID_PROTOCOL_BOOT_MODE   0x00U
 /** Report Protocol Mode (default). */
@@ -66,9 +66,9 @@ extern "C" {
  * @name HID report type values
  *
  * The report type carried by GET_REPORT, SET_REPORT and DATA transfers.
- * Defined in HID spec v1.1.2 Table 3.4.
- * @{
+ * Defined in HID spec v1.1.2 Table 3.4. @{
  */
+
 /** Reserved report type, used where no type applies. */
 #define BT_HID_REPORT_TYPE_OTHER   0x00U
 /** Input report (device to host). */
@@ -82,11 +82,11 @@ extern "C" {
 /**
  * @name HID HANDSHAKE result codes
  *
- * Result of a request sent on the control channel. Defined in HID spec v1.1.2
- * Section 3.1.2.1. A Host reports them to the application, a Device answers
- * with them, so they are shared by both roles.
- * @{
+ * Result of a request sent on the control channel. Defined in HID spec
+ * v1.1.2 Section 3.1.2.1. A Host reports them to the application, a Device
+ * answers with them, so they are shared by both roles. @{
  */
+
 /** The request completed successfully. */
 #define BT_HID_HS_RSP_SUCCESS               0x00U
 /** The peer is too busy to accept the request; the sender may retry. */

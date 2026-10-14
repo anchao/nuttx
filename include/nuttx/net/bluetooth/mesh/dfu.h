@@ -24,15 +24,15 @@
  *
  ****************************************************************************/
 
-/*
- * Copyright (c) 2020 Nordic Semiconductor ASA
+/* Copyright (c) 2020 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
  * @file
- * @brief Header file for the Bluetooth Mesh Device Firmware Update (DFU) API.
+ * @brief Header file for the Bluetooth Mesh Device Firmware Update (DFU)
+ * API.
  * @ingroup bt_mesh_dfu
  */
 
@@ -49,7 +49,8 @@
 #include <nuttx/net/bluetooth/mesh/blob.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /**
@@ -75,127 +76,175 @@ extern "C" {
 #endif
 
 /** DFU transfer phase. */
-enum bt_mesh_dfu_phase {
-	/** Ready to start a Receive Firmware procedure. */
-	BT_MESH_DFU_PHASE_IDLE,
 
-	/** The Transfer BLOB procedure failed. */
-	BT_MESH_DFU_PHASE_TRANSFER_ERR,
+enum bt_mesh_dfu_phase
+{
+  /** Ready to start a Receive Firmware procedure. */
 
-	/** The Receive Firmware procedure is being executed.  */
-	BT_MESH_DFU_PHASE_TRANSFER_ACTIVE,
+  BT_MESH_DFU_PHASE_IDLE,
 
-	/** The Verify Firmware procedure is being executed. */
-	BT_MESH_DFU_PHASE_VERIFY,
+  /** The Transfer BLOB procedure failed. */
 
-	/** The Verify Firmware procedure completed successfully. */
-	BT_MESH_DFU_PHASE_VERIFY_OK,
+  BT_MESH_DFU_PHASE_TRANSFER_ERR,
 
-	/** The Verify Firmware procedure failed. */
-	BT_MESH_DFU_PHASE_VERIFY_FAIL,
+  /** The Receive Firmware procedure is being executed.  */
 
-	/** The Apply New Firmware procedure is being executed. */
-	BT_MESH_DFU_PHASE_APPLYING,
+  BT_MESH_DFU_PHASE_TRANSFER_ACTIVE,
 
-	/** Firmware transfer has been canceled. */
-	BT_MESH_DFU_PHASE_TRANSFER_CANCELED,
+  /** The Verify Firmware procedure is being executed. */
 
-	/** Firmware applying succeeded. */
-	BT_MESH_DFU_PHASE_APPLY_SUCCESS,
+  BT_MESH_DFU_PHASE_VERIFY,
 
-	/** Firmware applying failed. */
-	BT_MESH_DFU_PHASE_APPLY_FAIL,
+  /** The Verify Firmware procedure completed successfully. */
 
-	/** Phase of a node was not yet retrieved. */
-	BT_MESH_DFU_PHASE_UNKNOWN,
+  BT_MESH_DFU_PHASE_VERIFY_OK,
+
+  /** The Verify Firmware procedure failed. */
+
+  BT_MESH_DFU_PHASE_VERIFY_FAIL,
+
+  /** The Apply New Firmware procedure is being executed. */
+
+  BT_MESH_DFU_PHASE_APPLYING,
+
+  /** Firmware transfer has been canceled. */
+
+  BT_MESH_DFU_PHASE_TRANSFER_CANCELED,
+
+  /** Firmware applying succeeded. */
+
+  BT_MESH_DFU_PHASE_APPLY_SUCCESS,
+
+  /** Firmware applying failed. */
+
+  BT_MESH_DFU_PHASE_APPLY_FAIL,
+
+  /** Phase of a node was not yet retrieved. */
+
+  BT_MESH_DFU_PHASE_UNKNOWN,
 };
 
-
 /** DFU status. */
-enum bt_mesh_dfu_status {
-	/** The message was processed successfully. */
-	BT_MESH_DFU_SUCCESS,
 
-	/** Insufficient resources on the node */
-	BT_MESH_DFU_ERR_RESOURCES,
+enum bt_mesh_dfu_status
+{
+  /** The message was processed successfully. */
 
-	/** The operation cannot be performed while the Server is in the current
-	 *  phase.
-	 */
-	BT_MESH_DFU_ERR_WRONG_PHASE,
+  BT_MESH_DFU_SUCCESS,
 
-	/** An internal error occurred on the node. */
-	BT_MESH_DFU_ERR_INTERNAL,
+  /** Insufficient resources on the node */
 
-	/** The message contains a firmware index value that is not expected. */
-	BT_MESH_DFU_ERR_FW_IDX,
+  BT_MESH_DFU_ERR_RESOURCES,
 
-	/** The metadata check failed. */
-	BT_MESH_DFU_ERR_METADATA,
+  /** The operation cannot be performed while the Server is in the current
+   *  phase.
+   */
 
-	/** The Server cannot start a firmware update. */
-	BT_MESH_DFU_ERR_TEMPORARILY_UNAVAILABLE,
+  BT_MESH_DFU_ERR_WRONG_PHASE,
 
-	/** Another BLOB transfer is in progress. */
-	BT_MESH_DFU_ERR_BLOB_XFER_BUSY,
+  /** An internal error occurred on the node. */
+
+  BT_MESH_DFU_ERR_INTERNAL,
+
+  /** The message contains a firmware index value that is not expected. */
+
+  BT_MESH_DFU_ERR_FW_IDX,
+
+  /** The metadata check failed. */
+
+  BT_MESH_DFU_ERR_METADATA,
+
+  /** The Server cannot start a firmware update. */
+
+  BT_MESH_DFU_ERR_TEMPORARILY_UNAVAILABLE,
+
+  /** Another BLOB transfer is in progress. */
+
+  BT_MESH_DFU_ERR_BLOB_XFER_BUSY,
 };
 
 /** Expected effect of a DFU transfer. */
-enum bt_mesh_dfu_effect {
-	/** No changes to node Composition Data. */
-	BT_MESH_DFU_EFFECT_NONE,
 
-	/** Node Composition Data changed and the node does not support remote
-	 *  provisioning.
-	 */
-	BT_MESH_DFU_EFFECT_COMP_CHANGE_NO_RPR,
+enum bt_mesh_dfu_effect
+{
+  /** No changes to node Composition Data. */
 
-	/** Node Composition Data changed, and remote provisioning is supported.
-	 *  The node supports remote provisioning and Composition Data Page
-	 *  0x80. Page 0x80 contains different Composition Data than Page 0x0.
-	 */
-	BT_MESH_DFU_EFFECT_COMP_CHANGE,
+  BT_MESH_DFU_EFFECT_NONE,
 
-	/** Node will be unprovisioned after the update. */
-	BT_MESH_DFU_EFFECT_UNPROV,
+  /** Node Composition Data changed and the node does not support remote
+   *  provisioning.
+   */
+
+  BT_MESH_DFU_EFFECT_COMP_CHANGE_NO_RPR,
+
+  /** Node Composition Data changed, and remote provisioning is supported.
+   *  The node supports remote provisioning and Composition Data Page 0x80.
+   *  Page 0x80 contains different Composition Data than Page 0x0.
+   */
+
+  BT_MESH_DFU_EFFECT_COMP_CHANGE,
+
+  /** Node will be unprovisioned after the update. */
+
+  BT_MESH_DFU_EFFECT_UNPROV,
 };
 
 /** Action for DFU iteration callbacks. */
-enum bt_mesh_dfu_iter {
-	/** Stop iterating. */
-	BT_MESH_DFU_ITER_STOP,
 
-	/** Continue iterating. */
-	BT_MESH_DFU_ITER_CONTINUE,
+enum bt_mesh_dfu_iter
+{
+  /** Stop iterating. */
+
+  BT_MESH_DFU_ITER_STOP,
+
+  /** Continue iterating. */
+
+  BT_MESH_DFU_ITER_CONTINUE,
 };
 
 /** DFU image instance.
  *
  *  Each DFU image represents a single updatable firmware image.
  */
-struct bt_mesh_dfu_img {
-	/** Firmware ID. */
-	const void *fwid;
 
-	/** Length of the firmware ID. */
-	size_t fwid_len;
+struct bt_mesh_dfu_img
+{
+  /** Firmware ID. */
 
-	/** Update URI, or NULL. */
-	const char *uri;
+  const void *fwid;
+
+  /** Length of the firmware ID. */
+
+  size_t fwid_len;
+
+  /** Update URI, or NULL. */
+
+  const char *uri;
 };
 
 /** DFU image slot for DFU distribution. */
-struct bt_mesh_dfu_slot {
-	/** Size of the firmware in bytes. */
-	size_t size;
-	/** Length of the firmware ID. */
-	size_t fwid_len;
-	/** Length of the metadata. */
-	size_t metadata_len;
-	/** Firmware ID. */
-	uint8_t fwid[CONFIG_BT_MESH_DFU_FWID_MAXLEN];
-	/** Metadata. */
-	uint8_t metadata[CONFIG_BT_MESH_DFU_METADATA_MAXLEN];
+
+struct bt_mesh_dfu_slot
+{
+  /** Size of the firmware in bytes. */
+
+  size_t size;
+
+  /** Length of the firmware ID. */
+
+  size_t fwid_len;
+
+  /** Length of the metadata. */
+
+  size_t metadata_len;
+
+  /** Firmware ID. */
+
+  uint8_t fwid[CONFIG_BT_MESH_DFU_FWID_MAXLEN];
+
+  /** Metadata. */
+
+  uint8_t metadata[CONFIG_BT_MESH_DFU_METADATA_MAXLEN];
 };
 
 /** @} */

@@ -28,8 +28,7 @@
  *  @brief Message APIs.
  */
 
-/*
- * Copyright (c) 2021 Nordic Semiconductor ASA
+/* Copyright (c) 2021 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -51,7 +50,8 @@
 #include <nuttx/mm/net_buf.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 struct bt_mesh_model;
@@ -77,8 +77,8 @@ struct bt_mesh_model;
  *  @param _op          Opcode of the message.
  *  @param _payload_len Length of the model payload.
  */
-#define BT_MESH_MODEL_BUF_LEN(_op, _payload_len)                               \
-	(BT_MESH_MODEL_OP_LEN(_op) + (_payload_len) + BT_MESH_MIC_SHORT)
+#define BT_MESH_MODEL_BUF_LEN(_op, _payload_len)                                                   \
+(BT_MESH_MODEL_OP_LEN(_op) + (_payload_len) + BT_MESH_MIC_SHORT)
 
 /**
  *  @brief Helper for model message buffer length.
@@ -89,159 +89,189 @@ struct bt_mesh_model;
  *  @param _op          Opcode of the message.
  *  @param _payload_len Length of the model payload.
  */
-#define BT_MESH_MODEL_BUF_LEN_LONG_MIC(_op, _payload_len)                      \
-	(BT_MESH_MODEL_OP_LEN(_op) + (_payload_len) + BT_MESH_MIC_LONG)
+#define BT_MESH_MODEL_BUF_LEN_LONG_MIC(_op, _payload_len)                                          \
+(BT_MESH_MODEL_OP_LEN(_op) + (_payload_len) + BT_MESH_MIC_LONG)
 
 /**
- *  @brief Define a Mesh model message buffer using @ref NET_BUF_SIMPLE_DEFINE.
+ *  @brief Define a Mesh model message buffer using @ref
+ *  NET_BUF_SIMPLE_DEFINE.
  *
  *  @param _buf         Buffer name.
  *  @param _op          Opcode of the message.
  *  @param _payload_len Length of the model message payload.
  */
-#define BT_MESH_MODEL_BUF_DEFINE(_buf, _op, _payload_len)                      \
-	NET_BUF_SIMPLE_DEFINE(_buf, BT_MESH_MODEL_BUF_LEN(_op, (_payload_len)))
+#define BT_MESH_MODEL_BUF_DEFINE(_buf, _op, _payload_len)                                          \
+NET_BUF_SIMPLE_DEFINE(_buf, BT_MESH_MODEL_BUF_LEN(_op, (_payload_len)))
 
 /** Message sending context. */
-struct bt_mesh_msg_ctx {
-	/** NetKey Index of the subnet to send the message on. */
-	uint16_t net_idx;
 
-	/** AppKey Index to encrypt the message with. */
-	uint16_t app_idx;
+struct bt_mesh_msg_ctx
+{
+  /** NetKey Index of the subnet to send the message on. */
 
-	/** Remote address. */
-	uint16_t addr;
+  uint16_t net_idx;
 
-	/** Destination address of a received message. Not used for sending. */
-	uint16_t recv_dst;
+  /** AppKey Index to encrypt the message with. */
 
-	/** Label UUID if Remote address is Virtual address, or NULL otherwise. */
-	const uint8_t *uuid;
+  uint16_t app_idx;
 
-	/** RSSI of received packet. Not used for sending. */
-	int8_t  recv_rssi;
+  /** Remote address. */
 
-	/** Received TTL value. Not used for sending. */
-	uint8_t  recv_ttl;
+  uint16_t addr;
 
-	/** Force sending reliably by using segment acknowledgment */
-	bool  send_rel;
+  /** Destination address of a received message. Not used for sending. */
 
-	/** Send message with a random delay according to the Access layer transmitting rules. */
-	bool  rnd_delay;
+  uint16_t recv_dst;
 
-	/** TTL, or BT_MESH_TTL_DEFAULT for default TTL. */
-	uint8_t  send_ttl;
+  /** Label UUID if Remote address is Virtual address, or NULL otherwise. */
+
+  const uint8_t *uuid;
+
+  /** RSSI of received packet. Not used for sending. */
+
+  int8_t recv_rssi;
+
+  /** Received TTL value. Not used for sending. */
+
+  uint8_t recv_ttl;
+
+  /** Force sending reliably by using segment acknowledgment */
+
+  bool send_rel;
+
+  /** Send message with a random delay according to the Access layer
+   *  transmitting rules.
+   */
+
+  bool rnd_delay;
+
+  /** TTL, or BT_MESH_TTL_DEFAULT for default TTL. */
+
+  uint8_t send_ttl;
 };
 
 /**
  * @brief Helper for bt_mesh_msg_ctx structure initialization.
  *
- * @note If @c dst is a Virtual Address, Label UUID shall be initialized separately.
+ * @note If @c dst is a Virtual Address, Label UUID shall be initialized
+ * separately.
  *
- * @param net_key_idx NetKey Index of the subnet to send the message on. Only used if
- * @c app_key_idx points to devkey.
+ * @param net_key_idx NetKey Index of the subnet to send the message on. Only
+ *                    used if @c app_key_idx points to devkey.
  * @param app_key_idx AppKey Index to encrypt the message with.
- * @param dst Remote addr.
- * @param ttl Time To Live.
+ * @param dst         Remote addr.
+ * @param ttl         Time To Live.
  */
-#define BT_MESH_MSG_CTX_INIT(net_key_idx, app_key_idx, dst, ttl) \
-	{ \
-		.net_idx = (net_key_idx), \
-		.app_idx = (app_key_idx), \
-		.addr = (dst), \
-		.send_ttl = (ttl), \
-	}
+#define BT_MESH_MSG_CTX_INIT(net_key_idx, app_key_idx, dst, ttl)                                   \
+{                                                                                                \
+        .net_idx = (net_key_idx),                                                                \
+        .app_idx = (app_key_idx),                                                                \
+        .addr = (dst),                                                                           \
+        .send_ttl = (ttl),                                                                       \
+}
 
 /**
- * @brief Helper for bt_mesh_msg_ctx structure initialization secured with Application Key.
+ * @brief Helper for bt_mesh_msg_ctx structure initialization secured with
+ * Application Key.
  *
  * @param app_key_idx AppKey Index to encrypt the message with.
- * @param dst Remote addr.
+ * @param dst         Remote addr.
  */
-#define BT_MESH_MSG_CTX_INIT_APP(app_key_idx, dst) \
-	BT_MESH_MSG_CTX_INIT(0, app_key_idx, dst, BT_MESH_TTL_DEFAULT)
+#define BT_MESH_MSG_CTX_INIT_APP(app_key_idx, dst)                                                 \
+BT_MESH_MSG_CTX_INIT(0, app_key_idx, dst, BT_MESH_TTL_DEFAULT)
 
 /**
- * @brief Helper for bt_mesh_msg_ctx structure initialization secured with Device Key of a remote
- * device.
+ * @brief Helper for bt_mesh_msg_ctx structure initialization secured with
+ * Device Key of a remote device.
  *
  * @param net_key_idx NetKey Index of the subnet to send the message on.
- * @param dst Remote addr.
+ * @param dst         Remote addr.
  */
-#define BT_MESH_MSG_CTX_INIT_DEV(net_key_idx, dst) \
-	BT_MESH_MSG_CTX_INIT(net_key_idx, BT_MESH_KEY_DEV_REMOTE, dst, BT_MESH_TTL_DEFAULT)
+#define BT_MESH_MSG_CTX_INIT_DEV(net_key_idx, dst)                                                 \
+BT_MESH_MSG_CTX_INIT(net_key_idx, BT_MESH_KEY_DEV_REMOTE, dst, BT_MESH_TTL_DEFAULT)
 
 /**
- * @brief Helper for bt_mesh_msg_ctx structure initialization using Model Publication context.
+ * @brief Helper for bt_mesh_msg_ctx structure initialization using Model
+ * Publication context.
  *
  * @param pub Pointer to a model publication context.
  */
-#define BT_MESH_MSG_CTX_INIT_PUB(pub) \
-	{ \
-		.app_idx = (pub)->key, \
-		.addr = (pub)->addr, \
-		.send_ttl = (pub)->ttl, \
-		.uuid = (pub)->uuid, \
-	}
+#define BT_MESH_MSG_CTX_INIT_PUB(pub)                                                              \
+{                                                                                                \
+        .app_idx = (pub)->key,                                                                   \
+        .addr = (pub)->addr,                                                                     \
+        .send_ttl = (pub)->ttl,                                                                  \
+        .uuid = (pub)->uuid,                                                                     \
+}
 
 /** @brief Initialize a model message.
  *
- *  Clears the message buffer contents, and encodes the given opcode.
- *  The message buffer will be ready for filling in payload data.
+ *  Clears the message buffer contents, and encodes the given opcode. The
+ *  message buffer will be ready for filling in payload data.
  *
  *  @param msg    Message buffer.
  *  @param opcode Opcode to encode.
  */
+
 void bt_mesh_model_msg_init(struct net_buf_simple *msg, uint32_t opcode);
 
 /**
- * Acknowledged message context for tracking the status of model messages pending a response.
+ * Acknowledged message context for tracking the status of model messages
+ * pending a response.
  */
-struct bt_mesh_msg_ack_ctx {
-	sem_t          sem;       /**< Sync semaphore. */
-	uint32_t              op;        /**< Opcode we're waiting for. */
-	uint16_t              dst;       /**< Address of the node that should respond. */
-	void                 *user_data; /**< User specific parameter. */
+
+struct bt_mesh_msg_ack_ctx
+{
+  sem_t sem;       /**< Sync semaphore. */
+  uint32_t op;     /**< Opcode we're waiting for. */
+  uint16_t dst;    /**< Address of the node that should respond. */
+  void *user_data; /**< User specific parameter. */
 };
 
 /** @brief Initialize an acknowledged message context.
  *
- *  Initializes semaphore used for synchronization between @ref bt_mesh_msg_ack_ctx_wait and
- *  @ref bt_mesh_msg_ack_ctx_rx calls. Call this function before using @ref bt_mesh_msg_ack_ctx.
+ *  Initializes semaphore used for synchronization between @ref
+ *  bt_mesh_msg_ack_ctx_wait and
+ *  @ref bt_mesh_msg_ack_ctx_rx calls. Call this function before using @ref
+ *  bt_mesh_msg_ack_ctx.
  *
  *  @param ack Acknowledged message context to initialize.
  */
+
 static inline void bt_mesh_msg_ack_ctx_init(struct bt_mesh_msg_ack_ctx *ack)
 {
-	nxsem_init(&ack->sem, 0, 0);
+  nxsem_init(&ack->sem, 0, 0);
 }
 
-/** @brief Reset the synchronization semaphore in an acknowledged message context.
+/** @brief Reset the synchronization semaphore in an acknowledged message
+ *         context.
  *
  *  This function aborts call to @ref bt_mesh_msg_ack_ctx_wait.
  *
  *  @param ack Acknowledged message context to be reset.
  */
+
 static inline void bt_mesh_msg_ack_ctx_reset(struct bt_mesh_msg_ack_ctx *ack)
 {
-	nxsem_reset(&ack->sem, 0);
+  nxsem_reset(&ack->sem, 0);
 }
 
 /** @brief Clear parameters of an acknowledged message context.
  *
- *  This function clears the opcode, remote address and user data set
- *  by @ref bt_mesh_msg_ack_ctx_prepare.
+ *  This function clears the opcode, remote address and user data set by @ref
+ *  bt_mesh_msg_ack_ctx_prepare.
  *
  *  @param ack Acknowledged message context to be cleared.
  */
+
 void bt_mesh_msg_ack_ctx_clear(struct bt_mesh_msg_ack_ctx *ack);
 
-/** @brief Prepare an acknowledged message context for the incoming message to wait.
+/** @brief Prepare an acknowledged message context for the incoming message
+ *         to wait.
  *
- *  This function sets the opcode, remote address of the incoming message and stores the user data.
- *  Use this function before calling @ref bt_mesh_msg_ack_ctx_wait.
+ *  This function sets the opcode, remote address of the incoming message and
+ *  stores the user data. Use this function before calling @ref
+ *  bt_mesh_msg_ack_ctx_wait.
  *
  *  @param ack       Acknowledged message context to prepare.
  *  @param op        The message OpCode.
@@ -250,31 +280,38 @@ void bt_mesh_msg_ack_ctx_clear(struct bt_mesh_msg_ack_ctx *ack);
  *
  *  @return 0 on success, or (negative) error code on failure.
  */
-int bt_mesh_msg_ack_ctx_prepare(struct bt_mesh_msg_ack_ctx *ack,
-				uint32_t op, uint16_t dst, void *user_data);
 
-/** @brief Check if the acknowledged message context is initialized with an opcode.
+int bt_mesh_msg_ack_ctx_prepare(
+  struct bt_mesh_msg_ack_ctx *ack, uint32_t op, uint16_t dst,
+  void *user_data);
+
+/** @brief Check if the acknowledged message context is initialized with an
+ *         opcode.
  *
  *  @param ack Acknowledged message context.
  *
- *  @return true if the acknowledged message context is initialized with an opcode,
- *  false otherwise.
+ *  @return true if the acknowledged message context is initialized with an
+ *  opcode, false otherwise.
  */
+
 static inline bool bt_mesh_msg_ack_ctx_busy(struct bt_mesh_msg_ack_ctx *ack)
 {
-	return (ack->op != 0);
+  return (ack->op != 0);
 }
 
 /** @brief Wait for a message acknowledge.
  *
- *  This function blocks execution until @ref bt_mesh_msg_ack_ctx_rx is called or by timeout.
+ *  This function blocks execution until @ref bt_mesh_msg_ack_ctx_rx is
+ *  called or by timeout.
  *
  *  @param ack     Acknowledged message context of the message to wait for.
  *  @param timeout Wait timeout.
  *
  *  @return 0 on success, or (negative) error code on failure.
  */
-int bt_mesh_msg_ack_ctx_wait(struct bt_mesh_msg_ack_ctx *ack, clock_t timeout);
+
+int bt_mesh_msg_ack_ctx_wait(struct bt_mesh_msg_ack_ctx *ack,
+                             clock_t timeout);
 
 /** @brief Mark a message as acknowledged.
  *
@@ -282,23 +319,29 @@ int bt_mesh_msg_ack_ctx_wait(struct bt_mesh_msg_ack_ctx *ack, clock_t timeout);
  *
  *  @param ack Context of a message to be acknowledged.
  */
+
 static inline void bt_mesh_msg_ack_ctx_rx(struct bt_mesh_msg_ack_ctx *ack)
 {
-	nxsem_post(&ack->sem);
+  nxsem_post(&ack->sem);
 }
 
-/** @brief Check if an opcode and address of a message matches the expected one.
+/** @brief Check if an opcode and address of a message matches the expected
+ *         one.
  *
  *  @param ack       Acknowledged message context to be checked.
  *  @param op        OpCode of the incoming message.
  *  @param addr      Source address of the incoming message.
- *  @param user_data If not NULL, returns a user data stored in the acknowledged message context
- *  by @ref bt_mesh_msg_ack_ctx_prepare.
+ *  @param user_data If not NULL, returns a user data stored in the
+ *                   acknowledged message context by @ref
+ *                   bt_mesh_msg_ack_ctx_prepare.
  *
- *  @return true if the incoming message matches the expected one, false otherwise.
+ *  @return true if the incoming message matches the expected one, false
+ *  otherwise.
  */
-bool bt_mesh_msg_ack_ctx_match(const struct bt_mesh_msg_ack_ctx *ack,
-			       uint32_t op, uint16_t addr, void **user_data);
+
+bool bt_mesh_msg_ack_ctx_match(
+  const struct bt_mesh_msg_ack_ctx *ack, uint32_t op, uint16_t addr,
+  void **user_data);
 
 #ifdef __cplusplus
 }

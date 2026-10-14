@@ -28,8 +28,7 @@
  *  @brief Internal APIs for Bluetooth Handsfree profile handling.
  */
 
-/*
- * Copyright (c) 2015-2016 Intel Corporation
+/* Copyright (c) 2015-2016 Intel Corporation
  * Copyright 2024 NXP
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -146,32 +145,21 @@
 #endif /* CONFIG_BT_HFP_AG_INBAND_RINGTONE */
 
 /* HFP AG Supported features */
-#define BT_HFP_AG_SUPPORTED_FEATURES (\
-	BT_HFP_AG_FEATURE_3WAY_CALL_ENABLE | \
-	BT_HFP_AG_FEATURE_INBAND_RINGTONE_ENABLE | \
-	BT_HFP_AG_FEATURE_EXT_ERR_ENABLE | \
-	BT_HFP_AG_FEATURE_CODEC_NEG_ENABLE | \
-	BT_HFP_AG_FEATURE_ECNR_ENABLE | \
-	BT_HFP_AG_FEATURE_ECS_ENABLE | \
-	BT_HFP_AG_FEATURE_ECC_ENABLE | \
-	BT_HFP_AG_FEATURE_VOICE_RECG_ENABLE | \
-	BT_HFP_AG_FEATURE_ENH_VOICE_RECG_ENABLE | \
-	BT_HFP_AG_FEATURE_VOICE_RECG_TEXT_ENABLE | \
-	BT_HFP_AG_FEATURE_VOICE_TAG_ENABLE | \
-	BT_HFP_AG_FEATURE_HF_IND_ENABLE | \
-	BT_HFP_AG_FEATURE_REJECT_CALL_ENABLE)
+#define BT_HFP_AG_SUPPORTED_FEATURES                                                               \
+  (BT_HFP_AG_FEATURE_3WAY_CALL_ENABLE | BT_HFP_AG_FEATURE_INBAND_RINGTONE_ENABLE |                 \
+   BT_HFP_AG_FEATURE_EXT_ERR_ENABLE | BT_HFP_AG_FEATURE_CODEC_NEG_ENABLE |                         \
+   BT_HFP_AG_FEATURE_ECNR_ENABLE | BT_HFP_AG_FEATURE_ECS_ENABLE | BT_HFP_AG_FEATURE_ECC_ENABLE |   \
+   BT_HFP_AG_FEATURE_VOICE_RECG_ENABLE | BT_HFP_AG_FEATURE_ENH_VOICE_RECG_ENABLE |                 \
+   BT_HFP_AG_FEATURE_VOICE_RECG_TEXT_ENABLE | BT_HFP_AG_FEATURE_VOICE_TAG_ENABLE |                 \
+   BT_HFP_AG_FEATURE_HF_IND_ENABLE | BT_HFP_AG_FEATURE_REJECT_CALL_ENABLE)
 
 /* HFP AG Supported features in SDP */
-#define BT_HFP_AG_SDP_SUPPORTED_FEATURES (\
-	BT_HFP_AG_SDP_FEATURE_3WAY_CALL_ENABLE | \
-	BT_HFP_AG_SDP_FEATURE_INBAND_RINGTONE_ENABLE | \
-	BT_HFP_AG_SDP_FEATURE_ECNR_ENABLE | \
-	BT_HFP_AG_SDP_FEATURE_VOICE_RECG_ENABLE | \
-	BT_HFP_AG_SDP_FEATURE_ENH_VOICE_RECG_ENABLE | \
-	BT_HFP_AG_SDP_FEATURE_VOICE_RECG_TEXT_ENABLE | \
-	BT_HFP_AG_SDP_FEATURE_VOICE_TAG_ENABLE | \
-	BT_HFP_AG_SDP_FEATURE_WBS_ENABLE | \
-	BT_HFP_AG_SDP_FEATURE_SUPER_WBS_ENABLE)
+#define BT_HFP_AG_SDP_SUPPORTED_FEATURES                                                           \
+  (BT_HFP_AG_SDP_FEATURE_3WAY_CALL_ENABLE | BT_HFP_AG_SDP_FEATURE_INBAND_RINGTONE_ENABLE |         \
+   BT_HFP_AG_SDP_FEATURE_ECNR_ENABLE | BT_HFP_AG_SDP_FEATURE_VOICE_RECG_ENABLE |                   \
+   BT_HFP_AG_SDP_FEATURE_ENH_VOICE_RECG_ENABLE | BT_HFP_AG_SDP_FEATURE_VOICE_RECG_TEXT_ENABLE |    \
+   BT_HFP_AG_SDP_FEATURE_VOICE_TAG_ENABLE | BT_HFP_AG_SDP_FEATURE_WBS_ENABLE |                     \
+   BT_HFP_AG_SDP_FEATURE_SUPER_WBS_ENABLE)
 
 #define BT_HFP_AG_CODEC_CVSD_ENABLE BIT(BT_HFP_AG_CODEC_CVSD)
 
@@ -187,165 +175,213 @@
 #define BT_HFP_AG_CODEC_LC3_SWB_ENABLE 0
 #endif /* CONFIG_BT_HFP_AG_CODEC_LC3_SWB */
 
-/* HFP HF Supported Codec IDs*/
-#define BT_HFP_AG_SUPPORTED_CODEC_IDS (\
-	BT_HFP_AG_CODEC_CVSD_ENABLE | \
-	BT_HFP_AG_CODEC_MSBC_ENABLE | \
-	BT_HFP_AG_CODEC_LC3_SWB_ENABLE)
+/* HFP HF Supported Codec IDs */
+#define BT_HFP_AG_SUPPORTED_CODEC_IDS                                                              \
+  (BT_HFP_AG_CODEC_CVSD_ENABLE | BT_HFP_AG_CODEC_MSBC_ENABLE | BT_HFP_AG_CODEC_LC3_SWB_ENABLE)
 
 /* bt_hfp_ag flags: the flags defined here represent HFP AG parameters */
-enum {
-	BT_HFP_AG_CMEE_ENABLE,   /* Extended Audio Gateway Error Result Code */
-	BT_HFP_AG_CMER_ENABLE,   /* Indicator Events Reporting */
-	BT_HFP_AG_CLIP_ENABLE,   /* Calling Line Identification notification */
-	BT_HFP_AG_CCWA_ENABLE,   /* Call Waiting notification */
-	BT_HFP_AG_INBAND_RING,   /* In-band ring */
-	BT_HFP_AG_COPS_SET,      /* Query Operator selection */
-	BT_HFP_AG_AUDIO_CONN,    /* Audio connection */
-	BT_HFP_AG_CODEC_CONN,    /* Codec connection is ongoing */
-	BT_HFP_AG_CODEC_CHANGED, /* Codec Id Changed */
-	BT_HFP_AG_TX_ONGOING,    /* TX is ongoing */
-	BT_HFP_AG_CREATING_SCO,  /* SCO is creating */
-	BT_HFP_AG_VRE_ACTIVATE,  /* VRE is activated */
-	BT_HFP_AG_VRE_R2A,       /* HF is ready to accept audio */
-	BT_HGP_AG_ONGOING_CALLS, /* Waiting ongoing calls */
-	BT_HFP_AG_SLC_CONNECTED, /* SLC connected event needs to be notified */
-	BT_HFP_AG_AT_PROCESS,    /* AT command is in processing */
-	BT_HFP_AG_DISCOVER_DONE, /* SDP Record discovered done */
-	BT_HFP_AG_RECORD_FOUND,  /* SDP HF Record found */
-	BT_HFP_AG_1ST_AT_RECV,   /* 1st AT is received */
-	BT_HFP_AG_FEAT_UPDATED,  /* Remote feature has been updated */
-	BT_HFP_AG_RELEASING,     /* Release object when SDP discovery completes */
 
-	/* Total number of flags - must be at the end of the enum */
-	BT_HFP_AG_NUM_FLAGS,
+enum
+{
+  BT_HFP_AG_CMEE_ENABLE,   /* Extended Audio Gateway Error Result Code */
+  BT_HFP_AG_CMER_ENABLE,   /* Indicator Events Reporting */
+  BT_HFP_AG_CLIP_ENABLE,   /* Calling Line Identification notification */
+  BT_HFP_AG_CCWA_ENABLE,   /* Call Waiting notification */
+  BT_HFP_AG_INBAND_RING,   /* In-band ring */
+  BT_HFP_AG_COPS_SET,      /* Query Operator selection */
+  BT_HFP_AG_AUDIO_CONN,    /* Audio connection */
+  BT_HFP_AG_CODEC_CONN,    /* Codec connection is ongoing */
+  BT_HFP_AG_CODEC_CHANGED, /* Codec Id Changed */
+  BT_HFP_AG_TX_ONGOING,    /* TX is ongoing */
+  BT_HFP_AG_CREATING_SCO,  /* SCO is creating */
+  BT_HFP_AG_VRE_ACTIVATE,  /* VRE is activated */
+  BT_HFP_AG_VRE_R2A,       /* HF is ready to accept audio */
+  BT_HGP_AG_ONGOING_CALLS, /* Waiting ongoing calls */
+  BT_HFP_AG_SLC_CONNECTED, /* SLC connected event needs to be notified */
+  BT_HFP_AG_AT_PROCESS,    /* AT command is in processing */
+  BT_HFP_AG_DISCOVER_DONE, /* SDP Record discovered done */
+  BT_HFP_AG_RECORD_FOUND,  /* SDP HF Record found */
+  BT_HFP_AG_1ST_AT_RECV,   /* 1st AT is received */
+  BT_HFP_AG_FEAT_UPDATED,  /* Remote feature has been updated */
+  BT_HFP_AG_RELEASING,     /* Release object when SDP discovery completes */
+
+  /* Total number of flags - must be at the end of the enum */
+
+  BT_HFP_AG_NUM_FLAGS,
 };
 
 /* bt_hfp_ag_call flags: the flags defined here represent HFP AG parameters */
-enum {
-	BT_HFP_AG_CALL_IN_USING,      /* Object is in using */
-	BT_HFP_AG_CALL_INCOMING,      /* Incoming call */
-	BT_HFP_AG_CALL_INCOMING_HELD, /* Incoming call held */
-	BT_HFP_AG_CALL_OPEN_SCO,      /* Open SCO */
-	BT_HFP_AG_CALL_OUTGOING_3WAY, /* Outgoing 3 way call */
-	BT_HFP_AG_CALL_INCOMING_3WAY, /* Incoming 3 way call */
-	BT_HFP_AG_CALL_ALERTING,      /* Pending for alerting */
 
-	/* Total number of flags - must be at the end of the enum */
-	BT_HFP_AG_CALL_NUM_FLAGS,
+enum
+{
+  BT_HFP_AG_CALL_IN_USING,      /* Object is in using */
+  BT_HFP_AG_CALL_INCOMING,      /* Incoming call */
+  BT_HFP_AG_CALL_INCOMING_HELD, /* Incoming call held */
+  BT_HFP_AG_CALL_OPEN_SCO,      /* Open SCO */
+  BT_HFP_AG_CALL_OUTGOING_3WAY, /* Outgoing 3 way call */
+  BT_HFP_AG_CALL_INCOMING_3WAY, /* Incoming 3 way call */
+  BT_HFP_AG_CALL_ALERTING,      /* Pending for alerting */
+
+  /* Total number of flags - must be at the end of the enum */
+
+  BT_HFP_AG_CALL_NUM_FLAGS,
 };
 
-typedef enum __packed {
-	/** Session disconnected */
-	BT_HFP_DISCONNECTED,
-	/** Session in connecting state */
-	BT_HFP_CONNECTING,
-	/** Session in config state, HFP configuration */
-	BT_HFP_CONFIG,
-	/** Session ready for upper layer traffic on it */
-	BT_HFP_CONNECTED,
-	/** Session in disconnecting state */
-	BT_HFP_DISCONNECTING,
+typedef enum __packed
+{
+  /** Session disconnected */
+
+  BT_HFP_DISCONNECTED,
+
+  /** Session in connecting state */
+
+  BT_HFP_CONNECTING,
+
+  /** Session in config state, HFP configuration */
+
+  BT_HFP_CONFIG,
+
+  /** Session ready for upper layer traffic on it */
+
+  BT_HFP_CONNECTED,
+
+  /** Session in disconnecting state */
+
+  BT_HFP_DISCONNECTING,
 } bt_hfp_state_t;
 
-typedef enum __packed {
-	/** Call terminate */
-	BT_HFP_CALL_TERMINATE = 1,
-	/** Call outgoing */
-	BT_HFP_CALL_OUTGOING = 2,
-	/** Call incoming */
-	BT_HFP_CALL_INCOMING = 4,
-	/** Call alerting */
-	BT_HFP_CALL_ALERTING = 8,
-	/** Call active */
-	BT_HFP_CALL_ACTIVE = 16,
-	/** Call hold */
-	BT_HFP_CALL_HOLD = 32,
+typedef enum __packed
+{
+  /** Call terminate */
+
+  BT_HFP_CALL_TERMINATE = 1,
+
+  /** Call outgoing */
+
+  BT_HFP_CALL_OUTGOING = 2,
+
+  /** Call incoming */
+
+  BT_HFP_CALL_INCOMING = 4,
+
+  /** Call alerting */
+
+  BT_HFP_CALL_ALERTING = 8,
+
+  /** Call active */
+
+  BT_HFP_CALL_ACTIVE = 16,
+
+  /** Call hold */
+
+  BT_HFP_CALL_HOLD = 32,
 } bt_hfp_call_state_t;
 
 #define AT_COPS_OPERATOR_MAX_LEN 16
 
-struct bt_hfp_ag_call {
-	struct bt_hfp_ag *ag;
+struct bt_hfp_ag_call
+{
+  struct bt_hfp_ag *ag;
 
-	char number[CONFIG_BT_HFP_AG_PHONE_NUMBER_MAX_LEN + 1];
-	uint8_t type;
+  char number[CONFIG_BT_HFP_AG_PHONE_NUMBER_MAX_LEN + 1];
+  uint8_t type;
 
-	atomic_define(flags, BT_HFP_AG_CALL_NUM_FLAGS);
+  atomic_define(flags, BT_HFP_AG_CALL_NUM_FLAGS);
 
-	/* HFP Call state */
-	bt_hfp_call_state_t call_state;
+  /* HFP Call state */
 
-	/* Calling Line Identification notification */
-	struct k_work_delayable ringing_work;
+  bt_hfp_call_state_t call_state;
 
-	struct k_work_delayable deferred_work;
+  /* Calling Line Identification notification */
+
+  struct k_work_delayable ringing_work;
+
+  struct k_work_delayable deferred_work;
 };
 
-struct bt_hfp_ag {
-	struct bt_rfcomm_dlc rfcomm_dlc;
-	char buffer[HF_MAX_BUF_LEN];
-	uint32_t hf_features;
-	uint32_t ag_features;
+struct bt_hfp_ag
+{
+  struct bt_rfcomm_dlc rfcomm_dlc;
+  char buffer[HF_MAX_BUF_LEN];
+  uint32_t hf_features;
+  uint32_t ag_features;
 
-	/* HF Supported Codec Ids*/
-	uint32_t hf_codec_ids;
-	uint8_t selected_codec_id;
+  /* HF Supported Codec Ids */
 
-	atomic_define(flags, BT_HFP_AG_NUM_FLAGS);
+  uint32_t hf_codec_ids;
+  uint8_t selected_codec_id;
 
-	/* ACL Connection Object */
-	struct bt_conn *acl_conn;
+  atomic_define(flags, BT_HFP_AG_NUM_FLAGS);
 
-	/* HFP Connection state */
-	bt_hfp_state_t state;
+  /* ACL Connection Object */
 
-	/* AG Indicators */
-	uint8_t indicator_value[BT_HFP_AG_IND_MAX];
-	uint32_t indicator;
+  struct bt_conn *acl_conn;
 
-	/* HF Indicators */
-	uint32_t hf_indicators_of_ag;
-	uint32_t hf_indicators_of_hf;
-	uint32_t hf_indicators;
+  /* HFP Connection state */
 
-	/* AG profile information */
-	uint16_t hf_sdp_version;
-	uint16_t hf_sdp_features;
+  bt_hfp_state_t state;
 
-	/* operator */
-	uint8_t mode;
-	char operator[AT_COPS_OPERATOR_MAX_LEN + 1];
+  /* AG Indicators */
 
-	/* calls */
-	struct bt_hfp_ag_call calls[CONFIG_BT_HFP_AG_MAX_CALLS];
+  uint8_t indicator_value[BT_HFP_AG_IND_MAX];
+  uint32_t indicator;
 
-	/* ongoing calls */
-	struct bt_hfp_ag_ongoing_call ongoing_calls[CONFIG_BT_HFP_AG_MAX_CALLS];
-	size_t ongoing_call_count;
-	/* ongoing calls work */
-	struct k_work_delayable ongoing_call_work;
+  /* HF Indicators */
 
-	/* SCO Connection Object */
-	struct bt_sco_chan sco_chan;
+  uint32_t hf_indicators_of_ag;
+  uint32_t hf_indicators_of_hf;
+  uint32_t hf_indicators;
 
-	/* SCO connect */
-	void * sco_conn;
+  /* AG profile information */
 
-	/* SDP discover params */
-	struct bt_sdp_discover_params sdp_param;
+  uint16_t hf_sdp_version;
+  uint16_t hf_sdp_features;
 
-	/* SCL work */
-	struct k_work slc_work;
-	int ack_err;
+  /* operator */
 
-	/* HFP TX pending */
-	struct list_node tx_pending;
-	struct list_node tx_submit_pending;
+  uint8_t mode;
+  char operator[AT_COPS_OPERATOR_MAX_LEN + 1];
 
-	/* Critical locker */
-	sem_t lock;
+  /* calls */
 
-	/* TX work */
-	struct k_work_delayable tx_work;
+  struct bt_hfp_ag_call calls[CONFIG_BT_HFP_AG_MAX_CALLS];
+
+  /* ongoing calls */
+
+  struct bt_hfp_ag_ongoing_call ongoing_calls[CONFIG_BT_HFP_AG_MAX_CALLS];
+  size_t ongoing_call_count;
+
+  /* ongoing calls work */
+
+  struct k_work_delayable ongoing_call_work;
+
+  /* SCO Connection Object */
+
+  struct bt_sco_chan sco_chan;
+
+  /* SCO connect */
+
+  void *sco_conn;
+
+  /* SDP discover params */
+
+  struct bt_sdp_discover_params sdp_param;
+
+  /* SCL work */
+
+  struct k_work slc_work;
+  int ack_err;
+
+  /* HFP TX pending */
+
+  struct list_node tx_pending;
+  struct list_node tx_submit_pending;
+
+  /* Critical locker */
+
+  sem_t lock;
+
+  /* TX work */
+
+  struct k_work_delayable tx_work;
 };

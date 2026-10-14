@@ -37,7 +37,8 @@
 #include <stdbool.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /* Minimal settings API for BT bonding key storage.
@@ -47,40 +48,46 @@ extern "C" {
 #define SETTINGS_MAX_DIR_DEPTH 8
 
 typedef int (*settings_read_cb)(void *cb_arg, void *data, size_t len);
-typedef int (*settings_load_direct_cb)(const char *key, size_t len,
-                                       settings_read_cb read_cb,
-                                       void *cb_arg, void *param);
+typedef int (*settings_load_direct_cb)(
+  const char *key, size_t len, settings_read_cb read_cb, void *cb_arg,
+  void *param);
 
 int settings_subsys_init(void);
 int settings_save_one(const char *name, const void *value, size_t val_len);
 int settings_load_subtree(const char *subtree);
-int settings_load_subtree_direct(const char *subtree, settings_load_direct_cb cb, void *param);
+int settings_load_subtree_direct(const char *subtree,
+                                 settings_load_direct_cb cb, void *param);
 int settings_delete(const char *name);
 int settings_commit(void);
 
 /* Callback registration */
-struct settings_handler {
-    const char *name;
-    int (*h_set)(const char *key, size_t len, settings_read_cb read_cb, void *cb_arg);
-    int (*h_commit)(void);
-    int (*h_export)(int (*cb)(const char *name, const void *value, size_t val_len));
-    int (*h_rename)(const char *from, const char *to);
+
+struct settings_handler
+{
+  const char *name;
+  int (*h_set)(const char *key, size_t len, settings_read_cb read_cb,
+               void *cb_arg);
+  int (*h_commit)(void);
+  int (*h_export)(
+    int (*cb)(const char *name, const void *value, size_t val_len));
+  int (*h_rename)(const char *from, const char *to);
 };
 
-#define SETTINGS_STATIC_HANDLER_DEFINE(_hname, _tree, _hget, _hset, _hcommit, _hexport) \
-    static Z_DECL_ALIGN(struct settings_handler) _hname \
-        __attribute__((__used__)) \
-        __attribute__((__section__(".settings_handlers"))) = { \
-        .name = (_tree), \
-        .h_set = (_hset), \
-        .h_commit = (_hcommit), \
-        .h_export = (_hexport), \
-    }
+#define SETTINGS_STATIC_HANDLER_DEFINE(_hname, _tree, _hget, _hset, _hcommit, _hexport)            \
+static Z_DECL_ALIGN(struct settings_handler) _hname __attribute__((__used__))                    \
+__attribute__((__section__(".settings_handlers"))) = {                                           \
+        .name = (_tree),                                                                         \
+        .h_set = (_hset),                                                                        \
+        .h_commit = (_hcommit),                                                                  \
+        .h_export = (_hexport),                                                                  \
+}
 
 int settings_register(struct settings_handler *handler);
 
 /* Internal helpers */
-bool settings_name_steq(const char *name, const char *key, const char **next);
+
+bool settings_name_steq(const char *name,
+                        const char *key, const char **next);
 int settings_name_next(const char *name, const char **next);
 
 #ifdef __cplusplus

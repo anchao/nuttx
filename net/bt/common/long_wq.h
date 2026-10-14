@@ -26,8 +26,7 @@
 
 /* long_wq.h - Workqueue API intended for long-running operations. */
 
-/*
- * Copyright (c) 2022 Nordic Semiconductor ASA
+/* Copyright (c) 2022 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: Apache-2.0
  */

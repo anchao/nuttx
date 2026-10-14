@@ -24,8 +24,7 @@
  *
  ****************************************************************************/
 
-/*
- * Copyright (c) 2016 Intel Corporation
+/* Copyright (c) 2016 Intel Corporation
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -40,11 +39,13 @@
 #include <nuttx/mm/net_buf.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-struct bt_dev_raw {
-	const struct device *hci;
+struct bt_dev_raw
+{
+  const struct device *hci;
 };
 
 extern struct bt_dev_raw bt_dev;

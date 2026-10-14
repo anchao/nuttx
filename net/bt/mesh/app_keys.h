@@ -24,8 +24,7 @@
  *
  ****************************************************************************/
 
-/*
- * Copyright (c) 2020 Nordic Semiconductor ASA
+/* Copyright (c) 2020 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -42,39 +41,54 @@
 #include "subnet.h"
 
 /** Mesh Application Key. */
-struct bt_mesh_app_key {
-	/** NetKey Index the AppKey is bound to. */
-	uint16_t net_idx;
-	/** Application Key Index. */
-	uint16_t app_idx;
-	/** True if the AppKey has a second key for KR. */
-	bool updated;
-	struct bt_mesh_app_cred {
-		/** Application ID. */
-		uint8_t id;
-		/** Application Key value. */
-		struct bt_mesh_key val;
-	} keys[2];
+
+struct bt_mesh_app_key
+{
+  /** NetKey Index the AppKey is bound to. */
+
+  uint16_t net_idx;
+
+  /** Application Key Index. */
+
+  uint16_t app_idx;
+
+  /** True if the AppKey has a second key for KR. */
+
+  bool updated;
+  struct bt_mesh_app_cred
+  {
+    /** Application ID. */
+
+    uint8_t id;
+
+    /** Application Key value. */
+
+    struct bt_mesh_key val;
+  }
+  keys[2];
 };
 
 /** Appkey callback. Instantiate with @ref BT_MESH_APP_KEY_CB_DEFINE */
-struct bt_mesh_app_key_cb {
-	void (*evt_handler)(struct bt_mesh_app_key *app, enum bt_mesh_key_evt evt);
+
+struct bt_mesh_app_key_cb
+{
+  void (*evt_handler)(struct bt_mesh_app_key *app, enum bt_mesh_key_evt evt);
 };
 
 /**
  *  @brief Register an AppKey event callback.
  *
- *  @param _handler Handler function, see @ref bt_mesh_app_key_cb::evt_handler.
+ *  @param _handler Handler function, see @ref
+ *                  bt_mesh_app_key_cb::evt_handler.
  */
-#define BT_MESH_APP_KEY_CB_DEFINE(_handler)                                    \
-	static const STRUCT_SECTION_ITERABLE(bt_mesh_app_key_cb,               \
-					     _CONCAT(bt_mesh_app_key_cb_,      \
-						       _handler)) = {          \
-		.evt_handler = (_handler),                                     \
-	}
+#define BT_MESH_APP_KEY_CB_DEFINE(_handler)                                                        \
+  static const STRUCT_SECTION_ITERABLE(bt_mesh_app_key_cb,                                         \
+                                       _CONCAT(bt_mesh_app_key_cb_, _handler)) = {                 \
+          .evt_handler = (_handler),                                                               \
+  }
 
 /** @brief Reset the app keys module. */
+
 void bt_mesh_app_keys_reset(void);
 
 /** @brief Initialize a new application key with the given parameters.
@@ -86,15 +100,18 @@ void bt_mesh_app_keys_reset(void);
  *
  *  @return 0 on success, or (negative) error code on failure.
  */
-int bt_mesh_app_key_set(uint16_t app_idx, uint16_t net_idx,
-			const struct bt_mesh_key *old_key, const struct bt_mesh_key *new_key);
+
+int bt_mesh_app_key_set(uint16_t app_idx,
+                        uint16_t net_idx,
+                        const struct bt_mesh_key *old_key,
+                        const struct bt_mesh_key *new_key);
 
 /** @brief Resolve the message encryption keys, given a message context.
  *
  *  Will use the @c ctx::app_idx and @c ctx::net_idx fields to find a pair of
- *  message encryption keys. If @c ctx::app_idx represents a device key, the
- *  @c ctx::net_idx will be used to determine the net key. Otherwise, the
- *  @c ctx::net_idx parameter will be ignored.
+ *     message encryption keys. If @c ctx::app_idx represents a device key,
+ *     the @c ctx::net_idx will be used to determine the net key. Otherwise,
+ *     the @c ctx::net_idx parameter will be ignored.
  *
  *  @param ctx     Message context.
  *  @param sub     Subnet return parameter.
@@ -103,11 +120,14 @@ int bt_mesh_app_key_set(uint16_t app_idx, uint16_t net_idx,
  *
  *  @return 0 on success, or (negative) error code on failure.
  */
-int bt_mesh_keys_resolve(struct bt_mesh_msg_ctx *ctx,
-			 struct bt_mesh_subnet **sub,
-			 const struct bt_mesh_key **app_key, uint8_t *aid);
 
-/** @brief Iterate through all matching application keys and call @c cb on each.
+int bt_mesh_keys_resolve(struct bt_mesh_msg_ctx *ctx,
+                         struct bt_mesh_subnet **sub,
+                         const struct bt_mesh_key **app_key,
+                         uint8_t *aid);
+
+/** @brief Iterate through all matching application keys and call @c cb on
+ *         each.
  *
  *  @param dev_key Whether to return device keys.
  *  @param aid     7 bit application ID to match.
@@ -117,13 +137,18 @@ int bt_mesh_keys_resolve(struct bt_mesh_msg_ctx *ctx,
  *
  *  @return The AppIdx that yielded a 0-return from the callback.
  */
-uint16_t bt_mesh_app_key_find(bool dev_key, uint8_t aid,
-			      struct bt_mesh_net_rx *rx,
-			      int (*cb)(struct bt_mesh_net_rx *rx,
-					const struct bt_mesh_key *key, void *cb_data),
-			      void *cb_data);
+
+uint16_t bt_mesh_app_key_find(bool dev_key,
+    uint8_t aid,
+    struct bt_mesh_net_rx *rx,
+
+int (*cb)(struct bt_mesh_net_rx *rx,
+          const struct bt_mesh_key *key,
+          void *cb_data),
+          void *cb_data);
 
 /** @brief Store pending application keys in persistent storage. */
+
 void bt_mesh_app_key_pending_store(void);
 
 #endif /* ZEPHYR_SUBSYS_BLUETOOTH_MESH_APP_KEYS_H_ */

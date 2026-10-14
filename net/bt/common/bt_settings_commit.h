@@ -33,13 +33,15 @@
 /**
  * @brief Bluetooth Settings Commit Priorities
  *
- * Enum of commit priorities for Bluetooth settings handlers.
- * Lower values indicate higher priority.
+ * Enum of commit priorities for Bluetooth settings handlers. Lower values
+ * indicate higher priority.
  */
-enum bt_settings_commit_priority {
-	BT_SETTINGS_CPRIO_0,
-	BT_SETTINGS_CPRIO_1,
-	BT_SETTINGS_CPRIO_2,
+
+enum bt_settings_commit_priority
+{
+  BT_SETTINGS_CPRIO_0,
+  BT_SETTINGS_CPRIO_1,
+  BT_SETTINGS_CPRIO_2,
 };
 
 #endif /* BT_SETTINGS_COMMIT_H_ */

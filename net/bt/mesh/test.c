@@ -24,8 +24,7 @@
  *
  ****************************************************************************/
 
-/*
- * Copyright (c) 2017 Intel Corporation
+/* Copyright (c) 2017 Intel Corporation
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -42,7 +41,11 @@
 #include "mesh.h"
 #include "test.h"
 
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
+
 int bt_mesh_test(void)
 {
-	return 0;
+  return 0;
 }

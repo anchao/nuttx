@@ -28,8 +28,7 @@
  *  @brief Bluetooth byteorder API
  */
 
-/*
- * Copyright (c) 2023 Nordic Semiconductor ASA
+/* Copyright (c) 2023 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -47,9 +46,9 @@
  */
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
-
 
 /** @brief Encode 16-bit value into array values in little-endian format.
  *
@@ -61,9 +60,7 @@ extern "C" {
  *
  *  @return The comma separated values for the 16-bit value.
  */
-#define BT_BYTES_LIST_LE16(_v)         \
-	(((_v) >>  0) & 0xFFU),     \
-	(((_v) >>  8) & 0xFFU)      \
+#define BT_BYTES_LIST_LE16(_v) (((_v) >> 0) & 0xFFU), (((_v) >> 8) & 0xFFU)
 
 /** @brief Encode 24-bit value into array values in little-endian format.
  *
@@ -75,9 +72,7 @@ extern "C" {
  *
  *  @return The comma separated values for the 24-bit value.
  */
-#define BT_BYTES_LIST_LE24(_v)         \
-	BT_BYTES_LIST_LE16(_v),        \
-	(((_v) >> 16) & 0xFFU)      \
+#define BT_BYTES_LIST_LE24(_v) BT_BYTES_LIST_LE16(_v), (((_v) >> 16) & 0xFFU)
 
 /** @brief Encode 32-bit value into array values in little-endian format.
  *
@@ -89,9 +84,7 @@ extern "C" {
  *
  *  @return The comma separated values for the 32-bit value.
  */
-#define BT_BYTES_LIST_LE32(_v)         \
-	BT_BYTES_LIST_LE24(_v),        \
-	(((_v) >> 24) & 0xFFU)      \
+#define BT_BYTES_LIST_LE32(_v) BT_BYTES_LIST_LE24(_v), (((_v) >> 24) & 0xFFU)
 
 /** @brief Encode 40-bit value into array values in little-endian format.
  *
@@ -103,9 +96,7 @@ extern "C" {
  *
  *  @return The comma separated values for the 40-bit value.
  */
-#define BT_BYTES_LIST_LE40(_v)         \
-	BT_BYTES_LIST_LE24(_v),        \
-	BT_BYTES_LIST_LE16((_v) >> 24) \
+#define BT_BYTES_LIST_LE40(_v) BT_BYTES_LIST_LE24(_v), BT_BYTES_LIST_LE16((_v) >> 24)
 
 /** @brief Encode 48-bit value into array values in little-endian format.
  *
@@ -117,9 +108,7 @@ extern "C" {
  *
  *  @return The comma separated values for the 48-bit value.
  */
-#define BT_BYTES_LIST_LE48(_v)         \
-	BT_BYTES_LIST_LE32(_v),        \
-	BT_BYTES_LIST_LE16((_v) >> 32) \
+#define BT_BYTES_LIST_LE48(_v) BT_BYTES_LIST_LE32(_v), BT_BYTES_LIST_LE16((_v) >> 32)
 
 /** @brief Encode 64-bit value into array values in little-endian format.
  *
@@ -131,9 +120,7 @@ extern "C" {
  *
  *  @return The comma separated values for the 64-bit value.
  */
-#define BT_BYTES_LIST_LE64(_v)         \
-	BT_BYTES_LIST_LE32(_v),        \
-	BT_BYTES_LIST_LE32((_v) >> 32) \
+#define BT_BYTES_LIST_LE64(_v) BT_BYTES_LIST_LE32(_v), BT_BYTES_LIST_LE32((_v) >> 32)
 
 /** @brief Encode 16-bit value into array values in big-endian format.
  *

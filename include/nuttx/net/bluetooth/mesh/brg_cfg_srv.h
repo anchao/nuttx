@@ -24,8 +24,7 @@
  *
  ****************************************************************************/
 
-/*
- * Copyright (c) 2024 Nordic Semiconductor ASA
+/* Copyright (c) 2024 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -43,7 +42,8 @@
 #include <nuttx/net/bluetooth/mesh/brg_cfg.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /**
@@ -58,12 +58,14 @@ extern "C" {
  *  @brief Bridge Configuration Server model Composition Data entry.
  */
 #define BT_MESH_MODEL_BRG_CFG_SRV                                                                  \
-	BT_MESH_MODEL_CB(BT_MESH_MODEL_ID_BRG_CFG_SRV, _bt_mesh_brg_cfg_srv_op, NULL, NULL,        \
-			 &_bt_mesh_brg_cfg_srv_cb)
+BT_MESH_MODEL_CB(BT_MESH_MODEL_ID_BRG_CFG_SRV, _bt_mesh_brg_cfg_srv_op, NULL, NULL,              \
+                 &_bt_mesh_brg_cfg_srv_cb)
 
 /** @cond INTERNAL_HIDDEN */
+
 extern const struct bt_mesh_model_op _bt_mesh_brg_cfg_srv_op[];
 extern const struct bt_mesh_model_cb _bt_mesh_brg_cfg_srv_cb;
+
 /** @endcond */
 
 /**

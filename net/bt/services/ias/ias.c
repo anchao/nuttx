@@ -28,8 +28,7 @@
  *  @brief Immediate Alert Service implementation
  */
 
-/*
- * Copyright (c) 2022 Codecoup
+/* Copyright (c) 2022 Codecoup
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -62,108 +61,147 @@ LOG_MODULE_REGISTER(ias);
 #define IAS_ALERT_LEVEL_PERM BT_GATT_PERM_WRITE
 #endif
 
-struct alerting_device {
-	enum bt_ias_alert_lvl alert_level;
+struct alerting_device
+{
+  enum bt_ias_alert_lvl alert_level;
 };
 
 static struct alerting_device devices[CONFIG_BT_MAX_CONN];
 static enum bt_ias_alert_lvl curr_lvl;
 
+/****************************************************************************
+ * Private Functions
+ ****************************************************************************/
+
 static void set_alert_level(void)
 {
-	enum bt_ias_alert_lvl alert_level = BT_IAS_ALERT_LVL_NO_ALERT;
+  enum bt_ias_alert_lvl alert_level = BT_IAS_ALERT_LVL_NO_ALERT;
 
-	/* Set the alert_level as the highest requested by any device */
-	for (int i = 0; i < CONFIG_BT_MAX_CONN; i++) {
-		if (alert_level < devices[i].alert_level) {
-			alert_level = devices[i].alert_level;
-		}
-	}
+  /* Set the alert_level as the highest requested by any device */
 
-	if (curr_lvl == alert_level) {
-		return;
-	}
+  for (int i = 0; i < CONFIG_BT_MAX_CONN; i++)
+    {
+      if (alert_level < devices[i].alert_level)
+        {
+          alert_level = devices[i].alert_level;
+        }
+    }
 
-	curr_lvl = alert_level;
+  if (curr_lvl == alert_level)
+    {
+      return;
+    }
 
-	if (alert_level == BT_IAS_ALERT_LVL_HIGH_ALERT) {
-		STRUCT_SECTION_FOREACH(bt_ias_cb, cb) {
-			if (cb->high_alert) {
-				cb->high_alert();
-			}
-		}
-		LOG_DBG("High alert");
-	} else if (alert_level == BT_IAS_ALERT_LVL_MILD_ALERT) {
-		STRUCT_SECTION_FOREACH(bt_ias_cb, cb) {
-			if (cb->mild_alert) {
-				cb->mild_alert();
-			}
-		}
-		LOG_DBG("Mild alert");
-	} else {
-		STRUCT_SECTION_FOREACH(bt_ias_cb, cb) {
-			if (cb->no_alert) {
-				cb->no_alert();
-			}
-		}
-		LOG_DBG("No alert");
-	}
+  curr_lvl = alert_level;
+
+  if (alert_level == BT_IAS_ALERT_LVL_HIGH_ALERT)
+    {
+      STRUCT_SECTION_FOREACH(bt_ias_cb, cb)
+      {
+        if (cb->high_alert)
+          {
+            cb->high_alert();
+          }
+      }
+
+      LOG_DBG("High alert");
+    }
+  else if (alert_level == BT_IAS_ALERT_LVL_MILD_ALERT)
+    {
+      STRUCT_SECTION_FOREACH(bt_ias_cb, cb)
+      {
+        if (cb->mild_alert)
+          {
+            cb->mild_alert();
+          }
+      }
+
+      LOG_DBG("Mild alert");
+    }
+  else
+    {
+      STRUCT_SECTION_FOREACH(bt_ias_cb, cb)
+      {
+        if (cb->no_alert)
+          {
+            cb->no_alert();
+          }
+      }
+
+      LOG_DBG("No alert");
+    }
 }
 
 static void disconnected(struct bt_conn *conn, uint8_t reason)
 {
-	devices[bt_conn_index(conn)].alert_level = BT_IAS_ALERT_LVL_NO_ALERT;
-	set_alert_level();
+  devices[bt_conn_index(conn)].alert_level = BT_IAS_ALERT_LVL_NO_ALERT;
+  set_alert_level();
 }
 
 int bt_ias_local_alert_stop(void)
 {
-	if (curr_lvl == BT_IAS_ALERT_LVL_NO_ALERT) {
-		return -EALREADY;
-	}
+  if (curr_lvl == BT_IAS_ALERT_LVL_NO_ALERT)
+    {
+      return -EALREADY;
+    }
 
-	for (int idx = 0; idx < CONFIG_BT_MAX_CONN; idx++) {
-		devices[idx].alert_level = BT_IAS_ALERT_LVL_NO_ALERT;
-	}
-	curr_lvl = BT_IAS_ALERT_LVL_NO_ALERT;
-	set_alert_level();
+  for (int idx = 0; idx < CONFIG_BT_MAX_CONN; idx++)
+    {
+      devices[idx].alert_level = BT_IAS_ALERT_LVL_NO_ALERT;
+    }
 
-	return 0;
+  curr_lvl = BT_IAS_ALERT_LVL_NO_ALERT;
+  set_alert_level();
+
+  return 0;
 }
 
-static ssize_t bt_ias_write_alert_lvl(struct bt_conn *conn, const struct bt_gatt_attr *attr,
-				      const void *buf, uint16_t len, uint16_t offset, uint8_t flags)
+static ssize_t bt_ias_write_alert_lvl(struct bt_conn *conn,
+                                      const struct bt_gatt_attr *attr,
+                                      const void *buf,
+                                      uint16_t len,
+                                      uint16_t offset,
+                                      uint8_t flags)
 {
-	struct net_buf_simple data;
-	enum bt_ias_alert_lvl alert_val;
+  struct net_buf_simple data;
+  enum bt_ias_alert_lvl alert_val;
 
-	if (offset > 0) {
-		return BT_GATT_ERR(BT_ATT_ERR_INVALID_OFFSET);
-	}
+  if (offset > 0)
+    {
+      return BT_GATT_ERR(BT_ATT_ERR_INVALID_OFFSET);
+    }
 
-	if (len != BT_IAS_ALERT_LVL_LEN) {
-		return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
-	}
+  if (len != BT_IAS_ALERT_LVL_LEN)
+    {
+      return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
+    }
 
-	net_buf_simple_init_with_data(&data, (void *)buf, len);
-	alert_val = net_buf_simple_pull_u8(&data);
-	devices[bt_conn_index(conn)].alert_level = alert_val;
+  net_buf_simple_init_with_data(&data, (void *)buf, len);
+  alert_val = net_buf_simple_pull_u8(&data);
+  devices[bt_conn_index(conn)].alert_level = alert_val;
 
-	if (alert_val < BT_IAS_ALERT_LVL_NO_ALERT || alert_val > BT_IAS_ALERT_LVL_HIGH_ALERT) {
-		return BT_GATT_ERR(BT_ATT_ERR_VALUE_NOT_ALLOWED);
-	}
-	set_alert_level();
+  if (alert_val < BT_IAS_ALERT_LVL_NO_ALERT ||
+      alert_val > BT_IAS_ALERT_LVL_HIGH_ALERT)
+    {
+      return BT_GATT_ERR(BT_ATT_ERR_VALUE_NOT_ALLOWED);
+    }
 
-	return len;
+  set_alert_level();
+
+  return len;
 }
 
-BT_CONN_CB_DEFINE(conn_callbacks) = {
-	.disconnected = disconnected,
+BT_CONN_CB_DEFINE(conn_callbacks) =
+{
+        .disconnected = disconnected,
 };
 
 /* Immediate Alert Service Declaration */
-BT_GATT_SERVICE_DEFINE(ias_svc,
-	BT_GATT_PRIMARY_SERVICE(BT_UUID_IAS),
-	BT_GATT_CHARACTERISTIC(BT_UUID_ALERT_LEVEL, BT_GATT_CHRC_WRITE_WITHOUT_RESP,
-			       IAS_ALERT_LEVEL_PERM, NULL,
-			       bt_ias_write_alert_lvl, NULL));
+
+BT_GATT_SERVICE_DEFINE(ias_svc, BT_GATT_PRIMARY_SERVICE(BT_UUID_IAS),
+                       BT_GATT_CHARACTERISTIC(BT_UUID_ALERT_LEVEL,
+                           BT_GATT_CHRC_WRITE_WITHOUT_RESP,
+
+                                              IAS_ALERT_LEVEL_PERM, NULL,
+                                                  bt_ias_write_alert_lvl,
+                                              NULL));

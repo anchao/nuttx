@@ -28,8 +28,7 @@
  *  @brief Attribute Protocol handling.
  */
 
-/*
- * Copyright (c) 2016 Intel Corporation
+/* Copyright (c) 2016 Intel Corporation
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -56,99 +55,106 @@
 #include <nuttx/list.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /* Error codes for Error response PDU
  *
- * Defined by The Bluetooth Core Specification, Version 5.4, Vol 3, Part F, Section 3.4.1.1
+ * Defined by The Bluetooth Core Specification, Version 5.4, Vol 3, Part F,
+ * Section 3.4.1.1
  */
+
 /** The ATT operation was successful */
-#define BT_ATT_ERR_SUCCESS			0x00
+#define BT_ATT_ERR_SUCCESS 0x00
 /** The attribute handle given was not valid on the server */
-#define BT_ATT_ERR_INVALID_HANDLE		0x01
+#define BT_ATT_ERR_INVALID_HANDLE 0x01
 /** The attribute cannot be read */
-#define BT_ATT_ERR_READ_NOT_PERMITTED		0x02
+#define BT_ATT_ERR_READ_NOT_PERMITTED 0x02
 /** The attribute cannot be written */
-#define BT_ATT_ERR_WRITE_NOT_PERMITTED		0x03
+#define BT_ATT_ERR_WRITE_NOT_PERMITTED 0x03
 /** The attribute PDU was invalid */
-#define BT_ATT_ERR_INVALID_PDU			0x04
+#define BT_ATT_ERR_INVALID_PDU 0x04
 /** The attribute requires authentication before it can be read or written */
-#define BT_ATT_ERR_AUTHENTICATION		0x05
+#define BT_ATT_ERR_AUTHENTICATION 0x05
 /** The ATT Server does not support the request received from the client */
-#define BT_ATT_ERR_NOT_SUPPORTED		0x06
+#define BT_ATT_ERR_NOT_SUPPORTED 0x06
 /** Offset specified was past the end of the attribute */
-#define BT_ATT_ERR_INVALID_OFFSET		0x07
+#define BT_ATT_ERR_INVALID_OFFSET 0x07
 /** The attribute requires authorization before it can be read or written */
-#define BT_ATT_ERR_AUTHORIZATION		0x08
+#define BT_ATT_ERR_AUTHORIZATION 0x08
 /** Too many prepare writes have been queued */
-#define BT_ATT_ERR_PREPARE_QUEUE_FULL		0x09
+#define BT_ATT_ERR_PREPARE_QUEUE_FULL 0x09
 /** No attribute found within the given attribute handle range */
-#define BT_ATT_ERR_ATTRIBUTE_NOT_FOUND		0x0a
+#define BT_ATT_ERR_ATTRIBUTE_NOT_FOUND 0x0a
 /** The attribute cannot be read using the ATT_READ_BLOB_REQ PDU */
-#define BT_ATT_ERR_ATTRIBUTE_NOT_LONG		0x0b
+#define BT_ATT_ERR_ATTRIBUTE_NOT_LONG 0x0b
 /** The Encryption Key Size used for encrypting this link is too short */
-#define BT_ATT_ERR_ENCRYPTION_KEY_SIZE		0x0c
+#define BT_ATT_ERR_ENCRYPTION_KEY_SIZE 0x0c
 /** The attribute value length is invalid for the operation */
-#define BT_ATT_ERR_INVALID_ATTRIBUTE_LEN	0x0d
+#define BT_ATT_ERR_INVALID_ATTRIBUTE_LEN 0x0d
 /**
- * @brief The attribute request that was requested has encountered an error that was unlikely
+ * @brief The attribute request that was requested has encountered an error
+ * that was unlikely
  *
  * The attribute request could therefore not be completed as requested
  */
-#define BT_ATT_ERR_UNLIKELY			0x0e
+#define BT_ATT_ERR_UNLIKELY 0x0e
 /** The attribute requires encryption before it can be read or written */
-#define BT_ATT_ERR_INSUFFICIENT_ENCRYPTION	0x0f
+#define BT_ATT_ERR_INSUFFICIENT_ENCRYPTION 0x0f
 /**
  * @brief The attribute type is not a supported grouping attribute
  *
- * The attribute type is not a supported grouping attribute as defined by a higher layer
- * specification.
+ * The attribute type is not a supported grouping attribute as defined by a
+ * higher layer specification.
  */
-#define BT_ATT_ERR_UNSUPPORTED_GROUP_TYPE	0x10
+#define BT_ATT_ERR_UNSUPPORTED_GROUP_TYPE 0x10
 /** Insufficient Resources to complete the request */
-#define BT_ATT_ERR_INSUFFICIENT_RESOURCES	0x11
+#define BT_ATT_ERR_INSUFFICIENT_RESOURCES 0x11
 /** The server requests the client to rediscover the database */
-#define BT_ATT_ERR_DB_OUT_OF_SYNC		0x12
+#define BT_ATT_ERR_DB_OUT_OF_SYNC 0x12
 /** The attribute parameter value was not allowed */
-#define BT_ATT_ERR_VALUE_NOT_ALLOWED		0x13
+#define BT_ATT_ERR_VALUE_NOT_ALLOWED 0x13
 
 /* Common Profile Error Codes
  *
- * Defined by the Supplement to the Bluetooth Core Specification (CSS), v11, Part B, Section 1.2.
+ * Defined by the Supplement to the Bluetooth Core Specification (CSS), v11,
+ * Part B, Section 1.2.
  */
-/** Write Request Rejected */
-#define BT_ATT_ERR_WRITE_REQ_REJECTED		0xfc
-/** Client Characteristic Configuration Descriptor Improperly Configured */
-#define BT_ATT_ERR_CCC_IMPROPER_CONF		0xfd
-/** Procedure Already in Progress */
-#define BT_ATT_ERR_PROCEDURE_IN_PROGRESS	0xfe
-/** Out of Range */
-#define BT_ATT_ERR_OUT_OF_RANGE			0xff
 
-/* Version 5.2, Vol 3, Part F, 3.2.9 defines maximum attribute length to 512 */
-#define BT_ATT_MAX_ATTRIBUTE_LEN		512
+/** Write Request Rejected */
+#define BT_ATT_ERR_WRITE_REQ_REJECTED 0xfc
+/** Client Characteristic Configuration Descriptor Improperly Configured */
+#define BT_ATT_ERR_CCC_IMPROPER_CONF 0xfd
+/** Procedure Already in Progress */
+#define BT_ATT_ERR_PROCEDURE_IN_PROGRESS 0xfe
+/** Out of Range */
+#define BT_ATT_ERR_OUT_OF_RANGE 0xff
+
+/* Version 5.2, Vol 3, Part F, 3.2.9 defines maximum attribute length to
+ * 512.
+ */
+#define BT_ATT_MAX_ATTRIBUTE_LEN 512
 
 /* Handle 0x0000 is reserved for future use */
-#define BT_ATT_FIRST_ATTRIBUTE_HANDLE           0x0001
+#define BT_ATT_FIRST_ATTRIBUTE_HANDLE 0x0001
 /* 0xffff is defined as the maximum, and thus last, valid attribute handle */
-#define BT_ATT_LAST_ATTRIBUTE_HANDLE            0xffff
+#define BT_ATT_LAST_ATTRIBUTE_HANDLE 0xffff
 
 /** Converts a ATT error to string.
  *
- * The error codes are described in the Bluetooth Core specification,
- * Vol 3, Part F, Section 3.4.1.1 and in
- * The Supplement to the Bluetooth Core Specification (CSS), v11,
- * Part B, Section 1.2.
+ * The error codes are described in the Bluetooth Core specification, Vol 3,
+ * Part F, Section 3.4.1.1 and in The Supplement to the Bluetooth Core
+ * Specification (CSS), v11, Part B, Section 1.2.
  *
- * The ATT and GATT documentation found in Vol 4, Part F and
- * Part G describe when the different error codes are used.
+ * The ATT and GATT documentation found in Vol 4, Part F and Part G describe
+ * when the different error codes are used.
  *
  * See also the defined BT_ATT_ERR_* macros.
  *
  * @return The string representation of the ATT error code.
- *         If @kconfig{CONFIG_BT_ATT_ERR_TO_STR} is not enabled,
- *         this just returns the empty string
+ *  If @kconfig{CONFIG_BT_ATT_ERR_TO_STR} is not enabled, this just returns
+ *  the empty string
  */
 #if defined(CONFIG_BT_ATT_ERR_TO_STR)
 const char *bt_att_err_to_str(uint8_t att_err);
@@ -157,13 +163,14 @@ const char *bt_att_err_to_str(uint8_t att_err);
 
 static inline const char *bt_att_err_to_str(uint8_t att_err)
 {
-	ARG_UNUSED(att_err);
+ARG_UNUSED(att_err);
 
-	return "";
+return "";
 }
 #endif
 
 /** @cond INTERNAL_HIDDEN */
+
 /**
  * @brief Test function to disconnect a single EATT bearer
  *
@@ -172,6 +179,7 @@ static inline const char *bt_att_err_to_str(uint8_t att_err)
  * @param conn The connection to disconnect the EATT bearer on
  * @return 0 in case of success, else negative errno value
  */
+
 int bt_eatt_disconnect_one(struct bt_conn *conn);
 
 /**
@@ -182,26 +190,31 @@ int bt_eatt_disconnect_one(struct bt_conn *conn);
  * @param conn The connection to disconnect the EATT bearer on
  * @return 0 in case of success, else negative errno value
  */
+
 int bt_eatt_reconfigure(struct bt_conn *conn, uint16_t mtu);
+
 /** @endcond */
 
 /** @brief Connect Enhanced ATT channels
  *
- * Sends a series of Credit Based Connection Requests to connect @p num_channels
- * Enhanced ATT channels. The peer may have limited resources and fewer channels
- * may be created.
+ * Sends a series of Credit Based Connection Requests to connect @p
+ * num_channels Enhanced ATT channels. The peer may have limited resources
+ * and fewer channels may be created.
  *
  * @kconfig_dep{CONFIG_BT_EATT}
  *
- * @param conn The connection to send the request on
- * @param num_channels The number of Enhanced ATT bearers to request.
- * Must be in the range 1 - @kconfig{CONFIG_BT_EATT_MAX}, inclusive.
+ * @param conn         The connection to send the request on
+ * @param num_channels The number of Enhanced ATT bearers to request. Must be
+ *                     in the range 1 - @kconfig{CONFIG_BT_EATT_MAX},
+ *                     inclusive.
  *
  * @return 0 in case of success or negative value in case of error.
- * @retval -EINVAL if @p num_channels is not in the allowed range or @p conn is NULL.
+ * @retval -EINVAL if @p num_channels is not in the allowed range or @p conn
+ * is NULL.
  * @retval -ENOMEM if less than @p num_channels are allocated.
  * @retval 0 in case of success
  */
+
 int bt_eatt_connect(struct bt_conn *conn, size_t num_channels);
 
 /** @brief Get number of EATT channels connected.
@@ -213,74 +226,96 @@ int bt_eatt_connect(struct bt_conn *conn, size_t num_channels);
  * @return The number of EATT channels connected.
  * Returns 0 if @p conn is NULL or not connected.
  */
+
 size_t bt_eatt_count(struct bt_conn *conn);
 
 /** @brief ATT channel option bit field values.
- * @note @ref BT_ATT_CHAN_OPT_UNENHANCED_ONLY and @ref BT_ATT_CHAN_OPT_ENHANCED_ONLY are mutually
- * exclusive and both bits may not be set.
+ * @note @ref BT_ATT_CHAN_OPT_UNENHANCED_ONLY and @ref
+ * BT_ATT_CHAN_OPT_ENHANCED_ONLY are mutually exclusive and both bits may not
+ * be set.
  */
-enum bt_att_chan_opt {
-	/** Both Enhanced and Unenhanced channels can be used  */
-	BT_ATT_CHAN_OPT_NONE = 0x0,
-	/** Only Unenhanced channels will be used  */
-	BT_ATT_CHAN_OPT_UNENHANCED_ONLY = BIT(0),
-	/** Only Enhanced channels will be used  */
-	BT_ATT_CHAN_OPT_ENHANCED_ONLY = BIT(1),
+
+enum bt_att_chan_opt
+{
+  /** Both Enhanced and Unenhanced channels can be used  */
+
+  BT_ATT_CHAN_OPT_NONE = 0x0,
+
+  /** Only Unenhanced channels will be used  */
+
+  BT_ATT_CHAN_OPT_UNENHANCED_ONLY = BIT(0),
+
+  /** Only Enhanced channels will be used  */
+
+  BT_ATT_CHAN_OPT_ENHANCED_ONLY = BIT(1),
 };
 
 /**
  * @brief Get the maximum notification value size for a connection
  *
- * The value of an ATT_HANDLE_VALUE_NTF PDU is limited to ATT_MTU - 3, where the 3 octets are
- * the opcode and the attribute handle, as defined by the Bluetooth Core Specification,
- * Version 6.1, Vol 3, Part F, Section 3.4.7.1.
+ * The value of an ATT_HANDLE_VALUE_NTF PDU is limited to ATT_MTU - 3, where
+ * the 3 octets are the opcode and the attribute handle, as defined by the
+ * Bluetooth Core Specification, Version 6.1, Vol 3, Part F, Section 3.4.7.1.
  *
- * Values larger than this either have to be truncated by the sender, or read by the client
- * with a read request.
+ * Values larger than this either have to be truncated by the sender, or read
+ * by the client with a read request.
  *
- * @note The ATT_MTU may change during the lifetime of a connection, so the result of this
- * function shall not be cached.
+ * @note The ATT_MTU may change during the lifetime of a connection, so the
+ * result of this function shall not be cached.
  *
- * @param conn The LE ACL connection to get the maximum notification value size for.
+ * @param conn     The LE ACL connection to get the maximum notification
+ *                 value size for.
  * @param chan_opt Bearer to get the maximum notification value size for.
- *                 Shall be either @ref BT_ATT_CHAN_OPT_NONE, @ref BT_ATT_CHAN_OPT_UNENHANCED_ONLY
- *                 or @ref BT_ATT_CHAN_OPT_ENHANCED_ONLY (only if @kconfig{CONFIG_BT_EATT} is
- *                 enabled)
- *                 @ref BT_ATT_CHAN_OPT_NONE will get the value for any bearer.
+ *                 Shall be either @ref BT_ATT_CHAN_OPT_NONE, @ref
+ *                 BT_ATT_CHAN_OPT_UNENHANCED_ONLY or @ref
+ *                 BT_ATT_CHAN_OPT_ENHANCED_ONLY (only if
+ *                 @kconfig{CONFIG_BT_EATT} is enabled)
+ *                 @ref BT_ATT_CHAN_OPT_NONE will get the value for any
+ *                 bearer.
  *
  * @return The maximum notification value size in octets on success.
- * @retval -EINVAL @p conn is NULL, not an ACL connection, or @p chan_opt is invalid.
+ * @retval -EINVAL @p conn is NULL, not an ACL connection, or @p chan_opt is
+ * invalid.
  * @retval -ENOTCONN @p conn is not connected.
  */
-int bt_att_get_max_notify_size(struct bt_conn *conn, enum bt_att_chan_opt chan_opt);
+
+int bt_att_get_max_notify_size(struct bt_conn *conn,
+                               enum bt_att_chan_opt chan_opt);
 
 /**
  * @brief Get the maximum indication value size for a connection
  *
- * The value of an ATT_HANDLE_VALUE_IND PDU is limited to ATT_MTU - 3, where the 3 octets are
- * the opcode and the attribute handle, as defined by the Bluetooth Core Specification,
- * Version 6.1, Vol 3, Part F, Section 3.4.7.2. This is the same limit as for notifications.
+ * The value of an ATT_HANDLE_VALUE_IND PDU is limited to ATT_MTU - 3, where
+ * the 3 octets are the opcode and the attribute handle, as defined by the
+ * Bluetooth Core Specification, Version 6.1, Vol 3, Part F, Section 3.4.7.2.
+ * This is the same limit as for notifications.
  *
- * Values larger than this either have to be truncated by the sender, or read by the client
- * with a read request.
+ * Values larger than this either have to be truncated by the sender, or read
+ * by the client with a read request.
  *
- * @note The ATT_MTU may change during the lifetime of a connection, so the result of this
- * function shall not be cached.
+ * @note The ATT_MTU may change during the lifetime of a connection, so the
+ * result of this function shall not be cached.
  *
- * @param conn The LE ACL connection to get the maximum indication value size for.
- * @param chan_opt Bearer to get the maximum indication value size for.
- *                 Shall be either @ref BT_ATT_CHAN_OPT_NONE, @ref BT_ATT_CHAN_OPT_UNENHANCED_ONLY
- *                 or @ref BT_ATT_CHAN_OPT_ENHANCED_ONLY (only if @kconfig{CONFIG_BT_EATT} is
- *                 enabled)
- *                 @ref BT_ATT_CHAN_OPT_NONE will get the value for any bearer.
+ * @param conn     The LE ACL connection to get the maximum indication value
+ *                 size for.
+ * @param chan_opt Bearer to get the maximum indication value size for. Shall
+ *                 be either @ref BT_ATT_CHAN_OPT_NONE, @ref
+ *                 BT_ATT_CHAN_OPT_UNENHANCED_ONLY or @ref
+ *                 BT_ATT_CHAN_OPT_ENHANCED_ONLY (only if
+ *                 @kconfig{CONFIG_BT_EATT} is enabled)
+ *                 @ref BT_ATT_CHAN_OPT_NONE will get the value for any
+ *                 bearer.
  *
  * @return The maximum indication value size in octets on success.
- * @retval -EINVAL @p conn is NULL, not an ACL connection, or @p chan_opt is invalid.
+ * @retval -EINVAL @p conn is NULL, not an ACL connection, or @p chan_opt is
+ * invalid.
  * @retval -ENOTCONN @p conn is not connected.
  */
-static inline int bt_att_get_max_indicate_size(struct bt_conn *conn, enum bt_att_chan_opt chan_opt)
+
+static inline int bt_att_get_max_indicate_size(struct bt_conn *conn,
+                                               enum bt_att_chan_opt chan_opt)
 {
-	return bt_att_get_max_notify_size(conn, chan_opt);
+  return bt_att_get_max_notify_size(conn, chan_opt);
 }
 
 #ifdef __cplusplus

@@ -28,8 +28,7 @@
  *  @brief Keys APIs.
  */
 
-/*
- * Copyright (c) 2023 Nordic Semiconductor ASA
+/* Copyright (c) 2023 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -45,13 +44,17 @@
 #include <psa/crypto.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /** The structure that keeps representation of key. */
-struct bt_mesh_key {
-	/** PSA key representation is the PSA key identifier. */
-	psa_key_id_t key;
+
+struct bt_mesh_key
+{
+  /** PSA key representation is the PSA key identifier. */
+
+  psa_key_id_t key;
 };
 
 #ifdef __cplusplus

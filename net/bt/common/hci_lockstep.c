@@ -26,8 +26,7 @@
 
 /* hci_lockstep.c - Bluetooth HCI lockstep command helper */
 
-/*
- * Copyright (c) 2026 Silicon Laboratories Inc.
+/* Copyright (c) 2026 Silicon Laboratories Inc.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -63,26 +62,31 @@ LOG_MODULE_REGISTER(bt_hci_lockstep);
 /* The Bluetooth Host's own command timeout */
 #define LOCKSTEP_CMD_TIMEOUT SEC2TICK(10)
 
+/****************************************************************************
+ * Private Functions
+ ****************************************************************************/
+
 static clock_t lockstep_deadline(clock_t timeout)
 {
-	return timeout < 0 ? (clock_t)-1 : clock_systime_ticks() + timeout;
+  return timeout < 0 ? (clock_t)-1 : clock_systime_ticks() + timeout;
 }
 
 static bool lockstep_expired(clock_t deadline)
 {
-	return deadline >= 0 && !clock_compare(clock_systime_ticks(), deadline);
+  return deadline >= 0 && !clock_compare(clock_systime_ticks(), deadline);
 }
 
 static clock_t lockstep_remaining(clock_t deadline)
 {
-	clock_t remaining;
+  clock_t remaining;
 
-	if (deadline < 0) {
-		return (clock_t)-1;
-	}
+  if (deadline < 0)
+    {
+      return (clock_t)-1;
+    }
 
-	remaining = deadline - clock_systime_ticks();
-	return remaining > 0 ? remaining : 0;
+  remaining = deadline - clock_systime_ticks();
+  return remaining > 0 ? remaining : 0;
 }
 
 /* The helper's state: whether the controller allows a command, and where
@@ -91,237 +95,277 @@ static clock_t lockstep_remaining(clock_t deadline)
  * state it waits for, so a stale wakeup or a NOP received while a response
  * is awaited cannot pass for what it waits for.
  */
-#define CREDIT_MASK      BIT_MASK(2)
+#define CREDIT_MASK BIT_MASK(2)
 /* The controller allows no command */
-#define CREDIT_NONE      0U
+#define CREDIT_NONE 0U
 /* The controller allows one command */
 #define CREDIT_AVAILABLE BIT(0)
 /* The allowance went to the command in progress */
-#define CREDIT_RESERVED  BIT(1)
+#define CREDIT_RESERVED BIT(1)
 /* A command is outstanding, its response not yet received */
-#define PHASE_WAITING    BIT(2)
+#define PHASE_WAITING BIT(2)
 /* The response has been delivered to the sender */
-#define PHASE_DONE       BIT(3)
+#define PHASE_DONE BIT(3)
 
 static void lockstep_state_reset(struct bt_hci_lockstep *ls)
 {
-	ls->rsp = NULL;
-	ls->opcode = BT_OP_NOP;
-	/* The controller allows one command (Core Specification 6.3, Vol 4,
-	 * Part E, Section 4.4).
-	 */
-	ls->state = CREDIT_AVAILABLE;
-	ls->status = BT_HCI_ERR_SUCCESS;
+  ls->rsp = NULL;
+  ls->opcode = BT_OP_NOP;
+  /* The controller allows one command (Core Specification 6.3, Vol 4,
+   * Part E, Section 4.4).
+   */
+
+  ls->state = CREDIT_AVAILABLE;
+  ls->status = BT_HCI_ERR_SUCCESS;
 }
 
-void bt_hci_lockstep_init(struct bt_hci_lockstep *ls, const struct device *dev,
-			  bt_hci_lockstep_send_t send)
+void bt_hci_lockstep_init(
+  struct bt_hci_lockstep *ls, const struct device *dev,
+  bt_hci_lockstep_send_t send)
 {
-	*ls = (struct bt_hci_lockstep){
-		.dev = dev,
-		.send = send,
-		.timeout = LOCKSTEP_CMD_TIMEOUT,
-	};
-	lockstep_state_reset(ls);
-	nxsem_init(&ls->changed, 0, 0);
+  *ls = (struct bt_hci_lockstep)
+    {
+      .dev = dev,
+          .send = send,
+          .timeout = LOCKSTEP_CMD_TIMEOUT,
+    };
+
+  lockstep_state_reset(ls);
+  nxsem_init(&ls->changed, 0, 0);
 }
 
 void bt_hci_lockstep_reset(struct bt_hci_lockstep *ls)
 {
-	irqstate_t key;
+  irqstate_t key;
 
-	/* Under the lock, so that a packet being fed meanwhile sees the state
-	 * either before or after the reset.
-	 */
-	key = spin_lock_irqsave(&ls->lock);
-	lockstep_state_reset(ls);
-	spin_unlock_irqrestore(&ls->lock, key);
+  /* Under the lock, so that a packet being fed meanwhile sees the state
+   * either before or after the reset.
+   */
 
-	/* A change of state like any other: a sender waiting for the controller
-	 * to allow its command finds that it does. Given rather than reset,
-	 * which would take the wakeup away from a sender that has seen the old
-	 * state and is about to wait, and fail one that already waits.
-	 */
-	nxsem_post(&ls->changed);
+  key = spin_lock_irqsave(&ls->lock);
+  lockstep_state_reset(ls);
+  spin_unlock_irqrestore(&ls->lock, key);
+
+  /* A change of state like any other: a sender waiting for the controller
+   * to allow its command finds that it does. Given rather than reset, which
+   * would take the wakeup away from a sender that has seen the old state and
+   * is about to wait, and fail one that already waits.
+   */
+
+  nxsem_post(&ls->changed);
 }
 
-bool bt_hci_lockstep_feed(struct bt_hci_lockstep *ls, const uint8_t *pkt, size_t len)
+bool bt_hci_lockstep_feed(struct bt_hci_lockstep *ls,
+                          const uint8_t *pkt, size_t len)
 {
-	struct bt_hci_pkt_cmd_rsp rsp;
-	irqstate_t key;
-	bool consumed = false;
-	int err;
+  struct bt_hci_pkt_cmd_rsp rsp;
+  irqstate_t key;
+  bool consumed = false;
+  int err;
 
-	/* A Command Complete without its status (-ENODATA) is still a command
-	 * response: rsp then carries BT_HCI_ERR_UNSPECIFIED.
-	 */
-	err = bt_hci_pkt_parse_cmd_rsp(pkt, len, &rsp);
-	if (err != 0 && err != -ENODATA) {
-		return false;
-	}
+  /* A Command Complete without its status (-ENODATA) is still a command
+   * response: rsp then carries BT_HCI_ERR_UNSPECIFIED.
+   */
 
-	key = spin_lock_irqsave(&ls->lock);
+  err = bt_hci_pkt_parse_cmd_rsp(pkt, len, &rsp);
+  if (err != 0 && err != -ENODATA)
+    {
+      return false;
+    }
 
-	/* Every command response tells whether the controller allows another
-	 * command, whether or not it is the awaited one: the NOP Command
-	 * Complete is sent for that alone. The latest word counts.
-	 */
-	ls->state = (ls->state & ~CREDIT_MASK) |
-		    ((rsp.ncmd > 0) ? CREDIT_AVAILABLE : CREDIT_NONE);
+  key = spin_lock_irqsave(&ls->lock);
 
-	if ((ls->state & PHASE_WAITING) != 0 && rsp.opcode == ls->opcode) {
-		const uint8_t *rp = rsp.rp;
-		size_t rp_len = rsp.rp_len;
+  /* Every command response tells whether the controller allows another
+   * command, whether or not it is the awaited one: the NOP Command Complete
+   * is sent for that alone. The latest word counts.
+   */
 
-		ls->status = rsp.status;
+  ls->state =
+          (ls->state & ~CREDIT_MASK) |
+          ((rsp.ncmd > 0) ? CREDIT_AVAILABLE : CREDIT_NONE);
 
-		/* The return parameters of a Command Complete start with the
-		 * status; a Command Status has nothing but its status.
-		 */
-		if (rp_len == 0 && err == 0) {
-			rp = &rsp.status;
-			rp_len = sizeof(rsp.status);
-		}
+  if ((ls->state & PHASE_WAITING) != 0 && rsp.opcode == ls->opcode)
+    {
+      const uint8_t *rp = rsp.rp;
+      size_t rp_len = rsp.rp_len;
 
-		/* Delivered under the lock, so that the sender cannot return
-		 * to its caller while the caller's buffer is being written.
-		 */
-		if (ls->rsp != NULL) {
-			(void)net_buf_simple_add_mem(ls->rsp, rp,
-						     MIN(rp_len, net_buf_simple_tailroom(ls->rsp)));
-		}
+      ls->status = rsp.status;
 
-		ls->state = (ls->state & CREDIT_MASK) | PHASE_DONE;
-		consumed = true;
-	}
+      /* The return parameters of a Command Complete start with the
+       * status; a Command Status has nothing but its status.
+       */
 
-	spin_unlock_irqrestore(&ls->lock, key);
+      if (rp_len == 0 && err == 0)
+        {
+          rp = &rsp.status;
+          rp_len = sizeof(rsp.status);
+        }
 
-	nxsem_post(&ls->changed);
+      /* Delivered under the lock, so that the sender cannot return
+       * to its caller while the caller's buffer is being written.
+       */
 
-	return consumed;
+      if (ls->rsp != NULL)
+        {
+          (void)net_buf_simple_add_mem(ls->rsp, rp, MIN(rp_len,
+                  net_buf_simple_tailroom(ls->rsp)));
+        }
+
+      ls->state = (ls->state & CREDIT_MASK) | PHASE_DONE;
+      consumed = true;
+    }
+
+  spin_unlock_irqrestore(&ls->lock, key);
+
+  nxsem_post(&ls->changed);
+
+  return consumed;
 }
 
-int bt_hci_lockstep_cmd_send_sync(struct bt_hci_lockstep *ls, uint16_t opcode,
-				  struct net_buf_simple *cmd, struct net_buf_simple *rsp)
+int bt_hci_lockstep_cmd_send_sync(
+  struct bt_hci_lockstep *ls, uint16_t opcode, struct net_buf_simple *cmd,
+  struct net_buf_simple *rsp)
 {
-	uint8_t no_params[BT_HCI_PKT_CMD_HDR_SIZE];
-	struct net_buf_simple no_params_buf;
-	irqstate_t key;
-	clock_t end;
-	uint8_t status;
-	int err;
+  uint8_t no_params[BT_HCI_PKT_CMD_HDR_SIZE];
+  struct net_buf_simple no_params_buf;
+  irqstate_t key;
+  clock_t end;
+  uint8_t status;
+  int err;
 
-	if (cmd == NULL) {
-		net_buf_simple_init_with_data(&no_params_buf, no_params, sizeof(no_params));
-		bt_hci_pkt_reset_cmd(&no_params_buf);
-		cmd = &no_params_buf;
-	}
+  if (cmd == NULL)
+    {
+      net_buf_simple_init_with_data(&no_params_buf, no_params,
+                                    sizeof(no_params));
+      bt_hci_pkt_reset_cmd(&no_params_buf);
+      cmd = &no_params_buf;
+    }
 
-	err = bt_hci_pkt_push_cmd_hdr(cmd, opcode);
-	if (err != 0) {
-		LOG_ERR("opcode 0x%04x: invalid command buffer (err %d)", opcode, err);
-		return err;
-	}
+  err = bt_hci_pkt_push_cmd_hdr(cmd, opcode);
+  if (err != 0)
+    {
+      LOG_ERR("opcode 0x%04x: invalid command buffer (err %d)", opcode, err);
+      return err;
+    }
 
-	/* One deadline for the whole exchange. Command flow control: a
-	 * response that allowed no further command holds this one until the
-	 * controller allows it, if only with the NOP Command Complete it sends
-	 * for that purpose.
-	 */
-	end = lockstep_deadline(ls->timeout);
-	while (true) {
-		key = spin_lock_irqsave(&ls->lock);
+  /* One deadline for the whole exchange. Command flow control: a
+   * response that allowed no further command holds this one until the
+   * controller allows it, if only with the NOP Command Complete it sends for
+   * that purpose.
+   */
 
-		if ((ls->state & CREDIT_MASK) == CREDIT_AVAILABLE) {
-			/* Armed before sending: the response may arrive, and be
-			 * fed, before the send function returns.
-			 */
-			ls->state = CREDIT_RESERVED | PHASE_WAITING;
-			ls->opcode = opcode;
-			ls->rsp = rsp;
-			ls->status = BT_HCI_ERR_SUCCESS;
-			if (rsp != NULL) {
-				net_buf_simple_reset(rsp);
-			}
+  end = lockstep_deadline(ls->timeout);
+  while (true)
+    {
+      key = spin_lock_irqsave(&ls->lock);
 
-			spin_unlock_irqrestore(&ls->lock, key);
-			break;
-		}
+      if ((ls->state & CREDIT_MASK) == CREDIT_AVAILABLE)
+        {
+          /* Armed before sending: the response may arrive, and be
+           * fed, before the send function returns.
+           */
 
-		spin_unlock_irqrestore(&ls->lock, key);
+          ls->state = CREDIT_RESERVED | PHASE_WAITING;
+          ls->opcode = opcode;
+          ls->rsp = rsp;
+          ls->status = BT_HCI_ERR_SUCCESS;
+          if (rsp != NULL)
+            {
+              net_buf_simple_reset(rsp);
+            }
 
-		if (lockstep_expired(end) ||
-		    nxsem_tickwait(&ls->changed, lockstep_remaining(end)) != 0) {
-			LOG_ERR("opcode 0x%04x: controller allows no command", opcode);
-			return -EAGAIN;
-		}
-	}
+          spin_unlock_irqrestore(&ls->lock, key);
+          break;
+        }
 
-	err = ls->send(ls->dev, cmd->data, cmd->len);
-	if (err != 0) {
-		bool responded;
+      spin_unlock_irqrestore(&ls->lock, key);
 
-		key = spin_lock_irqsave(&ls->lock);
+      if (lockstep_expired(end) || nxsem_tickwait(&ls->changed,
+              lockstep_remaining(end)) != 0)
+        {
+          LOG_ERR("opcode 0x%04x: controller allows no command", opcode);
+          return -EAGAIN;
+        }
+    }
 
-		responded = (ls->state & PHASE_DONE) != 0;
-		if (!responded) {
-			/* Nothing reached the controller: the allowance taken is
-			 * intact, unless the controller has spoken since.
-			 */
-			ls->state &= CREDIT_MASK;
-			if (ls->state == CREDIT_RESERVED) {
-				ls->state = CREDIT_AVAILABLE;
-			}
-			ls->rsp = NULL;
-		}
+  err = ls->send(ls->dev, cmd->data, cmd->len);
+  if (err != 0)
+    {
+      bool responded;
 
-		spin_unlock_irqrestore(&ls->lock, key);
+      key = spin_lock_irqsave(&ls->lock);
 
-		if (!responded) {
-			LOG_ERR("opcode 0x%04x: send failed (err %d)", opcode, err);
-			return err;
-		}
+      responded = (ls->state & PHASE_DONE) != 0;
+      if (!responded)
+        {
+          /* Nothing reached the controller: the allowance taken is
+           * intact, unless the controller has spoken since.
+           */
 
-		/* The command evidently reached the controller: its response
-		 * counts, not the transport's verdict.
-		 */
-		LOG_WRN("opcode 0x%04x: send failed (err %d) after the response arrived",
-			opcode, err);
-	}
+          ls->state &= CREDIT_MASK;
+          if (ls->state == CREDIT_RESERVED)
+            {
+              ls->state = CREDIT_AVAILABLE;
+            }
 
-	while (true) {
-		key = spin_lock_irqsave(&ls->lock);
+          ls->rsp = NULL;
+        }
 
-		if ((ls->state & PHASE_DONE) != 0) {
-			status = ls->status;
-			ls->state &= CREDIT_MASK;
-			ls->rsp = NULL;
-			spin_unlock_irqrestore(&ls->lock, key);
-			break;
-		}
+      spin_unlock_irqrestore(&ls->lock, key);
 
-		if (lockstep_expired(end)) {
-			/* The unanswered command used up the allowance: the next
-			 * one waits for the controller to allow it again.
-			 */
-			ls->state &= CREDIT_MASK;
-			ls->rsp = NULL;
-			spin_unlock_irqrestore(&ls->lock, key);
-			LOG_ERR("opcode 0x%04x: no response", opcode);
-			return -EAGAIN;
-		}
+      if (!responded)
+        {
+          LOG_ERR("opcode 0x%04x: send failed (err %d)", opcode, err);
+          return err;
+        }
 
-		spin_unlock_irqrestore(&ls->lock, key);
+      /* The command evidently reached the controller: its response
+       * counts, not the transport's verdict.
+       */
 
-		/* A stale wakeup or a NOP only leads back to the check */
-		(void)nxsem_tickwait(&ls->changed, lockstep_remaining(end));
-	}
+      LOG_WRN("opcode 0x%04x: send failed (err %d) after the response "
+              "arrived",
+              opcode, err);
+    }
 
-	if (status != BT_HCI_ERR_SUCCESS) {
-		LOG_WRN("opcode 0x%04x: status 0x%02x", opcode, status);
-		return -EIO;
-	}
+  while (true)
+    {
+      key = spin_lock_irqsave(&ls->lock);
 
-	return 0;
+      if ((ls->state & PHASE_DONE) != 0)
+        {
+          status = ls->status;
+          ls->state &= CREDIT_MASK;
+          ls->rsp = NULL;
+          spin_unlock_irqrestore(&ls->lock, key);
+          break;
+        }
+
+      if (lockstep_expired(end))
+        {
+          /* The unanswered command used up the allowance: the next
+           * one waits for the controller to allow it again.
+           */
+
+          ls->state &= CREDIT_MASK;
+          ls->rsp = NULL;
+          spin_unlock_irqrestore(&ls->lock, key);
+          LOG_ERR("opcode 0x%04x: no response", opcode);
+          return -EAGAIN;
+        }
+
+      spin_unlock_irqrestore(&ls->lock, key);
+
+      /* A stale wakeup or a NOP only leads back to the check */
+
+      (void)nxsem_tickwait(&ls->changed, lockstep_remaining(end));
+    }
+
+  if (status != BT_HCI_ERR_SUCCESS)
+    {
+      LOG_WRN("opcode 0x%04x: status 0x%02x", opcode, status);
+      return -EIO;
+    }
+
+  return 0;
 }
