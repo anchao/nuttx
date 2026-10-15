@@ -347,7 +347,7 @@ struct bt_att_signed_write_cmd
 
 typedef void(
   *bt_att_func_t)(struct bt_conn *conn, int err, const void *pdu, uint16_t
-  *length, void *user_data);
+  length, void *user_data);
 
 typedef int (*bt_att_encode_t)(struct net_buf *buf,
                                size_t len, void *user_data);

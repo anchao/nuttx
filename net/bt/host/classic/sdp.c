@@ -258,7 +258,7 @@ struct select_attrs_data
 
 typedef uint8_t(
   *bt_sdp_attr_func_t)(struct bt_sdp_attribute *attr, uint8_t att_idx, void
-  **user_data);
+  *user_data);
 
 /* @typedef bt_sdp_svc_func_t
  * @brief SDP service record iterator callback.
