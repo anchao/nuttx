@@ -25,8 +25,8 @@
  ****************************************************************************/
 
 /* SPDX-License-Identifier: Apache-2.0 */
-#ifndef ZEPHYR_INCLUDE_KERNEL_H_
-#define ZEPHYR_INCLUDE_KERNEL_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_KERNEL_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_KERNEL_H
 
 /****************************************************************************
  * Included Files
@@ -265,4 +265,4 @@ int k_condvar_broadcast(struct k_condvar *condvar);
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_KERNEL_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_KERNEL_H */

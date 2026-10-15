@@ -36,8 +36,8 @@
  * @ingroup bt_mesh_dfd
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_MESH_DFD_H__
-#define ZEPHYR_INCLUDE_BLUETOOTH_MESH_DFD_H__
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_DFD_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_DFD_H
 
 /****************************************************************************
  * Included Files
@@ -187,4 +187,4 @@ enum bt_mesh_dfd_upload_phase
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_MESH_DFD_H__ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_DFD_H */

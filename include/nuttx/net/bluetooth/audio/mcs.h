@@ -34,8 +34,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_MCS_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_MCS_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_MCS_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_MCS_H
 
 /**
  * @brief Media Control Service (MCS)
@@ -416,4 +416,4 @@ extern "C"
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_MCS_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_MCS_H */

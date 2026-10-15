@@ -35,8 +35,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_EAD_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_EAD_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_EAD_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_EAD_H
 
 #include <nuttx/net/bluetooth/bluetooth.h>
 #include <nuttx/net/bluetooth/compat/kernel.h>
@@ -159,4 +159,4 @@ int bt_ead_decrypt(const uint8_t session_key[BT_EAD_KEY_SIZE],
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_EAD_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_EAD_H */

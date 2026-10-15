@@ -29,8 +29,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_HRS_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_HRS_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_HRS_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_HRS_H
 
 /**
  * @brief Heart Rate Service (HRS)
@@ -140,4 +140,4 @@ int bt_hrs_notify(uint16_t heartrate);
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_HRS_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_HRS_H */

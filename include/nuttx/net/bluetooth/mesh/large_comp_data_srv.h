@@ -36,8 +36,8 @@
  * @ingroup bt_mesh_large_comp_data_srv
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_MESH_LARGE_COMP_DATA_SRV_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_MESH_LARGE_COMP_DATA_SRV_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_LARGE_COMP_DATA_SRV_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_LARGE_COMP_DATA_SRV_H
 
 /****************************************************************************
  * Included Files
@@ -75,7 +75,7 @@ extern const struct bt_mesh_model_cb _bt_mesh_large_comp_data_srv_cb;
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_MESH_LARGE_COMP_DATA_SRV_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_LARGE_COMP_DATA_SRV_H */
 
 /**
  * @}

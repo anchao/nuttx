@@ -34,8 +34,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_AUDIO_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_AUDIO_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_AUDIO_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_AUDIO_H
 
 /**
  * @brief Bluetooth Audio
@@ -2287,4 +2287,4 @@ static inline char *bt_audio_location_bit_to_str(
 
 /** @} */ /* end of bt_audio */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_AUDIO_H */

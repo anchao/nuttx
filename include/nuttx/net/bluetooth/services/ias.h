@@ -29,8 +29,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_IAS_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_IAS_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_IAS_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_IAS_H
 
 /**
  * @brief Immediate Alert Service (IAS)
@@ -164,4 +164,4 @@ int bt_ias_client_cb_register(const struct bt_ias_client_cb *cb);
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_IAS_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_IAS_H */

@@ -34,8 +34,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_ISO_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_ISO_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_ISO_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_ISO_H
 
 /**
  * @brief Isochronous channels (ISO)
@@ -1613,4 +1613,4 @@ const char *bt_iso_chan_state_str(enum bt_iso_state state);
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_ISO_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_ISO_H */

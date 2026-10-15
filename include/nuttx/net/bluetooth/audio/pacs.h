@@ -35,8 +35,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_PACS_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_PACS_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_PACS_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_PACS_H
 
 /**
  * @brief Published Audio Capabilities Service (PACS)
@@ -297,4 +297,4 @@ int bt_pacs_set_supported_contexts(enum bt_audio_dir dir,
 
 /** @} */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_PACS_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_PACS_H */

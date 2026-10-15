@@ -35,8 +35,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_HAS_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_HAS_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_HAS_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_HAS_H
 
 /**
  * @brief Hearing Access Service (HAS)
@@ -642,4 +642,4 @@ int bt_has_features_set(const struct bt_has_features_param *features);
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_HAS_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_HAS_H */

@@ -32,8 +32,8 @@
 /** @file
  *  @brief Bluetooth Mesh Bridge Configuration Server Model APIs.
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_MESH_BRG_CFG_SRV_H__
-#define ZEPHYR_INCLUDE_BLUETOOTH_MESH_BRG_CFG_SRV_H__
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_BRG_CFG_SRV_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_BRG_CFG_SRV_H
 
 /****************************************************************************
  * Included Files
@@ -76,4 +76,4 @@ extern const struct bt_mesh_model_cb _bt_mesh_brg_cfg_srv_cb;
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_MESH_BRG_CFG_SRV_H__ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_BRG_CFG_SRV_H */

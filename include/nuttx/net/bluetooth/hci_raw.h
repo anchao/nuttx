@@ -32,8 +32,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_HCI_RAW_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_HCI_RAW_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_HCI_RAW_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_HCI_RAW_H
 
 /**
  * @brief HCI RAW channel
@@ -92,4 +92,4 @@ int bt_enable_raw(struct k_fifo *rx_queue);
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_HCI_RAW_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_HCI_RAW_H */

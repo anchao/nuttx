@@ -33,8 +33,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_DRIVERS_BLUETOOTH_HCI_LOCKSTEP_H_
-#define ZEPHYR_INCLUDE_DRIVERS_BLUETOOTH_HCI_LOCKSTEP_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_DRIVERS_BLUETOOTH_HCI_LOCKSTEP_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_DRIVERS_BLUETOOTH_HCI_LOCKSTEP_H
 
 /****************************************************************************
  * Included Files
@@ -86,4 +86,4 @@ int bt_hci_lockstep_cmd_send_sync(
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_DRIVERS_BLUETOOTH_HCI_LOCKSTEP_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_DRIVERS_BLUETOOTH_HCI_LOCKSTEP_H */

@@ -32,8 +32,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_MESH_MSG_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_MESH_MSG_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_MSG_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_MSG_H
 
 /**
  * @brief Message
@@ -351,4 +351,4 @@ bool bt_mesh_msg_ack_ctx_match(
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_MESH_MSG_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_MSG_H */

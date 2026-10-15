@@ -33,8 +33,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_SYS_BYTEORDER_H_
-#define ZEPHYR_INCLUDE_SYS_BYTEORDER_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_SYS_BYTEORDER_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_SYS_BYTEORDER_H
 
 /****************************************************************************
  * Included Files
@@ -920,4 +920,4 @@ static inline void sys_get_be(void *dst, const void *src, size_t length)
     }
 }
 
-#endif /* ZEPHYR_INCLUDE_SYS_BYTEORDER_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_SYS_BYTEORDER_H */

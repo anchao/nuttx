@@ -33,8 +33,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_CONN_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_CONN_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_CONN_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_CONN_H
 
 /**
  * @brief Connection management
@@ -4285,4 +4285,4 @@ int bt_conn_br_change_packet_type(const struct bt_conn *conn,
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_CONN_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_CONN_H */

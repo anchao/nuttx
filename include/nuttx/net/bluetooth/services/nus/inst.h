@@ -29,8 +29,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_NUS_INST_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_NUS_INST_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_NUS_INST_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_NUS_INST_H
 
 /****************************************************************************
  * Included Files
@@ -92,4 +92,4 @@ STRUCT_SECTION_ITERABLE(bt_nus_inst, _name) = {                                 
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_NUS_INST_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_NUS_INST_H */

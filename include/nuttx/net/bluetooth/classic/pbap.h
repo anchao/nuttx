@@ -33,8 +33,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_PBAP_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_PBAP_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_PBAP_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_PBAP_H
 
 /**
  * @brief Phone Book Access Profile (PBAP)
@@ -1329,4 +1329,4 @@ int bt_pbap_pse_abort_rsp(struct bt_pbap_pse *pbap_pse,
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_PBAP_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_PBAP_H */

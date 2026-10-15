@@ -34,8 +34,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_MEDIA_PROXY_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_MEDIA_PROXY_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_MEDIA_PROXY_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_MEDIA_PROXY_H
 
 /**
  * @brief Media proxy module
@@ -1952,4 +1952,4 @@ void media_proxy_pl_search_results_id_cb(uint64_t id);
 
 /** @} */ /* End of group bt_media_proxy */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_MEDIA_PROXY_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_MEDIA_PROXY_H */

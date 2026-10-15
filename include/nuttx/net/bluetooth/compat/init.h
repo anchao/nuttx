@@ -25,8 +25,8 @@
  ****************************************************************************/
 
 /* SPDX-License-Identifier: Apache-2.0 */
-#ifndef ZEPHYR_INCLUDE_INIT_H_
-#define ZEPHYR_INCLUDE_INIT_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_INIT_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_INIT_H
 
 /****************************************************************************
  * Included Files
@@ -91,4 +91,4 @@ int bt_sys_init_run(void);
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_INIT_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_INIT_H */

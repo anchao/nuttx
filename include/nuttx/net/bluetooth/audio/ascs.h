@@ -34,8 +34,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_ASCS_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_ASCS_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_ASCS_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_ASCS_H
 
 /**
  * @brief Audio Stream Control Service (ASCS)
@@ -610,4 +610,4 @@ int bt_ascs_unregister(void);
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_ASCS_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_ASCS_H */

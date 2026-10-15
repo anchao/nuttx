@@ -26,8 +26,8 @@
 
 /* SPDX-License-Identifier: Apache-2.0 */
 
-#ifndef ZEPHYR_INCLUDE_TOOLCHAIN_H_
-#define ZEPHYR_INCLUDE_TOOLCHAIN_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_TOOLCHAIN_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_TOOLCHAIN_H
 
 /****************************************************************************
  * Included Files
@@ -116,4 +116,4 @@
 #define __DEPRECATED_MACRO __WARN("Macro is deprecated")
 #endif
 
-#endif /* ZEPHYR_INCLUDE_TOOLCHAIN_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_TOOLCHAIN_H */

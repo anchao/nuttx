@@ -31,8 +31,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_HCI_VS_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_HCI_VS_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_HCI_VS_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_HCI_VS_H
 
 /****************************************************************************
  * Included Files
@@ -552,4 +552,4 @@ struct net_buf *hci_vs_err_assert(const char *file, uint32_t line);
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_HCI_VS_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_HCI_VS_H */

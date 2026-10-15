@@ -32,8 +32,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_RFCOMM_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_RFCOMM_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_RFCOMM_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_RFCOMM_H
 
 /**
  * @brief RFCOMM
@@ -657,4 +657,4 @@ int bt_rfcomm_send_rls_cmd(struct bt_rfcomm_dlc *dlc, uint8_t line_status);
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_RFCOMM_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_RFCOMM_H */

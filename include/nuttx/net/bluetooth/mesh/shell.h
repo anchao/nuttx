@@ -35,8 +35,8 @@
  * @ingroup bt_mesh
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_MESH_SHELL_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_MESH_SHELL_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_SHELL_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_SHELL_H
 
 /****************************************************************************
  * Included Files
@@ -122,4 +122,4 @@ extern struct bt_mesh_shell_target bt_mesh_shell_target_ctx;
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_MESH_SHELL_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_SHELL_H */

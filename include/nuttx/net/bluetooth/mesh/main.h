@@ -32,8 +32,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_MESH_MAIN_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_MESH_MAIN_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_MAIN_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_MAIN_H
 
 /****************************************************************************
  * Included Files
@@ -1050,4 +1050,4 @@ const uint8_t *bt_mesh_va_uuid_get(uint16_t addr,
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_MESH_MAIN_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_MAIN_H */

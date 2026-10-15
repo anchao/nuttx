@@ -25,8 +25,8 @@
  ****************************************************************************/
 
 /* SPDX-License-Identifier: Apache-2.0 */
-#ifndef ZEPHYR_INCLUDE_LOGGING_LOG_H_
-#define ZEPHYR_INCLUDE_LOGGING_LOG_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_LOGGING_LOG_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_LOGGING_LOG_H
 
 /****************************************************************************
  * Included Files
@@ -122,4 +122,4 @@ enum
 /* Printk fallback */
 #define LOG_PRINTK(fmt, ...) syslog(LOG_INFO, fmt, ##__VA_ARGS__)
 
-#endif /* ZEPHYR_INCLUDE_LOGGING_LOG_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_LOGGING_LOG_H */

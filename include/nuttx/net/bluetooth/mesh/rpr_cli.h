@@ -36,8 +36,8 @@
  * @ingroup bt_mesh_rpr_cli
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_MESH_RPR_CLI_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_MESH_RPR_CLI_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_RPR_CLI_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_RPR_CLI_H
 
 /****************************************************************************
  * Included Files
@@ -321,4 +321,4 @@ extern const struct bt_mesh_model_cb _bt_mesh_rpr_cli_cb;
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_MESH_RPR_CLI_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_RPR_CLI_H */

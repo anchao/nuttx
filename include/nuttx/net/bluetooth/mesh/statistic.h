@@ -33,8 +33,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_MESH_STATISTIC_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_MESH_STATISTIC_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_STATISTIC_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_STATISTIC_H
 
 /****************************************************************************
  * Included Files
@@ -205,4 +205,4 @@ void bt_mesh_stat_lpn_timing_reset(void);
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_MESH_STATISTIC_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_STATISTIC_H */

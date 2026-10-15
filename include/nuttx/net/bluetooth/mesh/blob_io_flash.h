@@ -35,8 +35,8 @@
  * @ingroup bt_mesh_blob_io_flash
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_MESH_BLOB_IO_FLASH_H__
-#define ZEPHYR_INCLUDE_BLUETOOTH_MESH_BLOB_IO_FLASH_H__
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_BLOB_IO_FLASH_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_BLOB_IO_FLASH_H
 
 /****************************************************************************
  * Included Files
@@ -95,4 +95,4 @@ int bt_mesh_blob_io_flash_init(struct bt_mesh_blob_io_flash *flash,
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_MESH_BLOB_IO_FLASH_H__ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_BLOB_IO_FLASH_H */

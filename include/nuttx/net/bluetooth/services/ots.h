@@ -29,8 +29,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_OTS_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_OTS_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_OTS_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_OTS_H
 
 /**
  * @brief Object Transfer Service (OTS)
@@ -1320,4 +1320,4 @@ static inline uint32_t bt_ots_client_calc_checksum(const uint8_t *data,
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_OTS_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_OTS_H */

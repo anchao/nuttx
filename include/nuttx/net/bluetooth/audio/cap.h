@@ -34,8 +34,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_CAP_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_CAP_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_CAP_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_CAP_H
 
 /**
  * @brief Common Audio Profile (CAP)
@@ -2020,4 +2020,4 @@ int bt_cap_commander_change_microphone_gain_setting(
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_CAP_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_CAP_H */

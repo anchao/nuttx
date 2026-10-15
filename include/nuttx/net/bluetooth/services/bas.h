@@ -31,8 +31,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_BAS_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_BAS_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_BAS_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_BAS_H
 
 /**
  * @brief Battery Service (BAS)
@@ -409,4 +409,4 @@ void bt_bas_bls_set_battery_fault(enum bt_bas_bls_battery_fault value);
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_BAS_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_BAS_H */

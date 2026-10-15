@@ -29,8 +29,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_DIRECTION_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_DIRECTION_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_DIRECTION_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_DIRECTION_H
 
 /****************************************************************************
  * Included Files
@@ -549,4 +549,4 @@ int bt_df_conn_cte_rsp_enable(struct bt_conn *conn);
 
 int bt_df_conn_cte_rsp_disable(struct bt_conn *conn);
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_DIRECTION_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_DIRECTION_H */

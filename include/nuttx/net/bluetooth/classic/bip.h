@@ -31,8 +31,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_BIP_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_BIP_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_BIP_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_BIP_H
 
 /**
  * @brief Basic Imaging Profile (BIP)
@@ -2516,4 +2516,4 @@ int bt_bip_add_header_image_handle(struct net_buf *buf,
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_BIP_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_BIP_H */

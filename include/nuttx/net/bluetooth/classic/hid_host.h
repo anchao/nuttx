@@ -33,8 +33,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_HID_HOST_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_HID_HOST_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_HID_HOST_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_HID_HOST_H
 
 /**
  * @brief Bluetooth HID Host
@@ -420,4 +420,4 @@ struct net_buf *bt_hid_host_create_pdu(struct net_buf_pool *pool);
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_HID_HOST_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_HID_HOST_H */

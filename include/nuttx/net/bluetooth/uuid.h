@@ -32,8 +32,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_UUID_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_UUID_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_UUID_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_UUID_H
 
 /**
  * @brief UUIDs
@@ -4896,4 +4896,4 @@ int bt_uuid_compress(const struct bt_uuid *src, struct bt_uuid_any *dst);
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_UUID_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_UUID_H */

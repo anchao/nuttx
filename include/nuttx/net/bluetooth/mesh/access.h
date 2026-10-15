@@ -32,8 +32,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_MESH_ACCESS_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_MESH_ACCESS_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_ACCESS_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_ACCESS_H
 
 /****************************************************************************
  * Included Files
@@ -1158,4 +1158,4 @@ int bt_mesh_comp2_register(const struct bt_mesh_comp2 *comp2);
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_MESH_ACCESS_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_ACCESS_H */

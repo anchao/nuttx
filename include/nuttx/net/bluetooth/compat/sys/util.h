@@ -25,8 +25,8 @@
  ****************************************************************************/
 
 /* SPDX-License-Identifier: Apache-2.0 */
-#ifndef ZEPHYR_INCLUDE_SYS_UTIL_H_
-#define ZEPHYR_INCLUDE_SYS_UTIL_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_SYS_UTIL_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_SYS_UTIL_H
 
 /****************************************************************************
  * Included Files
@@ -483,4 +483,4 @@ static inline uint8_t u8_to_dec(char *buf, uint8_t buflen, uint8_t val)
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_SYS_UTIL_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_SYS_UTIL_H */

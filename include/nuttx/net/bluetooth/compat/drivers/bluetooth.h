@@ -25,8 +25,8 @@
  ****************************************************************************/
 
 /* SPDX-License-Identifier: Apache-2.0 */
-#ifndef ZEPHYR_INCLUDE_DRIVERS_BLUETOOTH_H_
-#define ZEPHYR_INCLUDE_DRIVERS_BLUETOOTH_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_DRIVERS_BLUETOOTH_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_DRIVERS_BLUETOOTH_H
 
 /****************************************************************************
  * Included Files
@@ -116,4 +116,4 @@ const bt_addr_t *bt_hci_get_public_addr(const struct device *dev);
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_DRIVERS_BLUETOOTH_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_DRIVERS_BLUETOOTH_H */

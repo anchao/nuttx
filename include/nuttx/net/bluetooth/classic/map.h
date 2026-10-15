@@ -33,8 +33,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_MAP_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_MAP_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_MAP_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_MAP_H
 
 /**
  * @brief Message Access Profile (MAP)
@@ -3230,4 +3230,4 @@ int bt_map_mse_mns_send_event(struct bt_map_mse_mns *mse_mns,
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_MAP_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_MAP_H */

@@ -34,8 +34,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_AVRCP_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_AVRCP_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_AVRCP_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_AVRCP_H
 
 /**
  * @brief Audio Video Remote Control Profile (AVRCP)
@@ -2951,4 +2951,4 @@ int bt_avrcp_tg_browsing_general_reject(struct bt_avrcp_tg *tg,
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_AVRCP_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_AVRCP_H */

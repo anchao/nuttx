@@ -34,8 +34,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_BLUETOOTH_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_BLUETOOTH_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_BLUETOOTH_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_BLUETOOTH_H
 
 /**
  * @brief Bluetooth APIs
@@ -3581,4 +3581,4 @@ bool bt_le_bond_exists(uint8_t id, const bt_addr_le_t *addr);
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_BLUETOOTH_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_BLUETOOTH_H */

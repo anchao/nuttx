@@ -25,8 +25,8 @@
  ****************************************************************************/
 
 /* SPDX-License-Identifier: Apache-2.0 */
-#ifndef ZEPHYR_INCLUDE_SETTINGS_SETTINGS_H_
-#define ZEPHYR_INCLUDE_SETTINGS_SETTINGS_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_SETTINGS_SETTINGS_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_SETTINGS_SETTINGS_H
 
 /****************************************************************************
  * Included Files
@@ -94,4 +94,4 @@ int settings_name_next(const char *name, const char **next);
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_SETTINGS_SETTINGS_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_SETTINGS_SETTINGS_H */

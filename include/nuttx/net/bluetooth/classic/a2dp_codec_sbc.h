@@ -43,8 +43,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_A2DP_CODEC_SBC_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_A2DP_CODEC_SBC_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_A2DP_CODEC_SBC_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_A2DP_CODEC_SBC_H
 
 #ifdef __cplusplus
 extern "C"
@@ -205,4 +205,4 @@ enum sbc_alloc_mthd bt_a2dp_sbc_get_allocation_method(
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_A2DP_CODEC_SBC_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_A2DP_CODEC_SBC_H */

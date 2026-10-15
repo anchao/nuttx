@@ -26,8 +26,8 @@
 
 /* SPDX-License-Identifier: Apache-2.0 */
 
-#ifndef ZEPHYR_INCLUDE_SYS_CHECK_H_
-#define ZEPHYR_INCLUDE_SYS_CHECK_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_SYS_CHECK_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_SYS_CHECK_H
 
 /****************************************************************************
  * Included Files
@@ -45,4 +45,4 @@
 #define CHECKIF(expr) if (expr)
 #endif
 
-#endif /* ZEPHYR_INCLUDE_SYS_CHECK_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_SYS_CHECK_H */

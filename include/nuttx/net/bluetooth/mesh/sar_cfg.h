@@ -36,8 +36,8 @@
  * @ingroup bt_mesh_sar_cfg
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_MESH_SAR_CFG_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_MESH_SAR_CFG_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_SAR_CFG_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_SAR_CFG_H
 
 /****************************************************************************
  * Included Files
@@ -120,4 +120,4 @@ struct bt_mesh_sar_rx
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_MESH_SAR_CFG_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_SAR_CFG_H */

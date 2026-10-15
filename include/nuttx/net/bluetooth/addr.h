@@ -32,8 +32,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_ADDR_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_ADDR_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_ADDR_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_ADDR_H
 
 /****************************************************************************
  * Included Files
@@ -460,4 +460,4 @@ int bt_addr_le_rpa_resolve(uint8_t id,
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_ADDR_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_ADDR_H */

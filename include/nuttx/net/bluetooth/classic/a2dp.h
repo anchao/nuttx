@@ -33,8 +33,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_A2DP_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_A2DP_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_A2DP_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_A2DP_H
 
 /**
  * @file
@@ -1203,4 +1203,4 @@ int bt_a2dp_stream_delay_report(struct bt_a2dp_stream *stream,
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_A2DP_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_A2DP_H */

@@ -29,8 +29,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_ANS_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_ANS_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_ANS_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_ANS_H
 
 /**
  * @brief Alert Notification Service (ANS)
@@ -176,4 +176,4 @@ int bt_ans_set_unread_count(struct bt_conn *conn,
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_SERVICES_ANS_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_SERVICES_ANS_H */

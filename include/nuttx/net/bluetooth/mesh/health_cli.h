@@ -32,8 +32,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_MESH_HEALTH_CLI_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_MESH_HEALTH_CLI_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_HEALTH_CLI_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_HEALTH_CLI_H
 
 /****************************************************************************
  * Included Files
@@ -460,4 +460,4 @@ extern const struct bt_mesh_model_cb bt_mesh_health_cli_cb;
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_MESH_HEALTH_CLI_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_HEALTH_CLI_H */

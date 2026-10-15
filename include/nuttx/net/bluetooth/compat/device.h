@@ -25,8 +25,8 @@
  ****************************************************************************/
 
 /* SPDX-License-Identifier: Apache-2.0 */
-#ifndef ZEPHYR_INCLUDE_DEVICE_H_
-#define ZEPHYR_INCLUDE_DEVICE_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_DEVICE_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_DEVICE_H
 
 /****************************************************************************
  * Included Files
@@ -87,4 +87,4 @@ struct bt_hci_driver
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_DEVICE_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_DEVICE_H */

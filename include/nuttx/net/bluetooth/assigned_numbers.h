@@ -34,8 +34,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_ASSIGNED_NUMBERS_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_ASSIGNED_NUMBERS_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_ASSIGNED_NUMBERS_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_ASSIGNED_NUMBERS_H
 
 /**
  * @brief Bluetooth Assigned Numbers, codes and identifiers.
@@ -2095,4 +2095,4 @@ enum bt_audio_location
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_ASSIGNED_NUMBERS_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_ASSIGNED_NUMBERS_H */

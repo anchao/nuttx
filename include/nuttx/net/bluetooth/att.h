@@ -32,8 +32,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_ATT_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_ATT_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_ATT_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_ATT_H
 
 /**
  * @brief Attribute Protocol (ATT)
@@ -326,4 +326,4 @@ static inline int bt_att_get_max_indicate_size(struct bt_conn *conn,
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_ATT_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_ATT_H */

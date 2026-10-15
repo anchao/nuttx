@@ -36,8 +36,8 @@
  * @ingroup bt_mesh_dfu
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_MESH_DFU_H__
-#define ZEPHYR_INCLUDE_BLUETOOTH_MESH_DFU_H__
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_DFU_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_DFU_H
 
 /****************************************************************************
  * Included Files
@@ -253,4 +253,4 @@ struct bt_mesh_dfu_slot
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_MESH_DFU_H__ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_DFU_H */

@@ -34,8 +34,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_MICP_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_MICP_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_MICP_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_MICP_H
 
 /**
  * @brief Microphone Control Profile (MICP)
@@ -406,4 +406,4 @@ int bt_micp_mic_ctlr_cb_register(struct bt_micp_mic_ctlr_cb *cb);
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_MICP_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_MICP_H */

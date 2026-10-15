@@ -35,8 +35,8 @@
  * @ingroup bt_mesh_blob
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_MESH_BLOB_H__
-#define ZEPHYR_INCLUDE_BLUETOOTH_MESH_BLOB_H__
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_BLOB_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_BLOB_H
 
 /****************************************************************************
  * Included Files
@@ -373,4 +373,4 @@ int (*rd)(const struct bt_mesh_blob_io *io,
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_MESH_BLOB_H__ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_BLOB_H */

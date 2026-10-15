@@ -34,8 +34,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_TBS_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_TBS_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_TBS_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_TBS_H
 
 /**
  * @brief Telephone Bearer Service (TBS)
@@ -1279,4 +1279,4 @@ struct bt_tbs_instance *bt_tbs_client_get_by_index(
 
 /** @} */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_TBS_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_TBS_H */

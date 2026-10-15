@@ -34,8 +34,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_CCP_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_CCP_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_CCP_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_CCP_H
 
 /**
  * @brief Call Control Profile (CCP)
@@ -613,4 +613,4 @@ int bt_ccp_call_control_client_read_bearer_uri_schemes(
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_CCP_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_CCP_H */

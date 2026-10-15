@@ -33,8 +33,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_HID_DEVICE_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_HID_DEVICE_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_HID_DEVICE_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_HID_DEVICE_H
 
 /**
  * @brief Bluetooth HID Device
@@ -357,4 +357,4 @@ struct bt_conn *bt_hid_device_get_conn(struct bt_hid_device *hid);
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_HID_DEVICE_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_HID_DEVICE_H */

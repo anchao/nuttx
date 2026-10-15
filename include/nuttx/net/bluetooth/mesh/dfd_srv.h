@@ -37,8 +37,8 @@
  * @brief API for the Firmware Distribution Server model
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_MESH_DFD_SRV_H__
-#define ZEPHYR_INCLUDE_BLUETOOTH_MESH_DFD_SRV_H__
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_DFD_SRV_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_DFD_SRV_H
 
 /****************************************************************************
  * Included Files
@@ -365,6 +365,6 @@ extern const struct bt_mesh_blob_srv_cb _bt_mesh_dfd_srv_blob_cb;
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_MESH_DFD_SRV_H__ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_DFD_SRV_H */
 
 /** @} */

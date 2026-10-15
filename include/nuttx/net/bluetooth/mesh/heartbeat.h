@@ -32,8 +32,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_MESH_HEARTBEAT_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_MESH_HEARTBEAT_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_HEARTBEAT_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_HEARTBEAT_H
 
 /****************************************************************************
  * Included Files
@@ -198,4 +198,4 @@ void bt_mesh_hb_sub_get(struct bt_mesh_hb_sub *get);
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_MESH_HEARTBEAT_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_HEARTBEAT_H */

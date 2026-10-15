@@ -34,8 +34,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_VOCS_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_VOCS_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_VOCS_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_VOCS_H
 
 /**
  * @brief Volume Offset Control Service (VOCS)
@@ -453,4 +453,4 @@ int bt_vocs_discover(struct bt_conn *conn, struct bt_vocs *inst,
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_VOCS_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_VOCS_H */

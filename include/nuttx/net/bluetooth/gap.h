@@ -33,8 +33,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_GAP_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_GAP_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_GAP_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_GAP_H
 
 /****************************************************************************
  * Included Files
@@ -687,4 +687,4 @@ BUILD_ASSERT(!((w64) & (~BIT64_MASK(40))), "RFU bit in LE Supported Features are
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_GAP_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_GAP_H */

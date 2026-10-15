@@ -26,8 +26,8 @@
 
 /* SPDX-License-Identifier: Apache-2.0 */
 
-#ifndef ZEPHYR_INCLUDE_SYS_CRC_H_
-#define ZEPHYR_INCLUDE_SYS_CRC_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_SYS_CRC_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_SYS_CRC_H
 
 /****************************************************************************
  * Included Files
@@ -143,4 +143,4 @@ static inline uint16_t crc16_reflect(uint16_t poly,
   return crc;
 }
 
-#endif /* ZEPHYR_INCLUDE_SYS_CRC_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_COMPAT_SYS_CRC_H */

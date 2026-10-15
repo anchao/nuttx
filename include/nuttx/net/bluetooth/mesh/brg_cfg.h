@@ -36,8 +36,8 @@
  * @ingroup bt_mesh_brg_cfg
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_MESH_BRG_CFG_H__
-#define ZEPHYR_INCLUDE_BLUETOOTH_MESH_BRG_CFG_H__
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_BRG_CFG_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_BRG_CFG_H
 
 /****************************************************************************
  * Included Files
@@ -178,4 +178,4 @@ struct bt_mesh_brg_cfg_table_list
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_MESH_BRG_CFG_H__ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_MESH_BRG_CFG_H */

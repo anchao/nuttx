@@ -32,8 +32,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_GATT_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_GATT_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_GATT_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_GATT_H
 
 /**
  * @brief Generic Attribute Profile (GATT)
@@ -2762,4 +2762,4 @@ void bt_gatt_cancel(struct bt_conn *conn, void *params);
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_GATT_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_GATT_H */

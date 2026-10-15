@@ -34,8 +34,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_CCID_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_CCID_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_CCID_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_CCID_H
 
 /**
  * @brief Bluetooth Content Control Identifier (CCID)
@@ -107,4 +107,4 @@ const struct bt_gatt_attr *bt_ccid_find_attr(uint8_t ccid);
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_AUDIO_CCID_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_AUDIO_CCID_H */

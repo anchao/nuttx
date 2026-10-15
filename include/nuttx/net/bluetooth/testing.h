@@ -34,8 +34,8 @@
  *  The interfaces in this file are internal and not stable.
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_TESTING_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_TESTING_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_TESTING_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_TESTING_H
 
 /****************************************************************************
  * Included Files
@@ -73,4 +73,4 @@ void bt_testing_trace_ext_adv_reassembly_timeout(void);
 
 void bt_testing_trace_ext_adv_reassembly_complete(void);
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_TESTING_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_TESTING_H */

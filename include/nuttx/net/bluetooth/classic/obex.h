@@ -31,8 +31,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_OBEX_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_OBEX_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_OBEX_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_OBEX_H
 
 /**
  * @brief IrDA Object Exchange Protocol (OBEX)
@@ -2308,4 +2308,4 @@ int bt_obex_verify_auth_response(const uint8_t *pwd,
  * @}
  */
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_CLASSIC_OBEX_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_CLASSIC_OBEX_H */

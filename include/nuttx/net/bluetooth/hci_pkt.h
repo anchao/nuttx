@@ -33,8 +33,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef ZEPHYR_INCLUDE_BLUETOOTH_HCI_PKT_H_
-#define ZEPHYR_INCLUDE_BLUETOOTH_HCI_PKT_H_
+#ifndef __INCLUDE_NUTTX_NET_BLUETOOTH_HCI_PKT_H
+#define __INCLUDE_NUTTX_NET_BLUETOOTH_HCI_PKT_H
 
 /****************************************************************************
  * Included Files
@@ -289,4 +289,4 @@ int bt_hci_pkt_parse_cmd_rsp(const uint8_t *pkt,
 }
 #endif
 
-#endif /* ZEPHYR_INCLUDE_BLUETOOTH_HCI_PKT_H_ */
+#endif /* __INCLUDE_NUTTX_NET_BLUETOOTH_HCI_PKT_H */
