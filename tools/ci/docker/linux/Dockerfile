@@ -390,6 +390,7 @@ RUN apt-get update -qq && DEBIAN_FRONTEND="noninteractive" TZ=Etc/UTC apt-get in
   libcurl4-openssl-dev \
   libmp3lame-dev:i386 \
   libmad0-dev:i386 \
+  libmbedtls-dev \
   libncurses5-dev \
   libpulse-dev libpulse-dev:i386 \
   libpython2.7 \
