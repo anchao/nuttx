@@ -520,7 +520,9 @@ int nxtask_setup_stackargs(FAR struct tcb_s *tcb,
   FAR char *str;
   size_t strtablen;
   size_t argvlen;
-  int nbytes;
+  size_t arglen[CONFIG_TASK_MAX_ARGS];
+  size_t namelen;
+  size_t nbytes;
   int argc;
   int i;
   int ret = OK;
@@ -534,7 +536,8 @@ int nxtask_setup_stackargs(FAR struct tcb_s *tcb,
 
   /* Get the size of the task name (including the NUL terminator) */
 
-  strtablen = (strlen(name) + 1);
+  namelen = strlen(name) + 1;
+  strtablen = namelen;
 
   /* Count the number of arguments and get the accumulated size of the
    * argument strings (including the null terminators).  The argument count
@@ -553,26 +556,29 @@ int nxtask_setup_stackargs(FAR struct tcb_s *tcb,
            * size of the allocated stack.
            */
 
-          strtablen += (strlen(argv[argc]) + 1);
+          nbytes = strlen(argv[argc]) + 1;
+          strtablen += nbytes;
           DEBUGASSERT(strtablen < tcb->adj_stack_size);
           if (strtablen >= tcb->adj_stack_size)
             {
               ret = -ENAMETOOLONG;
+              break;
             }
-          else
-            {
-              /* Increment the number of args.  Here is a sanity check to
-               * prevent running away with an unterminated argv[] list.
-               * CONFIG_TASK_MAX_ARGS should be sufficiently large that this
-               * never happens in normal usage.
-               */
 
-              DEBUGASSERT(argc <= CONFIG_TASK_MAX_ARGS);
-              if (++argc > CONFIG_TASK_MAX_ARGS)
-                {
-                  ret = -E2BIG;
-                }
+          /* Increment the number of args.  Here is a sanity check to
+           * prevent running away with an unterminated argv[] list.
+           * CONFIG_TASK_MAX_ARGS should be sufficiently large that this
+           * never happens in normal usage.
+           */
+
+          DEBUGASSERT(argc < CONFIG_TASK_MAX_ARGS);
+          if (argc >= CONFIG_TASK_MAX_ARGS)
+            {
+              ret = -E2BIG;
+              break;
             }
+
+          arglen[argc++] = nbytes;
         }
     }
 
@@ -604,8 +610,8 @@ int nxtask_setup_stackargs(FAR struct tcb_s *tcb,
            */
 
           stackargv[0] = str;
-          nbytes       = strlen(name) + 1;
-          strlcpy(str, name, strtablen);
+          nbytes       = namelen;
+          memcpy(str, name, nbytes);
           str         += nbytes;
           strtablen   -= nbytes;
 
@@ -620,8 +626,8 @@ int nxtask_setup_stackargs(FAR struct tcb_s *tcb,
                */
 
               stackargv[i + 1] = str;
-              nbytes           = strlen(argv[i]) + 1;
-              strlcpy(str, argv[i], strtablen);
+              nbytes           = arglen[i];
+              memcpy(str, argv[i], nbytes);
               str             += nbytes;
               strtablen       -= nbytes;
             }
